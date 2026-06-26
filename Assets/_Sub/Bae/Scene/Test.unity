@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 775012096}
   - component: {fileID: 775012095}
   - component: {fileID: 775012094}
+  - component: {fileID: 775012098}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -167,7 +168,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09c2b9adb023e6547aa45a0e8bf5fcfc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EpicTransport.EOSSDKComponent
-  apiKeys: {fileID: 0}
+  apiKeys: {fileID: 11400000, guid: ce82d3faaa4c6724cac22d5af1b21d18, type: 2}
   authInterfaceLogin: 0
   authInterfaceCredentialType: 6
   devAuthToolPort: 7878
@@ -201,13 +202,13 @@ MonoBehaviour:
   offlineScene: 
   onlineScene: 
   offlineSceneLoadDelay: 0
-  transport: {fileID: 0}
+  transport: {fileID: 775012094}
   networkAddress: localhost
   maxConnections: 100
   disconnectInactiveConnections: 0
   disconnectInactiveTimeout: 60
   authenticator: {fileID: 0}
-  playerPrefab: {fileID: 0}
+  playerPrefab: {fileID: 1341709108886965507, guid: ec48196e44b79284081d5c6006f9d5a8, type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
   spawnPrefabs: []
@@ -241,6 +242,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &775012098
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 775012093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6442dc8070ceb41f094e44de0bf87274, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkManagerHUD
+  offsetX: 0
+  offsetY: 0
 --- !u!1 &1876834458
 GameObject:
   m_ObjectHideFlags: 0
