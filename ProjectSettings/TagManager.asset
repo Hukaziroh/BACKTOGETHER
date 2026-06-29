@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Obstacle
   - Spike
+  - Wall
   layers:
   - Default
   - TransparentFX
