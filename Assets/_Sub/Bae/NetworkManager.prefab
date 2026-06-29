@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6581624734982250841}
   - component: {fileID: 3709791003795818089}
   - component: {fileID: 5912919565558221429}
+  - component: {fileID: 7257518310161370580}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -52,8 +53,8 @@ MonoBehaviour:
   headlessStartMode: 0
   editorAutoStart: 0
   sendRate: 60
-  offlineScene: 
-  onlineScene: 
+  offlineScene: Assets/_Sub/Bae/Scene/Test.unity
+  onlineScene: Assets/_Sub/Bae/Scene/Lobby.unity
   offlineSceneLoadDelay: 0
   transport: {fileID: 3709791003795818089}
   networkAddress: localhost
@@ -130,10 +131,24 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9010855181338360226}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6442dc8070ceb41f094e44de0bf87274, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Mirror::Mirror.NetworkManagerHUD
   offsetX: 0
   offsetY: 0
+--- !u!114 &7257518310161370580
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9010855181338360226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01574b072600be34dbd5de0e569c6c99, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EOSLobby
+  AttributeKeys:
+  - lobby_name
