@@ -5,21 +5,22 @@ using Mirror;
 public class CoopMovingLog : NetworkBehaviour
 {
     [Header("통나무 이동 설정")]
-    [Tooltip("통나무가 이동할 목표 지점")]
     public Transform endPoint;
-
-    [Tooltip("통나무 이동 속도")]
     public float moveSpeed = 2f;
-
-    [Tooltip("출발하기 위해 필요한 플레이어 수")]
     public int requiredPlayers = 4;
 
-    private Vector3 startPos;
+    [Header("물리 설정")]
+    public Rigidbody2D logRigidbody;
+
+    private Vector2 startPos;
     private HashSet<GameObject> playersOnLog = new HashSet<GameObject>();
 
     void Start()
     {
-        startPos = transform.position;
+        if (logRigidbody != null)
+        {
+            startPos = logRigidbody.position;
+        }
     }
 
     [ServerCallback]
@@ -28,7 +29,6 @@ public class CoopMovingLog : NetworkBehaviour
         if (other.CompareTag("Player"))
         {
             playersOnLog.Add(other.gameObject);
-            Debug.Log($"[통나무] 현재 탑승 인원: {playersOnLog.Count} / {requiredPlayers}");
         }
     }
 
@@ -38,17 +38,29 @@ public class CoopMovingLog : NetworkBehaviour
         if (other.CompareTag("Player"))
         {
             playersOnLog.Remove(other.gameObject);
-            Debug.Log($"[통나무] 현재 탑승 인원: {playersOnLog.Count} / {requiredPlayers}");
         }
     }
 
     [ServerCallback]
-    void Update()
+    void FixedUpdate()
     {
+        if (logRigidbody == null) return;
+
         playersOnLog.RemoveWhere(go => go == null || !go.activeInHierarchy);
 
-        Vector3 targetPos = (playersOnLog.Count >= requiredPlayers) ? endPoint.position : startPos;
+        Vector2 currentPos = logRigidbody.position;
+        Vector2 targetPos = (playersOnLog.Count >= requiredPlayers) ? (Vector2)endPoint.position : startPos;
+        Vector2 nextPos = Vector2.MoveTowards(currentPos, targetPos, moveSpeed * Time.fixedDeltaTime);
+        Vector2 delta = nextPos - currentPos;
 
-        transform.position = Vector3.MoveTowards(transform.position, targetPos, moveSpeed * Time.deltaTime);
+        logRigidbody.MovePosition(nextPos);
+
+        foreach (GameObject player in playersOnLog)
+        {
+            if (player != null)
+            {
+                player.transform.position += (Vector3)delta;
+            }
+        }
     }
 }
