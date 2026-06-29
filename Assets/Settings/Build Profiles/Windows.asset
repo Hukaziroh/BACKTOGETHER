@@ -28,6 +28,9 @@ MonoBehaviour:
   - m_enabled: 1
     m_path: Assets/_Sub/Bae/Scene/Lobby.unity
     m_guid: 2f8adfb2aea1cbf4fa183737ee40af59
+  - m_enabled: 1
+    m_path: Assets/_Sub/Bae/Scene/chapter1.unity
+    m_guid: e3d914786cb1e564bbf8ce84e0678b15
   m_HasScriptingDefines: 0
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:
