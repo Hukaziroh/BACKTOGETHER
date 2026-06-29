@@ -47,6 +47,7 @@ GameObject:
   - component: {fileID: 5497672478635760991}
   - component: {fileID: 7816368902082643005}
   - component: {fileID: 695120344701703175}
+  - component: {fileID: 547612548421089118}
   m_Layer: 0
   m_Name: Player_Prototype
   m_TagString: Untagged
@@ -315,3 +316,18 @@ MonoBehaviour:
   positionSensitivity: 0.01
   rotationSensitivity: 0.01
   scaleSensitivity: 0.01
+--- !u!114 &547612548421089118
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8453197966436518037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9c302b431bacab41829a5f518685874, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LobbyPlayerTracker
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
