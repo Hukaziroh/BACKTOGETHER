@@ -11,7 +11,6 @@ public class PlayerController : NetworkBehaviour
     public float jumpHeight = 3f;
     public float jumpSpeed = 4f;
     public float fallSpeed = 2.5f;
-    
     public float maxFallSpeed = 20f;
 
     [Header("Jump Feel Settings")]
@@ -26,6 +25,11 @@ public class PlayerController : NetworkBehaviour
 
     private float jumpCk = 0.1f;
     private float ckTimer;
+
+    [Header("Trap Settings")]
+    public float knockPower = 15f; 
+    public float stunTime = 0.5f;  
+    private float stunTimer;       
 
     private Rigidbody2D rb;
     private float horizontalInput;
@@ -58,38 +62,46 @@ public class PlayerController : NetworkBehaviour
             coyoteTimeCounter -= Time.deltaTime;
         }
 
-        horizontalInput = 0f;
-
-        if (Keyboard.current != null)
+        if (stunTimer > 0f)
         {
-            if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)
-            {
-                horizontalInput = -1f;
-            }
-            else if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)
-            {
-                horizontalInput = 1f;
-            }
+            stunTimer -= Time.deltaTime;
+            horizontalInput = 0f; 
+        }
+        else
+        {
+            horizontalInput = 0f;
 
-            if (Keyboard.current.spaceKey.wasPressedThisFrame)
+            if (Keyboard.current != null)
             {
-                jumpBufferCounter = jumpBufferTime;
-            }
-            else
-            {
-                jumpBufferCounter -= Time.deltaTime;
-            }
+                if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)
+                {
+                    horizontalInput = -1f;
+                }
+                else if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)
+                {
+                    horizontalInput = 1f;
+                }
 
-            if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f)
-            {
-                Jump();
-                jumpBufferCounter = 0f;
-                coyoteTimeCounter = 0f;
-            }
+                if (Keyboard.current.spaceKey.wasPressedThisFrame)
+                {
+                    jumpBufferCounter = jumpBufferTime;
+                }
+                else
+                {
+                    jumpBufferCounter -= Time.deltaTime;
+                }
 
-            if (Keyboard.current.spaceKey.wasReleasedThisFrame && rb.linearVelocity.y > 0f)
-            {
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump);
+                if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f)
+                {
+                    Jump();
+                    jumpBufferCounter = 0f;
+                    coyoteTimeCounter = 0f;
+                }
+
+                if (Keyboard.current.spaceKey.wasReleasedThisFrame && rb.linearVelocity.y > 0f)
+                {
+                    rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump);
+                }
             }
         }
 
@@ -157,6 +169,15 @@ public class PlayerController : NetworkBehaviour
         {
             CmdHandleCollision(collision.contacts[0].normal);
         }
+       
+        else if (collision.gameObject.CompareTag("Spike"))
+        {
+            Vector2 hitPoint = collision.GetContact(0).point;
+            Vector2 knockDir = ((Vector2)transform.position - hitPoint).normalized;
+            knockDir.y = 1f; 
+
+            CmdTakeKnockback(knockDir.normalized);
+        }
     }
 
     [Command]
@@ -170,5 +191,20 @@ public class PlayerController : NetworkBehaviour
     {
         rb.linearVelocity = Vector2.zero;
         rb.AddForce(hitNormal * 20f, ForceMode2D.Impulse);
+    }
+
+    [Command]
+    void CmdTakeKnockback(Vector2 knockDir)
+    {
+        RpcApplyKnockback(knockDir);
+    }
+
+    [ClientRpc]
+    void RpcApplyKnockback(Vector2 knockDir)
+    {
+        rb.linearVelocity = Vector2.zero;
+        rb.AddForce(knockDir * knockPower, ForceMode2D.Impulse);
+
+        stunTimer = stunTime; 
     }
 }
