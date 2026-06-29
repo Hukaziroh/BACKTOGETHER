@@ -8,9 +8,9 @@ public class PlayerController : NetworkBehaviour
     public float moveSpeed = 8f;
 
     [Header("Jump Settings")]
-    public float jumpHeight = 3f;     
-    public float jumpSpeed = 4f;     
-    public float fallSpeed = 2.5f;   
+    public float jumpHeight = 3f;
+    public float jumpSpeed = 4f;
+    public float fallSpeed = 2.5f;
 
     [Header("Jump Feel Settings")]
     public float coyoteTime = 0.15f;
@@ -21,6 +21,9 @@ public class PlayerController : NetworkBehaviour
 
     [Range(0f, 1f)]
     public float superJump = 0.5f;
+
+    private float jumpCk = 0.1f;   
+    private float ckTimer;         
 
     private Rigidbody2D rb;
     private float horizontalInput;
@@ -39,8 +42,12 @@ public class PlayerController : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
-        // 코요테 타임 계산
-        if (isGrounded)
+        if (ckTimer > 0f)
+        {
+            ckTimer -= Time.deltaTime;
+        }
+
+        if (isGrounded && ckTimer <= 0f)
         {
             coyoteTimeCounter = coyoteTime;
         }
@@ -87,6 +94,7 @@ public class PlayerController : NetworkBehaviour
             }
         }
 
+        // 중력 제어
         if (rb.linearVelocity.y < 0f)
         {
             rb.gravityScale = jumpSpeed * fallSpeed;
@@ -112,6 +120,8 @@ public class PlayerController : NetworkBehaviour
         float jumpForce = Mathf.Sqrt(2f * gravity * jumpHeight);
 
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+
+        ckTimer = jumpCk;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
