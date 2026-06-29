@@ -16,7 +16,6 @@ public class SequentialBridgeButton : NetworkBehaviour
     public GameObject unpressedVisual;
     public GameObject pressedVisual;
 
-    // 💡 변경점: Collider가 아닌 GameObject(플레이어 자체)를 추적하여 다중 콜라이더 버그 방지
     private HashSet<GameObject> playersOnButton = new HashSet<GameObject>();
     private Coroutine bridgeCoroutine;
     private List<GameObject> spawnedBridges = new List<GameObject>();
@@ -100,7 +99,7 @@ public class SequentialBridgeButton : NetworkBehaviour
 
                 if (bridgeToRemove != null)
                 {
-                    NetworkServer.Destroy(bridgeToRemove); // 서버와 클라이언트 모두에서 삭제
+                    NetworkServer.Destroy(bridgeToRemove);
                 }
 
                 yield return new WaitForSeconds(buildDelay);
