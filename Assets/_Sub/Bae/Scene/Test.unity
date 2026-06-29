@@ -1272,6 +1272,7 @@ GameObject:
   - component: {fileID: 1876834460}
   - component: {fileID: 1876834459}
   - component: {fileID: 1876834462}
+  - component: {fileID: 1876834463}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1397,6 +1398,21 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &1876834463
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1876834458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cad3c582e68cc134da8eaca28d1469c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraFollow
+  target: {fileID: 6667347122069961916, guid: e666d40d5abfae548b5224eb92f79fbf, type: 3}
+  speed: 5
+  offset: {x: 0, y: 0, z: -10}
 --- !u!1 &1966338791
 GameObject:
   m_ObjectHideFlags: 0
@@ -1583,6 +1599,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3200176714990393282, guid: 8e4abe2d07381be4a80127c546652040, type: 3}
+      propertyPath: onlineScene
+      value: Assets/_Sub/Bae/Scene/chapter1.unity
+      objectReference: {fileID: 0}
     - target: {fileID: 3200176714990393282, guid: 8e4abe2d07381be4a80127c546652040, type: 3}
       propertyPath: playerPrefab
       value: 
