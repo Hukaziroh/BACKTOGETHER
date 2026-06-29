@@ -228,6 +228,7 @@ GameObject:
   - component: {fileID: 3180949358902313636}
   - component: {fileID: 458862060009949889}
   - component: {fileID: 8052578547092695121}
+  - component: {fileID: 4431636030030516995}
   m_Layer: 0
   m_Name: Sensor
   m_TagString: Untagged
@@ -317,6 +318,7 @@ MonoBehaviour:
   endPoint: {fileID: 0}
   moveSpeed: 2
   requiredPlayers: 1
+  logRigidbody: {fileID: 4431636030030516995}
 --- !u!61 &8052578547092695121
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -363,6 +365,33 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 3.04, y: 0.39}
   m_EdgeRadius: 0
+--- !u!50 &4431636030030516995
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8071272655232499823}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!1 &8911819771049512315
 GameObject:
   m_ObjectHideFlags: 0
