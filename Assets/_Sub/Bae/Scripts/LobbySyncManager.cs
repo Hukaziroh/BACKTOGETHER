@@ -9,12 +9,10 @@ public class LobbySyncManager : NetworkBehaviour
     [SyncVar(hook = nameof(OnPlayerCountUpdated))]
     public int playerCount = 0;
 
-    void Update()
+    [Server]
+    public void RefreshPlayerCount()
     {
-        if (isServer)
-        {
-            playerCount = NetworkServer.connections.Count;
-        }
+        playerCount = NetworkServer.connections.Count;
     }
 
     void OnPlayerCountUpdated(int oldValue, int newValue)
