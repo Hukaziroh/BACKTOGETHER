@@ -1,24 +1,41 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
 
 public class PauseManager : MonoBehaviour
 {
-    public GameObject pausePanel; // 유니티 인스펙터에서 전체 퍼즈 패널 연결
+    public GameObject pausePanel;
+    public GameObject optionsPanel;
 
     private bool isPaused = false;
 
     void Update()
     {
-        // 옛날 방식: Input.GetKeyDown(KeyCode.Escape) 대신 아래 코드 사용
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
-            if (isPaused) ResumeGame();
-            else PauseGame();
+            // 옵션창이 켜져 있으면 옵션창을 닫고 퍼즈창으로 복귀
+            if (optionsPanel.activeSelf)
+            {
+                CloseOptions();
+            }
+            // 퍼즈 상태면 게임 재개, 아니면 퍼즈 호출
+            else if (isPaused)
+            {
+                ResumeGame();
+            }
+            else
+            {
+                PauseGame();
+            }
         }
     }
 
-    // 1. CONTINUE 버튼에 연결할 함수
+    public void PauseGame()
+    {
+        pausePanel.SetActive(true);
+        Time.timeScale = 0f;
+        isPaused = true;
+    }
+
     public void ResumeGame()
     {
         pausePanel.SetActive(false);
@@ -26,13 +43,18 @@ public class PauseManager : MonoBehaviour
         isPaused = false;
     }
 
-    // 2. OPTIONS 버튼에 연결할 함수
     public void OpenOptions()
     {
-        Debug.Log("옵션창 열기");
+        pausePanel.SetActive(false);
+        optionsPanel.SetActive(true);
     }
 
-    // 3. EXIT 버튼에 연결할 함수
+    public void CloseOptions()
+    {
+        optionsPanel.SetActive(false);
+        pausePanel.SetActive(true);
+    }
+
     public void QuitGame()
     {
         Debug.Log("게임 종료");
@@ -41,13 +63,5 @@ public class PauseManager : MonoBehaviour
 #else
         Application.Quit();
 #endif
-    }
-
-    // 일시정지 함수
-    public void PauseGame()
-    {
-        pausePanel.SetActive(true);
-        Time.timeScale = 0f;
-        isPaused = true;
     }
 }
