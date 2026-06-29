@@ -8,9 +8,11 @@ public class PlayerController : NetworkBehaviour
     public float moveSpeed = 8f;
 
     [Header("Jump Settings")]
-    public float jumpHeight = 3f;     
-    public float jumpSpeed = 4f;     
-    public float fallSpeed = 2.5f;   
+    public float jumpHeight = 3f;
+    public float jumpSpeed = 4f;
+    public float fallSpeed = 2.5f;
+    
+    public float maxFallSpeed = 20f;
 
     [Header("Jump Feel Settings")]
     public float coyoteTime = 0.15f;
@@ -21,6 +23,9 @@ public class PlayerController : NetworkBehaviour
 
     [Range(0f, 1f)]
     public float superJump = 0.5f;
+
+    private float jumpCk = 0.1f;
+    private float ckTimer;
 
     private Rigidbody2D rb;
     private float horizontalInput;
@@ -39,8 +44,12 @@ public class PlayerController : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
-        // 코요테 타임 계산
-        if (isGrounded)
+        if (ckTimer > 0f)
+        {
+            ckTimer -= Time.deltaTime;
+        }
+
+        if (isGrounded && ckTimer <= 0f)
         {
             coyoteTimeCounter = coyoteTime;
         }
@@ -53,7 +62,6 @@ public class PlayerController : NetworkBehaviour
 
         if (Keyboard.current != null)
         {
-            // 좌우 이동
             if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)
             {
                 horizontalInput = -1f;
@@ -63,7 +71,6 @@ public class PlayerController : NetworkBehaviour
                 horizontalInput = 1f;
             }
 
-            // 선입력 타이머 계산
             if (Keyboard.current.spaceKey.wasPressedThisFrame)
             {
                 jumpBufferCounter = jumpBufferTime;
@@ -73,7 +80,6 @@ public class PlayerController : NetworkBehaviour
                 jumpBufferCounter -= Time.deltaTime;
             }
 
-            // 점프 실행
             if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f)
             {
                 Jump();
@@ -101,9 +107,36 @@ public class PlayerController : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, checkRadius, groundLayer);
+        CheckGroundOrPlayer();
 
         rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
+
+        if (rb.linearVelocity.y < -maxFallSpeed)
+        {
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, -maxFallSpeed);
+        }
+    }
+
+    void CheckGroundOrPlayer()
+    {
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(groundCheck.position, checkRadius);
+
+        isGrounded = false;
+
+        foreach (var col in colliders)
+        {
+            if (col.gameObject != gameObject)
+            {
+                bool hitGround = ((1 << col.gameObject.layer) & groundLayer) != 0;
+                bool hitPlayer = col.CompareTag("Player");
+
+                if (hitGround || hitPlayer)
+                {
+                    isGrounded = true;
+                    break;
+                }
+            }
+        }
     }
 
     void Jump()
@@ -112,6 +145,8 @@ public class PlayerController : NetworkBehaviour
         float jumpForce = Mathf.Sqrt(2f * gravity * jumpHeight);
 
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+
+        ckTimer = jumpCk;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
