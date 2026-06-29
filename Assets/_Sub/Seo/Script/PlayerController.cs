@@ -207,4 +207,23 @@ public class PlayerController : NetworkBehaviour
 
         stunTimer = stunTime; 
     }
+
+    public override void OnStartLocalPlayer()
+    {
+        base.OnStartLocalPlayer();
+
+        Camera mainCam = Camera.main;
+
+        if (mainCam != null)
+        {
+            CameraFollow cam = mainCam.GetComponent<CameraFollow>();
+
+            if (cam == null)
+            {
+                cam = mainCam.gameObject.AddComponent<CameraFollow>();
+            }
+
+            cam.target = transform;
+        }
+    }
 }
