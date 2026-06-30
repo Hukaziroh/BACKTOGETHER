@@ -454,6 +454,10 @@ PrefabInstance:
       propertyPath: endPoint
       value: 
       objectReference: {fileID: 809439360}
+    - target: {fileID: 9200264086415754752, guid: 8894e59eadf2c8b49914c510ceea3eba, type: 3}
+      propertyPath: endPoint
+      value: 
+      objectReference: {fileID: 809439360}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
