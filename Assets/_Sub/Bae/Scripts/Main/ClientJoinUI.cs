@@ -1,6 +1,8 @@
+using System.Collections;
 using UnityEngine;
-using TMPro; 
+using TMPro;
 using Mirror;
+using EpicTransport; 
 
 public class ClientJoinUI : MonoBehaviour
 {
@@ -12,12 +14,24 @@ public class ClientJoinUI : MonoBehaviour
 
         if (!string.IsNullOrEmpty(roomCode))
         {
-            NetworkManager.singleton.networkAddress = roomCode;
-            NetworkManager.singleton.StartClient();
+            StartCoroutine(JoinWhenReady(roomCode));
         }
         else
         {
             Debug.LogWarning("방 코드를 입력해주세요!");
         }
+    }
+
+    private IEnumerator JoinWhenReady(string roomCode)
+    {
+        Debug.Log("에픽 서버 로그인 상태 확인 중...");
+
+        while (string.IsNullOrEmpty(EOSSDKComponent.LocalUserProductIdString))
+        {
+            yield return null;
+        }
+        Debug.Log($"로그인 완료! 방 코드[{roomCode}]로 접속을 시도합니다.");
+        NetworkManager.singleton.networkAddress = roomCode;
+        NetworkManager.singleton.StartClient();
     }
 }
