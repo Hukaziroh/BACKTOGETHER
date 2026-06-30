@@ -25,8 +25,8 @@ public class PlayerController : NetworkBehaviour
     private float ckTimer;
 
     [Header("Trap Settings")]
-    public float knockPowerX = 10f; // 가로로 밀리는 힘
-    public float knockPowerY = 5f;  // 세로로 튀어오르는 힘
+    public float knockPowerX = 10f;
+    public float knockPowerY = 5f;
     public float stunTime = 0.5f;
     private float stunTimer;
 
@@ -39,10 +39,13 @@ public class PlayerController : NetworkBehaviour
     private bool isGrounded;
     private Collider2D playerCollider;
 
+    private Animator anim;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         playerCollider = GetComponent<Collider2D>();
+        anim = GetComponent<Animator>(); 
     }
 
     void Update()
@@ -83,6 +86,15 @@ public class PlayerController : NetworkBehaviour
 
         if (rb.linearVelocity.y < 0f) rb.gravityScale = jumpSpeed * fallSpeed;
         else rb.gravityScale = jumpSpeed;
+
+        anim.SetFloat("Speed", Mathf.Abs(horizontalInput));
+        anim.SetBool("isGrounded", isGrounded);
+
+        // 스턴 상태가 아닐 때만 좌우 방향 뒤집기
+        if (horizontalInput != 0 && stunTimer <= 0f)
+        {
+            transform.localScale = new Vector3(horizontalInput > 0 ? 1 : -1, 1, 1);
+        }
     }
 
     void FixedUpdate()
@@ -90,7 +102,6 @@ public class PlayerController : NetworkBehaviour
         if (!isLocalPlayer) return;
         CheckGroundOrPlayer();
 
-        // 👇 핵심 수정: stunTimer가 0보다 클 때(스턴 중일 때)는 이동 로직을 건너뜁니다!
         if (stunTimer <= 0f)
         {
             rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
@@ -147,15 +158,14 @@ public class PlayerController : NetworkBehaviour
     [ClientRpc]
     void RpcApplyKnockback(Vector2 knockDir)
     {
-        // 1. 현재 속도를 0으로 만들고(리셋)
         rb.linearVelocity = Vector2.zero;
-
-        // 2. 힘을 줍니다.
         Vector2 force = new Vector2(knockDir.x * knockPowerX, knockDir.y * knockPowerY);
         rb.AddForce(force, ForceMode2D.Impulse);
 
-        // 3. 스턴 시간 적용
         stunTimer = stunTime;
+
+        anim.SetTrigger("Hit");
+
         StartCoroutine(DisableColliderForSeconds(0.1f));
     }
 
