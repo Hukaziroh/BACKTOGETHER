@@ -13,7 +13,12 @@ public class CoopMovingLog : NetworkBehaviour
     public Rigidbody2D logRigidbody;
 
     private Vector2 startPos;
+
     private HashSet<GameObject> playersOnLog = new HashSet<GameObject>();
+
+    private bool isLocalPlayerOnLog = false;
+    private Transform localPlayerTransform;
+    private Vector3 lastLogPos;
 
     void Start()
     {
@@ -21,46 +26,66 @@ public class CoopMovingLog : NetworkBehaviour
         {
             startPos = logRigidbody.position;
         }
+        lastLogPos = transform.position;
     }
 
-    [ServerCallback]
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
-            playersOnLog.Add(other.gameObject);
+            if (isServer) playersOnLog.Add(other.gameObject);
+
+            NetworkIdentity ni = other.GetComponent<NetworkIdentity>();
+            if (isClient && ni != null && ni.isLocalPlayer)
+            {
+                isLocalPlayerOnLog = true;
+                localPlayerTransform = other.transform;
+            }
         }
     }
 
-    [ServerCallback]
     private void OnTriggerExit2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
-            playersOnLog.Remove(other.gameObject);
+            if (isServer) playersOnLog.Remove(other.gameObject);
+
+            NetworkIdentity ni = other.GetComponent<NetworkIdentity>();
+            if (isClient && ni != null && ni.isLocalPlayer)
+            {
+                isLocalPlayerOnLog = false;
+                localPlayerTransform = null;
+            }
         }
     }
 
-    [ServerCallback]
     void FixedUpdate()
     {
-        if (logRigidbody == null) return;
-
-        playersOnLog.RemoveWhere(go => go == null || !go.activeInHierarchy);
-
-        Vector2 currentPos = logRigidbody.position;
-        Vector2 targetPos = (playersOnLog.Count >= requiredPlayers) ? (Vector2)endPoint.position : startPos;
-        Vector2 nextPos = Vector2.MoveTowards(currentPos, targetPos, moveSpeed * Time.fixedDeltaTime);
-        Vector2 delta = nextPos - currentPos;
-
-        logRigidbody.MovePosition(nextPos);
-
-        foreach (GameObject player in playersOnLog)
+        if (isServer && logRigidbody != null)
         {
-            if (player != null)
+            playersOnLog.RemoveWhere(go => go == null || !go.activeInHierarchy);
+
+            Vector2 currentPos = logRigidbody.position;
+            Vector2 targetPos = (playersOnLog.Count >= requiredPlayers) ? (Vector2)endPoint.position : startPos;
+            Vector2 nextPos = Vector2.MoveTowards(currentPos, targetPos, moveSpeed * Time.fixedDeltaTime);
+
+            logRigidbody.MovePosition(nextPos);
+        }
+    }
+
+    void LateUpdate()
+    {
+        if (isClient)
+        {
+            Vector3 currentLogPos = transform.position;
+            Vector3 delta = currentLogPos - lastLogPos;
+
+            if (isLocalPlayerOnLog && localPlayerTransform != null)
             {
-                player.transform.position += (Vector3)delta;
+                localPlayerTransform.position += delta;
             }
+
+            lastLogPos = currentLogPos;
         }
     }
 }
