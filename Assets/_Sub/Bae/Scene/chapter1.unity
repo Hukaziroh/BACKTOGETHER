@@ -386,6 +386,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -3171258541976839997, guid: 8894e59eadf2c8b49914c510ceea3eba, type: 3}
+      propertyPath: sceneId
+      value: 2293974692
+      objectReference: {fileID: 0}
     - target: {fileID: 458862060009949889, guid: 8894e59eadf2c8b49914c510ceea3eba, type: 3}
       propertyPath: endPoint
       value: 
@@ -447,6 +451,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 809439360}
     - target: {fileID: 8858396766570817485, guid: 8894e59eadf2c8b49914c510ceea3eba, type: 3}
+      propertyPath: endPoint
+      value: 
+      objectReference: {fileID: 809439360}
+    - target: {fileID: 9200264086415754752, guid: 8894e59eadf2c8b49914c510ceea3eba, type: 3}
       propertyPath: endPoint
       value: 
       objectReference: {fileID: 809439360}
@@ -1496,6 +1504,10 @@ PrefabInstance:
       propertyPath: startPoint
       value: 
       objectReference: {fileID: 1242843663}
+    - target: {fileID: 2654866801861292915, guid: 9bc51a7fd8a2cd746b8dcdec50320ebc, type: 3}
+      propertyPath: bridgePrefab
+      value: 
+      objectReference: {fileID: 1809857314061127941, guid: ededecc4c2c239140983386317382e2e, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1566,6 +1578,10 @@ PrefabInstance:
       propertyPath: startPoint
       value: 
       objectReference: {fileID: 1242843663}
+    - target: {fileID: 2654866801861292915, guid: 9bc51a7fd8a2cd746b8dcdec50320ebc, type: 3}
+      propertyPath: bridgePrefab
+      value: 
+      objectReference: {fileID: 1809857314061127941, guid: ededecc4c2c239140983386317382e2e, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1656,7 +1672,7 @@ GameObject:
   - component: {fileID: 1699388389}
   m_Layer: 0
   m_Name: Tilemap_Spikes
-  m_TagString: Untagged
+  m_TagString: Spike
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
