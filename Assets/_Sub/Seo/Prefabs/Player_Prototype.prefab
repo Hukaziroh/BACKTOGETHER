@@ -228,7 +228,7 @@ MonoBehaviour:
   coyoteTime: 0.15
   jumpBufferTime: 0.2
   superJump: 0.4
-  knockPowerX: 19
+  knockPowerX: 15
   knockPowerY: 25
   stunTime: 0.7
   groundCheck: {fileID: 286342587236517845}

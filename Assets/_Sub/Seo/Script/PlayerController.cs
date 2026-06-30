@@ -47,7 +47,7 @@ public class PlayerController : NetworkBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         playerCollider = GetComponent<Collider2D>();
-        anim = GetComponent<Animator>(); 
+        anim = GetComponent<Animator>();
     }
 
     void Update()
@@ -74,29 +74,29 @@ public class PlayerController : NetworkBehaviour
         else if (stunTimer > 0f)
         {
             // 3. 착지 후 땅에서 기절해 있는 동안
-            stunTimer -= Time.deltaTime; 
+            stunTimer -= Time.deltaTime;
             horizontalInput = 0f;
         }
         else
         {
             // 4. 기절도 끝났고 정상 상태일 때 (기존 조작 로직 그대로)
-            horizontalInput = 0f; 
-            if (Keyboard.current != null) 
+            horizontalInput = 0f;
+            if (Keyboard.current != null)
             {
-                if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) horizontalInput = -1f; //[cite: 1]
-                else if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) horizontalInput = 1f; //[cite: 1]
+                if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) horizontalInput = -1f;
+                else if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) horizontalInput = 1f;
 
-                if (Keyboard.current.spaceKey.wasPressedThisFrame) jumpBufferCounter = jumpBufferTime; 
+                if (Keyboard.current.spaceKey.wasPressedThisFrame) jumpBufferCounter = jumpBufferTime;
                 else jumpBufferCounter -= Time.deltaTime;
 
-                if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f) 
+                if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f)
                 {
-                    Jump(); 
+                    Jump();
                     jumpBufferCounter = 0f;
-                    coyoteTimeCounter = 0f; 
+                    coyoteTimeCounter = 0f;
                 }
-                if (Keyboard.current.spaceKey.wasReleasedThisFrame && rb.linearVelocity.y > 0f) 
-                    rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump); 
+                if (Keyboard.current.spaceKey.wasReleasedThisFrame && rb.linearVelocity.y > 0f)
+                    rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump);
             }
         }
         if (rb.linearVelocity.y < 0f) rb.gravityScale = jumpSpeed * fallSpeed;
@@ -120,6 +120,12 @@ public class PlayerController : NetworkBehaviour
         if (stunTimer <= 0f && !isKnockedBack)
         {
             rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
+        }
+        else if (stunTimer > 0f && !isKnockedBack)
+        {
+            // 🌟 땅에 떨어져서 기절한 상태일 때 서서히 미끄러짐 (스마일모 방식)
+            float slideSpeed = Mathf.Lerp(rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
+            rb.linearVelocity = new Vector2(slideSpeed, rb.linearVelocity.y);
         }
 
         if (rb.linearVelocity.y < -maxFallSpeed)
@@ -173,17 +179,18 @@ public class PlayerController : NetworkBehaviour
     [ClientRpc]
     void RpcApplyKnockback(Vector2 knockDir)
     {
-        rb.linearVelocity = Vector2.zero; 
-        Vector2 force = new Vector2(knockDir.x * knockPowerX, knockDir.y * knockPowerY); 
-        rb.AddForce(force, ForceMode2D.Impulse); 
+        rb.linearVelocity = Vector2.zero;
+        Vector2 force = new Vector2(knockDir.x * knockPowerX, knockDir.y * knockPowerY);
+        rb.AddForce(force, ForceMode2D.Impulse);
 
         isKnockedBack = true;
         stunTimer = 0f;
 
-        anim.SetTrigger("Hit"); 
+        anim.SetTrigger("Hit");
 
-        StartCoroutine(DisableColliderForSeconds(0.1f)); 
+        StartCoroutine(DisableColliderForSeconds(0.1f));
     }
+
     private System.Collections.IEnumerator DisableColliderForSeconds(float seconds)
     {
         playerCollider.enabled = false;
