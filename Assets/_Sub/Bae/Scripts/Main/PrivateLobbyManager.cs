@@ -4,13 +4,14 @@ using Mirror;
 
 public class PrivateLobbyManager : MonoBehaviour
 {
-    [SerializeField] private EOSLobby eosLobby;
 
     public void OnStartPrivateHostClicked()
     {
+        EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
+
         if (eosLobby == null)
         {
-            Debug.LogError("EOSLobby 컴포넌트가 연결되지 않았습니다!");
+            Debug.LogError("NetworkManager에서 EOSLobby 컴포넌트를 찾을 수 없습니다!");
             return;
         }
 
