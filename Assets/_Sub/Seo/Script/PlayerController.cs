@@ -4,16 +4,16 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : NetworkBehaviour
 {
-    [Header("Movement Settings")]
+    [Header("무브")]
     public float moveSpeed = 8f;
 
-    [Header("Jump Settings")]
+    [Header("점프셋팅")]
     public float jumpHeight = 3f;
     public float jumpSpeed = 4f;
     public float fallSpeed = 2.5f;
     public float maxFallSpeed = 20f;
 
-    [Header("Jump Feel Settings")]
+    [Header("점프세부셋팅")]
     public float coyoteTime = 0.15f;
     private float coyoteTimeCounter;
     public float jumpBufferTime = 0.2f;
@@ -24,11 +24,13 @@ public class PlayerController : NetworkBehaviour
     private float jumpCk = 0.1f;
     private float ckTimer;
 
-    [Header("Trap Settings")]
+    [Header("장애물판정")]
     public float knockPowerX = 10f;
     public float knockPowerY = 5f;
     public float stunTime = 0.5f;
     private float stunTimer;
+
+    private bool isKnockedBack = false;
 
     private Rigidbody2D rb;
     private float horizontalInput;
@@ -45,7 +47,7 @@ public class PlayerController : NetworkBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         playerCollider = GetComponent<Collider2D>();
-        anim = GetComponent<Animator>(); 
+        anim = GetComponent<Animator>();
     }
 
     void Update()
@@ -57,13 +59,27 @@ public class PlayerController : NetworkBehaviour
         if (isGrounded && ckTimer <= 0f) coyoteTimeCounter = coyoteTime;
         else coyoteTimeCounter -= Time.deltaTime;
 
-        if (stunTimer > 0f)
+        if (isKnockedBack)
         {
+            // 1. 공중으로 날아가는 동안 조작 불가
+            horizontalInput = 0f;
+
+            // 2. 바닥에 닿았고, 위로 솟구치는 중이 아니라면 (착지 판정)
+            if (isGrounded && rb.linearVelocity.y <= 0.1f)
+            {
+                isKnockedBack = false; // 비행 상태 종료
+                stunTimer = stunTime;  // 땅에 닿은 이 순간부터 스턴 시간(0.5초) 시작
+            }
+        }
+        else if (stunTimer > 0f)
+        {
+            // 3. 착지 후 땅에서 기절해 있는 동안
             stunTimer -= Time.deltaTime;
             horizontalInput = 0f;
         }
         else
         {
+            // 4. 기절도 끝났고 정상 상태일 때 (기존 조작 로직 그대로)
             horizontalInput = 0f;
             if (Keyboard.current != null)
             {
@@ -83,7 +99,6 @@ public class PlayerController : NetworkBehaviour
                     rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump);
             }
         }
-
         if (rb.linearVelocity.y < 0f) rb.gravityScale = jumpSpeed * fallSpeed;
         else rb.gravityScale = jumpSpeed;
 
@@ -102,9 +117,15 @@ public class PlayerController : NetworkBehaviour
         if (!isLocalPlayer) return;
         CheckGroundOrPlayer();
 
-        if (stunTimer <= 0f)
+        if (stunTimer <= 0f && !isKnockedBack)
         {
             rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
+        }
+        else if (stunTimer > 0f && !isKnockedBack)
+        {
+            // 🌟 땅에 떨어져서 기절한 상태일 때 서서히 미끄러짐 (스마일모 방식)
+            float slideSpeed = Mathf.Lerp(rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
+            rb.linearVelocity = new Vector2(slideSpeed, rb.linearVelocity.y);
         }
 
         if (rb.linearVelocity.y < -maxFallSpeed)
@@ -162,7 +183,8 @@ public class PlayerController : NetworkBehaviour
         Vector2 force = new Vector2(knockDir.x * knockPowerX, knockDir.y * knockPowerY);
         rb.AddForce(force, ForceMode2D.Impulse);
 
-        stunTimer = stunTime;
+        isKnockedBack = true;
+        stunTimer = 0f;
 
         anim.SetTrigger("Hit");
 

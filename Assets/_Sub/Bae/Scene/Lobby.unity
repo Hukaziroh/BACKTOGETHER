@@ -457,7 +457,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 768431f2215ee184cb4cb9cd18512e2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LobbyGameStarter
-  gameSceneName: chapter1
+  gameSceneName: chapter2
 --- !u!1 &614928638
 GameObject:
   m_ObjectHideFlags: 0
