@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6581624734982250841}
   - component: {fileID: 3709791003795818089}
   - component: {fileID: 7257518310161370580}
+  - component: {fileID: 561525279299010606}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -65,9 +66,7 @@ MonoBehaviour:
   autoCreatePlayer: 1
   playerSpawnMethod: 0
   spawnPrefabs:
-  - {fileID: 3742478716910255884, guid: 8894e59eadf2c8b49914c510ceea3eba, type: 3}
   - {fileID: 1809857314061127941, guid: ededecc4c2c239140983386317382e2e, type: 3}
-  - {fileID: 20668060265169684, guid: 2b6c56c58878d8644a412602239cb307, type: 3}
   exceptionsDisconnect: 1
   snapshotSettings:
     bufferTimeMultiplier: 2
@@ -140,3 +139,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EOSLobby
   AttributeKeys:
   - lobby_name
+--- !u!114 &561525279299010606
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9010855181338360226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 480ecce4566e76141a5f390cd69a8109, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HostDisconnectHandler
+  lobbySceneName: Test
