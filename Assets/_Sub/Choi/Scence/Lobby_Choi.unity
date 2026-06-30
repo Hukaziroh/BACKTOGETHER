@@ -328,7 +328,7 @@ GameObject:
   - component: {fileID: 184313319}
   - component: {fileID: 184313318}
   m_Layer: 3
-  m_Name: Square (7)
+  m_Name: Kari
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -759,7 +759,7 @@ GameObject:
   - component: {fileID: 801633744}
   - component: {fileID: 801633743}
   m_Layer: 3
-  m_Name: Square (4)
+  m_Name: Aiden
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1121,7 +1121,7 @@ GameObject:
   - component: {fileID: 1191014048}
   - component: {fileID: 1191014047}
   m_Layer: 3
-  m_Name: Square (2)
+  m_Name: Doro
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1319,7 +1319,7 @@ GameObject:
   - component: {fileID: 1339582293}
   - component: {fileID: 1339582292}
   m_Layer: 3
-  m_Name: Square (5)
+  m_Name: Shichun
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1490,7 +1490,7 @@ GameObject:
   - component: {fileID: 1496427213}
   - component: {fileID: 1496427212}
   m_Layer: 3
-  m_Name: Square (6)
+  m_Name: Jaro
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1719,7 +1719,7 @@ GameObject:
   - component: {fileID: 1803453385}
   - component: {fileID: 1803453384}
   m_Layer: 3
-  m_Name: Square
+  m_Name: Angpyung
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1811,7 +1811,7 @@ GameObject:
   - component: {fileID: 1843625065}
   - component: {fileID: 1843625064}
   m_Layer: 3
-  m_Name: Square (3)
+  m_Name: supiki
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
