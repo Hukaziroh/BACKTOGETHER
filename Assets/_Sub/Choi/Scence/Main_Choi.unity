@@ -1582,6 +1582,10 @@ PrefabInstance:
       value: Assets/_Sub/Choi/Scence/Lobby_Choi.unity
       objectReference: {fileID: 0}
     - target: {fileID: 3200176714990393282, guid: 8e4abe2d07381be4a80127c546652040, type: 3}
+      propertyPath: offlineScene
+      value: Assets/_Sub/Choi/Scence/Test_Choi.unity
+      objectReference: {fileID: 0}
+    - target: {fileID: 3200176714990393282, guid: 8e4abe2d07381be4a80127c546652040, type: 3}
       propertyPath: spawnPrefabs.Array.size
       value: 1
       objectReference: {fileID: 0}
