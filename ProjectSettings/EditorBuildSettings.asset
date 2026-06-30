@@ -8,5 +8,14 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Main/Scenes/SampleScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
+  - enabled: 1
+    path: Assets/_Sub/Bae/Scene/Test.unity
+    guid: 52a9bca15e9f5314f9d8ecbc505fb98e
+  - enabled: 1
+    path: Assets/_Sub/Choi/Scence/Lobby_Choi.unity
+    guid: ed1f7e4b044f2894794635ab67263979
+  - enabled: 1
+    path: Assets/_Sub/Bae/Scene/chapter1.unity
+    guid: e3d914786cb1e564bbf8ce84e0678b15
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
