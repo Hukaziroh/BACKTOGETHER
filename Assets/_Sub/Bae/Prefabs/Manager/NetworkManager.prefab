@@ -53,7 +53,7 @@ MonoBehaviour:
   editorAutoStart: 0
   sendRate: 60
   offlineScene: Assets/_Sub/Bae/Scene/Test.unity
-  onlineScene: Assets/_Sub/Bae/Scene/chapter1.unity
+  onlineScene: Assets/_Sub/Bae/Scene/Lobby.unity
   offlineSceneLoadDelay: 0
   transport: {fileID: 3709791003795818089}
   networkAddress: localhost
@@ -64,7 +64,10 @@ MonoBehaviour:
   playerPrefab: {fileID: 8453197966436518037, guid: e666d40d5abfae548b5224eb92f79fbf, type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
-  spawnPrefabs: []
+  spawnPrefabs:
+  - {fileID: 3742478716910255884, guid: 8894e59eadf2c8b49914c510ceea3eba, type: 3}
+  - {fileID: 1809857314061127941, guid: ededecc4c2c239140983386317382e2e, type: 3}
+  - {fileID: 20668060265169684, guid: 2b6c56c58878d8644a412602239cb307, type: 3}
   exceptionsDisconnect: 1
   snapshotSettings:
     bufferTimeMultiplier: 2
