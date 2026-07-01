@@ -201,7 +201,7 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 2
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 4
@@ -267,23 +267,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Mirror.Components::Mirror.NetworkTransformUnreliable
   syncDirection: 1
   syncMode: 0
-  syncInterval: 0
+  syncInterval: 0.05
   target: {fileID: 6667347122069961916}
   syncPosition: 1
   syncRotation: 0
   syncScale: 0
   onlySyncOnChange: 1
   compressRotation: 1
-  interpolatePosition: 1
-  interpolateRotation: 1
-  interpolateScale: 1
+  interpolatePosition: 0
+  interpolateRotation: 0
+  interpolateScale: 0
   coordinateSpace: 0
   timelineOffset: 1
   showGizmos: 0
   showOverlay: 0
   overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
   bufferResetMultiplier: 3
-  useFixedUpdate: 0
+  useFixedUpdate: 1
   positionSensitivity: 0.01
   rotationSensitivity: 0.01
   scaleSensitivity: 0.01
