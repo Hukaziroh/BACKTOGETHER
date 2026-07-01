@@ -846,26 +846,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!114 &177455105
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1203330522331561983}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9e2d20b2d8aa234eb0a997d8a945069, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CoopPatrolPlatform
-  syncDirection: 0
-  syncMode: 0
-  syncInterval: 0
-  startPoint: {fileID: 1207017376}
-  endPoint: {fileID: 1623562284}
-  moveSpeed: 2
-  requiredPlayers: 1
-  platformRigidbody: {fileID: 177455104}
 --- !u!50 &249962986
 Rigidbody2D:
   serializedVersion: 5
@@ -19724,12 +19704,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1955070955263460229}
-  - component: {fileID: 177455105}
   - component: {fileID: 177455104}
   - component: {fileID: 177455103}
   - component: {fileID: 177455102}
   - component: {fileID: 177455101}
   - component: {fileID: 177455100}
+  - component: {fileID: 1955070955263460230}
   m_Layer: 3
   m_Name: "\uC778\uC6D04 / 1\uD68C \uC655\uBCF5"
   m_TagString: Untagged
@@ -20118,6 +20098,26 @@ Transform:
   - {fileID: 4947199517512554866}
   m_Father: {fileID: 1811623665}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1955070955263460230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1203330522331561983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce72eb629eccb374d8e69a3be809f597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoopRoundTripPlatform
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  startPoint: {fileID: 1207017376}
+  endPoint: {fileID: 1623562284}
+  moveSpeed: 2
+  requiredPlayers: 1
+  platformRigidbody: {fileID: 177455104}
 --- !u!212 &4303638917932980695
 SpriteRenderer:
   serializedVersion: 3
@@ -20474,9 +20474,6 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1203330522154434566, guid: 7b38ba8f2101479488f85ad05ca10568, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6253726046169652269}
-    - targetCorrespondingSourceObject: {fileID: 1203330522154434566, guid: 7b38ba8f2101479488f85ad05ca10568, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 6253726046169652268}
     - targetCorrespondingSourceObject: {fileID: 1203330522154434566, guid: 7b38ba8f2101479488f85ad05ca10568, type: 3}
       insertIndex: -1
@@ -20490,6 +20487,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1203330522154434566, guid: 7b38ba8f2101479488f85ad05ca10568, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6253726046169652272}
+    - targetCorrespondingSourceObject: {fileID: 1203330522154434566, guid: 7b38ba8f2101479488f85ad05ca10568, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6253726046169652273}
   m_SourcePrefab: {fileID: 100100000, guid: 7b38ba8f2101479488f85ad05ca10568, type: 3}
 --- !u!4 &6253726046169652265 stripped
 Transform:
@@ -20552,26 +20552,6 @@ MonoBehaviour:
   serverOnly: 0
   visibility: 0
   hasSpawned: 0
---- !u!114 &6253726046169652269
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6253726046169652266}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9e2d20b2d8aa234eb0a997d8a945069, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CoopPatrolPlatform
-  syncDirection: 0
-  syncMode: 0
-  syncInterval: 0
-  startPoint: {fileID: 1963704858}
-  endPoint: {fileID: 540560347}
-  moveSpeed: 2
-  requiredPlayers: 1
-  platformRigidbody: {fileID: 6253726046169652271}
 --- !u!61 &6253726046169652270
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -20691,6 +20671,26 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1.9830937, y: 0.69960976}
   m_EdgeRadius: 0
+--- !u!114 &6253726046169652273
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6253726046169652266}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce72eb629eccb374d8e69a3be809f597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoopRoundTripPlatform
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  startPoint: {fileID: 1963704858}
+  endPoint: {fileID: 540560347}
+  moveSpeed: 2
+  requiredPlayers: 1
+  platformRigidbody: {fileID: 6253726046169652271}
 --- !u!1 &7328712849301546104
 GameObject:
   m_ObjectHideFlags: 0
