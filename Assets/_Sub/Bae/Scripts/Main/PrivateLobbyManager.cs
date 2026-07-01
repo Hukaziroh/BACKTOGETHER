@@ -1,10 +1,10 @@
 using UnityEngine;
 using EpicTransport;
 using Mirror;
+using System.Collections;
 
 public class PrivateLobbyManager : MonoBehaviour
 {
-
     public void OnStartPrivateHostClicked()
     {
         EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
@@ -20,6 +20,14 @@ public class PrivateLobbyManager : MonoBehaviour
         bool presenceEnabled = true;
 
         eosLobby.CreateLobby(maxPlayers, permissionLevel, presenceEnabled);
+        StartCoroutine(StartHostWithDelay());
+    }
+
+    private IEnumerator StartHostWithDelay()
+    {
+        yield return new WaitForSeconds(0.3f);
+
+        Debug.Log("에픽 세션 안정화 확인 - Mirror 호스트를 시작합니다.");
         NetworkManager.singleton.StartHost();
     }
 }
