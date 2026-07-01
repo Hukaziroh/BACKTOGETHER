@@ -10,6 +10,12 @@ public class PlayerController : NetworkBehaviour
     [Header("무브")]
     public float moveSpeed = 8f;
 
+    // 🌟 가짜 마찰력/관성 셋팅
+    [Header("관성 및 미끄러짐 셋팅")]
+    public float normalFriction = 20f;   // 일반 땅: 즉시 멈춤급
+    public float iceSlideFriction = 3f;  // 빙판: 쭈욱 미끄러짐
+    public float airFriction = 3f;       // 공중: 미끄러짐 유지
+
     [Header("점프셋팅")]
     public float jumpHeight = 3f;
     public float jumpSpeed = 4f;
@@ -42,6 +48,8 @@ public class PlayerController : NetworkBehaviour
     public float checkRadius = 0.2f;
     public LayerMask groundLayer;
     private bool isGrounded;
+    private bool isOnIce = false;
+    private bool wasOnIceLastFrame = false; // 공중 관성 유지용
     private Collider2D playerCollider;
 
     private Animator anim;
@@ -68,25 +76,20 @@ public class PlayerController : NetworkBehaviour
 
         if (isKnockedBack)
         {
-            // 1. 공중으로 날아가는 동안 조작 불가
             horizontalInput = 0f;
-
-            // 2. 바닥에 닿았고, 위로 솟구치는 중이 아니라면 (착지 판정)
             if (isGrounded && rb.linearVelocity.y <= 0.1f)
             {
-                isKnockedBack = false; // 비행 상태 종료
-                stunTimer = stunTime;  // 땅에 닿은 이 순간부터 스턴 시간(0.5초) 시작
+                isKnockedBack = false;
+                stunTimer = stunTime;
             }
         }
         else if (stunTimer > 0f)
         {
-            // 3. 착지 후 땅에서 기절해 있는 동안
             stunTimer -= Time.deltaTime;
             horizontalInput = 0f;
         }
         else
         {
-            // 4. 기절도 끝났고 정상 상태일 때 (기존 조작 로직 그대로)
             horizontalInput = 0f;
             if (Keyboard.current != null)
             {
@@ -112,17 +115,12 @@ public class PlayerController : NetworkBehaviour
         anim.SetFloat("Speed", Mathf.Abs(horizontalInput));
         anim.SetBool("isGrounded", isGrounded);
 
-        // 스턴 상태가 아닐 때만 좌우 방향 뒤집기
         if (horizontalInput != 0 && stunTimer <= 0f)
-        {
             transform.localScale = new Vector3(horizontalInput > 0 ? 1 : -1, 1, 1);
-        }
 
-        if (transform.position.y < -30f)
-        {
-            Respawn();
-        }
+        if (transform.position.y < -30f) Respawn();
     }
+
     public void SetSpawnPoint(Vector3 newPoint)
     {
         if (!isLocalPlayer) return;
@@ -134,10 +132,11 @@ public class PlayerController : NetworkBehaviour
         if (!isLocalPlayer) return;
 
         transform.position = currentSpawnPoint;
-        rb.linearVelocity = Vector2.zero; // 날아가던 관성 초기화
-        isKnockedBack = false;            // 넉백 상태 강제 해제
-        stunTimer = 0f;                   // 스턴 상태 강제 해제
+        rb.linearVelocity = Vector2.zero;
+        isKnockedBack = false;
+        stunTimer = 0f;
     }
+
     void FixedUpdate()
     {
         if (!isLocalPlayer) return;
@@ -145,13 +144,17 @@ public class PlayerController : NetworkBehaviour
 
         if (stunTimer <= 0f && !isKnockedBack)
         {
-            // 💡 핵심: 키보드 이동 속도 + 움직이는 발판 속도 + 눈보라 바람 속도 
             float targetVelocityX = (horizontalInput * moveSpeed) + platformVelocity.x + windVelocity;
-            rb.linearVelocity = new Vector2(targetVelocityX, rb.linearVelocity.y);
+
+            // 🌟 보간(Lerp) 대입 방식: 네트워크 최적화 및 미끄러짐 구현
+            bool isSlippery = isOnIce || (!isGrounded && wasOnIceLastFrame);
+            float currentFriction = isSlippery ? (isGrounded ? iceSlideFriction : airFriction) : normalFriction;
+
+            float smoothedVelocityX = Mathf.Lerp(rb.linearVelocity.x, targetVelocityX, currentFriction * Time.fixedDeltaTime);
+            rb.linearVelocity = new Vector2(smoothedVelocityX, rb.linearVelocity.y);
         }
         else if (stunTimer > 0f && !isKnockedBack)
         {
-            // 🌟 땅에 떨어져서 기절한 상태일 때 서서히 미끄러짐 (스마일모 방식)
             float slideSpeed = Mathf.Lerp(rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
             rb.linearVelocity = new Vector2(slideSpeed, rb.linearVelocity.y);
         }
@@ -168,23 +171,22 @@ public class PlayerController : NetworkBehaviour
         isGrounded = false;
         platformVelocity = Vector2.zero;
 
+        bool currentOnIce = false;
         foreach (var col in colliders)
         {
             if (col.gameObject == gameObject) continue;
-
             if (col.isTrigger) continue;
 
             if (((1 << col.gameObject.layer) & groundLayer) != 0 || col.CompareTag("Player"))
             {
                 isGrounded = true;
-
-                if (col.TryGetComponent<CoopPatrolPlatform>(out var platform))
-                {
-                    platformVelocity = platform.CurrentVelocity;
-                }
+                if (col.CompareTag("Ice")) currentOnIce = true;
+                if (col.TryGetComponent<CoopPatrolPlatform>(out var platform)) platformVelocity = platform.CurrentVelocity;
                 break;
             }
         }
+        isOnIce = currentOnIce;
+        if (isGrounded) wasOnIceLastFrame = isOnIce;
     }
 
     void Jump()
@@ -198,7 +200,6 @@ public class PlayerController : NetworkBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (!isLocalPlayer) return;
-
         if (collision.gameObject.CompareTag("Spike"))
         {
             Vector2 knockDir = new Vector2(-1f, 0.5f);
@@ -207,23 +208,16 @@ public class PlayerController : NetworkBehaviour
     }
 
     [Command]
-    void CmdTakeKnockback(Vector2 knockDir)
-    {
-        RpcApplyKnockback(knockDir);
-    }
+    void CmdTakeKnockback(Vector2 knockDir) { RpcApplyKnockback(knockDir); }
 
     [ClientRpc]
     void RpcApplyKnockback(Vector2 knockDir)
     {
         rb.linearVelocity = Vector2.zero;
-        Vector2 force = new Vector2(knockDir.x * knockPowerX, knockDir.y * knockPowerY);
-        rb.AddForce(force, ForceMode2D.Impulse);
-
+        rb.AddForce(new Vector2(knockDir.x * knockPowerX, knockDir.y * knockPowerY), ForceMode2D.Impulse);
         isKnockedBack = true;
         stunTimer = 0f;
-
         anim.SetTrigger("Hit");
-
         StartCoroutine(DisableColliderForSeconds(0.1f));
     }
 
@@ -237,9 +231,7 @@ public class PlayerController : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
-
         currentSpawnPoint = transform.position;
-
         Camera mainCam = Camera.main;
         if (mainCam != null)
         {
