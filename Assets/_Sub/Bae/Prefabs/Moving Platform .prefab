@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6134693900251518701}
   - component: {fileID: 8248913382186449477}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: bridgeLogs_0 (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -107,7 +107,7 @@ GameObject:
   - component: {fileID: 9200264086415754752}
   - component: {fileID: 1553365075801986626}
   - component: {fileID: 6905128145434088713}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: 'Moving Platform '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -191,7 +191,7 @@ BoxCollider2D:
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 1b82a4cf7e4e4874a83ad0b783ff1132, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -211,11 +211,11 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.06}
+  m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -225,7 +225,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 3.03, y: 0.39}
+  m_Size: {x: 3.01, y: 0.3}
   m_EdgeRadius: 0
 --- !u!114 &9200264086415754752
 MonoBehaviour:
@@ -276,7 +276,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -290,7 +290,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 3.04, y: 0.39}
+  m_Size: {x: 3.05, y: 0.39}
   m_EdgeRadius: 0
 --- !u!50 &6905128145434088713
 Rigidbody2D:
@@ -317,7 +317,7 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 0
 --- !u!1 &6809705956519225087
 GameObject:
@@ -329,7 +329,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5873563619152498455}
   - component: {fileID: 2638235011440814577}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: bridgeLogs_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -420,7 +420,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8406299567546664292}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Sensor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -455,7 +455,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5284381725433809939}
   - component: {fileID: 6923445788128088687}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: bridgeLogs_0 (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
