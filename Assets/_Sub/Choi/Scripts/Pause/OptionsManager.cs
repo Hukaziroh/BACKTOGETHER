@@ -4,22 +4,35 @@ using UnityEngine.Audio;
 
 public class OptionsManager : MonoBehaviour
 {
+    public static OptionsManager instance;
+
     public AudioMixer audioMixer;
     public Slider volumeSlider;
     public Toggle fullscreenToggle;
 
+    void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
     void Start()
     {
-        // 초기 설정값 로드
+        // 초기값 설정
         fullscreenToggle.isOn = Screen.fullScreen;
-
-        // 슬라이더 초기값 (기본 1.0으로 설정)
         volumeSlider.onValueChanged.AddListener(SetVolume);
+        fullscreenToggle.onValueChanged.AddListener(SetFullscreen);
     }
 
     public void SetVolume(float volume)
     {
-        // 로그 스케일로 변환하여 자연스러운 볼륨 제어
         float db = Mathf.Log10(Mathf.Max(volume, 0.0001f)) * 20;
         audioMixer.SetFloat("Volume", db);
     }
