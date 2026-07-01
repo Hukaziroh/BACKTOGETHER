@@ -49,6 +49,7 @@ GameObject:
   - component: {fileID: 547612548421089118}
   - component: {fileID: 248398996547530553}
   - component: {fileID: 2869323719728458929}
+  - component: {fileID: 482020171129518740}
   m_Layer: 0
   m_Name: Player_Prototype
   m_TagString: Player
@@ -220,7 +221,11 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
+  currentSpawnPoint: {x: 0, y: 0, z: 0}
   moveSpeed: 8
+  normalFriction: 20
+  iceSlideFriction: 3
+  airFriction: 3
   jumpHeight: 4
   jumpSpeed: 4
   fallSpeed: 2.5
@@ -236,6 +241,7 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
+  windVelocity: 0
 --- !u!114 &5497672478635760991
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -341,3 +347,19 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &482020171129518740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8453197966436518037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eca92368847c000408e19c79168a363a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoopLateJoinHandler
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  lobbySceneName: Main
