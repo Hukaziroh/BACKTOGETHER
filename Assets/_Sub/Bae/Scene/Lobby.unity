@@ -598,7 +598,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb924eae58a43be44b060381701480fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HostLobbyUI
-  roomCodeText: {fileID: 614928639}
+  roomCodeText: {fileID: 1415804501}
 --- !u!4 &479596965
 Transform:
   m_ObjectHideFlags: 0
@@ -660,7 +660,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  playerCountText: {fileID: 882550078}
+  playerCountText: {fileID: 1415804500}
   playerCount: 0
 --- !u!114 &479596969
 MonoBehaviour:
@@ -1583,6 +1583,28 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1381074218888706539, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
   m_PrefabInstance: {fileID: 1415804497}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1415804500 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1594833032769272802, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+  m_PrefabInstance: {fileID: 1415804497}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+--- !u!114 &1415804501 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4215164014586056991, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+  m_PrefabInstance: {fileID: 1415804497}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!1 &1593055588
 GameObject:
   m_ObjectHideFlags: 0
