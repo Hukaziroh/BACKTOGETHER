@@ -43,6 +43,10 @@ public class PlayerController : NetworkBehaviour
 
     private Animator anim;
 
+    // 💡 눈보라(바람) 속도 및 발판 속도 변수
+    public float windVelocity = 0f;
+    private Vector2 platformVelocity = Vector2.zero;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -119,7 +123,9 @@ public class PlayerController : NetworkBehaviour
 
         if (stunTimer <= 0f && !isKnockedBack)
         {
-            rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
+            // 💡 핵심: 키보드 이동 속도 + 움직이는 발판 속도 + 눈보라 바람 속도 
+            float targetVelocityX = (horizontalInput * moveSpeed) + platformVelocity.x + windVelocity;
+            rb.linearVelocity = new Vector2(targetVelocityX, rb.linearVelocity.y);
         }
         else if (stunTimer > 0f && !isKnockedBack)
         {
@@ -138,15 +144,23 @@ public class PlayerController : NetworkBehaviour
     {
         Collider2D[] colliders = Physics2D.OverlapCircleAll(groundCheck.position, checkRadius);
         isGrounded = false;
+        platformVelocity = Vector2.zero;
+
         foreach (var col in colliders)
         {
-            if (col.gameObject != gameObject)
+            if (col.gameObject == gameObject) continue;
+
+            if (col.isTrigger) continue;
+
+            if (((1 << col.gameObject.layer) & groundLayer) != 0 || col.CompareTag("Player"))
             {
-                if (((1 << col.gameObject.layer) & groundLayer) != 0 || col.CompareTag("Player"))
+                isGrounded = true;
+
+                if (col.TryGetComponent<CoopPatrolPlatform>(out var platform))
                 {
-                    isGrounded = true;
-                    break;
+                    platformVelocity = platform.CurrentVelocity;
                 }
+                break;
             }
         }
     }
