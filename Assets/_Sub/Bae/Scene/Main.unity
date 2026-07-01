@@ -4981,7 +4981,7 @@ PrefabInstance:
     - target: {fileID: 561525279299010606, guid: 8e4abe2d07381be4a80127c546652040, type: 3}
       propertyPath: disconnectPanel
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 8279698965767927787, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
     - target: {fileID: 3200176714990393282, guid: 8e4abe2d07381be4a80127c546652040, type: 3}
       propertyPath: onlineScene
       value: Assets/_Sub/Bae/Scene/Lobby.unity
