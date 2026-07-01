@@ -4,6 +4,9 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : NetworkBehaviour
 {
+    [Header("스폰 시스템")]
+    public Vector3 currentSpawnPoint;
+
     [Header("무브")]
     public float moveSpeed = 8f;
 
@@ -114,8 +117,27 @@ public class PlayerController : NetworkBehaviour
         {
             transform.localScale = new Vector3(horizontalInput > 0 ? 1 : -1, 1, 1);
         }
+
+        if (transform.position.y < -30f)
+        {
+            Respawn();
+        }
+    }
+    public void SetSpawnPoint(Vector3 newPoint)
+    {
+        if (!isLocalPlayer) return;
+        currentSpawnPoint = newPoint;
     }
 
+    public void Respawn()
+    {
+        if (!isLocalPlayer) return;
+
+        transform.position = currentSpawnPoint;
+        rb.linearVelocity = Vector2.zero; // 날아가던 관성 초기화
+        isKnockedBack = false;            // 넉백 상태 강제 해제
+        stunTimer = 0f;                   // 스턴 상태 강제 해제
+    }
     void FixedUpdate()
     {
         if (!isLocalPlayer) return;
@@ -215,6 +237,9 @@ public class PlayerController : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
+
+        currentSpawnPoint = transform.position;
+
         Camera mainCam = Camera.main;
         if (mainCam != null)
         {

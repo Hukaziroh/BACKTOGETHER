@@ -23,7 +23,7 @@ MonoBehaviour:
   m_OverrideGlobalSceneList: 1
   m_Scenes:
   - m_enabled: 1
-    m_path: Assets/_Sub/Bae/Scene/Test.unity
+    m_path: Assets/_Sub/Bae/Scene/Main.unity
     m_guid: 52a9bca15e9f5314f9d8ecbc505fb98e
   - m_enabled: 1
     m_path: Assets/_Sub/Bae/Scene/Lobby.unity
@@ -34,6 +34,9 @@ MonoBehaviour:
   - m_enabled: 1
     m_path: Assets/_Sub/Bae/Scene/chapter2.unity
     m_guid: 14fa4e7c044e77548a6a7e6c7c85bbaa
+  - m_enabled: 1
+    m_path: Assets/_Sub/Bae/Scene/chapter3.unity
+    m_guid: 064504b666050754088c5831562872a3
   m_HasScriptingDefines: 0
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:
