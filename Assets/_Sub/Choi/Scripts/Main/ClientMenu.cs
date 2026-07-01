@@ -7,6 +7,7 @@ public class ClientMenu : MonoBehaviour
     public TMP_InputField roomCodeInput;
     public GameObject ClientPanel;
     public GameObject ConnectPanel;
+    public GameObject optionsPanel;
 
     public void OpenClientPanel()
     {
@@ -18,6 +19,12 @@ public class ClientMenu : MonoBehaviour
     {
         if (ConnectPanel != null) ConnectPanel.SetActive(true);
         if (ClientPanel != null) ClientPanel.SetActive(false);
+    }
+
+    public void OpenOptionPanel()
+    {
+        if (ConnectPanel != null) ConnectPanel.SetActive(false);
+        if (optionsPanel != null) optionsPanel.SetActive(true);
     }
 
     // 붙여넣기 전용 기능
