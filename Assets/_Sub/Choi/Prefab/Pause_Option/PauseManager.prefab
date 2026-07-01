@@ -46,3 +46,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PauseManager
   pausePanel: {fileID: 0}
   optionsPanel: {fileID: 0}
+  mainMenuSceneName: Main
