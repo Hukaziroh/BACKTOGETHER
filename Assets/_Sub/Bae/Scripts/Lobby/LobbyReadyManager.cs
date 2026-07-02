@@ -10,12 +10,11 @@ public class LobbyReadyManager : MonoBehaviour
     public Button startGameButton;
 
     [Tooltip("클라이언트 전용: '준비하기(Ready)' 버튼을 연결하세요.")]
-    public Button readyButton; 
+    public Button readyButton;
 
     [Tooltip("'준비 완료: 2 / 4' 같은 텍스트를 띄울 TMP를 연결하세요.")]
     public TextMeshProUGUI readySummaryText;
-
-    void Start()
+    void Update()
     {
         UpdateLobbyUI();
     }
@@ -24,12 +23,20 @@ public class LobbyReadyManager : MonoBehaviour
     {
         CoopPlayerIdentity[] players = FindObjectsByType<CoopPlayerIdentity>(FindObjectsSortMode.None);
 
-        int readyCount = 1;
+        int readyCount = 0;
         int totalPlayers = players.Length;
+        bool allReady = true;
 
         foreach (var p in players)
         {
-            if (p.isReady) readyCount++;
+            if (p.isServer || p.isReady)
+            {
+                readyCount++;
+            }
+            else
+            {
+                allReady = false;
+            }
         }
 
         if (readySummaryText != null)
@@ -37,36 +44,24 @@ public class LobbyReadyManager : MonoBehaviour
             readySummaryText.text = $"Ready: {readyCount} / {totalPlayers}";
         }
 
-        UpdateStartButtonState();
+        UpdateStartButtonState(allReady, totalPlayers);
     }
 
-    public void UpdateStartButtonState()
+    public void UpdateStartButtonState(bool allReady, int totalPlayers)
     {
-        if (NetworkServer.active)
+        if (NetworkServer.active) 
         {
-            if (startGameButton != null) startGameButton.gameObject.SetActive(true); 
-            if (readyButton != null) readyButton.gameObject.SetActive(false);    
+            if (startGameButton != null) startGameButton.gameObject.SetActive(true);
+            if (readyButton != null) readyButton.gameObject.SetActive(false);
 
-        
-            CoopPlayerIdentity[] players = FindObjectsByType<CoopPlayerIdentity>(FindObjectsSortMode.None);
-            bool allReady = true;
+            // if (totalPlayers <= 1) allReady = false;
 
-            //if (players.Length <= 1) allReady = false;
-
-            foreach (var p in players)
-            {
-                if (!p.isServer && !p.isReady)
-                {
-                    allReady = false;
-                    break;
-                }
-            }
             if (startGameButton != null) startGameButton.interactable = allReady;
         }
-        else
+        else 
         {
-            if (startGameButton != null) startGameButton.gameObject.SetActive(false); 
-            if (readyButton != null) readyButton.gameObject.SetActive(true);       
+            if (startGameButton != null) startGameButton.gameObject.SetActive(false);
+            if (readyButton != null) readyButton.gameObject.SetActive(true);
 
             if (NetworkClient.localPlayer != null)
             {
