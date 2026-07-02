@@ -53,8 +53,8 @@ MonoBehaviour:
   headlessStartMode: 0
   editorAutoStart: 0
   sendRate: 60
-  offlineScene: Assets/_Sub/Bae/Scene/Test.unity
-  onlineScene: Assets/_Sub/Choi/Scence/Lobby_Choi.unity
+  offlineScene: Assets/_Sub/Bae/Scene/Main.unity
+  onlineScene: Assets/_Sub/Bae/Scene/Lobby.unity
   offlineSceneLoadDelay: 0
   transport: {fileID: 3709791003795818089}
   networkAddress: localhost
@@ -103,7 +103,7 @@ MonoBehaviour:
   deviceModel: PC Windows 64bit
   displayName: User
   epicLoggerLevel: 200
-  collectPlayerMetrics: 1
+  collectPlayerMetrics: 0
   checkForEpicLauncherAndRestart: 0
   delayedInitialization: 0
   platformTickIntervalInSeconds: 0
@@ -151,5 +151,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 480ecce4566e76141a5f390cd69a8109, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HostDisconnectHandler
-  disconnectPanel: {fileID: 0}
+  disconnectPanel: {fileID: 8279698965767927787, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
   lobbySceneName: Test
