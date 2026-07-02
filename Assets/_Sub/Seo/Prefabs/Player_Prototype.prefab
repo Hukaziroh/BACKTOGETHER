@@ -51,6 +51,7 @@ GameObject:
   - component: {fileID: 2869323719728458929}
   - component: {fileID: 482020171129518740}
   - component: {fileID: -1273853388529381942}
+  - component: {fileID: 3358145353756136941}
   m_Layer: 0
   m_Name: Player_Prototype
   m_TagString: Player
@@ -380,9 +381,28 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   playerSpriteRenderer: {fileID: 7935671347292049978}
-  playerSprites:
-  - {fileID: -8361188048454911780, guid: 37c2777dcc877a74394c59bc755c43cf, type: 3}
-  - {fileID: 4917779899663619797, guid: 2d06ee7c1775ec448b0942c0e35d9ec7, type: 3}
-  - {fileID: -3767049706901488578, guid: 93306d71a69f48843a815aecccc5c523, type: 3}
-  - {fileID: 2063359332131475940, guid: 50d5400a250266f408ddaa226b08c6e6, type: 3}
+  playerColors:
+  - {r: 1, g: 1, b: 1, a: 1}
+  - {r: 1, g: 0.5, b: 0.5, a: 1}
+  - {r: 0.5, g: 0.5, b: 1, a: 1}
+  - {r: 0.5, g: 1, b: 0.5, a: 1}
   playerIndex: -1
+  isReady: 0
+--- !u!114 &3358145353756136941
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8453197966436518037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c130f611aa15c924da56e84939e3954e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCombineHandler
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  isCombined: 0
+  myRole: 
+  bodyTarget: {fileID: 0}
