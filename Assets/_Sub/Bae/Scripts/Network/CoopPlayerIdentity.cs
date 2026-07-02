@@ -6,11 +6,17 @@ public class CoopPlayerIdentity : NetworkBehaviour
     [Header("비주얼 설정")]
     public SpriteRenderer playerSpriteRenderer;
 
-    [Tooltip("1P, 2P, 3P, 4P 순서대로 사용할 스프라이트 4개를 넣어주세요.")]
-    public Sprite[] playerSprites = new Sprite[4];
+    [Tooltip("1P, 2P, 3P, 4P 순서대로 캐릭터에 입힐 색상을 지정해주세요.")]
+    public Color[] playerColors = new Color[]
+    {
+        Color.white,              
+        new Color(1f, 0.5f, 0.5f),
+        new Color(0.5f, 0.5f, 1f), 
+        new Color(0.5f, 1f, 0.5f) 
+    };
 
     [SyncVar(hook = nameof(OnPlayerIndexChanged))]
-    public int playerIndex = -1; 
+    public int playerIndex = -1;
 
     public override void OnStartServer()
     {
@@ -30,7 +36,7 @@ public class CoopPlayerIdentity : NetworkBehaviour
     [Server]
     private void AssignAvailableIndex()
     {
-        CoopPlayerIdentity[] allPlayers = FindObjectsByType<CoopPlayerIdentity>();
+        CoopPlayerIdentity[] allPlayers = FindObjectsByType<CoopPlayerIdentity>(FindObjectsSortMode.None);
 
         bool[] isIndexTaken = new bool[4];
 
@@ -46,8 +52,10 @@ public class CoopPlayerIdentity : NetworkBehaviour
         {
             if (!isIndexTaken[i])
             {
-                playerIndex = i; 
-                Debug.Log($"[플레이어 생성] {i + 1}P 번호가 부여되었습니다. (ID: {netId})");
+                playerIndex = i;
+                if (isClient) UpdatePlayerVisual(playerIndex);
+
+                Debug.Log($"[플레이어 생성] {i + 1}P 번호가 부여되었습니다.");
                 break;
             }
         }
@@ -62,20 +70,13 @@ public class CoopPlayerIdentity : NetworkBehaviour
     {
         if (playerSpriteRenderer == null) return;
 
-        if (index >= 0 && index < playerSprites.Length)
+        if (index >= 0 && index < playerColors.Length)
         {
-            if (playerSprites[index] != null)
-            {
-                playerSpriteRenderer.sprite = playerSprites[index];
-
-                // 팁: 만약 캐릭터 이미지 파일이 하나고 '색상만' 바꾸고 싶다면 아래 코드
-                // Color[] pColors = { Color.red, Color.blue, Color.yellow, Color.green };
-                // playerSpriteRenderer.color = pColors[index];
-            }
-            else
-            {
-                Debug.LogWarning($"{index + 1}P에 지정된 스프라이트(이미지)가 없습니다!");
-            }
+            playerSpriteRenderer.color = playerColors[index];
+        }
+        else
+        {
+            Debug.LogWarning($"{index + 1}P에 지정된 색상이 없습니다!");
         }
     }
 }
