@@ -840,6 +840,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: StartGame
       objectReference: {fileID: 0}
+    - target: {fileID: 6939290752242453789, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
+      value: TestMap
+      objectReference: {fileID: 0}
     - target: {fileID: 7060667796035086083, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -1361,38 +1365,30 @@ PrefabInstance:
       propertyPath: m_Name
       value: LobbyPanel
       objectReference: {fileID: 0}
-    - target: {fileID: 1381074218888706539, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2058205521558540957, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2058205521558540957, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -142.9
-      objectReference: {fileID: 0}
     - target: {fileID: 3893653936201414830, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 479596964}
-    - target: {fileID: 3893653936201414830, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+    - target: {fileID: 4208038018234560144, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4208038018234560144, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 479596970}
+    - target: {fileID: 4208038018234560144, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnCopyButtonClicked
+      value: ReturnToMainMenu
+      objectReference: {fileID: 0}
+    - target: {fileID: 4208038018234560144, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
+      value: Main
       objectReference: {fileID: 0}
     - target: {fileID: 4383775811692024024, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 479596970}
-    - target: {fileID: 4383775811692024024, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: RequestOpenChapter
-      objectReference: {fileID: 0}
-    - target: {fileID: 4383775811692024024, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: LobbyManager, Assembly-CSharp
-      objectReference: {fileID: 0}
     - target: {fileID: 7936479838601238568, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
