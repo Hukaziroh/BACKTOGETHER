@@ -1,30 +1,42 @@
 using UnityEngine;
 using Mirror;
 using System.Collections;
-using System.Collections.Generic; // HashSet 사용을 위해 추가
+using System.Collections.Generic;
+using TMPro; // TMP 사용을 위해 추가
 
 public class StageDoor : NetworkBehaviour
 {
+    [Header("설정")]
     public GameObject fanfarePrefab;
     public string lobbySceneName = "Lobby";
-    public GameObject clearTextUI;
     public float floatSpeed = 2f;
+
+    [Header("UI 요소")]
+    public GameObject clearTextUI;  // 클리어 시 나타날 텍스트 오브젝트
+    public TMP_Text countText;      // 현재 도착 인원 표시용 TMP 텍스트
 
     // 도착한 플레이어들을 저장할 서버 전용 리스트
     private HashSet<uint> arrivedPlayers = new HashSet<uint>();
 
+    void Start()
+    {
+        // 처음에는 카운트 텍스트를 숨김
+        if (countText != null) countText.gameObject.SetActive(false);
+        if (clearTextUI != null) clearTextUI.SetActive(false);
+    }
+
     [ServerCallback]
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // NetworkIdentity를 통해 플레이어 고유 ID(netId) 가져오기
         NetworkIdentity identity = collision.GetComponent<NetworkIdentity>();
         if (identity != null && collision.CompareTag("Player"))
         {
-            // 이미 도착한 플레이어인지 확인
             if (!arrivedPlayers.Contains(identity.netId))
             {
                 arrivedPlayers.Add(identity.netId);
-                Debug.Log($"플레이어 {identity.netId} 도착! ({arrivedPlayers.Count} / {NetworkServer.connections.Count})");
+
+                // 모든 클라이언트에게 숫자 업데이트 명령
+                RpcUpdateCount(arrivedPlayers.Count, NetworkServer.connections.Count);
 
                 // 모든 플레이어가 도착했는지 확인
                 if (arrivedPlayers.Count >= NetworkServer.connections.Count)
@@ -37,11 +49,26 @@ public class StageDoor : NetworkBehaviour
     }
 
     [ClientRpc]
+    private void RpcUpdateCount(int current, int total)
+    {
+        if (countText != null)
+        {
+            countText.gameObject.SetActive(true);
+            countText.text = $"{current} / {total}";
+        }
+    }
+
+    [ClientRpc]
     private void RpcTriggerClearEffect()
     {
+        // 카운트 텍스트 숨기기
+        if (countText != null) countText.gameObject.SetActive(false);
+
+        // 파티클 생성
         if (fanfarePrefab != null)
             Instantiate(fanfarePrefab, transform.position, Quaternion.identity);
 
+        // 클리어 텍스트 띄우기
         if (clearTextUI != null)
         {
             clearTextUI.SetActive(true);
@@ -62,7 +89,7 @@ public class StageDoor : NetworkBehaviour
         }
 
         clearTextUI.SetActive(false);
-        clearTextUI.transform.localPosition = startPos;
+        clearTextUI.transform.localPosition = startPos; // 위치 초기화
     }
 
     private IEnumerator WaitAndLoadScene()
