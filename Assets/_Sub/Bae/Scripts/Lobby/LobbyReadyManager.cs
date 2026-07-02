@@ -14,6 +14,7 @@ public class LobbyReadyManager : MonoBehaviour
 
     [Tooltip("'준비 완료: 2 / 4' 같은 텍스트를 띄울 TMP를 연결하세요.")]
     public TextMeshProUGUI readySummaryText;
+
     void Update()
     {
         UpdateLobbyUI();
@@ -25,7 +26,6 @@ public class LobbyReadyManager : MonoBehaviour
 
         int readyCount = 0;
         int totalPlayers = players.Length;
-        bool allReady = true;
 
         foreach (var p in players)
         {
@@ -33,22 +33,30 @@ public class LobbyReadyManager : MonoBehaviour
             {
                 readyCount++;
             }
-            else
-            {
-                allReady = false;
-            }
         }
 
         if (readySummaryText != null)
         {
             readySummaryText.text = $"Ready: {readyCount} / {totalPlayers}";
         }
-
-        UpdateStartButtonState(allReady, totalPlayers);
+        UpdateStartButtonState();
     }
 
-    public void UpdateStartButtonState(bool allReady, int totalPlayers)
+    public void UpdateStartButtonState()
     {
+        CoopPlayerIdentity[] players = FindObjectsByType<CoopPlayerIdentity>(FindObjectsSortMode.None);
+        bool allReady = true;
+        int totalPlayers = players.Length;
+
+        foreach (var p in players)
+        {
+            if (!p.isServer && !p.isReady)
+            {
+                allReady = false;
+                break;
+            }
+        }
+
         if (NetworkServer.active) 
         {
             if (startGameButton != null) startGameButton.gameObject.SetActive(true);
