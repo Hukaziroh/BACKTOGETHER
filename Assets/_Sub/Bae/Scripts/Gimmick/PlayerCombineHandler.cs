@@ -5,9 +5,15 @@ public class PlayerCombineHandler : NetworkBehaviour
 {
     [Header("합체 상태")]
     [SyncVar] public bool isCombined = false;
-    [SyncVar] public string myRole = "";     // "Move_Left", "Move_Right", "Jump", "Action" 등
+    [SyncVar] public string myRole = "";     // "Move", "Move_Left", "Move_Right", "Jump", "Action" 등
+    [SyncVar] public GameObject bodyTarget;  // 내가 조종해야 할 본체
 
-    [SyncVar] public GameObject bodyTarget;  // 내가 조종해야 할 본체 (내가 본체면 나 자신)
+    // 🌟 본체 클라이언트가 유령들에게 원격으로 전달받아 저장할 입력 변수들
+    [HideInInspector] public float ghostLeftInput = 0f;
+    [HideInInspector] public float ghostRightInput = 0f;
+    [HideInInspector] public float ghostDuoInput = 0f;
+
+    private float lastSentMove = 0f; // 패킷 최적화용
 
     private SpriteRenderer spriteRenderer;
     private Collider2D col;
@@ -20,18 +26,12 @@ public class PlayerCombineHandler : NetworkBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
-    // ----------------------------------------------------
-    // 기믹 스크립트(Trigger)가 서버에서 공통으로 호출해 주는 함수
-    // 2인, 4인 트리거 모두 이 함수를 사용해 롤을 부여합니다.
-    // ----------------------------------------------------
     [Server]
     public void StartCombineMode(string role, GameObject body)
     {
         isCombined = true;
         myRole = role;
         bodyTarget = body;
-
-        // 클라이언트들의 화면(비주얼)을 바꾸기 위해 Rpc 호출
         RpcApplyCombineVisual(body);
     }
 
@@ -40,88 +40,111 @@ public class PlayerCombineHandler : NetworkBehaviour
     {
         if (gameObject == body)
         {
-            // [내가 본체(Body)일 때]
             transform.localScale = new Vector3(2f, 2f, 1f);
         }
         else
         {
-            // [내가 유령(Ghost)일 때]
             spriteRenderer.enabled = false;
             col.enabled = false;
             rb.simulated = false;
         }
     }
 
-    // ----------------------------------------------------
-    // 클라이언트의 입력(Input) 처리 및 전송
-    // ----------------------------------------------------
     void Update()
     {
         if (!isLocalPlayer || !isCombined) return;
 
-        // 1. 내가 유령(Ghost)일 때 ➔ 본체에게 명령을 쏜다!
+        // 1. [내가 유령(Ghost)일 때]
         if (gameObject != bodyTarget)
         {
-            if (myRole == "Move_Left" && (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)))
+            float currentMove = 0f;
+
+            if (myRole == "Move_Left" && (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))) currentMove = -1f;
+            else if (myRole == "Move_Right" && (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))) currentMove = 1f;
+            else if (myRole == "Move") // 2인 기믹 통합 이동
             {
-                CmdSendMoveToBody(bodyTarget, -1f);
+                if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) currentMove = -1f;
+                else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) currentMove = 1f;
             }
-            else if (myRole == "Move_Right" && (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)))
+
+            // 누르고 있는 상태가 변경되었을 때만 딱 한 번 패킷 전송 (서버 과부하 방지)
+            if (currentMove != lastSentMove)
             {
-                CmdSendMoveToBody(bodyTarget, 1f);
+                lastSentMove = currentMove;
+                CmdSendMoveState(bodyTarget, currentMove, myRole);
             }
-            else if (myRole == "Jump" && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W)))
+
+            // 점프와 액션은 한 번 누를 때마다 전송
+            if ((myRole == "Jump" || myRole == "Move") && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W)))
             {
                 CmdSendJumpToBody(bodyTarget);
             }
-            else if (myRole == "Action" && (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)))
+            if (myRole == "Action" && (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)))
             {
-                CmdSendActionToBody(bodyTarget); // 중력(내리찍기) 명령 전송
+                CmdSendActionToBody(bodyTarget);
             }
         }
-        // 2. 내가 본체(Body)일 때 ➔ 자신이 맡은 역할이 있다면 직접 수행!
+        // 2. [내가 본체(Body)일 때] 본인도 점프/액션 역할군이라면 바로 실행
         else
         {
-            if (myRole == "Move_Left" && (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)))
-                transform.Translate(Vector3.left * 5f * Time.deltaTime);
-
-            else if (myRole == "Move_Right" && (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)))
-                transform.Translate(Vector3.right * 5f * Time.deltaTime);
-
-            else if (myRole == "Jump" && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W)))
-                rb.AddForce(Vector2.up * 10f, ForceMode2D.Impulse);
-
-            else if (myRole == "Action" && (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)))
+            if (myRole == "Jump" && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W)))
             {
-                // 본체가 액션 역할일 경우 직접 내리찍기
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
-                rb.AddForce(Vector2.down * 15f, ForceMode2D.Impulse);
+                GetComponent<PlayerController>().CallCombinedJump();
+            }
+            if (myRole == "Action" && (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)))
+            {
+                GetComponent<PlayerController>().CallCombinedAction();
             }
         }
     }
 
+    // 🌟 [에러 해결의 핵심!] PlayerController가 가져다 쓸 통합 수평 입력값 계산기
+    public float GetCombinedHorizontalInput()
+    {
+        float totalInput = 0f;
+
+        // 1. 본체 본인의 키보드 조작 처리
+        if (myRole == "Move_Left" && (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))) totalInput += -1f;
+        if (myRole == "Move_Right" && (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))) totalInput += 1f;
+        if (myRole == "Move")
+        {
+            if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) totalInput += -1f;
+            else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) totalInput += 1f;
+        }
+
+        // 2. 유령 동료들에게 네트워크로 전달받은 값들 더하기
+        totalInput += ghostLeftInput;
+        totalInput += ghostRightInput;
+        totalInput += ghostDuoInput;
+
+        // -1 ~ 1 사이로 보정해서 반환
+        return Mathf.Clamp(totalInput, -1f, 1f);
+    }
+
     // ----------------------------------------------------
-    // 네트워크 통신 (Ghost -> Server -> Body)
+    // 네트워크 통신 (Ghost -> Server -> Body 클라이언트 전달)
     // ----------------------------------------------------
 
-    // --- 이동 (좌/우) ---
     [Command]
-    private void CmdSendMoveToBody(GameObject body, float direction)
+    private void CmdSendMoveState(GameObject body, float moveValue, string role)
     {
+        if (body == null) return;
         NetworkIdentity bodyIdentity = body.GetComponent<NetworkIdentity>();
-        body.GetComponent<PlayerCombineHandler>().TargetDoMove(bodyIdentity.connectionToClient, direction);
+        body.GetComponent<PlayerCombineHandler>().TargetReceiveMoveState(bodyIdentity.connectionToClient, moveValue, role);
     }
 
     [TargetRpc]
-    public void TargetDoMove(NetworkConnection target, float direction)
+    private void TargetReceiveMoveState(NetworkConnection target, float moveValue, string role)
     {
-        transform.Translate(new Vector3(direction, 0, 0) * 5f * Time.deltaTime);
+        if (role == "Move_Left") ghostLeftInput = moveValue;
+        else if (role == "Move_Right") ghostRightInput = moveValue;
+        else if (role == "Move") ghostDuoInput = moveValue;
     }
 
-    // --- 점프 ---
     [Command]
     private void CmdSendJumpToBody(GameObject body)
     {
+        if (body == null) return;
         NetworkIdentity bodyIdentity = body.GetComponent<NetworkIdentity>();
         body.GetComponent<PlayerCombineHandler>().TargetDoJump(bodyIdentity.connectionToClient);
     }
@@ -129,13 +152,13 @@ public class PlayerCombineHandler : NetworkBehaviour
     [TargetRpc]
     public void TargetDoJump(NetworkConnection target)
     {
-        rb.AddForce(Vector2.up * 10f, ForceMode2D.Impulse);
+        GetComponent<PlayerController>().CallCombinedJump();
     }
 
-    // --- 액션 (중력 / 내리찍기) ---
     [Command]
     private void CmdSendActionToBody(GameObject body)
     {
+        if (body == null) return;
         NetworkIdentity bodyIdentity = body.GetComponent<NetworkIdentity>();
         body.GetComponent<PlayerCombineHandler>().TargetDoAction(bodyIdentity.connectionToClient);
     }
@@ -143,8 +166,6 @@ public class PlayerCombineHandler : NetworkBehaviour
     [TargetRpc]
     public void TargetDoAction(NetworkConnection target)
     {
-        // 🌟 내리찍기 로직: 현재 Y축 속도를 0으로 만들어 체공 관성을 없앤 뒤 강하게 아래로 힘을 가함
-        rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
-        rb.AddForce(Vector2.down * 15f, ForceMode2D.Impulse);
+        GetComponent<PlayerController>().CallCombinedAction();
     }
 }

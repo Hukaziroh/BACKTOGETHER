@@ -95,39 +95,69 @@ public class PlayerController : NetworkBehaviour
         else
         {
             horizontalInput = 0f;
-            if (Keyboard.current != null)
+
+            // 🌟 [추가된 합체 로직 시작] 🌟
+            PlayerCombineHandler combine = GetComponent<PlayerCombineHandler>();
+
+            if (combine != null && combine.isCombined)
             {
-                if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) horizontalInput = -1f;
-                else if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) horizontalInput = 1f;
+                // 내가 유령(Ghost)이면 여기서 Update 조작 연산을 아예 중단합니다.
+                if (gameObject != combine.bodyTarget) return;
 
-                if (isReversedControl)
+                // 내가 본체(Body)라면 핸들러가 네트워크/로컬에서 취합해 준 통합 입력값을 가져옵니다.
+                horizontalInput = combine.GetCombinedHorizontalInput();
+            }
+            else
+            {
+                // 기존 일반 상태일 때의 기본 조작 입력 방식
+                if (Keyboard.current != null)
                 {
-                    horizontalInput *= -1f;
+                    if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) horizontalInput = -1f;
+                    else if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) horizontalInput = 1f;
                 }
+            }
+            // 🌟 [추가된 합체 로직 끝] 🌟
 
-                if (Keyboard.current.spaceKey.wasPressedThisFrame) jumpBufferCounter = jumpBufferTime;
-                else jumpBufferCounter -= Time.deltaTime;
+            // 좌우 반전 기믹 (합체 상태에서도 부호 반전 정상 작동)
+            if (isReversedControl)
+            {
+                horizontalInput *= -1f;
+            }
 
-
-                if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f)
+            // 일반 상태일 때만 자체 점프 입력을 받음 (합체 점프는 핸들러가 CallCombinedJump를 통해 쏴줍니다)
+            if (combine == null || !combine.isCombined)
+            {
+                if (Keyboard.current != null)
                 {
-                    Jump();
-                    jumpBufferCounter = 0f;
-                    coyoteTimeCounter = 0f;
-                }
-                if (Keyboard.current.spaceKey.wasReleasedThisFrame && rb.linearVelocity.y > 0f)
-                    rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump);
+                    if (Keyboard.current.spaceKey.wasPressedThisFrame) jumpBufferCounter = jumpBufferTime;
+                    else jumpBufferCounter -= Time.deltaTime;
 
-                if (isReversedControl)
-                {
-                    reverseTimer -= Time.deltaTime;
-                    if (reverseTimer <= 0f)
+                    if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f)
                     {
-                        StopReverseControl();
+                        Jump();
+                        jumpBufferCounter = 0f;
+                        coyoteTimeCounter = 0f;
                     }
+                    if (Keyboard.current.spaceKey.wasReleasedThisFrame && rb.linearVelocity.y > 0f)
+                        rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump);
+                }
+            }
+            else
+            {
+                // 합체 상태일 때도 타이머는 깎아줍니다.
+                jumpBufferCounter -= Time.deltaTime;
+            }
+
+            if (isReversedControl)
+            {
+                reverseTimer -= Time.deltaTime;
+                if (reverseTimer <= 0f)
+                {
+                    StopReverseControl();
                 }
             }
         }
+
         if (rb.linearVelocity.y < 0f) rb.gravityScale = jumpSpeed * fallSpeed;
         else rb.gravityScale = jumpSpeed;
 
@@ -137,7 +167,20 @@ public class PlayerController : NetworkBehaviour
         if (horizontalInput != 0 && stunTimer <= 0f)
             transform.localScale = new Vector3(horizontalInput > 0 ? 1 : -1, 1, 1);
 
-        if (transform.position.y < -30f) Respawn();
+        if (transform.position.y < -50f) Respawn();
+    }
+
+    // 🌟 [새로 추가된 함수] 합체 상태에서 외부(핸들러)가 본체에게 점프/액션을 시키기 위한 창구
+    public void CallCombinedJump()
+    {
+        Jump();
+    }
+
+    public void CallCombinedAction()
+    {
+        // 중력 내리찍기 기믹: 순간 Y속도 초기화 후 아래로 강한 충격량 급가속
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+        rb.AddForce(Vector2.down * 18f, ForceMode2D.Impulse);
     }
 
     public void SetSpawnPoint(Vector3 newPoint)
@@ -159,6 +202,11 @@ public class PlayerController : NetworkBehaviour
     void FixedUpdate()
     {
         if (!isLocalPlayer) return;
+
+        // 🌟 유령 상태인 플레이어는 물리 연산을 완전히 건너뜁니다.
+        PlayerCombineHandler combine = GetComponent<PlayerCombineHandler>();
+        if (combine != null && combine.isCombined && gameObject != combine.bodyTarget) return;
+
         CheckGroundOrPlayer();
 
         if (stunTimer <= 0f && !isKnockedBack)

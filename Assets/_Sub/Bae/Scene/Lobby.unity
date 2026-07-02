@@ -977,6 +977,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: StartGame
       objectReference: {fileID: 0}
+    - target: {fileID: 6939290752242453789, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
+      value: TestMap
+      objectReference: {fileID: 0}
     - target: {fileID: 7060667796035086083, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -1500,7 +1504,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1362702603150361321, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1381074218888706539, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_Name

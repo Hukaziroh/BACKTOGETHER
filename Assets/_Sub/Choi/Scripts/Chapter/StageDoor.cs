@@ -1,33 +1,47 @@
 using UnityEngine;
 using Mirror;
 using System.Collections;
+using System.Collections.Generic; // HashSet 사용을 위해 추가
 
 public class StageDoor : NetworkBehaviour
 {
     public GameObject fanfarePrefab;
     public string lobbySceneName = "Lobby";
-    public GameObject clearTextUI; // 문 자식인 Canvas 오브젝트
-    public float floatSpeed = 2f;  // 텍스트 상승 속도
+    public GameObject clearTextUI;
+    public float floatSpeed = 2f;
+
+    // 도착한 플레이어들을 저장할 서버 전용 리스트
+    private HashSet<uint> arrivedPlayers = new HashSet<uint>();
 
     [ServerCallback]
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("Player"))
+        // NetworkIdentity를 통해 플레이어 고유 ID(netId) 가져오기
+        NetworkIdentity identity = collision.GetComponent<NetworkIdentity>();
+        if (identity != null && collision.CompareTag("Player"))
         {
-            Debug.Log("2D 충돌 감지 성공!");
-            RpcTriggerClearEffect();
-            StartCoroutine(WaitAndLoadScene());
+            // 이미 도착한 플레이어인지 확인
+            if (!arrivedPlayers.Contains(identity.netId))
+            {
+                arrivedPlayers.Add(identity.netId);
+                Debug.Log($"플레이어 {identity.netId} 도착! ({arrivedPlayers.Count} / {NetworkServer.connections.Count})");
+
+                // 모든 플레이어가 도착했는지 확인
+                if (arrivedPlayers.Count >= NetworkServer.connections.Count)
+                {
+                    RpcTriggerClearEffect();
+                    StartCoroutine(WaitAndLoadScene());
+                }
+            }
         }
     }
 
     [ClientRpc]
     private void RpcTriggerClearEffect()
     {
-        // 1. 파티클 재생
         if (fanfarePrefab != null)
             Instantiate(fanfarePrefab, transform.position, Quaternion.identity);
 
-        // 2. 텍스트 활성화 및 상승 효과 시작
         if (clearTextUI != null)
         {
             clearTextUI.SetActive(true);
@@ -35,7 +49,6 @@ public class StageDoor : NetworkBehaviour
         }
     }
 
-    // 텍스트를 위로 올리고 1.5초 뒤에 끄는 코루틴
     private IEnumerator FloatTextRoutine()
     {
         float timer = 0f;
@@ -49,13 +62,13 @@ public class StageDoor : NetworkBehaviour
         }
 
         clearTextUI.SetActive(false);
-        clearTextUI.transform.localPosition = startPos; // 위치 초기화 (다음에 다시 쓸 때 대비)
+        clearTextUI.transform.localPosition = startPos;
     }
 
     private IEnumerator WaitAndLoadScene()
     {
         yield return new WaitForSeconds(2.0f);
-        if (isServer) // 씬 이동은 서버만 가능
+        if (isServer)
         {
             NetworkManager.singleton.ServerChangeScene(lobbySceneName);
         }
