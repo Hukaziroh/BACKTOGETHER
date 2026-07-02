@@ -39,6 +39,10 @@ public class PlayerController : NetworkBehaviour
     public float stunTime = 0.5f;
     private float stunTimer;
 
+    [Header("기믹: 좌우반전")]
+    private bool isReversedControl = false;
+    private float reverseTimer = 0f;
+
     private bool isKnockedBack = false;
 
     private Rigidbody2D rb;
@@ -96,8 +100,14 @@ public class PlayerController : NetworkBehaviour
                 if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) horizontalInput = -1f;
                 else if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) horizontalInput = 1f;
 
+                if (isReversedControl)
+                {
+                    horizontalInput *= -1f;
+                }
+
                 if (Keyboard.current.spaceKey.wasPressedThisFrame) jumpBufferCounter = jumpBufferTime;
                 else jumpBufferCounter -= Time.deltaTime;
+
 
                 if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f)
                 {
@@ -107,6 +117,15 @@ public class PlayerController : NetworkBehaviour
                 }
                 if (Keyboard.current.spaceKey.wasReleasedThisFrame && rb.linearVelocity.y > 0f)
                     rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump);
+
+                if (isReversedControl)
+                {
+                    reverseTimer -= Time.deltaTime;
+                    if (reverseTimer <= 0f)
+                    {
+                        StopReverseControl();
+                    }
+                }
             }
         }
         if (rb.linearVelocity.y < 0f) rb.gravityScale = jumpSpeed * fallSpeed;
@@ -238,5 +257,19 @@ public class PlayerController : NetworkBehaviour
             CameraFollow cam = mainCam.GetComponent<CameraFollow>() ?? mainCam.gameObject.AddComponent<CameraFollow>();
             cam.target = transform;
         }
+    }
+
+    public void StartReverseControl(float duration)
+    {
+        if (!isLocalPlayer) return;
+        isReversedControl = true;
+        reverseTimer = duration;
+    }
+
+    public void StopReverseControl()
+    {
+        if (!isLocalPlayer) return;
+        isReversedControl = false;
+        reverseTimer = 0f;
     }
 }
