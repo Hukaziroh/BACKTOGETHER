@@ -1361,38 +1361,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: LobbyPanel
       objectReference: {fileID: 0}
-    - target: {fileID: 1381074218888706539, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2058205521558540957, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2058205521558540957, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -142.9
-      objectReference: {fileID: 0}
     - target: {fileID: 3893653936201414830, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 479596964}
-    - target: {fileID: 3893653936201414830, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnCopyButtonClicked
-      objectReference: {fileID: 0}
+    - target: {fileID: 3964553662530480325, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 644d0f0422a38074e99764a783d2184f, type: 3}
     - target: {fileID: 4383775811692024024, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 479596970}
-    - target: {fileID: 4383775811692024024, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: RequestOpenChapter
+    - target: {fileID: 5426647768554659599, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4383775811692024024, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: LobbyManager, Assembly-CSharp
-      objectReference: {fileID: 0}
+    - target: {fileID: 6052153817721097110, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1972353631}
     - target: {fileID: 7936479838601238568, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1510,6 +1498,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+--- !u!114 &1415804502 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4383775811692024024, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+  m_PrefabInstance: {fileID: 1415804497}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+--- !u!114 &1444311484 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6052153817721097110, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+  m_PrefabInstance: {fileID: 1415804497}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1 &1557453890
 GameObject:
   m_ObjectHideFlags: 0
@@ -1950,6 +1960,53 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1868492017}
   m_CullTransparentMesh: 1
+--- !u!1 &1972353630
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1972353632}
+  - component: {fileID: 1972353631}
+  m_Layer: 0
+  m_Name: RobbyReadyManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1972353631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1972353630}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 788838daf8c96eb47af49c94a5dc703e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LobbyReadyManager
+  startGameButton: {fileID: 1415804502}
+  readyButton: {fileID: 1444311484}
+  readySummaryText: {fileID: 2105017868}
+--- !u!4 &1972353632
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1972353630}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2019891319
 GameObject:
   m_ObjectHideFlags: 0
@@ -2083,6 +2140,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2019891319}
   m_CullTransparentMesh: 1
+--- !u!114 &2105017868 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 290155877486887300, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+  m_PrefabInstance: {fileID: 1415804497}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -2092,3 +2160,4 @@ SceneRoots:
   - {fileID: 1414661588}
   - {fileID: 479596965}
   - {fileID: 414798251}
+  - {fileID: 1972353632}
