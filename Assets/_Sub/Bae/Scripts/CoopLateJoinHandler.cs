@@ -20,8 +20,7 @@ public class CoopLateJoinHandler : NetworkBehaviour
     [Server]
     private void TeleportToTeam()
     { 
-        CoopLateJoinHandler[] allPlayers = FindObjectsByType<CoopLateJoinHandler>(FindObjectsSortMode.None);
-
+        CoopLateJoinHandler[] allPlayers = FindObjectsByType<CoopLateJoinHandler>();
         foreach (var player in allPlayers)
         {
             if (player.gameObject != this.gameObject)
