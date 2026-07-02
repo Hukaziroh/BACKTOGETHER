@@ -75,6 +75,7 @@ crashlytics-build.properties
 # OS generated files
 .DS_Store
 Thumbs.db
+Thumbs.db.meta
 
 # Visual Studio config
 *.vsconfig
