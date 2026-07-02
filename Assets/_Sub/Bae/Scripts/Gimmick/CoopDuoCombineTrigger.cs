@@ -50,16 +50,32 @@ public class CoopDuoCombineTrigger : NetworkBehaviour
 
         AssignRole(playerList[0], playerList[1], "Move", "Jump");
 
-        AssignRole(playerList[2], playerList[3], "Move", "Jump");
+        //AssignRole(playerList[2], playerList[3], "Move", "Jump");
     }
 
     [Server]
-    private void AssignRole(GameObject playerA, GameObject playerB, string roleA, string roleB)
+    private void AssignRole(GameObject playerA, GameObject playerB,
+                        string roleA, string roleB)
     {
-        // 플레이어 담당자가 구현할 합체 함수 호출 부분 (예시)
-        // playerA.GetComponent<PlayerCombineHandler>().RpcStartDuoMode(playerB, roleA);
-        // playerB.GetComponent<PlayerCombineHandler>().RpcStartDuoMode(playerA, roleB);
+        PlayerCombineHandler a =
+            playerA.GetComponent<PlayerCombineHandler>();
 
-        Debug.Log($"[2인 1조] {playerA.name}('{roleA}') & {playerB.name}('{roleB}') 짝꿍 결성!");
+        PlayerCombineHandler b =
+            playerB.GetComponent<PlayerCombineHandler>();
+
+        if (a == null || b == null)
+        {
+            Debug.LogError("PlayerCombineHandler가 없습니다.");
+            return;
+        }
+
+        // playerA를 본체로 설정
+        a.StartCombineMode(roleA, playerA);
+
+        // playerB는 playerA를 조종
+        b.StartCombineMode(roleB, playerA);
+
+        Debug.Log($"[2인 1조] {playerA.name} & {playerB.name} 합체 완료");
     }
 }
+
