@@ -26,6 +26,8 @@ public class CoopMirrorPlatforms : NetworkBehaviour
     private HashSet<GameObject> playersOnLeft = new HashSet<GameObject>();
     private HashSet<GameObject> playersOnRight = new HashSet<GameObject>();
 
+    private bool isWaitingToReturn = false;
+
     private enum PlatformState { Idle, Meeting, Returning }
     [SyncVar]
     private PlatformState currentState = PlatformState.Idle;
@@ -69,13 +71,12 @@ public class CoopMirrorPlatforms : NetworkBehaviour
                 break;
 
             case PlatformState.Meeting:
-                MovePlatform(leftPlatform, (leftStartPoint.position));
                 MovePlatform(leftPlatform, meetingPoint.position - le);
                 MovePlatform(rightPlatform, meetingPoint.position + ri);
-                if (playersOnRight.Count >= requiredPlayers)
+
+                if (playersOnLeft.Count < requiredPlayers && !isWaitingToReturn)
                 {
-                    currentState = PlatformState.Returning;
-                    Debug.Log("[거울 발판] 오른쪽 발판으로 갈아타기 성공! 원래 위치로 돌아갑니다.");
+                    StartCoroutine(WaitAndReturn());
                 }
                 break;
 
@@ -100,6 +101,17 @@ public class CoopMirrorPlatforms : NetworkBehaviour
         rb.MovePosition(nextPos);
     }
 
+    private System.Collections.IEnumerator WaitAndReturn()
+    {
+        isWaitingToReturn = true;
+        Debug.Log("[거울 발판] 1초 뒤 돌아갑니다...");
+
+        yield return new WaitForSeconds(1.0f);
+
+        currentState = PlatformState.Returning;
+        isWaitingToReturn = false;
+        Debug.Log("[거울 발판] 원래 위치로 돌아갑니다.");
+    }
 
     [Server]
     public void PlayerEnteredLeft(GameObject player) { playersOnLeft.Add(player); }
