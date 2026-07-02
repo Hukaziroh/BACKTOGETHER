@@ -63,4 +63,20 @@ public class LobbyManager : NetworkBehaviour
             NetworkManager.singleton.ServerChangeScene(sceneName);
         }
     }
+    public void ReturnToMainMenu(string mainMenuSceneName)
+    {
+        if (isServer)
+        {
+            // 서버인 경우: 모든 연결을 끊고 씬을 이동합니다.
+            NetworkManager.singleton.StopHost();
+        }
+        else
+        {
+            // 클라이언트인 경우: 연결을 끊고 나갑니다.
+            NetworkManager.singleton.StopClient();
+        }
+
+        // 네트워크 연결을 끊은 후 씬을 변경합니다.
+        UnityEngine.SceneManagement.SceneManager.LoadScene(mainMenuSceneName);
+    }
 }

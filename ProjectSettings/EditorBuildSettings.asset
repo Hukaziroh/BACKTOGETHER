@@ -15,16 +15,13 @@ EditorBuildSettings:
     path: Assets/_Sub/Bae/Scene/Lobby.unity
     guid: 2f8adfb2aea1cbf4fa183737ee40af59
   - enabled: 1
-    path: Assets/_Sub/Choi/Scence/Lobby_Choi.unity
-    guid: ed1f7e4b044f2894794635ab67263979
-  - enabled: 1
-    path: Assets/_Sub/Choi/Scence/Main_Choi.unity
-    guid: d926a1c79aa6c1449857ee2d370e414c
-  - enabled: 1
     path: Assets/_Sub/Bae/Scene/chapter1.unity
     guid: e3d914786cb1e564bbf8ce84e0678b15
   - enabled: 1
     path: Assets/_Sub/Bae/Scene/chapter2.unity
     guid: 14fa4e7c044e77548a6a7e6c7c85bbaa
+  - enabled: 1
+    path: Assets/_Sub/Choi/Scence/TestMap.unity
+    guid: 503666f9b229dce40ac048430e3fa5ee
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
