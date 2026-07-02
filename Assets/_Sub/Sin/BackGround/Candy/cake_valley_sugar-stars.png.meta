@@ -1,0 +1,1313 @@
+fileFormatVersion: 2
+guid: affae19f6a8c8aa4bb7c76ba9ff16f0e
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -6905904354043959363
+    second: cake_valley_sugar-stars_0
+  - first:
+      213: 298745475862683840
+    second: cake_valley_sugar-stars_1
+  - first:
+      213: -7896914426605909796
+    second: cake_valley_sugar-stars_2
+  - first:
+      213: -2201839399361010121
+    second: cake_valley_sugar-stars_3
+  - first:
+      213: -1573395093218577102
+    second: cake_valley_sugar-stars_4
+  - first:
+      213: 5742081369672128207
+    second: cake_valley_sugar-stars_5
+  - first:
+      213: 696350785133133878
+    second: cake_valley_sugar-stars_6
+  - first:
+      213: -2741354332989453753
+    second: cake_valley_sugar-stars_7
+  - first:
+      213: 9198127708341054999
+    second: cake_valley_sugar-stars_8
+  - first:
+      213: 48164400665198106
+    second: cake_valley_sugar-stars_9
+  - first:
+      213: 2339939176444662399
+    second: cake_valley_sugar-stars_10
+  - first:
+      213: 3496296879414962200
+    second: cake_valley_sugar-stars_11
+  - first:
+      213: -2564962964305313290
+    second: cake_valley_sugar-stars_12
+  - first:
+      213: 8104458471808803220
+    second: cake_valley_sugar-stars_13
+  - first:
+      213: -8684178841249853344
+    second: cake_valley_sugar-stars_14
+  - first:
+      213: 8189565370248385586
+    second: cake_valley_sugar-stars_15
+  - first:
+      213: 9165675625768381221
+    second: cake_valley_sugar-stars_16
+  - first:
+      213: 477067858594662392
+    second: cake_valley_sugar-stars_17
+  - first:
+      213: -5755064033678620756
+    second: cake_valley_sugar-stars_18
+  - first:
+      213: 1309136877195038092
+    second: cake_valley_sugar-stars_19
+  - first:
+      213: 2725528753933981305
+    second: cake_valley_sugar-stars_20
+  - first:
+      213: -3787107901876287863
+    second: cake_valley_sugar-stars_21
+  - first:
+      213: 5649027149305986964
+    second: cake_valley_sugar-stars_22
+  - first:
+      213: 1141014739639976591
+    second: cake_valley_sugar-stars_23
+  - first:
+      213: -6964204846162001104
+    second: cake_valley_sugar-stars_24
+  - first:
+      213: -2060008411360301506
+    second: cake_valley_sugar-stars_25
+  - first:
+      213: 1067096129720934941
+    second: cake_valley_sugar-stars_26
+  - first:
+      213: 5895074764280874987
+    second: cake_valley_sugar-stars_27
+  - first:
+      213: 4466873449719278868
+    second: cake_valley_sugar-stars_28
+  - first:
+      213: 2762676949022558435
+    second: cake_valley_sugar-stars_29
+  - first:
+      213: -8161395768004128346
+    second: cake_valley_sugar-stars_30
+  - first:
+      213: 8386671109456333833
+    second: cake_valley_sugar-stars_31
+  - first:
+      213: 2117373970516540031
+    second: cake_valley_sugar-stars_32
+  - first:
+      213: -1409598794557772011
+    second: cake_valley_sugar-stars_33
+  - first:
+      213: 9211174543683677963
+    second: cake_valley_sugar-stars_34
+  - first:
+      213: -791511744032437066
+    second: cake_valley_sugar-stars_35
+  - first:
+      213: -6522552522543008946
+    second: cake_valley_sugar-stars_36
+  - first:
+      213: 753004533094452944
+    second: cake_valley_sugar-stars_37
+  - first:
+      213: 8274154891367825438
+    second: cake_valley_sugar-stars_38
+  - first:
+      213: -4366293527828379900
+    second: cake_valley_sugar-stars_39
+  - first:
+      213: -3667384239314131857
+    second: cake_valley_sugar-stars_40
+  - first:
+      213: -6924770056957459126
+    second: cake_valley_sugar-stars_41
+  - first:
+      213: 5846446666183688674
+    second: cake_valley_sugar-stars_42
+  - first:
+      213: -7355350008143956598
+    second: cake_valley_sugar-stars_43
+  - first:
+      213: 6994959155456806493
+    second: cake_valley_sugar-stars_44
+  - first:
+      213: -512589285254089647
+    second: cake_valley_sugar-stars_45
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 0
+    wrapV: 0
+    wrapW: 0
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_0
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 97
+        width: 13
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db7e26c349c4920a0800000000000000
+      internalID: -6905904354043959363
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_1
+      rect:
+        serializedVersion: 2
+        x: 95
+        y: 72
+        width: 22
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c0ec0f6d6b552400800000000000000
+      internalID: 298745475862683840
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_2
+      rect:
+        serializedVersion: 2
+        x: 246
+        y: 83
+        width: 17
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd84f7c2b26886290800000000000000
+      internalID: -7896914426605909796
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_3
+      rect:
+        serializedVersion: 2
+        x: 424
+        y: 81
+        width: 26
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 736a0ac6bbe7171e0800000000000000
+      internalID: -2201839399361010121
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_4
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 77
+        width: 13
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2353d59bf7d2a2ae0800000000000000
+      internalID: -1573395093218577102
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_5
+      rect:
+        serializedVersion: 2
+        x: 174
+        y: 79
+        width: 9
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fc612b63598ffaf40800000000000000
+      internalID: 5742081369672128207
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_6
+      rect:
+        serializedVersion: 2
+        x: 272
+        y: 73
+        width: 11
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 630cce2895fe9a900800000000000000
+      internalID: 696350785133133878
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_7
+      rect:
+        serializedVersion: 2
+        x: 323
+        y: 86
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 74a8faa22c0c4f9d0800000000000000
+      internalID: -2741354332989453753
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_8
+      rect:
+        serializedVersion: 2
+        x: 350
+        y: 78
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 71ea85eba6056af70800000000000000
+      internalID: 9198127708341054999
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_9
+      rect:
+        serializedVersion: 2
+        x: 573
+        y: 71
+        width: 19
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a1ef778644d1ba000800000000000000
+      internalID: 48164400665198106
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_10
+      rect:
+        serializedVersion: 2
+        x: 627
+        y: 74
+        width: 22
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f7211009842297020800000000000000
+      internalID: 2339939176444662399
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_11
+      rect:
+        serializedVersion: 2
+        x: 741
+        y: 65
+        width: 35
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 818e5d6dc77558030800000000000000
+      internalID: 3496296879414962200
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_12
+      rect:
+        serializedVersion: 2
+        x: 873
+        y: 63
+        width: 19
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f18c8216cb676cd0800000000000000
+      internalID: -2564962964305313290
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_13
+      rect:
+        serializedVersion: 2
+        x: 130
+        y: 68
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 491a1157a02d87070800000000000000
+      internalID: 8104458471808803220
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_14
+      rect:
+        serializedVersion: 2
+        x: 152
+        y: 44
+        width: 28
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 060d659ca599b7780800000000000000
+      internalID: -8684178841249853344
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_15
+      rect:
+        serializedVersion: 2
+        x: 375
+        y: 69
+        width: 13
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 234de76605e27a170800000000000000
+      internalID: 8189565370248385586
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_16
+      rect:
+        serializedVersion: 2
+        x: 431
+        y: 59
+        width: 15
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 52b61687b65033f70800000000000000
+      internalID: 9165675625768381221
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_17
+      rect:
+        serializedVersion: 2
+        x: 482
+        y: 50
+        width: 28
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f78a4590b2ee9600800000000000000
+      internalID: 477067858594662392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_18
+      rect:
+        serializedVersion: 2
+        x: 537
+        y: 55
+        width: 19
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca785f4c0c7e120b0800000000000000
+      internalID: -5755064033678620756
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_19
+      rect:
+        serializedVersion: 2
+        x: 663
+        y: 65
+        width: 18
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c8d039fbd0dfa2210800000000000000
+      internalID: 1309136877195038092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_20
+      rect:
+        serializedVersion: 2
+        x: 709
+        y: 68
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 976195316f503d520800000000000000
+      internalID: 2725528753933981305
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_21
+      rect:
+        serializedVersion: 2
+        x: 822
+        y: 62
+        width: 17
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 986c69e9d6d717bc0800000000000000
+      internalID: -3787107901876287863
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_22
+      rect:
+        serializedVersion: 2
+        x: 924
+        y: 62
+        width: 19
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 49fbbe03340656e40800000000000000
+      internalID: 5649027149305986964
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_23
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 48
+        width: 12
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f82c9bf3cd2b5df00800000000000000
+      internalID: 1141014739639976591
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_24
+      rect:
+        serializedVersion: 2
+        x: 191
+        y: 47
+        width: 18
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 033c571279c2a5f90800000000000000
+      internalID: -6964204846162001104
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_25
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 38
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e3e6d86a3416963e0800000000000000
+      internalID: -2060008411360301506
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_26
+      rect:
+        serializedVersion: 2
+        x: 287
+        y: 42
+        width: 14
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d12e539b6461fce00800000000000000
+      internalID: 1067096129720934941
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_27
+      rect:
+        serializedVersion: 2
+        x: 324
+        y: 50
+        width: 13
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: be7c451c3438fc150800000000000000
+      internalID: 5895074764280874987
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_28
+      rect:
+        serializedVersion: 2
+        x: 594
+        y: 41
+        width: 11
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 41d242b6cb58dfd30800000000000000
+      internalID: 4466873449719278868
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_29
+      rect:
+        serializedVersion: 2
+        x: 699
+        y: 41
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e846af3c00075620800000000000000
+      internalID: 2762676949022558435
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_30
+      rect:
+        serializedVersion: 2
+        x: 785
+        y: 42
+        width: 13
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a1dcb83ac5ecbe80800000000000000
+      internalID: -8161395768004128346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_31
+      rect:
+        serializedVersion: 2
+        x: 836
+        y: 50
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 90c0d2780f0736470800000000000000
+      internalID: 8386671109456333833
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_32
+      rect:
+        serializedVersion: 2
+        x: 891
+        y: 43
+        width: 13
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f7afb49686c626d10800000000000000
+      internalID: 2117373970516540031
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_33
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 23
+        width: 19
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 51fa09e5d59107ce0800000000000000
+      internalID: -1409598794557772011
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_34
+      rect:
+        serializedVersion: 2
+        x: 117
+        y: 41
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b0fe260d17aa4df70800000000000000
+      internalID: 9211174543683677963
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_35
+      rect:
+        serializedVersion: 2
+        x: 358
+        y: 32
+        width: 17
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6bc856d234cf305f0800000000000000
+      internalID: -791511744032437066
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_36
+      rect:
+        serializedVersion: 2
+        x: 669
+        y: 20
+        width: 25
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e43fef8e90d3b75a0800000000000000
+      internalID: -6522552522543008946
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_37
+      rect:
+        serializedVersion: 2
+        x: 396
+        y: 5
+        width: 20
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0de8a5d12a5337a00800000000000000
+      internalID: 753004533094452944
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_38
+      rect:
+        serializedVersion: 2
+        x: 761
+        y: 19
+        width: 11
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e104a8c0904b3d270800000000000000
+      internalID: 8274154891367825438
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_39
+      rect:
+        serializedVersion: 2
+        x: 836
+        y: 27
+        width: 15
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 407c3b88b2fc763c0800000000000000
+      internalID: -4366293527828379900
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_40
+      rect:
+        serializedVersion: 2
+        x: 899
+        y: 13
+        width: 19
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f64a0d80775da1dc0800000000000000
+      internalID: -3667384239314131857
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_41
+      rect:
+        serializedVersion: 2
+        x: 67
+        y: 0
+        width: 20
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a450acb725646ef90800000000000000
+      internalID: -6924770056957459126
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_42
+      rect:
+        serializedVersion: 2
+        x: 201
+        y: 10
+        width: 25
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2e145206440c22150800000000000000
+      internalID: 5846446666183688674
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_43
+      rect:
+        serializedVersion: 2
+        x: 267
+        y: 12
+        width: 13
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a85b9ed432c8ce990800000000000000
+      internalID: -7355350008143956598
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_44
+      rect:
+        serializedVersion: 2
+        x: 506
+        y: 9
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5e8e5f7a46131160800000000000000
+      internalID: 6994959155456806493
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cake_valley_sugar-stars_45
+      rect:
+        serializedVersion: 2
+        x: 590
+        y: 0
+        width: 24
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15432c8c2cae2e8f0800000000000000
+      internalID: -512589285254089647
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      cake_valley_sugar-stars_0: -6905904354043959363
+      cake_valley_sugar-stars_1: 298745475862683840
+      cake_valley_sugar-stars_10: 2339939176444662399
+      cake_valley_sugar-stars_11: 3496296879414962200
+      cake_valley_sugar-stars_12: -2564962964305313290
+      cake_valley_sugar-stars_13: 8104458471808803220
+      cake_valley_sugar-stars_14: -8684178841249853344
+      cake_valley_sugar-stars_15: 8189565370248385586
+      cake_valley_sugar-stars_16: 9165675625768381221
+      cake_valley_sugar-stars_17: 477067858594662392
+      cake_valley_sugar-stars_18: -5755064033678620756
+      cake_valley_sugar-stars_19: 1309136877195038092
+      cake_valley_sugar-stars_2: -7896914426605909796
+      cake_valley_sugar-stars_20: 2725528753933981305
+      cake_valley_sugar-stars_21: -3787107901876287863
+      cake_valley_sugar-stars_22: 5649027149305986964
+      cake_valley_sugar-stars_23: 1141014739639976591
+      cake_valley_sugar-stars_24: -6964204846162001104
+      cake_valley_sugar-stars_25: -2060008411360301506
+      cake_valley_sugar-stars_26: 1067096129720934941
+      cake_valley_sugar-stars_27: 5895074764280874987
+      cake_valley_sugar-stars_28: 4466873449719278868
+      cake_valley_sugar-stars_29: 2762676949022558435
+      cake_valley_sugar-stars_3: -2201839399361010121
+      cake_valley_sugar-stars_30: -8161395768004128346
+      cake_valley_sugar-stars_31: 8386671109456333833
+      cake_valley_sugar-stars_32: 2117373970516540031
+      cake_valley_sugar-stars_33: -1409598794557772011
+      cake_valley_sugar-stars_34: 9211174543683677963
+      cake_valley_sugar-stars_35: -791511744032437066
+      cake_valley_sugar-stars_36: -6522552522543008946
+      cake_valley_sugar-stars_37: 753004533094452944
+      cake_valley_sugar-stars_38: 8274154891367825438
+      cake_valley_sugar-stars_39: -4366293527828379900
+      cake_valley_sugar-stars_4: -1573395093218577102
+      cake_valley_sugar-stars_40: -3667384239314131857
+      cake_valley_sugar-stars_41: -6924770056957459126
+      cake_valley_sugar-stars_42: 5846446666183688674
+      cake_valley_sugar-stars_43: -7355350008143956598
+      cake_valley_sugar-stars_44: 6994959155456806493
+      cake_valley_sugar-stars_45: -512589285254089647
+      cake_valley_sugar-stars_5: 5742081369672128207
+      cake_valley_sugar-stars_6: 696350785133133878
+      cake_valley_sugar-stars_7: -2741354332989453753
+      cake_valley_sugar-stars_8: 9198127708341054999
+      cake_valley_sugar-stars_9: 48164400665198106
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
