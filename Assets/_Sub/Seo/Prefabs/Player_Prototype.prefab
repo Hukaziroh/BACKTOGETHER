@@ -50,6 +50,7 @@ GameObject:
   - component: {fileID: 248398996547530553}
   - component: {fileID: 2869323719728458929}
   - component: {fileID: 482020171129518740}
+  - component: {fileID: -1273853388529381942}
   m_Layer: 0
   m_Name: Player_Prototype
   m_TagString: Player
@@ -363,3 +364,25 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   lobbySceneName: Main
+--- !u!114 &-1273853388529381942
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8453197966436518037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 122337999ead9b64f8e60db6dc8b4044, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoopPlayerIdentity
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  playerSpriteRenderer: {fileID: 7935671347292049978}
+  playerSprites:
+  - {fileID: -2136357951393217447, guid: b841ab0dd1e67bc43bd8db12d80d1915, type: 3}
+  - {fileID: 4917779899663619797, guid: 2d06ee7c1775ec448b0942c0e35d9ec7, type: 3}
+  - {fileID: -3767049706901488578, guid: 93306d71a69f48843a815aecccc5c523, type: 3}
+  - {fileID: 2063359332131475940, guid: 50d5400a250266f408ddaa226b08c6e6, type: 3}
+  playerIndex: -1
