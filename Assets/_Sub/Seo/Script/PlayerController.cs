@@ -39,6 +39,10 @@ public class PlayerController : NetworkBehaviour
     public float stunTime = 0.5f;
     private float stunTimer;
 
+    [Header("크리티컬 ")]
+    private int spikeHitCount = 0;
+    private float spikeResetTimer = 0f;
+
     [Header("기믹: 좌우반전")]
     private bool isReversedControl = false;
     private float reverseTimer = 0f;
@@ -74,6 +78,11 @@ public class PlayerController : NetworkBehaviour
         if (!isLocalPlayer) return;
 
         if (ckTimer > 0f) ckTimer -= Time.deltaTime;
+        if (spikeResetTimer > 0f)
+        {
+            spikeResetTimer -= Time.deltaTime;
+            if (spikeResetTimer <= 0f) spikeHitCount = 0;
+        }
 
         if (isGrounded && ckTimer <= 0f) coyoteTimeCounter = coyoteTime;
         else coyoteTimeCounter -= Time.deltaTime;
@@ -267,11 +276,41 @@ public class PlayerController : NetworkBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (!isLocalPlayer) return;
+
         if (collision.gameObject.CompareTag("Spike"))
         {
-            Vector2 knockDir = new Vector2(-1f, 0.5f);
-            CmdTakeKnockback(knockDir);
+            // 가시에 닿을 때마다 카운트 증가 & 3초 타이머 갱신
+            spikeHitCount++;
+            spikeResetTimer = 0.5f;
+
+            // 3번 이상 닿았으면 크리티컬 탈출!
+            if (spikeHitCount >= 3)
+            {
+                StartCoroutine(CriticalEscape(0.1f));
+                spikeHitCount = 0; // 초기화
+                spikeResetTimer = 0f;
+            }
+            else
+            {
+                // 평소에는 일반 넉백 (기존 CmdTakeKnockback 그대로 사용)
+                CmdTakeKnockback(new Vector2(-1f, 0.5f));
+            }
         }
+    }
+    private System.Collections.IEnumerator CriticalEscape(float seconds)
+    {
+        playerCollider.enabled = false;
+
+        float escapeSpeedX = 30f;
+        float escapeSpeedY = 40f;
+
+        rb.linearVelocity = new Vector2(-escapeSpeedX, escapeSpeedY);
+        isKnockedBack = true;
+        anim.SetTrigger("Hit");
+
+        yield return new WaitForSeconds(seconds);
+
+        playerCollider.enabled = true;
     }
 
     [Command]
@@ -285,14 +324,6 @@ public class PlayerController : NetworkBehaviour
         isKnockedBack = true;
         stunTimer = 0f;
         anim.SetTrigger("Hit");
-        StartCoroutine(DisableColliderForSeconds(0.1f));
-    }
-
-    private System.Collections.IEnumerator DisableColliderForSeconds(float seconds)
-    {
-        playerCollider.enabled = false;
-        yield return new WaitForSeconds(seconds);
-        playerCollider.enabled = true;
     }
 
     public override void OnStartLocalPlayer()

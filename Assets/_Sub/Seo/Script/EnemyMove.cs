@@ -3,7 +3,7 @@ using UnityEngine;
 public class EnemyMove : MonoBehaviour
 {
     public float moveSpeed = 3f;
-    private int moveDirection = 1; // 1이면 오른쪽, -1이면 왼쪽
+    private int moveDirection = -1; // 1이면 오른쪽, -1이면 왼쪽
 
     private Rigidbody2D rb;
 
@@ -29,10 +29,8 @@ public class EnemyMove : MonoBehaviour
 
     void Flip()
     {
-        // 방향을 반대로 (1 -> -1, -1 -> 1)
         moveDirection *= -1;
 
-        // 슬라임 이미지도 실제 왼쪽/오른쪽으로 뒤집어주기
-        transform.localScale = new Vector3(moveDirection, 1, 1);
+        transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
     }
 }
