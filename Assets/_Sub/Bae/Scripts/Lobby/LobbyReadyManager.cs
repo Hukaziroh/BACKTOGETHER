@@ -6,20 +6,14 @@ using Mirror;
 public class LobbyReadyManager : MonoBehaviour
 {
     [Header("UI 컴포넌트 연결")]
-    [Tooltip("방장 전용: '게임 시작(Play)' 버튼을 연결하세요.")]
     public Button startGameButton;
-
-    [Tooltip("클라이언트 전용: '준비하기(Ready)' 버튼을 연결하세요.")]
     public Button readyButton;
-
-    [Tooltip("'준비 완료: 2 / 4' 같은 텍스트를 띄울 TMP를 연결하세요.")]
     public TextMeshProUGUI readySummaryText;
 
-    void Update()
+    void Start()
     {
         UpdateLobbyUI();
     }
-
     public void UpdateLobbyUI()
     {
         CoopPlayerIdentity[] players = FindObjectsByType<CoopPlayerIdentity>(FindObjectsSortMode.None);
@@ -29,7 +23,7 @@ public class LobbyReadyManager : MonoBehaviour
 
         foreach (var p in players)
         {
-            if (p.isServer || p.isReady)
+            if (p.isReady)
             {
                 readyCount++;
             }
@@ -39,18 +33,17 @@ public class LobbyReadyManager : MonoBehaviour
         {
             readySummaryText.text = $"Ready: {readyCount} / {totalPlayers}";
         }
-        UpdateStartButtonState();
+        UpdateStartButtonState(players);
     }
 
-    public void UpdateStartButtonState()
+    public void UpdateStartButtonState(CoopPlayerIdentity[] players)
     {
-        CoopPlayerIdentity[] players = FindObjectsByType<CoopPlayerIdentity>(FindObjectsSortMode.None);
         bool allReady = true;
         int totalPlayers = players.Length;
 
         foreach (var p in players)
         {
-            if (!p.isServer && !p.isReady)
+            if (!p.isReady) 
             {
                 allReady = false;
                 break;
