@@ -6,17 +6,19 @@ public class CoopPlayerIdentity : NetworkBehaviour
     [Header("비주얼 설정")]
     public SpriteRenderer playerSpriteRenderer;
 
-    [Tooltip("1P, 2P, 3P, 4P 순서대로 캐릭터에 입힐 색상을 지정해주세요.")]
     public Color[] playerColors = new Color[]
     {
-        Color.white,              
+        Color.white,
         new Color(1f, 0.5f, 0.5f),
-        new Color(0.5f, 0.5f, 1f), 
-        new Color(0.5f, 1f, 0.5f) 
+        new Color(0.5f, 0.5f, 1f),
+        new Color(0.5f, 1f, 0.5f)
     };
 
     [SyncVar(hook = nameof(OnPlayerIndexChanged))]
     public int playerIndex = -1;
+
+    [SyncVar(hook = nameof(OnReadyStatusChanged))]
+    public bool isReady = false;
 
     public override void OnStartServer()
     {
@@ -31,13 +33,23 @@ public class CoopPlayerIdentity : NetworkBehaviour
         {
             UpdatePlayerVisual(playerIndex);
         }
+        NotifyReadyManager();
+    }
+
+    public override void OnStartLocalPlayer()
+    {
+        base.OnStartLocalPlayer();
+
+        if (isServer)
+        {
+            CmdSetReady(true);
+        }
     }
 
     [Server]
     private void AssignAvailableIndex()
     {
         CoopPlayerIdentity[] allPlayers = FindObjectsByType<CoopPlayerIdentity>(FindObjectsSortMode.None);
-
         bool[] isIndexTaken = new bool[4];
 
         foreach (var p in allPlayers)
@@ -61,9 +73,26 @@ public class CoopPlayerIdentity : NetworkBehaviour
         }
     }
 
+    [Command]
+    public void CmdToggleReady()
+    {
+        isReady = !isReady;
+    }
+    [Command]
+    public void CmdSetReady(bool state)
+    {
+        isReady = state;
+    }
+
     void OnPlayerIndexChanged(int oldIndex, int newIndex)
     {
         UpdatePlayerVisual(newIndex);
+        NotifyReadyManager();
+    }
+
+    void OnReadyStatusChanged(bool oldState, bool newState)
+    {
+        NotifyReadyManager();
     }
 
     private void UpdatePlayerVisual(int index)
@@ -78,5 +107,11 @@ public class CoopPlayerIdentity : NetworkBehaviour
         {
             Debug.LogWarning($"{index + 1}P에 지정된 색상이 없습니다!");
         }
+    }
+
+    private void NotifyReadyManager()
+    {
+        LobbyReadyManager readyManager = FindFirstObjectByType<LobbyReadyManager>();
+        if (readyManager != null) readyManager.UpdateLobbyUI();
     }
 }
