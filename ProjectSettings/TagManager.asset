@@ -15,8 +15,8 @@ TagManager:
   - Ground
   - Water
   - UI
-  - 
-  - 
+  - Option
+  - Panel_Images
   - 
   - 
   - 
@@ -44,6 +44,12 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Option
+    uniqueID: 4238882833
+    locked: 0
+  - name: Panel_Images
+    uniqueID: 2293721415
     locked: 0
   m_RenderingLayers:
   - Default
