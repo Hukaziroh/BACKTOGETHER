@@ -1470,6 +1470,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 974b7f68e19a065459c9db6c3089c56f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ClientJoinUI
+--- !u!114 &735871271 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 561525279299010606, guid: 8e4abe2d07381be4a80127c546652040, type: 3}
+  m_PrefabInstance: {fileID: 1264963546603916821}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 480ecce4566e76141a5f390cd69a8109, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HostDisconnectHandler
 --- !u!1 &741694944
 GameObject:
   m_ObjectHideFlags: 0
@@ -2319,6 +2330,7 @@ MonoBehaviour:
   target: {fileID: 6667347122069961916, guid: e666d40d5abfae548b5224eb92f79fbf, type: 3}
   smoothTime: 0.1
   offset: {x: 0, y: 0, z: -10}
+  cameraSize: 8
 --- !u!1 &1966338791
 GameObject:
   m_ObjectHideFlags: 0
@@ -2642,6 +2654,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 561525279299010606, guid: 8e4abe2d07381be4a80127c546652040, type: 3}
+      propertyPath: lobbySceneName
+      value: Main
+      objectReference: {fileID: 0}
     - target: {fileID: 6893850968334993576, guid: 8e4abe2d07381be4a80127c546652040, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -2776,26 +2792,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1705102473047208554, guid: d391139454a53e341889149a36646d1d, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1794653368292514521, guid: d391139454a53e341889149a36646d1d, type: 3}
-      propertyPath: m_Color.a
-      value: 0.79607844
-      objectReference: {fileID: 0}
-    - target: {fileID: 1794653368292514521, guid: d391139454a53e341889149a36646d1d, type: 3}
-      propertyPath: m_Color.b
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1794653368292514521, guid: d391139454a53e341889149a36646d1d, type: 3}
-      propertyPath: m_Color.g
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1794653368292514521, guid: d391139454a53e341889149a36646d1d, type: 3}
-      propertyPath: m_Color.r
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 2062628588668692640, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1241.181
@@ -2836,26 +2832,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2076162945798256855, guid: d391139454a53e341889149a36646d1d, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.6
-      objectReference: {fileID: 0}
-    - target: {fileID: 3101628958932043637, guid: d391139454a53e341889149a36646d1d, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3894012771846626613, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: ConnectPanel
       value: 
       objectReference: {fileID: 112237220}
-    - target: {fileID: 5427133567415046751, guid: d391139454a53e341889149a36646d1d, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 1
+    - target: {fileID: 5751890398702285289, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8997514782241167706, guid: d391139454a53e341889149a36646d1d, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 1
-      objectReference: {fileID: 0}
+    - target: {fileID: 6861492556534220538, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 735871271}
     - target: {fileID: 9071347035235099874, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_Name
       value: UIMaster
