@@ -42,6 +42,7 @@ public class PlayerController : NetworkBehaviour
     [Header("크리티컬 ")]
     private int spikeHitCount = 0;
     private float spikeResetTimer = 0f;
+    public GameObject criticalUI;
 
     [Header("기믹: 좌우반전")]
     private bool isReversedControl = false;
@@ -308,6 +309,8 @@ public class PlayerController : NetworkBehaviour
     {
         playerCollider.enabled = false;
 
+        if (criticalUI != null) criticalUI.SetActive(true);
+
         float escapeSpeedX = 30f;
         float escapeSpeedY = 40f;
 
@@ -319,8 +322,10 @@ public class PlayerController : NetworkBehaviour
         anim.SetTrigger("Hit");
 
         yield return new WaitForSeconds(seconds);
-
+        
         playerCollider.enabled = true;
+        yield return new WaitForSeconds(2f);
+        if (criticalUI != null) criticalUI.SetActive(false);
     }
 
     [Command]
