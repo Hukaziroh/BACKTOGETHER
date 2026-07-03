@@ -236,7 +236,7 @@ MonoBehaviour:
   jumpBufferTime: 0.2
   superJump: 0.4
   knockPowerX: 15
-  knockPowerY: 25
+  knockPowerY: 35
   stunTime: 0.7
   groundCheck: {fileID: 286342587236517845}
   checkRadius: 0.2
@@ -406,3 +406,6 @@ MonoBehaviour:
   isCombined: 0
   myRole: 
   bodyTarget: {fileID: 0}
+  ghostLeftInput: 0
+  ghostRightInput: 0
+  ghostDuoInput: 0
