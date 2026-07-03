@@ -19969,7 +19969,6 @@ GameObject:
   - component: {fileID: 456778683}
   - component: {fileID: 456778685}
   - component: {fileID: 456778684}
-  - component: {fileID: 456778687}
   - component: {fileID: 456778686}
   m_Layer: 0
   m_Name: Tilemap_Spikes
@@ -24931,8 +24930,8 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
---- !u!66 &456778686
-CompositeCollider2D:
+--- !u!19719996 &456778686
+TilemapCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -24966,43 +24965,9 @@ CompositeCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_GeometryType: 0
-  m_GenerationType: 0
-  m_EdgeRadius: 0
-  m_ColliderPaths: []
-  m_CompositePaths:
-    m_Paths: []
-  m_VertexDistance: 0.0005
-  m_OffsetDistance: 0.00005
+  m_MaximumTileChangeCount: 1000
+  m_ExtrusionFactor: 0
   m_UseDelaunayMesh: 0
-  m_CompositeGameObject: {fileID: 456778682}
---- !u!50 &456778687
-Rigidbody2D:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 456778682}
-  m_BodyType: 2
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_GravityScale: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 0
 --- !u!1 &538968790
 GameObject:
   m_ObjectHideFlags: 0
@@ -27805,7 +27770,8 @@ MonoBehaviour:
   syncInterval: 0
   startPoint: {fileID: 1255406135}
   endPoint: {fileID: 1649270318}
-  moveSpeed: 2
+  goSpeed: 2
+  returnSpeed: 2
   requiredPlayers: 1
   platformRigidbody: {fileID: 1170841063}
 --- !u!61 &1170841065
@@ -90385,7 +90351,7 @@ Tilemap:
       e33: 1
   m_TileColorArray:
   - serializedVersion: 2
-    m_RefCount: 5948
+    m_RefCount: 5848
     m_Data: {r: 1, g: 1, b: 1, a: 1}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
@@ -92279,7 +92245,8 @@ MonoBehaviour:
   syncInterval: 0
   startPoint: {fileID: 1942988154}
   endPoint: {fileID: 761354843}
-  moveSpeed: 2
+  goSpeed: 2
+  returnSpeed: 2
   requiredPlayers: 1
   platformRigidbody: {fileID: 1741664188}
 --- !u!61 &1741664190
@@ -93652,7 +93619,8 @@ MonoBehaviour:
   syncInterval: 0
   startPoint: {fileID: 2003724852}
   endPoint: {fileID: 2071813238}
-  moveSpeed: 2
+  goSpeed: 2
+  returnSpeed: 2
   requiredPlayers: 1
   platformRigidbody: {fileID: 2136700252}
 --- !u!114 &2136700254
