@@ -281,26 +281,23 @@ public class PlayerController : NetworkBehaviour
         ckTimer = jumpCk;
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnTriggerEnter2D(Collider2D other)
     {
         if (!isLocalPlayer) return;
 
-        if (collision.gameObject.CompareTag("Spike"))
+        if (other.CompareTag("Spike"))
         {
-            // 가시에 닿을 때마다 카운트 증가 & 3초 타이머 갱신
             spikeHitCount++;
             spikeResetTimer = 0.5f;
 
-            // 3번 이상 닿았으면 크리티컬 탈출!
             if (spikeHitCount >= 3)
             {
                 StartCoroutine(CriticalEscape(0.1f));
-                spikeHitCount = 0; // 초기화
+                spikeHitCount = 0; 
                 spikeResetTimer = 0f;
             }
             else
             {
-                // 평소에는 일반 넉백 (기존 CmdTakeKnockback 그대로 사용)
                 CmdTakeKnockback(new Vector2(-1f, 0.5f));
             }
         }
