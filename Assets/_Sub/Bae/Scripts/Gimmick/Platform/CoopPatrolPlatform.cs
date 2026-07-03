@@ -13,7 +13,6 @@ public class CoopPatrolPlatform : NetworkBehaviour
     [Header("물리 설정")]
     public Rigidbody2D platformRigidbody;
 
-    // 💡 에러 해결: 플레이어가 가져갈 발판의 현재 속도 변수 추가!
     public Vector2 CurrentVelocity { get; private set; }
 
     private HashSet<GameObject> playersOnPlatform = new HashSet<GameObject>();
@@ -71,7 +70,6 @@ public class CoopPatrolPlatform : NetworkBehaviour
                 Vector2 currentPos = platformRigidbody.position;
                 Vector2 nextPos = Vector2.MoveTowards(currentPos, currentTarget.position, moveSpeed * Time.fixedDeltaTime);
 
-                // 💡 에러 해결: 이동량 기반 속도 계산 (PlayerController가 이 값을 가져갑니다)
                 CurrentVelocity = (nextPos - currentPos) / Time.fixedDeltaTime;
 
                 platformRigidbody.MovePosition(nextPos);

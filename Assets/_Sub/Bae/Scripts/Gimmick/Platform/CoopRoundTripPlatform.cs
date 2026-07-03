@@ -9,9 +9,10 @@ public class CoopRoundTripPlatform : NetworkBehaviour
     public Transform startPoint;
     [Tooltip("도착 지점 (씬에 배치된 빈 오브젝트)")]
     public Transform endPoint;
-
-    [Tooltip("이동 속도")]
-    public float moveSpeed = 2f;
+    [Tooltip("목적지로 가는 속도")]
+    public float goSpeed = 2f;
+    [Tooltip("원래 자리로 돌아오는 속도")]
+    public float returnSpeed = 2f;
 
     [Tooltip("작동에 필요한 플레이어 수 (인스펙터에서 테스트용으로 변경 가능)")]
     public int requiredPlayers = 4;
@@ -21,8 +22,8 @@ public class CoopRoundTripPlatform : NetworkBehaviour
 
     private HashSet<GameObject> playersOnPlatform = new HashSet<GameObject>();
 
-    private bool isTriggered = false; 
-    private bool isReturning = false; 
+    private bool isTriggered = false;
+    private bool isReturning = false;
 
     private bool isLocalPlayerOnPlatform = false;
     private Transform localPlayerTransform;
@@ -94,7 +95,8 @@ public class CoopRoundTripPlatform : NetworkBehaviour
             Vector2 currentPos = platformRigidbody.position;
             Vector2 targetPos = isReturning ? (Vector2)startPoint.position : (Vector2)endPoint.position;
 
-            Vector2 nextPos = Vector2.MoveTowards(currentPos, targetPos, moveSpeed * Time.fixedDeltaTime);
+            float currentSpeed = isReturning ? returnSpeed : goSpeed;
+            Vector2 nextPos = Vector2.MoveTowards(currentPos, targetPos, currentSpeed * Time.fixedDeltaTime);
             platformRigidbody.MovePosition(nextPos);
 
             if (Vector2.Distance(currentPos, targetPos) < 0.05f)
