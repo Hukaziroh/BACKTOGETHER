@@ -283,7 +283,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   currentSpawnPoint: {x: 0, y: 0, z: 0}
-  moveSpeed: 8
+  moveSpeed: 7
   normalFriction: 20
   iceSlideFriction: 3
   airFriction: 3
