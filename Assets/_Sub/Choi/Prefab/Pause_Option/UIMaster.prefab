@@ -265,10 +265,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: PausePanel
       objectReference: {fileID: 0}
+    - target: {fileID: 6174351651834688157, guid: 98f92fc168c57ff4bacb7cde1428f023, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8396789885235392879, guid: 98f92fc168c57ff4bacb7cde1428f023, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 3894012771846626613}
+    - target: {fileID: 8396789885235392879, guid: 98f92fc168c57ff4bacb7cde1428f023, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: ReturnToMainMenu
+      objectReference: {fileID: 0}
     - target: {fileID: 8836594798435964957, guid: 98f92fc168c57ff4bacb7cde1428f023, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -302,11 +310,11 @@ PrefabInstance:
       objectReference: {fileID: 691312139185975647}
     - target: {fileID: 1597781778629714622, guid: 311794df77832414091eb3ad2617a6c8, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2423186396253530555, guid: 311794df77832414091eb3ad2617a6c8, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3261627055271478214, guid: 311794df77832414091eb3ad2617a6c8, type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -395,6 +403,10 @@ PrefabInstance:
     - target: {fileID: 4754355430403800209, guid: 311794df77832414091eb3ad2617a6c8, type: 3}
       propertyPath: m_Name
       value: Option_Panel
+      objectReference: {fileID: 0}
+    - target: {fileID: 4754355430403800209, guid: 311794df77832414091eb3ad2617a6c8, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5965187248786275169, guid: 311794df77832414091eb3ad2617a6c8, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
