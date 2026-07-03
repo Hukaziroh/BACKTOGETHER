@@ -44,6 +44,9 @@ public class PlayerController : NetworkBehaviour
     private float spikeResetTimer = 0f;
     public GameObject criticalUI;
 
+    private float spikeDamageCooldown = 0f;
+    private float criticalCooldownTimer = 0f;
+
     [Header("기믹: 좌우반전")]
     private bool isReversedControl = false;
     private float reverseTimer = 0f;
@@ -61,7 +64,9 @@ public class PlayerController : NetworkBehaviour
     private bool isGrounded;
     private bool isOnIce = false;
     private bool wasOnIceLastFrame = false; // 공중 관성 유지용
-    private Collider2D playerCollider;
+
+    // 🌟 박스 콜라이더 전용 변수 (캡슐 콜라이더와 분리)
+    private BoxCollider2D boxCollider;
 
     private Animator anim;
 
@@ -72,7 +77,8 @@ public class PlayerController : NetworkBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        playerCollider = GetComponent<Collider2D>();
+        // 🌟 여러 콜라이더 중 BoxCollider2D만 정확히 가져옵니다.
+        boxCollider = GetComponent<BoxCollider2D>();
         anim = GetComponent<Animator>();
     }
 
@@ -81,6 +87,11 @@ public class PlayerController : NetworkBehaviour
         if (!isLocalPlayer) return;
 
         if (ckTimer > 0f) ckTimer -= Time.deltaTime;
+
+        if (spikeDamageCooldown > 0f) spikeDamageCooldown -= Time.deltaTime;
+        if (criticalCooldownTimer > 0f) criticalCooldownTimer -= Time.deltaTime;
+
+
         if (spikeResetTimer > 0f)
         {
             spikeResetTimer -= Time.deltaTime;
@@ -97,6 +108,9 @@ public class PlayerController : NetworkBehaviour
             {
                 isKnockedBack = false;
                 stunTimer = stunTime;
+
+                // 🌟 땅에 닿으면(착지) 꺼뒀던 박스 콜라이더를 다시 켭니다!
+                if (boxCollider != null) boxCollider.enabled = true;
             }
         }
         else if (stunTimer > 0f)
@@ -281,37 +295,61 @@ public class PlayerController : NetworkBehaviour
         ckTimer = jumpCk;
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    private void OnTriggerStay2D(Collider2D other)
     {
         if (!isLocalPlayer) return;
 
         if (other.CompareTag("Spike"))
         {
-            spikeHitCount++;
-            spikeResetTimer = 0.5f;
+            CheckSpikeHit(); // 🌟 따로 빼둔 로직 호출!
+        }
+    }
 
-            if (spikeHitCount >= 3)
+    private void CheckSpikeHit()
+    {
+        // 일반 피격 쿨다운 중이면 무시 (0.5초 대기)
+        if (spikeDamageCooldown > 0f) return;
+
+        spikeDamageCooldown = 0.5f;
+        spikeHitCount++;
+        spikeResetTimer = 1.5f;     // 1.5초 안에 연달아 맞아야 유지됨
+
+        // 3번 이상 맞았고, 크리티컬 쿨다운이 끝났을 때
+        if (spikeHitCount >= 3 && criticalCooldownTimer <= 0f)
+        {
+            // 🌟 50% 확률 계산 (Random.value는 0.0 ~ 1.0 사이의 값을 반환합니다)
+            if (Random.value <= 0.5f)
             {
+                // 당첨! 크리티컬 탈출 발동
                 StartCoroutine(CriticalEscape(0.1f));
-                spikeHitCount = 0; 
-                spikeResetTimer = 0f;
+                criticalCooldownTimer = 1.0f; // 1초 쿨다운 시작
             }
             else
             {
+                // 꽝! 크리티컬 실패 -> 일반 넉백
                 CmdTakeKnockback(new Vector2(-1f, 0.5f));
             }
+
+            // 성공하든 실패하든 카운트는 다시 0으로 초기화!
+            spikeHitCount = 0;
+            spikeResetTimer = 0f;
+        }
+        else if (spikeHitCount < 3)
+        {
+            // 아직 3번이 안 찼을 때는 일반 넉백
+            CmdTakeKnockback(new Vector2(-1f, 0.5f));
         }
     }
     private System.Collections.IEnumerator CriticalEscape(float seconds)
     {
-        playerCollider.enabled = false;
+        // 🌟 크리티컬 탈출 시 박스 콜라이더만 끕니다! (캡슐은 켜져 있음)
+        if (boxCollider != null) boxCollider.enabled = false;
 
         if (criticalUI != null) criticalUI.SetActive(true);
 
         float escapeSpeedX = 30f;
         float escapeSpeedY = 40f;
 
-        // 💡 크리티컬 탈출 시에도 넉백 속도를 기록해둡니다.
         activeKnockbackX = -escapeSpeedX;
         rb.linearVelocity = new Vector2(activeKnockbackX, escapeSpeedY);
 
@@ -319,8 +357,7 @@ public class PlayerController : NetworkBehaviour
         anim.SetTrigger("Hit");
 
         yield return new WaitForSeconds(seconds);
-        
-        playerCollider.enabled = true;
+
         yield return new WaitForSeconds(2f);
         if (criticalUI != null) criticalUI.SetActive(false);
     }
@@ -331,6 +368,9 @@ public class PlayerController : NetworkBehaviour
     [ClientRpc]
     void RpcApplyKnockback(Vector2 knockDir)
     {
+        // 🌟 일반 넉백 시에도 박스 콜라이더만 끕니다!
+        if (boxCollider != null) boxCollider.enabled = false;
+
         // 💡 넉백 시 X축 속도를 별도로 기록해둡니다 (FixedUpdate에서 유지하기 위함).
         activeKnockbackX = knockDir.x * knockPowerX;
 
