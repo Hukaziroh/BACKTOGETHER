@@ -48,6 +48,8 @@ public class PlayerController : NetworkBehaviour
     private float reverseTimer = 0f;
 
     private bool isKnockedBack = false;
+    // 💡 넉백 시 강제로 유지할 X축 속도를 저장할 변수
+    private float activeKnockbackX;
 
     private Rigidbody2D rb;
     private float horizontalInput;
@@ -218,7 +220,12 @@ public class PlayerController : NetworkBehaviour
 
         CheckGroundOrPlayer();
 
-        if (stunTimer <= 0f && !isKnockedBack)
+        // 💡 넉백 중일 때는 벽에 비벼도 강제 속도를 매 프레임 유지합니다!
+        if (isKnockedBack)
+        {
+            rb.linearVelocity = new Vector2(activeKnockbackX, rb.linearVelocity.y);
+        }
+        else if (stunTimer <= 0f) // (여기에 있던 !isKnockedBack 조건은 위로 빠졌으므로 삭제)
         {
             float targetVelocityX = (horizontalInput * moveSpeed) + platformVelocity.x + windVelocity;
 
@@ -229,7 +236,7 @@ public class PlayerController : NetworkBehaviour
             float smoothedVelocityX = Mathf.Lerp(rb.linearVelocity.x, targetVelocityX, currentFriction * Time.fixedDeltaTime);
             rb.linearVelocity = new Vector2(smoothedVelocityX, rb.linearVelocity.y);
         }
-        else if (stunTimer > 0f && !isKnockedBack)
+        else if (stunTimer > 0f)
         {
             float slideSpeed = Mathf.Lerp(rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
             rb.linearVelocity = new Vector2(slideSpeed, rb.linearVelocity.y);
@@ -304,7 +311,10 @@ public class PlayerController : NetworkBehaviour
         float escapeSpeedX = 30f;
         float escapeSpeedY = 40f;
 
-        rb.linearVelocity = new Vector2(-escapeSpeedX, escapeSpeedY);
+        // 💡 크리티컬 탈출 시에도 넉백 속도를 기록해둡니다.
+        activeKnockbackX = -escapeSpeedX;
+        rb.linearVelocity = new Vector2(activeKnockbackX, escapeSpeedY);
+
         isKnockedBack = true;
         anim.SetTrigger("Hit");
 
@@ -319,8 +329,12 @@ public class PlayerController : NetworkBehaviour
     [ClientRpc]
     void RpcApplyKnockback(Vector2 knockDir)
     {
-        rb.linearVelocity = Vector2.zero;
-        rb.AddForce(new Vector2(knockDir.x * knockPowerX, knockDir.y * knockPowerY), ForceMode2D.Impulse);
+        // 💡 넉백 시 X축 속도를 별도로 기록해둡니다 (FixedUpdate에서 유지하기 위함).
+        activeKnockbackX = knockDir.x * knockPowerX;
+
+        // AddForce 대신 확실하게 초기 속도를 덮어씌웁니다.
+        rb.linearVelocity = new Vector2(activeKnockbackX, knockDir.y * knockPowerY);
+
         isKnockedBack = true;
         stunTimer = 0f;
         anim.SetTrigger("Hit");
