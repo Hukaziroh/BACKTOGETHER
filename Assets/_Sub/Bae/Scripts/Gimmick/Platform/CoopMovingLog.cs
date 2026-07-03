@@ -13,12 +13,7 @@ public class CoopMovingLog : NetworkBehaviour
     public Rigidbody2D logRigidbody;
 
     private Vector2 startPos;
-
     private HashSet<GameObject> playersOnLog = new HashSet<GameObject>();
-
-    private bool isLocalPlayerOnLog = false;
-    private Transform localPlayerTransform;
-    private Vector3 lastLogPos;
 
     void Start()
     {
@@ -26,20 +21,20 @@ public class CoopMovingLog : NetworkBehaviour
         {
             startPos = logRigidbody.position;
         }
-        lastLogPos = transform.position;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
+            // 서버는 인원수만 체크합니다.
             if (isServer) playersOnLog.Add(other.gameObject);
 
+            // 🌟 핵심: 로컬 플레이어가 통나무를 밟으면 통나무의 '자식'으로 들어갑니다.
             NetworkIdentity ni = other.GetComponent<NetworkIdentity>();
             if (isClient && ni != null && ni.isLocalPlayer)
             {
-                isLocalPlayerOnLog = true;
-                localPlayerTransform = other.transform;
+                other.transform.SetParent(transform, true);
             }
         }
     }
@@ -48,13 +43,14 @@ public class CoopMovingLog : NetworkBehaviour
     {
         if (other.CompareTag("Player"))
         {
+            // 서버 인원수 차감
             if (isServer) playersOnLog.Remove(other.gameObject);
 
+            // 🌟 통나무에서 내리면 다시 부모 관계를 끊고 독립합니다.
             NetworkIdentity ni = other.GetComponent<NetworkIdentity>();
             if (isClient && ni != null && ni.isLocalPlayer)
             {
-                isLocalPlayerOnLog = false;
-                localPlayerTransform = null;
+                other.transform.SetParent(null);
             }
         }
     }
@@ -70,22 +66,6 @@ public class CoopMovingLog : NetworkBehaviour
             Vector2 nextPos = Vector2.MoveTowards(currentPos, targetPos, moveSpeed * Time.fixedDeltaTime);
 
             logRigidbody.MovePosition(nextPos);
-        }
-    }
-
-    void LateUpdate()
-    {
-        if (isClient)
-        {
-            Vector3 currentLogPos = transform.position;
-            Vector3 delta = currentLogPos - lastLogPos;
-
-            if (isLocalPlayerOnLog && localPlayerTransform != null)
-            {
-                localPlayerTransform.position += delta;
-            }
-
-            lastLogPos = currentLogPos;
         }
     }
 }
