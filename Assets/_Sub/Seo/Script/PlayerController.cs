@@ -73,7 +73,7 @@ public class PlayerController : NetworkBehaviour
 
     [Header("외부 환경 속도")]
     public float windVelocity = 0f;
-    private Vector2 platformVelocity = Vector2.zero; // 💡 플랫폼 속도 변수 유지
+    private Vector2 platformVelocity = Vector2.zero;
 
     private Transform currentPlatform;
     private Vector3 lastPlatformPos;
@@ -111,7 +111,7 @@ public class PlayerController : NetworkBehaviour
                 isKnockedBack = false;
                 stunTimer = stunTime;
 
-                if (boxCollider != null) boxCollider.enabled = true;
+                // 🌟 수정 1: 여기서 콜라이더를 혼자 켜는 로직(boxCollider.enabled = true) 삭제 완료!
             }
         }
         else if (stunTimer > 0f)
@@ -213,6 +213,9 @@ public class PlayerController : NetworkBehaviour
         rb.linearVelocity = Vector2.zero;
         isKnockedBack = false;
         stunTimer = 0f;
+
+        // 🌟 수정 3: 부활할 때 콜라이더가 꺼져있다면 무조건 켜기!
+        if (boxCollider != null) boxCollider.enabled = true;
     }
 
     void FixedUpdate()
@@ -224,7 +227,6 @@ public class PlayerController : NetworkBehaviour
 
         CheckGroundOrPlayer();
 
-        // 1. 플랫폼 동화 (Position Delta 방식 추적)
         if (currentPlatform != null)
         {
             Vector3 currentPlatPos = currentPlatform.position;
@@ -233,40 +235,38 @@ public class PlayerController : NetworkBehaviour
             if (platformDelta.magnitude < 1.5f)
             {
                 rb.position += (Vector2)platformDelta;
+
+                if (platformDelta.y > 0.001f && rb.linearVelocity.y < 0f)
+                {
+                    rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+                }
             }
 
             lastPlatformPos = currentPlatPos;
         }
 
-        // 2. 순수 플레이어 이동 및 질량 조절 로직 (요청하신 코드 적용)
         if (isKnockedBack)
         {
-            rb.mass = 1f; // 넉백 중일 땐 정상 무게로 돌려놔서 잘 날아가게 함
+            rb.mass = 1f;
             rb.linearVelocity = new Vector2(activeKnockbackX, rb.linearVelocity.y);
         }
         else if (stunTimer <= 0f)
         {
             float targetVelocityX = (horizontalInput * moveSpeed) + platformVelocity.x + windVelocity;
 
-            // 🌟 [겹침 방지 핵심 로직] 내 진행 방향에 다른 플레이어나 벽이 있다면 강제 전진을 멈춥니다.
             if (Mathf.Abs(horizontalInput) > 0.1f)
             {
                 Vector2 checkDir = horizontalInput > 0 ? Vector2.right : Vector2.left;
 
-                // 캐릭터 크기보다 살짝 작은 박스를 앞쪽으로 0.05만큼 쏴서 부딪히는게 있는지 검사
                 Vector2 boxSize = new Vector2(boxCollider.bounds.size.x, boxCollider.bounds.size.y * 0.8f);
-                RaycastHit2D[] hits = Physics2D.BoxCastAll(boxCollider.bounds.center, boxSize, 0f, checkDir, 0.05f);
+                RaycastHit2D[] hits = Physics2D.BoxCastAll(boxCollider.bounds.center, boxSize, 0f, checkDir, 0.15f);
 
                 foreach (var hit in hits)
                 {
-                    // 나 자신이 아니고 트리거가 아닌 콜라이더를 만났을 때
                     if (hit.collider != null && hit.collider.gameObject != gameObject && !hit.collider.isTrigger)
                     {
-                        // 그게 바닥(벽)이거나 다른 플레이어라면?
                         if (((1 << hit.collider.gameObject.layer) & groundLayer) != 0 || hit.collider.CompareTag("Player"))
                         {
-                            // 억지로 파고들지 않도록 내 키보드 조작 속도만 0으로 날려버립니다!
-                            // (발판 이동이나 바람에 의한 밀림은 유지)
                             targetVelocityX = platformVelocity.x + windVelocity;
                             break;
                         }
@@ -274,13 +274,20 @@ public class PlayerController : NetworkBehaviour
                 }
             }
 
-            // 부드러운 감속 로직
+            if (Mathf.Abs(targetVelocityX) < 0.1f)
+            {
+                rb.mass = 50f;
+            }
+            else
+            {
+                rb.mass = 1f;
+            }
+
             bool isSlippery = isOnIce || (!isGrounded && wasOnIceLastFrame);
             float currentFriction = isSlippery ? (isGrounded ? iceSlideFriction : airFriction) : normalFriction;
 
             float smoothedVelocityX = Mathf.Lerp(rb.linearVelocity.x, targetVelocityX, currentFriction * Time.fixedDeltaTime);
 
-            // 미세한 소수점 진동 컷팅 로직 (유지)
             if (Mathf.Abs(horizontalInput) < 0.01f && Mathf.Abs(platformVelocity.x) < 0.01f && Mathf.Abs(windVelocity) < 0.01f)
             {
                 if (Mathf.Abs(smoothedVelocityX) < 0.5f) smoothedVelocityX = 0f;
@@ -305,7 +312,7 @@ public class PlayerController : NetworkBehaviour
     {
         Collider2D[] colliders = Physics2D.OverlapCircleAll(groundCheck.position, checkRadius);
         isGrounded = false;
-        platformVelocity = Vector2.zero; // 매 프레임 초기화
+        platformVelocity = Vector2.zero;
 
         bool currentOnIce = false;
         bool foundPlatform = false;
@@ -320,23 +327,17 @@ public class PlayerController : NetworkBehaviour
                 isGrounded = true;
                 if (col.CompareTag("Ice")) currentOnIce = true;
 
-                // 🌟 패트롤 플랫폼 스크립트가 있다면 속도값(Velocity) 가져오기
                 if (col.TryGetComponent<CoopPatrolPlatform>(out var platform))
                 {
                     platformVelocity = platform.CurrentVelocity;
                 }
 
-                // 🌟 1. 닿은 것이 '일반 이동 발판(Kinematic)'인지 확인
                 bool isKinematicPlatform = (col.attachedRigidbody != null && col.attachedRigidbody.bodyType == RigidbodyType2D.Kinematic && !col.CompareTag("Player"));
 
-                // 🌟 2. 닿은 것이 '다른 플레이어'인지 확인
                 bool isOtherPlayer = col.CompareTag("Player");
 
-                // 🌟 3. [핵심] 내가 다른 플레이어 머리 위를 밟고 있는지 확인 (내 Y좌표가 더 높을 때)
-                // (내 중심점이 상대방보다 약간 높을 때만 무등을 탄 것으로 인정하여 튕김 방지)
-                bool isRidingPlayer = isOtherPlayer && (transform.position.y > col.transform.position.y + 0.3f);
+                bool isRidingPlayer = isOtherPlayer && (transform.position.y > col.transform.position.y + 0.1f);
 
-                // 발판이거나, 누군가의 머리 위라면 나를 '탑승(currentPlatform)' 상태로 만듦!
                 if (isKinematicPlatform || isRidingPlayer)
                 {
                     foundPlatform = true;
@@ -350,7 +351,6 @@ public class PlayerController : NetworkBehaviour
             }
         }
 
-        // 공중이거나 맨땅이면 플랫폼 초기화
         if (!foundPlatform)
         {
             currentPlatform = null;
@@ -423,6 +423,9 @@ public class PlayerController : NetworkBehaviour
 
         yield return new WaitForSeconds(seconds);
 
+        // 🌟 수정 3: 크리티컬 넉백이 끝난 직후 박스 콜라이더 다시 켜기!
+        if (boxCollider != null) boxCollider.enabled = true;
+
         yield return new WaitForSeconds(2f);
         if (criticalUI != null) criticalUI.SetActive(false);
     }
@@ -433,14 +436,24 @@ public class PlayerController : NetworkBehaviour
     [ClientRpc]
     void RpcApplyKnockback(Vector2 knockDir)
     {
-        if (boxCollider != null) boxCollider.enabled = false;
-
+        // 💡 넉백 시 넉백 X축 속도 기록
         activeKnockbackX = knockDir.x * knockPowerX;
         rb.linearVelocity = new Vector2(activeKnockbackX, knockDir.y * knockPowerY);
 
         isKnockedBack = true;
         stunTimer = 0f;
         anim.SetTrigger("Hit");
+
+        // 🌟 수정 2: 모든 클라이언트가 공평하게 박스 콜라이더를 껐다 켜도록 코루틴 실행
+        StartCoroutine(ColliderRecoveryRoutine(0.5f));
+    }
+
+    // 🌟 수정 2: 새로 추가된 딜레이 복구 코루틴 함수
+    private System.Collections.IEnumerator ColliderRecoveryRoutine(float delay)
+    {
+        if (boxCollider != null) boxCollider.enabled = false;
+        yield return new WaitForSeconds(delay);
+        if (boxCollider != null) boxCollider.enabled = true;
     }
 
     public override void OnStartLocalPlayer()
