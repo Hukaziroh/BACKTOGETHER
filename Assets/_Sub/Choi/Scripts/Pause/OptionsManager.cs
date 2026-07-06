@@ -6,6 +6,10 @@ public class OptionsManager : MonoBehaviour
 {
     public static OptionsManager instance;
 
+    [Header("UI Reference")] // 👈 연결할 패널을 인스펙터에서 지정하세요
+    public GameObject optionsPanel;
+
+    [Header("Settings")]
     public AudioMixer audioMixer;
     public Slider volumeSlider;
     public Toggle fullscreenToggle;
@@ -30,6 +34,18 @@ public class OptionsManager : MonoBehaviour
         volumeSlider.onValueChanged.AddListener(SetVolume);
         fullscreenToggle.onValueChanged.AddListener(SetFullscreen);
     }
+
+    // --- 추가된 부분: 스스로 켜고 끄는 함수 ---
+    public void Open()
+    {
+        if (optionsPanel != null) optionsPanel.SetActive(true);
+    }
+
+    public void Close()
+    {
+        if (optionsPanel != null) optionsPanel.SetActive(false);
+    }
+    // -------------------------------------
 
     public void SetVolume(float volume)
     {
