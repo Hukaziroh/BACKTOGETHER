@@ -106,13 +106,7 @@ public class PlayerController : NetworkBehaviour
         if (isKnockedBack)
         {
             horizontalInput = 0f;
-            if (isGrounded && rb.linearVelocity.y <= 0.1f)
-            {
-                isKnockedBack = false;
-                stunTimer = stunTime;
-
-                // 🌟 수정 1: 여기서 콜라이더를 혼자 켜는 로직(boxCollider.enabled = true) 삭제 완료!
-            }
+            // 🌟 드라제의 완벽한 지적: 깐깐한 물리 조건 삭제! (해제는 코루틴이 알아서 함)
         }
         else if (stunTimer > 0f)
         {
@@ -214,7 +208,6 @@ public class PlayerController : NetworkBehaviour
         isKnockedBack = false;
         stunTimer = 0f;
 
-        // 🌟 수정 3: 부활할 때 콜라이더가 꺼져있다면 무조건 켜기!
         if (boxCollider != null) boxCollider.enabled = true;
     }
 
@@ -423,8 +416,10 @@ public class PlayerController : NetworkBehaviour
 
         yield return new WaitForSeconds(seconds);
 
-        // 🌟 수정 3: 크리티컬 넉백이 끝난 직후 박스 콜라이더 다시 켜기!
+        // 🌟 드라제 솔루션: 크리티컬 넉백도 시간이 지나면 무조건 강제 해제
         if (boxCollider != null) boxCollider.enabled = true;
+        isKnockedBack = false;
+        stunTimer = stunTime;
 
         yield return new WaitForSeconds(2f);
         if (criticalUI != null) criticalUI.SetActive(false);
@@ -436,7 +431,6 @@ public class PlayerController : NetworkBehaviour
     [ClientRpc]
     void RpcApplyKnockback(Vector2 knockDir)
     {
-        // 💡 넉백 시 넉백 X축 속도 기록
         activeKnockbackX = knockDir.x * knockPowerX;
         rb.linearVelocity = new Vector2(activeKnockbackX, knockDir.y * knockPowerY);
 
@@ -444,16 +438,20 @@ public class PlayerController : NetworkBehaviour
         stunTimer = 0f;
         anim.SetTrigger("Hit");
 
-        // 🌟 수정 2: 모든 클라이언트가 공평하게 박스 콜라이더를 껐다 켜도록 코루틴 실행
         StartCoroutine(ColliderRecoveryRoutine(0.5f));
     }
 
-    // 🌟 수정 2: 새로 추가된 딜레이 복구 코루틴 함수
     private System.Collections.IEnumerator ColliderRecoveryRoutine(float delay)
     {
         if (boxCollider != null) boxCollider.enabled = false;
+
         yield return new WaitForSeconds(delay);
+
         if (boxCollider != null) boxCollider.enabled = true;
+
+        // 🌟 드라제 솔루션: 무한 -6 밀림 방지! 코루틴 안에서 시간 지나면 확실하게 종료
+        isKnockedBack = false;
+        stunTimer = stunTime;
     }
 
     public override void OnStartLocalPlayer()
