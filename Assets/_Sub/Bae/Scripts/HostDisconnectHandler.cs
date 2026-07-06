@@ -8,7 +8,7 @@ public class HostDisconnectHandler : MonoBehaviour
     public GameObject disconnectPanel; // 인스펙터에서 위에서 만든 패널 연결
 
     [Header("설정")]
-    public string lobbySceneName = "Test";
+    public string lobbySceneName = "Main";
 
     private bool wasConnected = false;
 
@@ -48,6 +48,7 @@ public class HostDisconnectHandler : MonoBehaviour
     // 확인 버튼에 연결할 함수
     public void GoBackToLobby()
     {
-        SceneManager.LoadScene("test");
+        SceneManager.LoadScene(lobbySceneName);
+        disconnectPanel.SetActive(false);
     }
 }
