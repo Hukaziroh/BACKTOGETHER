@@ -268,27 +268,16 @@ public class PlayerController : NetworkBehaviour
             float smoothedVelocityX = Mathf.Lerp(rb.linearVelocity.x, targetVelocityX, currentFriction * Time.fixedDeltaTime);
             rb.linearVelocity = new Vector2(smoothedVelocityX, rb.linearVelocity.y);
         }
-        else if (stunTimer <= 0f)
+        else if (stunTimer > 0f)
         {
-            float targetVelocityX = (horizontalInput * moveSpeed) + platformVelocity.x + windVelocity;
+            rb.mass = 1f;
+            float slideSpeed = Mathf.Lerp(rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
+            rb.linearVelocity = new Vector2(slideSpeed, rb.linearVelocity.y);
+        }
 
-            bool isSlippery = isOnIce || (!isGrounded && wasOnIceLastFrame);
-            float currentFriction = isSlippery ? (isGrounded ? iceSlideFriction : airFriction) : normalFriction;
-
-            // 1차적으로 부드럽게 감속 (기존과 동일)
-            float smoothedVelocityX = Mathf.Lerp(rb.linearVelocity.x, targetVelocityX, currentFriction * Time.fixedDeltaTime);
-            rb.linearVelocity = new Vector2(smoothedVelocityX, rb.linearVelocity.y);
-
-            // 🌟 [강력한 소수점 절삭 로직]
-            // 플레이어가 직접 움직이려 하지 않고(키 입력 0), 발판이나 바람 같은 외부 요인도 없을 때!
-            if (Mathf.Abs(horizontalInput) < 0.01f && Mathf.Abs(platformVelocity.x) < 0.01f && Mathf.Abs(windVelocity) < 0.01f)
-            {
-                // 밀려서 생긴 속도가 0.5 미만으로 떨어졌다면, 유니티 물리 엔진의 반발력을 무시하고 강제로 0을 박아버립니다.
-                if (Mathf.Abs(rb.linearVelocity.x) < 0.5f)
-                {
-                    rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
-                }
-            }
+        if (rb.linearVelocity.y < -maxFallSpeed)
+        {
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, -maxFallSpeed);
         }
     }
 
