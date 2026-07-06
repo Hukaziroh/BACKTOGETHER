@@ -50,7 +50,16 @@ public class PlayerController : NetworkBehaviour
     [Header("기믹: 좌우반전")]
     private bool isReversedControl = false;
     private float reverseTimer = 0f;
+    [Header("기즈모 및 감지 범위 설정")]
+    [Tooltip("기즈모 씬 뷰 표시 여부")]
+    public bool showGizmo = true;
 
+    [Tooltip("바닥/벽 감지 반경(크기)")]
+    [Range(0.01f, 5f)]
+    public float checkRadius = 0.5f;
+
+    [Tooltip("감지 위치 조절 (X: 좌우, Y: 상하)")]
+    public Vector2 checkOffset = Vector2.zero;
     private bool isKnockedBack = false;
     // 💡 넉백 시 강제로 유지할 X축 속도를 저장할 변수
     private float activeKnockbackX;
@@ -59,7 +68,6 @@ public class PlayerController : NetworkBehaviour
     private float horizontalInput;
 
     public Transform groundCheck;
-    public float checkRadius = 0.2f;
     public LayerMask groundLayer;
     private bool isGrounded;
     private bool isOnIce = false;
@@ -406,5 +414,21 @@ public class PlayerController : NetworkBehaviour
         if (!isLocalPlayer) return;
         isReversedControl = false;
         reverseTimer = 0f;
+    }
+
+  
+    private void OnDrawGizmosSelected()
+    {
+        // 인스펙터에서 껐다면 바로 종료
+        if (!showGizmo) return;
+
+        // 눈에 가장 잘 띄는 노란색으로 고정
+        Gizmos.color = Color.yellow;
+
+        // 플레이어의 중심점 + 인스펙터에서 설정한 위치(Offset)
+        Vector2 checkPosition = (Vector2)transform.position + checkOffset;
+
+        // 테두리 원 그리기
+        Gizmos.DrawWireSphere(checkPosition, checkRadius);
     }
 }
