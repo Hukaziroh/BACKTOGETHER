@@ -2331,6 +2331,50 @@ MonoBehaviour:
   smoothTime: 0.1
   offset: {x: 0, y: 0, z: -10}
   cameraSize: 8
+--- !u!1 &1948970160 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9071347035235099874, guid: d391139454a53e341889149a36646d1d, type: 3}
+  m_PrefabInstance: {fileID: 6870475135527063537}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1948970162 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3894012771846626613, guid: d391139454a53e341889149a36646d1d, type: 3}
+  m_PrefabInstance: {fileID: 6870475135527063537}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1948970160}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4de81c08694039d499ce5d48f6fe0100, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PauseManager
+--- !u!114 &1948970163 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 691312139185975647, guid: d391139454a53e341889149a36646d1d, type: 3}
+  m_PrefabInstance: {fileID: 6870475135527063537}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1948970160}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a14bf33d43aca5e489893376b53bd1a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OptionsManager
+--- !u!114 &1948970164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1948970160}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3212dde083cb09848af977a942bd3a84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIManager
+  pauseManager: {fileID: 1948970162}
+  optionsManager: {fileID: 1948970163}
+  excludedScenes:
+  - Main
+  - Lobby
 --- !u!1 &1966338791
 GameObject:
   m_ObjectHideFlags: 0
@@ -2792,6 +2836,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 691312139185975647, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: optionsPanel
+      value: 
+      objectReference: {fileID: 810547972}
     - target: {fileID: 2062628588668692640, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1241.181
@@ -2851,7 +2899,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 9071347035235099874, guid: d391139454a53e341889149a36646d1d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1948970164}
   m_SourcePrefab: {fileID: 100100000, guid: d391139454a53e341889149a36646d1d, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
