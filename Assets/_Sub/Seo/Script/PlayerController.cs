@@ -326,8 +326,18 @@ public class PlayerController : NetworkBehaviour
                     platformVelocity = platform.CurrentVelocity;
                 }
 
-                // 🌟 [수정됨] Kinematic이더라도 '플레이어'라면 이동 발판(currentPlatform)으로 인식하지 않음!
-                if (col.attachedRigidbody != null && col.attachedRigidbody.bodyType == RigidbodyType2D.Kinematic && !col.CompareTag("Player"))
+                // 🌟 1. 닿은 것이 '일반 이동 발판(Kinematic)'인지 확인
+                bool isKinematicPlatform = (col.attachedRigidbody != null && col.attachedRigidbody.bodyType == RigidbodyType2D.Kinematic && !col.CompareTag("Player"));
+
+                // 🌟 2. 닿은 것이 '다른 플레이어'인지 확인
+                bool isOtherPlayer = col.CompareTag("Player");
+
+                // 🌟 3. [핵심] 내가 다른 플레이어 머리 위를 밟고 있는지 확인 (내 Y좌표가 더 높을 때)
+                // (내 중심점이 상대방보다 약간 높을 때만 무등을 탄 것으로 인정하여 튕김 방지)
+                bool isRidingPlayer = isOtherPlayer && (transform.position.y > col.transform.position.y + 0.3f);
+
+                // 발판이거나, 누군가의 머리 위라면 나를 '탑승(currentPlatform)' 상태로 만듦!
+                if (isKinematicPlatform || isRidingPlayer)
                 {
                     foundPlatform = true;
                     if (currentPlatform != col.transform)
@@ -340,6 +350,7 @@ public class PlayerController : NetworkBehaviour
             }
         }
 
+        // 공중이거나 맨땅이면 플랫폼 초기화
         if (!foundPlatform)
         {
             currentPlatform = null;
