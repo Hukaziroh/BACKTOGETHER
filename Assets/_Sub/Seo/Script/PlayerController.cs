@@ -106,7 +106,6 @@ public class PlayerController : NetworkBehaviour
         if (isKnockedBack)
         {
             horizontalInput = 0f;
-            // 🌟 드라제의 완벽한 지적: 깐깐한 물리 조건 삭제! (해제는 코루틴이 알아서 함)
         }
         else if (stunTimer > 0f)
         {
@@ -400,45 +399,60 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+    // 🌟 1. 크리티컬 코루틴 수정 (로컬/비로컬 통제 분리)
     private System.Collections.IEnumerator CriticalEscape(float seconds)
     {
+        // 모두의 화면에서 공통 처리
         if (boxCollider != null) boxCollider.enabled = false;
-        if (criticalUI != null) criticalUI.SetActive(true);
-
-        float escapeSpeedX = 30f;
-        float escapeSpeedY = 40f;
-
-        activeKnockbackX = -escapeSpeedX;
-        rb.linearVelocity = new Vector2(activeKnockbackX, escapeSpeedY);
-
-        isKnockedBack = true;
         anim.SetTrigger("Hit");
+
+        // UI 표시 및 물리 연산은 오직 '나 자신'에게만 적용!
+        if (isLocalPlayer)
+        {
+            if (criticalUI != null) criticalUI.SetActive(true);
+            activeKnockbackX = -30f;
+            rb.linearVelocity = new Vector2(activeKnockbackX, 40f);
+            isKnockedBack = true;
+        }
 
         yield return new WaitForSeconds(seconds);
 
-        // 🌟 드라제 솔루션: 크리티컬 넉백도 시간이 지나면 무조건 강제 해제
+        // 모두의 화면에서 공통으로 콜라이더 복구
         if (boxCollider != null) boxCollider.enabled = true;
-        isKnockedBack = false;
-        stunTimer = stunTime;
+
+        // 상태 해제는 연산을 담당하는 '나 자신'에게만 적용
+        if (isLocalPlayer)
+        {
+            isKnockedBack = false;
+            stunTimer = stunTime;
+        }
 
         yield return new WaitForSeconds(2f);
-        if (criticalUI != null) criticalUI.SetActive(false);
+
+        if (isLocalPlayer && criticalUI != null)
+            criticalUI.SetActive(false);
     }
 
     [Command]
     void CmdTakeKnockback(Vector2 knockDir) { RpcApplyKnockback(knockDir); }
 
+    // 🌟 2. 일반 넉백(Rpc) 수정 (로컬/비로컬 통제 분리)
     [ClientRpc]
     void RpcApplyKnockback(Vector2 knockDir)
     {
+        // 모두의 화면에서 공통 처리: 애니메이션 재생 & 코루틴 호출
+        anim.SetTrigger("Hit");
+        StartCoroutine(ColliderRecoveryRoutine(0.5f));
+
+        // 🌟 핵심 방어막: 내 캐릭터가 아니라면 물리 속도를 건드리지 않고 여기서 정지!
+        if (!isLocalPlayer) return;
+
+        // 오직 '나 자신(로컬)'일 때만 속도를 부여하고 상태를 변경
         activeKnockbackX = knockDir.x * knockPowerX;
         rb.linearVelocity = new Vector2(activeKnockbackX, knockDir.y * knockPowerY);
 
         isKnockedBack = true;
         stunTimer = 0f;
-        anim.SetTrigger("Hit");
-
-        StartCoroutine(ColliderRecoveryRoutine(0.5f));
     }
 
     private System.Collections.IEnumerator ColliderRecoveryRoutine(float delay)
@@ -449,9 +463,12 @@ public class PlayerController : NetworkBehaviour
 
         if (boxCollider != null) boxCollider.enabled = true;
 
-        // 🌟 드라제 솔루션: 무한 -6 밀림 방지! 코루틴 안에서 시간 지나면 확실하게 종료
-        isKnockedBack = false;
-        stunTimer = stunTime;
+        // 🌟 혹시 모를 에러 방지용: 상태 해제도 로컬일 때만!
+        if (isLocalPlayer)
+        {
+            isKnockedBack = false;
+            stunTimer = stunTime;
+        }
     }
 
     public override void OnStartLocalPlayer()
