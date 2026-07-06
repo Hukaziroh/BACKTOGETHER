@@ -71,9 +71,10 @@ public class PlayerController : NetworkBehaviour
     private BoxCollider2D boxCollider;
     private Animator anim;
 
+    [Header("외부 환경 속도")]
     public float windVelocity = 0f;
+    private Vector2 platformVelocity = Vector2.zero; // 💡 플랫폼 속도 변수 유지
 
-    // 💡 [핵심 추가] 플랫폼 이동 추적용 변수
     private Transform currentPlatform;
     private Vector3 lastPlatformPos;
 
@@ -223,13 +224,12 @@ public class PlayerController : NetworkBehaviour
 
         CheckGroundOrPlayer();
 
-        // 🌟 1. 플랫폼 동기화: 가만히 있어도 발판 위치만큼 내 위치를 덧붙임
+        // 1. 플랫폼 동화 (Position Delta 방식 추적)
         if (currentPlatform != null)
         {
             Vector3 currentPlatPos = currentPlatform.position;
             Vector3 platformDelta = currentPlatPos - lastPlatformPos;
 
-            // 네트워크 순간이동이나 튀는 현상 방지를 위해 아주 큰 값은 무시
             if (platformDelta.magnitude < 1.5f)
             {
                 rb.position += (Vector2)platformDelta;
@@ -238,17 +238,30 @@ public class PlayerController : NetworkBehaviour
             lastPlatformPos = currentPlatPos;
         }
 
-        // 🌟 2. 순수 플레이어 이동 처리 (중복 가속 제거됨)
+        // 2. 순수 플레이어 이동 및 질량 조절 로직 (요청하신 코드 적용)
         if (isKnockedBack)
         {
+            rb.mass = 1f; // 넉백 중일 땐 정상 무게로 돌려놔서 잘 날아가게 함
             rb.linearVelocity = new Vector2(activeKnockbackX, rb.linearVelocity.y);
         }
         else if (stunTimer <= 0f)
         {
-            // 발판 속도 더하는 부분을 삭제했습니다. 
-            // 플랫폼은 rb.position으로 따라가므로, 속도는 내 순수 이동 속도만 사용하면 됩니다!
-            float targetVelocityX = (horizontalInput * moveSpeed) + windVelocity;
+            // 🌟 platformVelocity.x가 포함된 원래 공식 복구
+            float targetVelocityX = (horizontalInput * moveSpeed) + platformVelocity.x + windVelocity;
 
+            // 🌟 [핵심 해결책] 동적 질량 트릭 (부들거림 완벽 차단)
+            // 이동하려는 의지가 없을 때(입력도 없고 바람/발판 영향도 없을 때)는 
+            // 무게를 50배로 뻥튀기하여 남이 억지로 밀어도 꿈쩍 않는 벽으로 만듭니다.
+            if (Mathf.Abs(targetVelocityX) < 0.1f)
+            {
+                rb.mass = 50f;
+            }
+            else
+            {
+                rb.mass = 1f; // 내가 움직일 때는 정상 무게로 복귀
+            }
+
+            // 보간(Lerp) 대입 방식: 네트워크 최적화 및 미끄러짐 구현
             bool isSlippery = isOnIce || (!isGrounded && wasOnIceLastFrame);
             float currentFriction = isSlippery ? (isGrounded ? iceSlideFriction : airFriction) : normalFriction;
 
@@ -257,6 +270,7 @@ public class PlayerController : NetworkBehaviour
         }
         else if (stunTimer > 0f)
         {
+            rb.mass = 1f;
             float slideSpeed = Mathf.Lerp(rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
             rb.linearVelocity = new Vector2(slideSpeed, rb.linearVelocity.y);
         }
@@ -271,6 +285,7 @@ public class PlayerController : NetworkBehaviour
     {
         Collider2D[] colliders = Physics2D.OverlapCircleAll(groundCheck.position, checkRadius);
         isGrounded = false;
+        platformVelocity = Vector2.zero; // 매 프레임 초기화
 
         bool currentOnIce = false;
         bool foundPlatform = false;
@@ -285,7 +300,13 @@ public class PlayerController : NetworkBehaviour
                 isGrounded = true;
                 if (col.CompareTag("Ice")) currentOnIce = true;
 
-                // 🌟 [핵심] Kinematic Rigidbody를 가진 오브젝트를 이동 발판으로 자동 인식
+                // 🌟 패트롤 플랫폼 스크립트가 있다면 속도값(Velocity) 가져오기
+                if (col.TryGetComponent<CoopPatrolPlatform>(out var platform))
+                {
+                    platformVelocity = platform.CurrentVelocity;
+                }
+
+                // Kinematic Rigidbody를 가진 오브젝트를 이동 발판으로 인식 (bodyType 최신 문법 적용)
                 if (col.attachedRigidbody != null && col.attachedRigidbody.bodyType == RigidbodyType2D.Kinematic)
                 {
                     foundPlatform = true;
@@ -299,7 +320,6 @@ public class PlayerController : NetworkBehaviour
             }
         }
 
-        // 공중이거나 일반 땅일 경우 플랫폼 추적 초기화
         if (!foundPlatform)
         {
             currentPlatform = null;
