@@ -25,34 +25,14 @@ public class CoopMovingLog : NetworkBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
-        {
-            // 서버는 인원수만 체크합니다.
-            if (isServer) playersOnLog.Add(other.gameObject);
-
-            // 🌟 핵심: 로컬 플레이어가 통나무를 밟으면 통나무의 '자식'으로 들어갑니다.
-            NetworkIdentity ni = other.GetComponent<NetworkIdentity>();
-            if (isClient && ni != null && ni.isLocalPlayer)
-            {
-                other.transform.SetParent(transform, true);
-            }
-        }
+        if (other.CompareTag("Player") && isServer)
+            playersOnLog.Add(other.gameObject);
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
-        {
-            // 서버 인원수 차감
-            if (isServer) playersOnLog.Remove(other.gameObject);
-
-            // 🌟 통나무에서 내리면 다시 부모 관계를 끊고 독립합니다.
-            NetworkIdentity ni = other.GetComponent<NetworkIdentity>();
-            if (isClient && ni != null && ni.isLocalPlayer)
-            {
-                other.transform.SetParent(null);
-            }
-        }
+        if (other.CompareTag("Player") && isServer)
+            playersOnLog.Remove(other.gameObject);
     }
 
     void FixedUpdate()

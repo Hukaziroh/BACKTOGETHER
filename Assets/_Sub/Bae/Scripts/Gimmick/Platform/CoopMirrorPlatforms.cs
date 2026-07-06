@@ -32,25 +32,12 @@ public class CoopMirrorPlatforms : NetworkBehaviour
     [SyncVar]
     private PlatformState currentState = PlatformState.Idle;
 
-    private struct PlayerPlatformInfo
-    {
-        public bool isOnLeft;
-        public bool isOnRight;
-        public Transform transform;
-    }
-    private Dictionary<GameObject, PlayerPlatformInfo> localPlayerInfo = new Dictionary<GameObject, PlayerPlatformInfo>();
-    private Vector3 lastLeftPos;
-    private Vector3 lastRightPos;
-
     void Start()
     {
         if (leftPlatform != null && leftStartPoint != null)
             leftPlatform.position = leftStartPoint.position;
         if (rightPlatform != null && rightStartPoint != null)
             rightPlatform.position = rightStartPoint.position;
-
-        if (leftPlatform != null) lastLeftPos = leftPlatform.transform.position;
-        if (rightPlatform != null) lastRightPos = rightPlatform.transform.position;
     }
 
     void FixedUpdate()
@@ -122,47 +109,5 @@ public class CoopMirrorPlatforms : NetworkBehaviour
     [Server]
     public void PlayerExitedRight(GameObject player) { playersOnRight.Remove(player); }
 
-    [Client]
-    public void SetLocalPlayerOnLeft(GameObject player, Transform t, bool isOn)
-    {
-        if (!localPlayerInfo.ContainsKey(player)) localPlayerInfo[player] = new PlayerPlatformInfo { transform = t };
-        var info = localPlayerInfo[player];
-        info.isOnLeft = isOn;
-        localPlayerInfo[player] = info;
-    }
-
-    [Client]
-    public void SetLocalPlayerOnRight(GameObject player, Transform t, bool isOn)
-    {
-        if (!localPlayerInfo.ContainsKey(player)) localPlayerInfo[player] = new PlayerPlatformInfo { transform = t };
-        var info = localPlayerInfo[player];
-        info.isOnRight = isOn;
-        localPlayerInfo[player] = info;
-    }
-
-    void LateUpdate()
-    {
-        if (!isClient) return;
-
-        Vector3 currentLeftPos = leftPlatform != null ? leftPlatform.transform.position : Vector3.zero;
-        Vector3 currentRightPos = rightPlatform != null ? rightPlatform.transform.position : Vector3.zero;
-
-        Vector3 leftDelta = currentLeftPos - lastLeftPos;
-        Vector3 rightDelta = currentRightPos - lastRightPos;
-
-        foreach (var kvp in localPlayerInfo)
-        {
-            if (kvp.Key == null || kvp.Value.transform == null) continue;
-
-            NetworkIdentity ni = kvp.Key.GetComponent<NetworkIdentity>();
-            if (ni != null && ni.isLocalPlayer)
-            {
-                if (kvp.Value.isOnLeft) kvp.Value.transform.position += leftDelta;
-                else if (kvp.Value.isOnRight) kvp.Value.transform.position += rightDelta;
-            }
-        }
-
-        lastLeftPos = currentLeftPos;
-        lastRightPos = currentRightPos;
-    }
+   
 }
