@@ -306,8 +306,8 @@ public class PlayerController : NetworkBehaviour
                     platformVelocity = platform.CurrentVelocity;
                 }
 
-                // Kinematic Rigidbody를 가진 오브젝트를 이동 발판으로 인식 (bodyType 최신 문법 적용)
-                if (col.attachedRigidbody != null && col.attachedRigidbody.bodyType == RigidbodyType2D.Kinematic)
+                // 🌟 [수정됨] Kinematic이더라도 '플레이어'라면 이동 발판(currentPlatform)으로 인식하지 않음!
+                if (col.attachedRigidbody != null && col.attachedRigidbody.bodyType == RigidbodyType2D.Kinematic && !col.CompareTag("Player"))
                 {
                     foundPlatform = true;
                     if (currentPlatform != col.transform)
