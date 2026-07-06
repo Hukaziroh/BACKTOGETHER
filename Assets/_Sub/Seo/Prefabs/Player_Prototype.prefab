@@ -299,8 +299,10 @@ MonoBehaviour:
   knockPowerY: 35
   stunTime: 0.7
   criticalUI: {fileID: 8806499510481094465}
+  showGizmo: 1
+  checkRadius: 0.1
+  checkOffset: {x: 0, y: -0.45}
   groundCheck: {fileID: 286342587236517845}
-  checkRadius: 0.2
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
