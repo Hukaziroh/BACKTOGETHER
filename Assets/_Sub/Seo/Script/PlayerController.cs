@@ -268,21 +268,16 @@ public class PlayerController : NetworkBehaviour
             float smoothedVelocityX = Mathf.Lerp(rb.linearVelocity.x, targetVelocityX, currentFriction * Time.fixedDeltaTime);
             rb.linearVelocity = new Vector2(smoothedVelocityX, rb.linearVelocity.y);
         }
-        else if (stunTimer <= 0f)
+        else if (stunTimer > 0f)
         {
-            float targetVelocityX = (horizontalInput * moveSpeed) + platformVelocity.x + windVelocity;
+            rb.mass = 1f;
+            float slideSpeed = Mathf.Lerp(rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
+            rb.linearVelocity = new Vector2(slideSpeed, rb.linearVelocity.y);
+        }
 
-            bool isSlippery = isOnIce || (!isGrounded && wasOnIceLastFrame);
-            float currentFriction = isSlippery ? (isGrounded ? iceSlideFriction : airFriction) : normalFriction;
-
-            float smoothedVelocityX = Mathf.Lerp(rb.linearVelocity.x, targetVelocityX, currentFriction * Time.fixedDeltaTime);
-
-            if (Mathf.Abs(targetVelocityX) < 0.01f && Mathf.Abs(smoothedVelocityX) < 0.05f)
-            {
-                smoothedVelocityX = 0f;
-            }
-
-            rb.linearVelocity = new Vector2(smoothedVelocityX, rb.linearVelocity.y);
+        if (rb.linearVelocity.y < -maxFallSpeed)
+        {
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, -maxFallSpeed);
         }
     }
 
