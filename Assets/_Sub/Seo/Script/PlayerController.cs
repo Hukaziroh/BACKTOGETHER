@@ -246,26 +246,46 @@ public class PlayerController : NetworkBehaviour
         }
         else if (stunTimer <= 0f)
         {
-            // 🌟 platformVelocity.x가 포함된 원래 공식 복구
             float targetVelocityX = (horizontalInput * moveSpeed) + platformVelocity.x + windVelocity;
 
-            // 🌟 [핵심 해결책] 동적 질량 트릭 (부들거림 완벽 차단)
-            // 이동하려는 의지가 없을 때(입력도 없고 바람/발판 영향도 없을 때)는 
-            // 무게를 50배로 뻥튀기하여 남이 억지로 밀어도 꿈쩍 않는 벽으로 만듭니다.
-            if (Mathf.Abs(targetVelocityX) < 0.1f)
+            // 🌟 [겹침 방지 핵심 로직] 내 진행 방향에 다른 플레이어나 벽이 있다면 강제 전진을 멈춥니다.
+            if (Mathf.Abs(horizontalInput) > 0.1f)
             {
-                rb.mass = 50f;
-            }
-            else
-            {
-                rb.mass = 1f; // 내가 움직일 때는 정상 무게로 복귀
+                Vector2 checkDir = horizontalInput > 0 ? Vector2.right : Vector2.left;
+
+                // 캐릭터 크기보다 살짝 작은 박스를 앞쪽으로 0.05만큼 쏴서 부딪히는게 있는지 검사
+                Vector2 boxSize = new Vector2(boxCollider.bounds.size.x, boxCollider.bounds.size.y * 0.8f);
+                RaycastHit2D[] hits = Physics2D.BoxCastAll(boxCollider.bounds.center, boxSize, 0f, checkDir, 0.05f);
+
+                foreach (var hit in hits)
+                {
+                    // 나 자신이 아니고 트리거가 아닌 콜라이더를 만났을 때
+                    if (hit.collider != null && hit.collider.gameObject != gameObject && !hit.collider.isTrigger)
+                    {
+                        // 그게 바닥(벽)이거나 다른 플레이어라면?
+                        if (((1 << hit.collider.gameObject.layer) & groundLayer) != 0 || hit.collider.CompareTag("Player"))
+                        {
+                            // 억지로 파고들지 않도록 내 키보드 조작 속도만 0으로 날려버립니다!
+                            // (발판 이동이나 바람에 의한 밀림은 유지)
+                            targetVelocityX = platformVelocity.x + windVelocity;
+                            break;
+                        }
+                    }
+                }
             }
 
-            // 보간(Lerp) 대입 방식: 네트워크 최적화 및 미끄러짐 구현
+            // 부드러운 감속 로직
             bool isSlippery = isOnIce || (!isGrounded && wasOnIceLastFrame);
             float currentFriction = isSlippery ? (isGrounded ? iceSlideFriction : airFriction) : normalFriction;
 
             float smoothedVelocityX = Mathf.Lerp(rb.linearVelocity.x, targetVelocityX, currentFriction * Time.fixedDeltaTime);
+
+            // 미세한 소수점 진동 컷팅 로직 (유지)
+            if (Mathf.Abs(horizontalInput) < 0.01f && Mathf.Abs(platformVelocity.x) < 0.01f && Mathf.Abs(windVelocity) < 0.01f)
+            {
+                if (Mathf.Abs(smoothedVelocityX) < 0.5f) smoothedVelocityX = 0f;
+            }
+
             rb.linearVelocity = new Vector2(smoothedVelocityX, rb.linearVelocity.y);
         }
         else if (stunTimer > 0f)
