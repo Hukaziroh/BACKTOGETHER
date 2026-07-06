@@ -1442,8 +1442,8 @@ MonoBehaviour:
   rightPlatform: {fileID: 249962986}
   leftStartPoint: {fileID: 527151208}
   rightStartPoint: {fileID: 1290242642}
-  le: {x: 1, y: 0, z: 0}
-  ri: {x: 1, y: 0, z: 0}
+  le: {x: 1.5, y: 0, z: 0}
+  ri: {x: 1.5, y: 0, z: 0}
   meetingPoint: {fileID: 1641791174}
   moveSpeed: 3
   requiredPlayers: 4
