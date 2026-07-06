@@ -9,39 +9,19 @@ public class CoopMirrorTrigger : NetworkBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player") && manager != null)
+        if (other.CompareTag("Player") && manager != null && isServer)
         {
-            if (isServer)
-            {
-                if (isLeftPlatform) manager.PlayerEnteredLeft(other.gameObject);
-                else manager.PlayerEnteredRight(other.gameObject);
-            }
-
-            NetworkIdentity ni = other.GetComponent<NetworkIdentity>();
-            if (isClient && ni != null && ni.isLocalPlayer)
-            {
-                if (isLeftPlatform) manager.SetLocalPlayerOnLeft(other.gameObject, other.transform, true);
-                else manager.SetLocalPlayerOnRight(other.gameObject, other.transform, true);
-            }
+            if (isLeftPlatform) manager.PlayerEnteredLeft(other.gameObject);
+            else manager.PlayerEnteredRight(other.gameObject);
         }
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Player") && manager != null)
+        if (other.CompareTag("Player") && manager != null && isServer)
         {
-            if (isServer)
-            {
-                if (isLeftPlatform) manager.PlayerExitedLeft(other.gameObject);
-                else manager.PlayerExitedRight(other.gameObject);
-            }
-
-            NetworkIdentity ni = other.GetComponent<NetworkIdentity>();
-            if (isClient && ni != null && ni.isLocalPlayer)
-            {
-                if (isLeftPlatform) manager.SetLocalPlayerOnLeft(other.gameObject, other.transform, false);
-                else manager.SetLocalPlayerOnRight(other.gameObject, other.transform, false);
-            }
+            if (isLeftPlatform) manager.PlayerExitedLeft(other.gameObject);
+            else manager.PlayerExitedRight(other.gameObject);
         }
     }
 }

@@ -25,17 +25,12 @@ public class CoopRoundTripPlatform : NetworkBehaviour
     private bool isTriggered = false;
     private bool isReturning = false;
 
-    private bool isLocalPlayerOnPlatform = false;
-    private Transform localPlayerTransform;
-    private Vector3 lastPlatformPos;
-
     void Start()
     {
         if (platformRigidbody != null && startPoint != null)
         {
             platformRigidbody.position = startPoint.position;
         }
-        lastPlatformPos = transform.position;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -47,13 +42,6 @@ public class CoopRoundTripPlatform : NetworkBehaviour
                 playersOnPlatform.Add(other.gameObject);
                 CheckTrigger();
             }
-
-            NetworkIdentity ni = other.GetComponent<NetworkIdentity>();
-            if (isClient && ni != null && ni.isLocalPlayer)
-            {
-                isLocalPlayerOnPlatform = true;
-                localPlayerTransform = other.transform;
-            }
         }
     }
 
@@ -62,13 +50,6 @@ public class CoopRoundTripPlatform : NetworkBehaviour
         if (other.CompareTag("Player"))
         {
             if (isServer) playersOnPlatform.Remove(other.gameObject);
-
-            NetworkIdentity ni = other.GetComponent<NetworkIdentity>();
-            if (isClient && ni != null && ni.isLocalPlayer)
-            {
-                isLocalPlayerOnPlatform = false;
-                localPlayerTransform = null;
-            }
         }
     }
 
@@ -112,22 +93,6 @@ public class CoopRoundTripPlatform : NetworkBehaviour
                     Debug.Log($"[{gameObject.name}] 1회 왕복 완료! 대기 상태로 돌아갑니다.");
                 }
             }
-        }
-    }
-
-    void LateUpdate()
-    {
-        if (isClient)
-        {
-            Vector3 currentPlatformPos = transform.position;
-            Vector3 delta = currentPlatformPos - lastPlatformPos;
-
-            if (isLocalPlayerOnPlatform && localPlayerTransform != null)
-            {
-                localPlayerTransform.position += delta;
-            }
-
-            lastPlatformPos = currentPlatformPos;
         }
     }
 }

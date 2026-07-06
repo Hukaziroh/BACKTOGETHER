@@ -17,9 +17,6 @@ public class CoopPatrolPlatform : NetworkBehaviour
 
     private HashSet<GameObject> playersOnPlatform = new HashSet<GameObject>();
     private Transform currentTarget;
-    private bool isLocalPlayerOnPlatform = false;
-    private Transform localPlayerTransform;
-    private Vector3 lastPlatformPos;
 
     void Start()
     {
@@ -27,7 +24,6 @@ public class CoopPatrolPlatform : NetworkBehaviour
             platformRigidbody.position = startPoint.position;
 
         currentTarget = endPoint;
-        lastPlatformPos = transform.position;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -35,12 +31,6 @@ public class CoopPatrolPlatform : NetworkBehaviour
         if (other.CompareTag("Player"))
         {
             if (isServer) playersOnPlatform.Add(other.gameObject);
-            NetworkIdentity ni = other.GetComponent<NetworkIdentity>();
-            if (isClient && ni != null && ni.isLocalPlayer)
-            {
-                isLocalPlayerOnPlatform = true;
-                localPlayerTransform = other.transform;
-            }
         }
     }
 
@@ -49,12 +39,6 @@ public class CoopPatrolPlatform : NetworkBehaviour
         if (other.CompareTag("Player"))
         {
             if (isServer) playersOnPlatform.Remove(other.gameObject);
-            NetworkIdentity ni = other.GetComponent<NetworkIdentity>();
-            if (isClient && ni != null && ni.isLocalPlayer)
-            {
-                isLocalPlayerOnPlatform = false;
-                localPlayerTransform = null;
-            }
         }
     }
 
@@ -84,16 +68,4 @@ public class CoopPatrolPlatform : NetworkBehaviour
         }
     }
 
-    void LateUpdate()
-    {
-        if (isClient)
-        {
-            if (isLocalPlayerOnPlatform && localPlayerTransform != null)
-            {
-                Vector3 currentPlatformPos = transform.position;
-                localPlayerTransform.position += (currentPlatformPos - lastPlatformPos);
-            }
-            lastPlatformPos = transform.position;
-        }
-    }
 }
