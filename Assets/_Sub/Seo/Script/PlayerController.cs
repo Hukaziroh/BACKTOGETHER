@@ -57,7 +57,6 @@ public class PlayerController : NetworkBehaviour
     public Vector2 checkOffset = Vector2.zero;
 
     private bool isKnockedBack = false;
-    private float knockbackGraceTimer = 0f; // 🌟 가시에 맞고 바로 바닥에 닿았다고 인식하는 것을 막는 타이머
     private float activeKnockbackX;
 
     private Rigidbody2D rb;
@@ -84,14 +83,6 @@ public class PlayerController : NetworkBehaviour
         rb = GetComponent<Rigidbody2D>();
         boxCollider = GetComponent<BoxCollider2D>();
         anim = GetComponent<Animator>();
-
-        // 🌟 [추가됨] 이중 보간 드리프트 버그(-0.079 회전 버그) 완벽 차단!
-        if (!isLocalPlayer)
-        {
-            rb.bodyType = RigidbodyType2D.Kinematic;
-            rb.interpolation = RigidbodyInterpolation2D.None;
-            transform.rotation = Quaternion.identity;
-        }
     }
 
     void Update()
@@ -114,22 +105,12 @@ public class PlayerController : NetworkBehaviour
 
         if (isKnockedBack)
         {
-            horizontalInput = 0f; // 🌟 넉백(공중) 중 조작 완벽 차단
-
-            if (knockbackGraceTimer > 0f)
-                knockbackGraceTimer -= Time.deltaTime;
-
-            // 🌟 넉백 후 땅에 닿으면 즉시 기절(Stun) 모드로 돌입!
-            if (knockbackGraceTimer <= 0f && isGrounded && rb.linearVelocity.y <= 0.1f)
-            {
-                isKnockedBack = false;
-                stunTimer = stunTime; // 인스펙터에 설정한 시간(0.5초)만큼 기절!
-            }
+            horizontalInput = 0f;
         }
         else if (stunTimer > 0f)
         {
             stunTimer -= Time.deltaTime;
-            horizontalInput = 0f; // 🌟 기절한 동안 조작 차단
+            horizontalInput = 0f;
         }
         else
         {
@@ -225,6 +206,8 @@ public class PlayerController : NetworkBehaviour
         rb.linearVelocity = Vector2.zero;
         isKnockedBack = false;
         stunTimer = 0f;
+
+        if (boxCollider != null) boxCollider.enabled = true;
     }
 
     void FixedUpdate()
@@ -256,8 +239,7 @@ public class PlayerController : NetworkBehaviour
 
         if (isKnockedBack)
         {
-            rb.mass = 1f;
-            // 🌟 넉백 중 X축 속도 강제 고정 삭제! 이제 포물선 그리며 자연스럽게 날아감.
+            rb.linearVelocity = new Vector2(activeKnockbackX, rb.linearVelocity.y);
         }
         else if (stunTimer <= 0f)
         {
@@ -283,8 +265,7 @@ public class PlayerController : NetworkBehaviour
                 }
             }
 
-            // 🌟 [삭제 완료] 무거워지던 rb.mass = 50f 삭제! 자연스럽게 1로 고정
-            rb.mass = 1f;
+            // 🌟 rb.mass = 50f / 1f 하던 코드 완전히 삭제!
 
             bool isSlippery = isOnIce || (!isGrounded && wasOnIceLastFrame);
             float currentFriction = isSlippery ? (isGrounded ? iceSlideFriction : airFriction) : normalFriction;
@@ -300,8 +281,6 @@ public class PlayerController : NetworkBehaviour
         }
         else if (stunTimer > 0f)
         {
-            rb.mass = 1f;
-            // 기절 상태에서는 바닥에 미끄러지며 부드럽게 멈춤
             float slideSpeed = Mathf.Lerp(rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
             rb.linearVelocity = new Vector2(slideSpeed, rb.linearVelocity.y);
         }
@@ -399,7 +378,7 @@ public class PlayerController : NetworkBehaviour
             }
             else
             {
-                ApplyLocalKnockback(new Vector2(-1f, 0.5f)); // 무조건 왼쪽(-1f)
+                CmdTakeKnockback(new Vector2(-1f, 0.5f));
             }
 
             spikeHitCount = 0;
@@ -407,52 +386,80 @@ public class PlayerController : NetworkBehaviour
         }
         else if (spikeHitCount < 3)
         {
-            ApplyLocalKnockback(new Vector2(-1f, 0.5f)); // 무조건 왼쪽(-1f)
+            CmdTakeKnockback(new Vector2(-1f, 0.5f));
         }
     }
 
-    // 🌟 서버를 기다리지 않고 내 화면에서 즉시 강제로 날려버림! (조작 개입 불가)
-    private void ApplyLocalKnockback(Vector2 knockDir)
+    // 🌟 1. 크리티컬 코루틴 수정 (로컬/비로컬 통제 분리)
+    private System.Collections.IEnumerator CriticalEscape(float seconds)
     {
-        activeKnockbackX = knockDir.x * knockPowerX;
+        // 모두의 화면에서 공통 처리
+        if (boxCollider != null) boxCollider.enabled = false;
+        anim.SetTrigger("Hit");
 
-        // 딱 한 번만 속도를 부여하고 중력에 곡선을 맡김
+        // UI 표시 및 물리 연산은 오직 '나 자신'에게만 적용!
+        if (isLocalPlayer)
+        {
+            if (criticalUI != null) criticalUI.SetActive(true);
+            activeKnockbackX = -30f;
+            rb.linearVelocity = new Vector2(activeKnockbackX, 40f);
+            isKnockedBack = true;
+        }
+
+        yield return new WaitForSeconds(seconds);
+
+        // 모두의 화면에서 공통으로 콜라이더 복구
+        if (boxCollider != null) boxCollider.enabled = true;
+
+        // 상태 해제는 연산을 담당하는 '나 자신'에게만 적용
+        if (isLocalPlayer)
+        {
+            isKnockedBack = false;
+            stunTimer = stunTime;
+        }
+
+        yield return new WaitForSeconds(2f);
+
+        if (isLocalPlayer && criticalUI != null)
+            criticalUI.SetActive(false);
+    }
+
+    [Command]
+    void CmdTakeKnockback(Vector2 knockDir) { RpcApplyKnockback(knockDir); }
+
+    // 🌟 2. 일반 넉백(Rpc) 수정 (로컬/비로컬 통제 분리)
+    [ClientRpc]
+    void RpcApplyKnockback(Vector2 knockDir)
+    {
+        // 모두의 화면에서 공통 처리: 애니메이션 재생 & 코루틴 호출
+        anim.SetTrigger("Hit");
+        StartCoroutine(ColliderRecoveryRoutine(0.5f));
+
+        // 🌟 핵심 방어막: 내 캐릭터가 아니라면 물리 속도를 건드리지 않고 여기서 정지!
+        if (!isLocalPlayer) return;
+
+        // 오직 '나 자신(로컬)'일 때만 속도를 부여하고 상태를 변경
+        activeKnockbackX = knockDir.x * knockPowerX;
         rb.linearVelocity = new Vector2(activeKnockbackX, knockDir.y * knockPowerY);
 
         isKnockedBack = true;
         stunTimer = 0f;
-        knockbackGraceTimer = 0.1f; // 가시 맞자마자 바닥 닿은 것으로 오해하는 것 방지
-
-        CmdPlayHitAnimation(); // 다른 플레이어들에게 "나 맞았어 애니메이션 틀어줘" 라고 전달
     }
 
-    private System.Collections.IEnumerator CriticalEscape(float seconds)
+    private System.Collections.IEnumerator ColliderRecoveryRoutine(float delay)
     {
-        if (criticalUI != null) criticalUI.SetActive(true);
+        if (boxCollider != null) boxCollider.enabled = false;
 
-        activeKnockbackX = -30f;
-        rb.linearVelocity = new Vector2(activeKnockbackX, 40f);
+        yield return new WaitForSeconds(delay);
 
-        isKnockedBack = true;
-        stunTimer = 0f;
-        knockbackGraceTimer = 0.5f;
+        if (boxCollider != null) boxCollider.enabled = true;
 
-        CmdPlayHitAnimation();
-
-        yield return new WaitForSeconds(seconds);
-        yield return new WaitForSeconds(2f);
-
-        if (criticalUI != null) criticalUI.SetActive(false);
-    }
-
-    // 🌟 콜라이더를 끄는 코루틴은 모두 지우고, 네트워크로는 가볍게 '애니메이션'만 동기화!
-    [Command]
-    void CmdPlayHitAnimation() { RpcPlayHitAnimation(); }
-
-    [ClientRpc]
-    void RpcPlayHitAnimation()
-    {
-        anim.SetTrigger("Hit");
+        // 🌟 혹시 모를 에러 방지용: 상태 해제도 로컬일 때만!
+        if (isLocalPlayer)
+        {
+            isKnockedBack = false;
+            stunTimer = stunTime;
+        }
     }
 
     public override void OnStartLocalPlayer()
