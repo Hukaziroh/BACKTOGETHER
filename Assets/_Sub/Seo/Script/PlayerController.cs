@@ -101,6 +101,7 @@ public class PlayerController : NetworkBehaviour
 
     void Update()
     {
+        transform.rotation = Quaternion.identity;
         if (!isLocalPlayer) return;
 
         if (ckTimer > 0f) ckTimer -= Time.deltaTime;
