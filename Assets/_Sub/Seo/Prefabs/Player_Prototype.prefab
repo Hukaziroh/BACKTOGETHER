@@ -158,6 +158,7 @@ GameObject:
   - component: {fileID: 6323495277531195350}
   - component: {fileID: 6195919149362805391}
   - component: {fileID: 4921669254971416826}
+  - component: {fileID: 3475600457935097304}
   m_Layer: 0
   m_Name: Player_Prototype
   m_TagString: Player
@@ -636,6 +637,24 @@ MonoBehaviour:
   rotationSensitivity: 0.01
   positionPrecision: 0.01
   scalePrecision: 0.01
+--- !u!114 &3475600457935097304
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8453197966436518037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7a39c969f8f7864898ebf4ba29b40db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerGravityController
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  canInvertGravity: 0
+  isGravityInverted: 0
+  gravityMultiplier: 1
 --- !u!1 &8806499510481094465
 GameObject:
   m_ObjectHideFlags: 0

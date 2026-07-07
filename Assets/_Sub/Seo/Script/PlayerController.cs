@@ -57,6 +57,7 @@ public class PlayerController : NetworkBehaviour
     public Vector2 checkOffset = Vector2.zero;
 
     private bool isKnockedBack = false;
+    private float knockbackGraceTimer = 0f;
     private float activeKnockbackX;
 
     private Rigidbody2D rb;
@@ -78,16 +79,28 @@ public class PlayerController : NetworkBehaviour
     private Transform currentPlatform;
     private Vector3 lastPlatformPos;
 
+    // 🌟 중력 모듈 변수 추가
+    private PlayerGravityController gravityModule;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         boxCollider = GetComponent<BoxCollider2D>();
         anim = GetComponent<Animator>();
+
+        // 🌟 중력 모듈 연결
+        gravityModule = GetComponent<PlayerGravityController>();
+
+        if (!isLocalPlayer)
+        {
+            rb.bodyType = RigidbodyType2D.Kinematic;
+            rb.interpolation = RigidbodyInterpolation2D.None;
+            transform.rotation = Quaternion.identity;
+        }
     }
 
     void Update()
     {
-        transform.rotation = Quaternion.identity;
         if (!isLocalPlayer) return;
 
         if (ckTimer > 0f) ckTimer -= Time.deltaTime;
@@ -107,6 +120,15 @@ public class PlayerController : NetworkBehaviour
         if (isKnockedBack)
         {
             horizontalInput = 0f;
+
+            if (knockbackGraceTimer > 0f)
+                knockbackGraceTimer -= Time.deltaTime;
+
+            if (knockbackGraceTimer <= 0f && isGrounded && Mathf.Abs(rb.linearVelocity.y) <= 0.1f)
+            {
+                isKnockedBack = false;
+                stunTimer = stunTime;
+            }
         }
         else if (stunTimer > 0f)
         {
@@ -151,7 +173,12 @@ public class PlayerController : NetworkBehaviour
                         jumpBufferCounter = 0f;
                         coyoteTimeCounter = 0f;
                     }
-                    if (Keyboard.current.spaceKey.wasReleasedThisFrame && rb.linearVelocity.y > 0f)
+
+                    // 🌟 역중력 상태에서의 슈퍼점프 대응
+                    bool inverted = gravityModule != null && gravityModule.isGravityInverted;
+                    bool isMovingUp = inverted ? (rb.linearVelocity.y < 0f) : (rb.linearVelocity.y > 0f);
+
+                    if (Keyboard.current.spaceKey.wasReleasedThisFrame && isMovingUp)
                         rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump);
                 }
             }
@@ -170,16 +197,25 @@ public class PlayerController : NetworkBehaviour
             }
         }
 
-        if (rb.linearVelocity.y < 0f) rb.gravityScale = jumpSpeed * fallSpeed;
-        else rb.gravityScale = jumpSpeed;
+        // 🌟 중력 방향에 따른 낙하 가속(fallSpeed) 역방향 패치
+        bool isInverted = gravityModule != null && gravityModule.isGravityInverted;
+        float mult = gravityModule != null ? gravityModule.gravityMultiplier : 1f;
+        bool isFalling = isInverted ? (rb.linearVelocity.y > 0f) : (rb.linearVelocity.y < 0f);
+
+        if (isFalling) rb.gravityScale = jumpSpeed * fallSpeed * mult;
+        else rb.gravityScale = jumpSpeed * mult;
 
         anim.SetFloat("Speed", Mathf.Abs(horizontalInput));
         anim.SetBool("isGrounded", isGrounded);
 
+        // 🌟 좌우 이동 시 Y축 스케일 고정 버그 수정
         if (horizontalInput != 0 && stunTimer <= 0f)
-            transform.localScale = new Vector3(horizontalInput > 0 ? 1 : -1, 1, 1);
+        {
+            float currentY = isInverted ? -1f : 1f;
+            transform.localScale = new Vector3(horizontalInput > 0 ? 1 : -1, currentY, 1);
+        }
 
-        if (transform.position.y < -50f) Respawn();
+        if (transform.position.y < -50f || transform.position.y > 50f) Respawn();
     }
 
     public void CallCombinedJump()
@@ -207,8 +243,6 @@ public class PlayerController : NetworkBehaviour
         rb.linearVelocity = Vector2.zero;
         isKnockedBack = false;
         stunTimer = 0f;
-
-        if (boxCollider != null) boxCollider.enabled = true;
     }
 
     void FixedUpdate()
@@ -229,7 +263,10 @@ public class PlayerController : NetworkBehaviour
             {
                 rb.position += (Vector2)platformDelta;
 
-                if (platformDelta.y > 0.001f && rb.linearVelocity.y < 0f)
+                bool inverted = gravityModule != null && gravityModule.isGravityInverted;
+                bool isFalling = inverted ? (rb.linearVelocity.y > 0f) : (rb.linearVelocity.y < 0f);
+
+                if (Mathf.Abs(platformDelta.y) > 0.001f && isFalling)
                 {
                     rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
                 }
@@ -240,7 +277,7 @@ public class PlayerController : NetworkBehaviour
 
         if (isKnockedBack)
         {
-            rb.linearVelocity = new Vector2(activeKnockbackX, rb.linearVelocity.y);
+            rb.mass = 1f;
         }
         else if (stunTimer <= 0f)
         {
@@ -266,7 +303,7 @@ public class PlayerController : NetworkBehaviour
                 }
             }
 
-            // 🌟 rb.mass = 50f / 1f 하던 코드 완전히 삭제!
+            rb.mass = 1f;
 
             bool isSlippery = isOnIce || (!isGrounded && wasOnIceLastFrame);
             float currentFriction = isSlippery ? (isGrounded ? iceSlideFriction : airFriction) : normalFriction;
@@ -282,13 +319,22 @@ public class PlayerController : NetworkBehaviour
         }
         else if (stunTimer > 0f)
         {
+            rb.mass = 1f;
             float slideSpeed = Mathf.Lerp(rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
             rb.linearVelocity = new Vector2(slideSpeed, rb.linearVelocity.y);
         }
 
-        if (rb.linearVelocity.y < -maxFallSpeed)
+        // 🌟 최고 낙하 속도(maxFallSpeed) 천장 패치
+        bool isInverted = gravityModule != null && gravityModule.isGravityInverted;
+        if (isInverted)
         {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, -maxFallSpeed);
+            if (rb.linearVelocity.y > maxFallSpeed)
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, maxFallSpeed);
+        }
+        else
+        {
+            if (rb.linearVelocity.y < -maxFallSpeed)
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, -maxFallSpeed);
         }
     }
 
@@ -320,7 +366,13 @@ public class PlayerController : NetworkBehaviour
 
                 bool isOtherPlayer = col.CompareTag("Player");
 
-                bool isRidingPlayer = isOtherPlayer && (transform.position.y > col.transform.position.y + 0.1f);
+                // 중력 반전 시 위에 타는 판정 수정
+                bool inverted = gravityModule != null && gravityModule.isGravityInverted;
+                bool isRidingPlayer;
+                if (inverted)
+                    isRidingPlayer = isOtherPlayer && (transform.position.y < col.transform.position.y - 0.1f);
+                else
+                    isRidingPlayer = isOtherPlayer && (transform.position.y > col.transform.position.y + 0.1f);
 
                 if (isKinematicPlatform || isRidingPlayer)
                 {
@@ -348,7 +400,11 @@ public class PlayerController : NetworkBehaviour
     {
         float gravity = Mathf.Abs(Physics2D.gravity.y) * jumpSpeed;
         float jumpForce = Mathf.Sqrt(2f * gravity * jumpHeight);
-        rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+
+        // 🌟 모듈의 multiplier 곱하기 (뒤집히면 아래로 점프)
+        float mult = gravityModule != null ? gravityModule.gravityMultiplier : 1f;
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce * mult);
+
         ckTimer = jumpCk;
     }
 
@@ -379,7 +435,7 @@ public class PlayerController : NetworkBehaviour
             }
             else
             {
-                CmdTakeKnockback(new Vector2(-1f, 0.5f));
+                ApplyLocalKnockback(new Vector2(-1f, 0.5f));
             }
 
             spikeHitCount = 0;
@@ -387,80 +443,54 @@ public class PlayerController : NetworkBehaviour
         }
         else if (spikeHitCount < 3)
         {
-            CmdTakeKnockback(new Vector2(-1f, 0.5f));
+            ApplyLocalKnockback(new Vector2(-1f, 0.5f));
         }
     }
 
-    // 🌟 1. 크리티컬 코루틴 수정 (로컬/비로컬 통제 분리)
-    private System.Collections.IEnumerator CriticalEscape(float seconds)
+    private void ApplyLocalKnockback(Vector2 knockDir)
     {
-        // 모두의 화면에서 공통 처리
-        if (boxCollider != null) boxCollider.enabled = false;
-        anim.SetTrigger("Hit");
-
-        // UI 표시 및 물리 연산은 오직 '나 자신'에게만 적용!
-        if (isLocalPlayer)
-        {
-            if (criticalUI != null) criticalUI.SetActive(true);
-            activeKnockbackX = -30f;
-            rb.linearVelocity = new Vector2(activeKnockbackX, 40f);
-            isKnockedBack = true;
-        }
-
-        yield return new WaitForSeconds(seconds);
-
-        // 모두의 화면에서 공통으로 콜라이더 복구
-        if (boxCollider != null) boxCollider.enabled = true;
-
-        // 상태 해제는 연산을 담당하는 '나 자신'에게만 적용
-        if (isLocalPlayer)
-        {
-            isKnockedBack = false;
-            stunTimer = stunTime;
-        }
-
-        yield return new WaitForSeconds(2f);
-
-        if (isLocalPlayer && criticalUI != null)
-            criticalUI.SetActive(false);
-    }
-
-    [Command]
-    void CmdTakeKnockback(Vector2 knockDir) { RpcApplyKnockback(knockDir); }
-
-    // 🌟 2. 일반 넉백(Rpc) 수정 (로컬/비로컬 통제 분리)
-    [ClientRpc]
-    void RpcApplyKnockback(Vector2 knockDir)
-    {
-        // 모두의 화면에서 공통 처리: 애니메이션 재생 & 코루틴 호출
-        anim.SetTrigger("Hit");
-        StartCoroutine(ColliderRecoveryRoutine(0.5f));
-
-        // 🌟 핵심 방어막: 내 캐릭터가 아니라면 물리 속도를 건드리지 않고 여기서 정지!
-        if (!isLocalPlayer) return;
-
-        // 오직 '나 자신(로컬)'일 때만 속도를 부여하고 상태를 변경
         activeKnockbackX = knockDir.x * knockPowerX;
-        rb.linearVelocity = new Vector2(activeKnockbackX, knockDir.y * knockPowerY);
+
+        // 🌟 넉백 시에도 중력 방향을 적용
+        float mult = gravityModule != null ? gravityModule.gravityMultiplier : 1f;
+        rb.linearVelocity = new Vector2(activeKnockbackX, knockDir.y * knockPowerY * mult);
 
         isKnockedBack = true;
         stunTimer = 0f;
+        knockbackGraceTimer = 0.1f;
+
+        CmdPlayHitAnimation();
     }
 
-    private System.Collections.IEnumerator ColliderRecoveryRoutine(float delay)
+    private System.Collections.IEnumerator CriticalEscape(float seconds)
     {
-        if (boxCollider != null) boxCollider.enabled = false;
+        if (criticalUI != null) criticalUI.SetActive(true);
 
-        yield return new WaitForSeconds(delay);
+        activeKnockbackX = -30f;
 
-        if (boxCollider != null) boxCollider.enabled = true;
+        // 🌟 크리티컬 넉백 시에도 중력 방향 적용
+        float mult = gravityModule != null ? gravityModule.gravityMultiplier : 1f;
+        rb.linearVelocity = new Vector2(activeKnockbackX, 40f * mult);
 
-        // 🌟 혹시 모를 에러 방지용: 상태 해제도 로컬일 때만!
-        if (isLocalPlayer)
-        {
-            isKnockedBack = false;
-            stunTimer = stunTime;
-        }
+        isKnockedBack = true;
+        stunTimer = 0f;
+        knockbackGraceTimer = 0.5f;
+
+        CmdPlayHitAnimation();
+
+        yield return new WaitForSeconds(seconds);
+        yield return new WaitForSeconds(2f);
+
+        if (criticalUI != null) criticalUI.SetActive(false);
+    }
+
+    [Command]
+    void CmdPlayHitAnimation() { RpcPlayHitAnimation(); }
+
+    [ClientRpc]
+    void RpcPlayHitAnimation()
+    {
+        anim.SetTrigger("Hit");
     }
 
     public override void OnStartLocalPlayer()
