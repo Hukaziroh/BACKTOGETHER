@@ -2869,6 +2869,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: UIMaster
       objectReference: {fileID: 0}
+    - target: {fileID: 9071347035235099874, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

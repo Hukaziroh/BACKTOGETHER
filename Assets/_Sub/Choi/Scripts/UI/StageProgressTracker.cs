@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.UI; // Image 컴포넌트 사용을 위해 추가
 
 public class StageProgressTracker : MonoBehaviour
 {
@@ -10,7 +11,7 @@ public class StageProgressTracker : MonoBehaviour
     private Vector3 startPos;
     private Vector3 endPos;
     private Dictionary<GameObject, RectTransform> playerIcons = new Dictionary<GameObject, RectTransform>();
-    private bool isInitialized = false; // 💡 초기화 상태 추가
+    private bool isInitialized = false;
 
     private void Start()
     {
@@ -19,14 +20,12 @@ public class StageProgressTracker : MonoBehaviour
 
     private void InitializePoints()
     {
-        // 씬 고정 오브젝트 찾기
         GameObject startObj = GameObject.FindGameObjectWithTag("SpawnPoint");
-        var doorObj = Object.FindAnyObjectByType<StageDoor>();
+        var doorObj = Object.FindAnyObjectByType<StageDoor>(); // StageDoor 타입이 씬에 존재해야 합니다
 
         if (startObj != null) startPos = startObj.transform.position;
         if (doorObj != null) endPos = doorObj.transform.position;
 
-        // 💡 둘 다 찾았으면 초기화 완료
         if (startPos != Vector3.zero && endPos != Vector3.zero)
         {
             isInitialized = true;
@@ -36,17 +35,13 @@ public class StageProgressTracker : MonoBehaviour
 
     private void Update()
     {
-        // 💡 초기화 안 됐으면 계속 시도
         if (!isInitialized)
         {
             InitializePoints();
-            return; // 초기화 전까지 로직 중단
+            return;
         }
 
-        // 맵 길이 계산 (Y축 무시, X축만)
         float mapLengthX = endPos.x - startPos.x;
-
-        // 예외 처리: 맵 길이가 너무 짧으면 오류 방지
         if (mapLengthX <= 0) return;
 
         GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
@@ -55,18 +50,29 @@ public class StageProgressTracker : MonoBehaviour
         {
             if (player == null) continue;
 
+            // 아이콘 생성 및 초기 세팅
             if (!playerIcons.ContainsKey(player))
             {
                 GameObject newIcon = Instantiate(playerIconPrefab, iconContainer);
                 newIcon.transform.localScale = Vector3.one;
                 playerIcons.Add(player, newIcon.GetComponent<RectTransform>());
+
+                // 💡 추가된 부분: CoopPlayerIdentity를 가져와 색상 적용
+                CoopPlayerIdentity identity = player.GetComponent<CoopPlayerIdentity>();
+                if (identity != null)
+                {
+                    Image iconImage = newIcon.GetComponent<Image>();
+                    if (iconImage != null && identity.playerIndex >= 0 && identity.playerIndex < identity.playerColors.Length)
+                    {
+                        iconImage.color = identity.playerColors[identity.playerIndex];
+                    }
+                }
             }
 
-            // 💡 핵심: 시작점(startPos.x)을 기준으로 현재 진행 거리 계산
+            // 위치 계산 및 업데이트
             float currentDistX = player.transform.position.x - startPos.x;
             float progress = Mathf.Clamp01(currentDistX / mapLengthX);
 
-            // 아이콘 위치 적용 (Pivot과 Anchor가 (0, 0)으로 설정된 컨테이너 기준)
             float xPos = progress * iconContainer.rect.width;
             playerIcons[player].anchoredPosition = new Vector2(xPos, 0);
         }
