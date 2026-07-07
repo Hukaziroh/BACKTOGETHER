@@ -1,0 +1,62 @@
+using UnityEngine;
+using Mirror;
+using UnityEngine.InputSystem;
+
+public class PlayerGravityController : NetworkBehaviour
+{
+    [Header("중력 상태")]
+    public bool canInvertGravity = false;  
+    public bool isGravityInverted = false; 
+    public float gravityMultiplier = 1f;   
+
+    private Rigidbody2D rb;
+
+    void Start()
+    {
+        rb = GetComponent<Rigidbody2D>();
+    }
+
+    void Update()
+    {
+        if (!isLocalPlayer) return;
+
+        if (canInvertGravity && Keyboard.current != null && Keyboard.current.vKey.wasPressedThisFrame)
+        {
+            TriggerGravityInversion();
+        }
+    }
+
+    public void TriggerGravityInversion()
+    {
+        if (!isLocalPlayer) return;
+        CmdInvertGravity();
+    }
+
+    [Command]
+    void CmdInvertGravity()
+    {
+        RpcInvertGravity();
+    }
+
+    [ClientRpc]
+    void RpcInvertGravity()
+    {
+        isGravityInverted = !isGravityInverted;
+        gravityMultiplier = isGravityInverted ? -1f : 1f;
+
+  
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, -rb.linearVelocity.y);
+
+        Vector3 currentScale = transform.localScale;
+        currentScale.y = isGravityInverted ? -1f : 1f;
+        transform.localScale = currentScale;
+    }
+
+    public void ResetGravity()
+    {
+        if (isGravityInverted)
+        {
+            CmdInvertGravity(); 
+        }
+    }
+}
