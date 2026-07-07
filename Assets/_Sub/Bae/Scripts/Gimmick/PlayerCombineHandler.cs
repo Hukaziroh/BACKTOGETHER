@@ -1,19 +1,19 @@
 using UnityEngine;
 using Mirror;
+using UnityEngine.InputSystem; // 🌟 새로운 인풋 시스템 추가!
 
 public class PlayerCombineHandler : NetworkBehaviour
 {
     [Header("합체 상태")]
     [SyncVar] public bool isCombined = false;
-    [SyncVar] public string myRole = "";     // "Move", "Move_Left", "Move_Right", "Jump", "Action" 등
-    [SyncVar] public GameObject bodyTarget;  // 내가 조종해야 할 본체
+    [SyncVar] public string myRole = "";
+    [SyncVar] public GameObject bodyTarget;
 
-    // 🌟 본체 클라이언트가 유령들에게 원격으로 전달받아 저장할 입력 변수들
     [HideInInspector] public float ghostLeftInput = 0f;
     [HideInInspector] public float ghostRightInput = 0f;
     [HideInInspector] public float ghostDuoInput = 0f;
 
-    private float lastSentMove = 0f; // 패킷 최적화용
+    private float lastSentMove = 0f;
 
     private SpriteRenderer spriteRenderer;
     private Collider2D col;
@@ -40,10 +40,11 @@ public class PlayerCombineHandler : NetworkBehaviour
     {
         if (gameObject == body)
         {
-            transform.localScale = new Vector3(2f, 2f, 1f);
+            transform.localScale = new Vector3(2f, 2f, 1f); // 본체 커짐
         }
         else
         {
+            // 유령 투명화 및 충돌 해제
             spriteRenderer.enabled = false;
             col.enabled = false;
             rb.simulated = false;
@@ -53,84 +54,78 @@ public class PlayerCombineHandler : NetworkBehaviour
     void Update()
     {
         if (!isLocalPlayer || !isCombined) return;
+        if (Keyboard.current == null) return; // 🌟 키보드 연결 확인
 
         // 1. [내가 유령(Ghost)일 때]
         if (gameObject != bodyTarget)
         {
             float currentMove = 0f;
 
-            if (myRole == "Move_Left" && (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))) currentMove = -1f;
-            else if (myRole == "Move_Right" && (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))) currentMove = 1f;
-            else if (myRole == "Move") // 2인 기믹 통합 이동
+            if (myRole == "Move_Left" && (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)) currentMove = -1f;
+            else if (myRole == "Move_Right" && (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)) currentMove = 1f;
+            else if (myRole == "Move")
             {
-                if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) currentMove = -1f;
-                else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) currentMove = 1f;
+                if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) currentMove = -1f;
+                else if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) currentMove = 1f;
             }
 
-            // 누르고 있는 상태가 변경되었을 때만 딱 한 번 패킷 전송 (서버 과부하 방지)
             if (currentMove != lastSentMove)
             {
                 lastSentMove = currentMove;
                 CmdSendMoveState(bodyTarget, currentMove, myRole);
             }
 
-            // 점프와 액션은 한 번 누를 때마다 전송
-            if ((myRole == "Jump" || myRole == "Move") && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W)))
+            // 점프 / 액션 전송
+            if ((myRole == "Jump" || myRole == "Move") && (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame))
             {
                 CmdSendJumpToBody(bodyTarget);
             }
-            if (myRole == "Action" && (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)))
+            if (myRole == "Action" && (Keyboard.current.downArrowKey.wasPressedThisFrame || Keyboard.current.sKey.wasPressedThisFrame))
             {
                 CmdSendActionToBody(bodyTarget);
             }
         }
-        // 2. [내가 본체(Body)일 때] 본인도 점프/액션 역할군이라면 바로 실행
+        // 2. [내가 본체(Body)일 때]
         else
         {
-            if (myRole == "Jump" && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W)))
+            if (myRole == "Jump" && (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame))
             {
                 GetComponent<PlayerController>().CallCombinedJump();
             }
-            if (myRole == "Action" && (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)))
+            if (myRole == "Action" && (Keyboard.current.downArrowKey.wasPressedThisFrame || Keyboard.current.sKey.wasPressedThisFrame))
             {
                 GetComponent<PlayerController>().CallCombinedAction();
             }
         }
     }
 
-    // 🌟 [에러 해결의 핵심!] PlayerController가 가져다 쓸 통합 수평 입력값 계산기
     public float GetCombinedHorizontalInput()
     {
         float totalInput = 0f;
 
-        // 1. 본체 본인의 키보드 조작 처리
-        if (myRole == "Move_Left" && (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))) totalInput += -1f;
-        if (myRole == "Move_Right" && (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))) totalInput += 1f;
-        if (myRole == "Move")
+        if (Keyboard.current != null)
         {
-            if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) totalInput += -1f;
-            else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) totalInput += 1f;
+            if (myRole == "Move_Left" && (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)) totalInput += -1f;
+            if (myRole == "Move_Right" && (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)) totalInput += 1f;
+            if (myRole == "Move")
+            {
+                if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) totalInput += -1f;
+                else if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) totalInput += 1f;
+            }
         }
 
-        // 2. 유령 동료들에게 네트워크로 전달받은 값들 더하기
         totalInput += ghostLeftInput;
         totalInput += ghostRightInput;
         totalInput += ghostDuoInput;
 
-        // -1 ~ 1 사이로 보정해서 반환
         return Mathf.Clamp(totalInput, -1f, 1f);
     }
-
-    // ----------------------------------------------------
-    // 네트워크 통신 (Ghost -> Server -> Body 클라이언트 전달)
-    // ----------------------------------------------------
 
     [Command]
     private void CmdSendMoveState(GameObject body, float moveValue, string role)
     {
         if (body == null) return;
-        NetworkIdentity bodyIdentity = body.GetComponent<NetworkIdentity>();
-        body.GetComponent<PlayerCombineHandler>().TargetReceiveMoveState(bodyIdentity.connectionToClient, moveValue, role);
+        body.GetComponent<PlayerCombineHandler>().TargetReceiveMoveState(body.GetComponent<NetworkIdentity>().connectionToClient, moveValue, role);
     }
 
     [TargetRpc]
@@ -145,27 +140,19 @@ public class PlayerCombineHandler : NetworkBehaviour
     private void CmdSendJumpToBody(GameObject body)
     {
         if (body == null) return;
-        NetworkIdentity bodyIdentity = body.GetComponent<NetworkIdentity>();
-        body.GetComponent<PlayerCombineHandler>().TargetDoJump(bodyIdentity.connectionToClient);
+        body.GetComponent<PlayerCombineHandler>().TargetDoJump(body.GetComponent<NetworkIdentity>().connectionToClient);
     }
 
     [TargetRpc]
-    public void TargetDoJump(NetworkConnection target)
-    {
-        GetComponent<PlayerController>().CallCombinedJump();
-    }
+    public void TargetDoJump(NetworkConnection target) { GetComponent<PlayerController>().CallCombinedJump(); }
 
     [Command]
     private void CmdSendActionToBody(GameObject body)
     {
         if (body == null) return;
-        NetworkIdentity bodyIdentity = body.GetComponent<NetworkIdentity>();
-        body.GetComponent<PlayerCombineHandler>().TargetDoAction(bodyIdentity.connectionToClient);
+        body.GetComponent<PlayerCombineHandler>().TargetDoAction(body.GetComponent<NetworkIdentity>().connectionToClient);
     }
 
     [TargetRpc]
-    public void TargetDoAction(NetworkConnection target)
-    {
-        GetComponent<PlayerController>().CallCombinedAction();
-    }
+    public void TargetDoAction(NetworkConnection target) { GetComponent<PlayerController>().CallCombinedAction(); }
 }
