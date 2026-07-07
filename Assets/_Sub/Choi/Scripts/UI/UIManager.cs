@@ -15,6 +15,9 @@ public class UIManager : MonoBehaviour
     // 변수 이름을 목적에 맞게 변경했습니다 (progressBarUI -> progressTrackerUI)
     [SerializeField] private GameObject progressTrackerUI;
 
+    [Header("관전 연결")]
+    [SerializeField] private SpectatorSystem spectatorSystem;
+
     [Header("설정")]
     [SerializeField] private string[] excludedScenes = { "Main", "Lobby" };
 
@@ -36,9 +39,21 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
+        // 1. ESC 입력 처리 (이미 잘 작성하신 부분)
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             HandleEscapeInput();
+        }
+
+        // 2. 관전 키 입력 처리 (최신 Input System 방식으로 수정)
+        if (spectatorSystem != null && Keyboard.current != null)
+        {
+            if (Keyboard.current.digit1Key.wasPressedThisFrame) spectatorSystem.SelectTarget(0);
+            if (Keyboard.current.digit2Key.wasPressedThisFrame) spectatorSystem.SelectTarget(1);
+            if (Keyboard.current.digit3Key.wasPressedThisFrame) spectatorSystem.SelectTarget(2);
+            if (Keyboard.current.digit4Key.wasPressedThisFrame) spectatorSystem.SelectTarget(3);
+
+            if (Keyboard.current.tabKey.wasPressedThisFrame) spectatorSystem.CycleTarget();
         }
     }
 
@@ -49,6 +64,18 @@ public class UIManager : MonoBehaviour
 
         // 💡 null 체크를 간결하게 (progressTrackerUI가 할당 안 되어도 에러 방지)
         progressTrackerUI?.SetActive(isChapter);
+
+        // [추가] 관전 카메라 자동 연결 로직
+        GameObject mainCam = GameObject.FindGameObjectWithTag("MainCamera");
+        if (mainCam != null)
+        {
+            // 만약 카메라에 SpectatorCamera 스크립트가 없다면?
+            if (mainCam.GetComponent<SpectatorCamera>() == null)
+            {
+                mainCam.AddComponent<SpectatorCamera>();
+                Debug.Log("[UIManager] 메인 카메라에 관전 기능을 자동으로 부착했습니다.");
+            }
+        }
     }
 
     private void HandleEscapeInput()

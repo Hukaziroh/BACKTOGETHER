@@ -244,6 +244,7 @@ GameObject:
   - component: {fileID: 691312139185975647}
   - component: {fileID: 3894012771846626613}
   - component: {fileID: 5980980681081755393}
+  - component: {fileID: 4549912752351875501}
   m_Layer: 0
   m_Name: UIMaster
   m_TagString: Untagged
@@ -279,7 +280,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a14bf33d43aca5e489893376b53bd1a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OptionsManager
-  optionsPanel: {fileID: 0}
+  optionsPanel: {fileID: 3101628958932043637}
   audioMixer: {fileID: 24100000, guid: 95799436be0aef347a09df451fe579be, type: 2}
   volumeSlider: {fileID: 7294798139203027380}
   fullscreenToggle: {fileID: 5166278099781679138}
@@ -312,10 +313,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UIManager
   pauseManager: {fileID: 3894012771846626613}
   optionsManager: {fileID: 691312139185975647}
-  progressTrackerUI: {fileID: 0}
+  progressTrackerUI: {fileID: 6697322018543029922}
+  spectatorSystem: {fileID: 4549912752351875501}
   excludedScenes:
   - Main
   - Lobby
+--- !u!114 &4549912752351875501
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9071347035235099874}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 588adb9bb695e434b84dba6894e4a055, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpectatorSystem
 --- !u!1001 &4410633173489485314
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -670,6 +684,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 311794df77832414091eb3ad2617a6c8, type: 3}
+--- !u!1 &3101628958932043637 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4754355430403800209, guid: 311794df77832414091eb3ad2617a6c8, type: 3}
+  m_PrefabInstance: {fileID: 7706202163707345892}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &3140611284051576295 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4711995956133182979, guid: 311794df77832414091eb3ad2617a6c8, type: 3}

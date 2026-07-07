@@ -1,5 +1,6 @@
-using UnityEngine;
+using System.Collections.Generic;
 using Mirror;
+using UnityEngine;
 
 public class CoopPlayerIdentity : NetworkBehaviour
 {
@@ -20,20 +21,23 @@ public class CoopPlayerIdentity : NetworkBehaviour
     [SyncVar(hook = nameof(OnReadyStatusChanged))]
     public bool isReady = false;
 
-    public override void OnStartServer()
-    {
-        base.OnStartServer();
-        AssignAvailableIndex();
-    }
+    public static Dictionary<int, CoopPlayerIdentity> players = new Dictionary<int, CoopPlayerIdentity>();
 
     public override void OnStartClient()
     {
         base.OnStartClient();
-        if (playerIndex != -1)
-        {
-            UpdatePlayerVisual(playerIndex);
-        }
+        // 딕셔너리에 추가 (인덱스가 할당된 후)
+        if (playerIndex != -1) players[playerIndex] = this;
+
+        if (playerIndex != -1) UpdatePlayerVisual(playerIndex);
         NotifyReadyManager();
+    }
+
+    public override void OnStopClient()
+    {
+        base.OnStopClient();
+        // 접속 종료 시 제거
+        if (players.ContainsKey(playerIndex)) players.Remove(playerIndex);
     }
 
     public override void OnStartLocalPlayer()
