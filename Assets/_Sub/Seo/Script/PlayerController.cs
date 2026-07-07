@@ -101,7 +101,7 @@ public class PlayerController : NetworkBehaviour
 
     void Update()
     {
-        transform.rotation = Quaternion.identity;
+        
         if (!isLocalPlayer) return;
 
         if (ckTimer > 0f) ckTimer -= Time.deltaTime;
@@ -518,6 +518,11 @@ public class PlayerController : NetworkBehaviour
         if (!isLocalPlayer) return;
         isReversedControl = false;
         reverseTimer = 0f;
+    }
+
+    public void LateUpdate()
+    {
+        transform.rotation = Quaternion.identity;
     }
 
     private void OnDrawGizmosSelected()
