@@ -1997,6 +1997,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 895060676}
   m_CullTransparentMesh: 1
+--- !u!1 &1038892784 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6697322018543029922, guid: d391139454a53e341889149a36646d1d, type: 3}
+  m_PrefabInstance: {fileID: 6870475135527063537}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1114808919 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3232744688132098009, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
@@ -2331,50 +2336,6 @@ MonoBehaviour:
   smoothTime: 0.1
   offset: {x: 0, y: 0, z: -10}
   cameraSize: 8
---- !u!1 &1948970160 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 9071347035235099874, guid: d391139454a53e341889149a36646d1d, type: 3}
-  m_PrefabInstance: {fileID: 6870475135527063537}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1948970162 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3894012771846626613, guid: d391139454a53e341889149a36646d1d, type: 3}
-  m_PrefabInstance: {fileID: 6870475135527063537}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1948970160}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4de81c08694039d499ce5d48f6fe0100, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PauseManager
---- !u!114 &1948970163 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 691312139185975647, guid: d391139454a53e341889149a36646d1d, type: 3}
-  m_PrefabInstance: {fileID: 6870475135527063537}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1948970160}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a14bf33d43aca5e489893376b53bd1a4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::OptionsManager
---- !u!114 &1948970164
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1948970160}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3212dde083cb09848af977a942bd3a84, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UIManager
-  pauseManager: {fileID: 1948970162}
-  optionsManager: {fileID: 1948970163}
-  excludedScenes:
-  - Main
-  - Lobby
 --- !u!1 &1966338791
 GameObject:
   m_ObjectHideFlags: 0
@@ -2880,12 +2841,24 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2725924448279016323, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3894012771846626613, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: ConnectPanel
       value: 
       objectReference: {fileID: 112237220}
     - target: {fileID: 5751890398702285289, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5980980681081755393, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: progressTrackerUI
+      value: 
+      objectReference: {fileID: 1038892784}
+    - target: {fileID: 6336028865661130936, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6861492556534220538, guid: d391139454a53e341889149a36646d1d, type: 3}
@@ -2899,10 +2872,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 9071347035235099874, guid: d391139454a53e341889149a36646d1d, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1948970164}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d391139454a53e341889149a36646d1d, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
