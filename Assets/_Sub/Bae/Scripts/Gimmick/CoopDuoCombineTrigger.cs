@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class CoopDuoCombineTrigger : NetworkBehaviour
 {
     [Header("2인 1조 합체 기믹 설정")]
-    public int requiredPlayers = 4;
+    public int requiredPlayers = 2;
 
     [SyncVar]
     private bool isTriggered = false;
@@ -46,22 +46,16 @@ public class CoopDuoCombineTrigger : NetworkBehaviour
         List<GameObject> playerList = new List<GameObject>(playersInZone);
         if (playerList.Count < 2) return;
 
-        Debug.Log("기믹을 발동");
+        Debug.Log("2인 기믹 발동!");
 
         AssignRole(playerList[0], playerList[1], "Move", "Jump");
-
-        //AssignRole(playerList[2], playerList[3], "Move", "Jump");
     }
 
     [Server]
-    private void AssignRole(GameObject playerA, GameObject playerB,
-                        string roleA, string roleB)
+    private void AssignRole(GameObject playerA, GameObject playerB, string roleA, string roleB)
     {
-        PlayerCombineHandler a =
-            playerA.GetComponent<PlayerCombineHandler>();
-
-        PlayerCombineHandler b =
-            playerB.GetComponent<PlayerCombineHandler>();
+        PlayerCombineHandler a = playerA.GetComponent<PlayerCombineHandler>();
+        PlayerCombineHandler b = playerB.GetComponent<PlayerCombineHandler>();
 
         if (a == null || b == null)
         {
@@ -71,11 +65,9 @@ public class CoopDuoCombineTrigger : NetworkBehaviour
 
         // playerA를 본체로 설정
         a.StartCombineMode(roleA, playerA);
-
         // playerB는 playerA를 조종
         b.StartCombineMode(roleB, playerA);
 
-        Debug.Log($"[2인 1조] {playerA.name} & {playerB.name} 합체 완료");
+        Debug.Log($"[2인 1조] {playerA.name}({roleA}) & {playerB.name}({roleB}) 합체 완료");
     }
 }
-

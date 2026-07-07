@@ -46,7 +46,7 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
         List<GameObject> playerList = new List<GameObject>(playersInZone);
         if (playerList.Count < 4) return;
 
-        Debug.Log("기믹을 발동!");
+        Debug.Log("4인 기믹 발동!");
 
         AssignFourRoles(playerList[0], playerList[1], playerList[2], playerList[3]);
     }
@@ -54,16 +54,22 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
     [Server]
     private void AssignFourRoles(GameObject p1, GameObject p2, GameObject p3, GameObject p4)
     {
-        string role1 = "Move_Left";  
-        string role2 = "Move_Right";
-        string role3 = "Jump";      
-        string role4 = "Action";    
+        PlayerCombineHandler h1 = p1.GetComponent<PlayerCombineHandler>();
+        PlayerCombineHandler h2 = p2.GetComponent<PlayerCombineHandler>();
+        PlayerCombineHandler h3 = p3.GetComponent<PlayerCombineHandler>();
+        PlayerCombineHandler h4 = p4.GetComponent<PlayerCombineHandler>();
 
-        // 플레이어 담당자가 구현할 합체 함수 호출 부분 (예시)
-        // p1.GetComponent<PlayerCombineHandler>().RpcStartQuadMode(role1, p1);
-        // p2.GetComponent<PlayerCombineHandler>().RpcStartQuadMode(role2, p1);
-        // p3.GetComponent<PlayerCombineHandler>().RpcStartQuadMode(role3, p1);
-        // p4.GetComponent<PlayerCombineHandler>().RpcStartQuadMode(role4, p1);
+        if (h1 == null || h2 == null || h3 == null || h4 == null)
+        {
+            Debug.LogError("플레이어 중 PlayerCombineHandler가 없는 오브젝트가 있습니다.");
+            return;
+        }
+
+        // p1을 본체로 만들고, 각각 역할을 분담시킴
+        h1.StartCombineMode("Move_Left", p1);
+        h2.StartCombineMode("Move_Right", p1);
+        h3.StartCombineMode("Jump", p1);
+        h4.StartCombineMode("Action", p1);
 
         Debug.Log($"[4인 1체] {p1.name}(본체/왼쪽), {p2.name}(오른쪽), {p3.name}(점프), {p4.name}(액션)");
     }
