@@ -279,6 +279,13 @@ public class PlayerController : NetworkBehaviour
         if (isKnockedBack)
         {
             rb.mass = 1f;
+
+            // 🌟 넉백 초반(0.2초)에는 1칸짜리 벽에 가로막혀 속도가 0이 되는 것을 무시하고 강제로 밀어붙입니다!
+            // 이렇게 하면 Y축으로 살짝 떴을 때 벽을 부드럽게 타고 뒤로 넘어가게 됩니다.
+            if (knockbackGraceTimer > 0f)
+            {
+                rb.linearVelocity = new Vector2(activeKnockbackX, rb.linearVelocity.y);
+            }
         }
         else if (stunTimer <= 0f)
         {
@@ -427,6 +434,7 @@ public class PlayerController : NetworkBehaviour
         spikeHitCount++;
         spikeResetTimer = 1.5f;
 
+        // 🌟 기획 의도대로 무조건 왼쪽(-1f)으로 튕기도록 롤백
         if (spikeHitCount >= 3 && criticalCooldownTimer <= 0f)
         {
             if (Random.value <= 0.5f)
@@ -452,13 +460,13 @@ public class PlayerController : NetworkBehaviour
     {
         activeKnockbackX = knockDir.x * knockPowerX;
 
-        // 🌟 넉백 시에도 중력 방향을 적용
         float mult = gravityModule != null ? gravityModule.gravityMultiplier : 1f;
         rb.linearVelocity = new Vector2(activeKnockbackX, knockDir.y * knockPowerY * mult);
 
         isKnockedBack = true;
         stunTimer = 0f;
-        knockbackGraceTimer = 0.1f;
+        // 🌟 0.1f에서 0.2f로 늘림 (작은 턱을 타고 넘어갈 충분한 시간)
+        knockbackGraceTimer = 0.2f;
 
         CmdPlayHitAnimation();
     }
@@ -467,15 +475,15 @@ public class PlayerController : NetworkBehaviour
     {
         if (criticalUI != null) criticalUI.SetActive(true);
 
+        // 🌟 크리티컬 시에도 무조건 왼쪽(-30f)으로 날아가도록 롤백
         activeKnockbackX = -30f;
 
-        // 🌟 크리티컬 넉백 시에도 중력 방향 적용
         float mult = gravityModule != null ? gravityModule.gravityMultiplier : 1f;
         rb.linearVelocity = new Vector2(activeKnockbackX, 40f * mult);
 
         isKnockedBack = true;
         stunTimer = 0f;
-        knockbackGraceTimer = 0.5f;
+        knockbackGraceTimer = 0.5f; // (벽을 뚫고 넘어가는 무적 시간은 유지)
 
         CmdPlayHitAnimation();
 

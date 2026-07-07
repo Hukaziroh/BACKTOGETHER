@@ -11,12 +11,11 @@ public class CoopGravityZone : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            // 🌟 새로 만든 전담 모듈을 불러옵니다.
             PlayerGravityController gravityModule = other.GetComponent<PlayerGravityController>();
 
             if (gravityModule != null)
             {
-                gravityModule.canInvertGravity = true; // 반전 허용!
+                gravityModule.canInvertGravity = true; 
                 Debug.Log($"[{other.name}] 중력 반전 가능 구역 진입.");
             }
         }
@@ -30,10 +29,9 @@ public class CoopGravityZone : MonoBehaviour
 
             if (gravityModule != null)
             {
-                gravityModule.canInvertGravity = false; // 반전 불가!
+                gravityModule.canInvertGravity = false; 
                 Debug.Log($"[{other.name}] 중력 반전 가능 구역 이탈.");
 
-                // 🌟 구역을 나갈 때 억지로 뒤집혀 있다면 모듈의 함수를 통해 안전하게 정상화시킵니다.
                 if (resetGravityOnExit)
                 {
                     gravityModule.ResetGravity();
