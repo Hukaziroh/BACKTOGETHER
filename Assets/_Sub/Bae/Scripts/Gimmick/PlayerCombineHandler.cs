@@ -9,9 +9,7 @@ public class PlayerCombineHandler : NetworkBehaviour
     [SyncVar] public string myRole = "";
     [SyncVar] public GameObject bodyTarget;
 
-    [HideInInspector] public float ghostLeftInput = 0f;
-    [HideInInspector] public float ghostRightInput = 0f;
-    [HideInInspector] public float ghostDuoInput = 0f;
+    [SyncVar] public float mySyncInput = 0f;
 
     private float lastSentMove = 0f;
 
@@ -32,6 +30,7 @@ public class PlayerCombineHandler : NetworkBehaviour
         isCombined = true;
         myRole = role;
         bodyTarget = body;
+        mySyncInput = 0f; 
         RpcApplyCombineVisual(body);
     }
 
@@ -76,7 +75,7 @@ public class PlayerCombineHandler : NetworkBehaviour
             if (currentMove != lastSentMove)
             {
                 lastSentMove = currentMove;
-                CmdSendMoveState(bodyTarget, currentMove, myRole);
+                CmdSendMoveInput(currentMove);
             }
 
             if ((myRole == "Jump" || myRole == "Move") && (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame))
@@ -101,13 +100,6 @@ public class PlayerCombineHandler : NetworkBehaviour
         }
     }
 
-    void LateUpdate()
-    {
-        if (isCombined && bodyTarget != null && gameObject != bodyTarget)
-        {
-            transform.position = bodyTarget.transform.position;
-        }
-    }
     public float GetCombinedHorizontalInput()
     {
         float totalInput = 0f;
@@ -123,26 +115,22 @@ public class PlayerCombineHandler : NetworkBehaviour
             }
         }
 
-        totalInput += ghostLeftInput;
-        totalInput += ghostRightInput;
-        totalInput += ghostDuoInput;
+        PlayerCombineHandler[] allPlayers = FindObjectsByType<PlayerCombineHandler>(FindObjectsSortMode.None);
+        foreach (var p in allPlayers)
+        {
+            if (p.isCombined && p.bodyTarget == gameObject && p != this)
+            {
+                totalInput += p.mySyncInput;
+            }
+        }
 
         return Mathf.Clamp(totalInput, -1f, 1f);
     }
 
     [Command]
-    private void CmdSendMoveState(GameObject body, float moveValue, string role)
+    private void CmdSendMoveInput(float moveValue)
     {
-        if (body == null) return;
-        body.GetComponent<PlayerCombineHandler>().TargetReceiveMoveState(body.GetComponent<NetworkIdentity>().connectionToClient, moveValue, role);
-    }
-
-    [TargetRpc]
-    private void TargetReceiveMoveState(NetworkConnection target, float moveValue, string role)
-    {
-        if (role == "Move_Left") ghostLeftInput = moveValue;
-        else if (role == "Move_Right") ghostRightInput = moveValue;
-        else if (role == "Move") ghostDuoInput = moveValue;
+        mySyncInput = moveValue; 
     }
 
     [Command]
@@ -171,13 +159,9 @@ public class PlayerCombineHandler : NetworkBehaviour
         isCombined = false;
         myRole = "";
         bodyTarget = null;
-
-        ghostLeftInput = 0f;
-        ghostRightInput = 0f;
-        ghostDuoInput = 0f;
+        mySyncInput = 0f;
 
         transform.position = releasePosition;
-
         RpcApplySeparateVisual(releasePosition);
     }
 
@@ -185,6 +169,7 @@ public class PlayerCombineHandler : NetworkBehaviour
     private void RpcApplySeparateVisual(Vector3 releasePosition)
     {
         isCombined = false;
+
         spriteRenderer.enabled = true;
         col.enabled = true;
         rb.simulated = true;
@@ -195,11 +180,9 @@ public class PlayerCombineHandler : NetworkBehaviour
             rb.position = releasePosition;
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
+
             PlayerController pc = GetComponent<PlayerController>();
-            if (pc != null)
-            {
-                pc.ResetStateForSeparation();
-            }
+            if (pc != null) pc.ResetStateForSeparation();
 
             Camera mainCam = Camera.main;
             if (mainCam != null)
