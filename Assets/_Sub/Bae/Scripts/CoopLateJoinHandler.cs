@@ -19,16 +19,36 @@ public class CoopLateJoinHandler : NetworkBehaviour
 
     [Server]
     private void TeleportToTeam()
-    { 
+    {
         CoopLateJoinHandler[] allPlayers = FindObjectsByType<CoopLateJoinHandler>();
         foreach (var player in allPlayers)
         {
             if (player.gameObject != this.gameObject)
             {
-                transform.position = player.transform.position;
-                Debug.Log("중도 참여 감지! 기존 팀원의 위치로 자동 합류했습니다.");
-                break; 
+                Vector3 targetPosition = player.transform.position;
+                TargetTeleportToPlayer(connectionToClient, targetPosition);
+
+                Debug.Log($"[서버] 중도 참여자 감지! 팀원({player.name})의 위치로 텔레포트 명령을 전송합니다.");
+                break;
             }
         }
+    }
+    [TargetRpc]
+    private void TargetTeleportToPlayer(NetworkConnection target, Vector3 targetPos)
+    {
+        transform.position = targetPos;
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        if (rb != null)
+        {
+            rb.position = targetPos;
+            rb.linearVelocity = Vector2.zero;
+        }
+        PlayerController playerController = GetComponent<PlayerController>();
+        if (playerController != null)
+        {
+            playerController.currentSpawnPoint = targetPos;
+        }
+
+        Debug.Log($"[클라이언트] 서버 명령 수신 - 기존 팀원의 위치({targetPos})로 안전하게 합류했습니다.");
     }
 }
