@@ -33,4 +33,9 @@ public class SpectatorSystem : MonoBehaviour
             }
         }
     }
+    public void StopSpectating()
+    {
+        CurrentTarget = null;
+        Debug.Log("관전 모드 종료");
+    }
 }

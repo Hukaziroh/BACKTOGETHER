@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.UI; // Image 컴포넌트 사용을 위해 추가
+using UnityEngine.UI;
+using UnityEngine.SceneManagement; // 씬 전환 이벤트를 위해 반드시 필요
 
 public class StageProgressTracker : MonoBehaviour
 {
@@ -13,23 +14,65 @@ public class StageProgressTracker : MonoBehaviour
     private Dictionary<GameObject, RectTransform> playerIcons = new Dictionary<GameObject, RectTransform>();
     private bool isInitialized = false;
 
+    // 관전 시스템 참조
+    private SpectatorSystem spectatorSystem;
+
+    // 💡 씬이 로드될 때 이벤트를 구독합니다.
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    // 💡 오브젝트 파괴 시 이벤트 구독을 해제합니다.
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
     private void Start()
     {
+        // 첫 시작 시 초기화
+        InitializeScene();
+    }
+
+    // 💡 씬 로드 시 호출될 메서드
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        InitializeScene();
+    }
+
+    private void InitializeScene()
+    {
+        // 1. 기존 아이콘들 전부 제거
+        foreach (Transform child in iconContainer)
+        {
+            Destroy(child.gameObject);
+        }
+        playerIcons.Clear();
+        isInitialized = false; // 재초기화 필요 플래그
+
+        // 2. 새로운 씬의 포인트 찾기
         InitializePoints();
+
+        // 3. 관전 시스템 다시 찾기
+        spectatorSystem = FindFirstObjectByType<SpectatorSystem>();
     }
 
     private void InitializePoints()
     {
         GameObject startObj = GameObject.FindGameObjectWithTag("SpawnPoint");
-        var doorObj = Object.FindAnyObjectByType<StageDoor>(); // StageDoor 타입이 씬에 존재해야 합니다
+        var doorObj = Object.FindAnyObjectByType<StageDoor>();
 
-        if (startObj != null) startPos = startObj.transform.position;
-        if (doorObj != null) endPos = doorObj.transform.position;
-
-        if (startPos != Vector3.zero && endPos != Vector3.zero)
+        if (startObj != null && doorObj != null)
         {
+            startPos = startObj.transform.position;
+            endPos = doorObj.transform.position;
             isInitialized = true;
-            Debug.Log($"[Tracker] 초기화 성공! Start: {startPos}, End: {endPos}");
+        }
+        else
+        {
+            // 아직 씬 오브젝트가 로드되지 않았을 수 있음
+            isInitialized = false;
         }
     }
 
@@ -41,6 +84,9 @@ public class StageProgressTracker : MonoBehaviour
             return;
         }
 
+        // 시스템 유실 시 다시 캐싱
+        if (spectatorSystem == null) spectatorSystem = FindFirstObjectByType<SpectatorSystem>();
+
         float mapLengthX = endPos.x - startPos.x;
         if (mapLengthX <= 0) return;
 
@@ -50,31 +96,40 @@ public class StageProgressTracker : MonoBehaviour
         {
             if (player == null) continue;
 
-            // 아이콘 생성 및 초기 세팅
+            // 1. 아이콘 생성
             if (!playerIcons.ContainsKey(player))
             {
                 GameObject newIcon = Instantiate(playerIconPrefab, iconContainer);
                 newIcon.transform.localScale = Vector3.one;
                 playerIcons.Add(player, newIcon.GetComponent<RectTransform>());
 
-                // 💡 추가된 부분: CoopPlayerIdentity를 가져와 색상 적용
+                // 색상 적용
                 CoopPlayerIdentity identity = player.GetComponent<CoopPlayerIdentity>();
-                if (identity != null)
+                Image iconImage = newIcon.GetComponent<Image>();
+                if (iconImage != null && identity != null)
                 {
-                    Image iconImage = newIcon.GetComponent<Image>();
-                    if (iconImage != null && identity.playerIndex >= 0 && identity.playerIndex < identity.playerColors.Length)
-                    {
+                    // 인덱스 범위 체크 추가
+                    if (identity.playerIndex >= 0 && identity.playerIndex < identity.playerColors.Length)
                         iconImage.color = identity.playerColors[identity.playerIndex];
-                    }
                 }
             }
 
-            // 위치 계산 및 업데이트
+            // 2. 관전 강조 로직
+            Transform highlight = playerIcons[player].Find("HighlightBorder");
+            if (highlight != null)
+            {
+                bool isSpectated = (spectatorSystem != null && spectatorSystem.CurrentTarget != null && player.transform == spectatorSystem.CurrentTarget);
+                highlight.gameObject.SetActive(isSpectated);
+            }
+
+            // 3. 위치 업데이트
             float currentDistX = player.transform.position.x - startPos.x;
             float progress = Mathf.Clamp01(currentDistX / mapLengthX);
-
             float xPos = progress * iconContainer.rect.width;
-            playerIcons[player].anchoredPosition = new Vector2(xPos, 0);
+
+            // 안전한 널 체크 후 위치 할당
+            if (playerIcons.ContainsKey(player))
+                playerIcons[player].anchoredPosition = new Vector2(xPos, 0);
         }
     }
 }
