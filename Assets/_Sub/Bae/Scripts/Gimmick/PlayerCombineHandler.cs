@@ -38,11 +38,7 @@ public class PlayerCombineHandler : NetworkBehaviour
     [ClientRpc]
     private void RpcApplyCombineVisual(GameObject body)
     {
-        if (gameObject == body)
-        {
-            transform.localScale = new Vector3(2f, 2f, 1f);
-        }
-        else
+        if (gameObject != body)
         {
             spriteRenderer.enabled = false;
             col.enabled = false;
