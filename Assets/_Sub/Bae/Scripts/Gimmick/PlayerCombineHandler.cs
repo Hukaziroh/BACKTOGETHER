@@ -184,6 +184,7 @@ public class PlayerCombineHandler : NetworkBehaviour
     [ClientRpc]
     private void RpcApplySeparateVisual(Vector3 releasePosition)
     {
+        isCombined = false;
         spriteRenderer.enabled = true;
         col.enabled = true;
         rb.simulated = true;
@@ -193,6 +194,12 @@ public class PlayerCombineHandler : NetworkBehaviour
             transform.position = releasePosition;
             rb.position = releasePosition;
             rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+            PlayerController pc = GetComponent<PlayerController>();
+            if (pc != null)
+            {
+                pc.ResetStateForSeparation();
+            }
 
             Camera mainCam = Camera.main;
             if (mainCam != null)

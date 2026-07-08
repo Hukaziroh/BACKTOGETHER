@@ -545,4 +545,22 @@ public class PlayerController : NetworkBehaviour
         Vector2 checkPosition = (Vector2)transform.position + checkOffset;
         Gizmos.DrawWireSphere(checkPosition, checkRadius);
     }
+
+    public void ResetStateForSeparation()
+    {
+        horizontalInput = 0f;
+        isGrounded = true;
+        isOnIce = false;
+        wasOnIceLastFrame = false;
+        platformVelocity = Vector2.zero;
+        currentPlatform = null;
+        stunTimer = 0f;
+        isKnockedBack = false;
+        knockbackGraceTimer = 0f;
+
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+        }
+    }
 }
