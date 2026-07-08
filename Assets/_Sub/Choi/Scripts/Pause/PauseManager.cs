@@ -58,17 +58,20 @@ public class PauseManager : MonoBehaviour
     {
         ResumeGame();
 
+        // 🌟 1. 네트워크를 끊기 전에 "내가 스스로 나간다"고 핸들러에 알림
         HostDisconnectHandler disconnectHandler = FindFirstObjectByType<HostDisconnectHandler>();
         if (disconnectHandler != null)
         {
-            disconnectHandler.enabled = false;
+            disconnectHandler.SetIntentionalExit();
         }
 
+        // 🌟 2. 네트워크 연결 종료
         if (NetworkServer.active && NetworkClient.isConnected)
             NetworkManager.singleton.StopHost();
         else if (NetworkClient.isConnected)
             NetworkManager.singleton.StopClient();
-        else
-            SceneManager.LoadScene(mainMenuSceneName);
+
+        // 🌟 3. 씬 이동
+        SceneManager.LoadScene(mainMenuSceneName);
     }
 }
