@@ -39,12 +39,14 @@ public class StageProgressTracker : MonoBehaviour
 
     private void InitializeScene()
     {
+        // 기존 아이콘 제거
         foreach (Transform child in iconContainer)
         {
             if (child != null) Destroy(child.gameObject);
         }
         playerIcons.Clear();
         isInitialized = false;
+
         InitializePoints();
         spectatorSystem = Object.FindAnyObjectByType<SpectatorSystem>();
     }
@@ -100,7 +102,7 @@ public class StageProgressTracker : MonoBehaviour
         {
             if (player == null) continue;
 
-            // 1) 생성
+            // 아이콘 없으면 생성
             if (!playerIcons.ContainsKey(player))
             {
                 GameObject newIcon = Instantiate(playerIconPrefab, iconContainer);
@@ -108,17 +110,26 @@ public class StageProgressTracker : MonoBehaviour
                 playerIcons.Add(player, newIcon.GetComponent<RectTransform>());
             }
 
+            // [수정] 해당 플레이어의 RectTransform 가져오기
             RectTransform iconRect = playerIcons[player];
-            Image iconImage = iconRect.GetComponent<Image>();
+
+            // 💡 자식 오브젝트 "Icon" 찾기
+            Transform iconChild = iconRect.Find("Icon");
+            if (iconChild == null)
+            {
+                Debug.LogError($"[오류] {player.name} 아이콘의 자식 중 'Icon'을 찾을 수 없습니다!");
+                continue;
+            }
+
+            Image iconImage = iconChild.GetComponent<Image>();
             CoopPlayerIdentity identity = player.GetComponent<CoopPlayerIdentity>();
 
-            // 2) 색상 업데이트 (생성 시 + 데이터 수신 시 딱 한 번씩만 수행)
+            // 색상 적용
             if (identity != null && iconImage != null)
             {
                 if (identity.playerIndex >= 0 && identity.playerIndex < identity.playerColors.Length)
                 {
                     Color targetColor = identity.playerColors[identity.playerIndex];
-                    // 💡 현재 색상과 다를 때만 변경 (효율적인 갱신)
                     if (iconImage.color != targetColor)
                     {
                         iconImage.color = targetColor;
@@ -126,19 +137,18 @@ public class StageProgressTracker : MonoBehaviour
                 }
             }
 
-            // 3) 관전 강조 로직
+            // 관전 강조 로직
             Transform highlight = iconRect.Find("HighlightBorder");
             if (highlight != null)
             {
                 bool isSpectated = (spectatorSystem != null && spectatorSystem.CurrentTarget != null && player.transform == spectatorSystem.CurrentTarget);
-                // 💡 여기도 매 프레임 SetActive 하지 않도록 최적화 가능
                 if (highlight.gameObject.activeSelf != isSpectated)
                 {
                     highlight.gameObject.SetActive(isSpectated);
                 }
             }
 
-            // 4) 위치 업데이트
+            // 위치 업데이트
             float currentDistX = player.transform.position.x - startPos.x;
             float progress = Mathf.Clamp01(currentDistX / mapLengthX);
             float xPos = progress * iconContainer.rect.width;
