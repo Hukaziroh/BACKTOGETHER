@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class SpectatorCamera : MonoBehaviour
 {
-    [SerializeField] private float smoothTime = 100f;
+    [SerializeField] private float smoothTime = 0.2f;
     [SerializeField] private float yOffset = 2.0f;    // 캐릭터 머리 위 높이
 
     private Vector3 currentVelocity = Vector3.zero;
