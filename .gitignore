@@ -1,6 +1,9 @@
 ﻿# This .gitignore file should be placed at the root of your Unity project directory
 #
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
+# Windows Thumbnail cache
+[Tt]humbs.db
+[Tt]humbs.db.meta
 #
 /[Ll]ibrary/
 /[Tt]emp/
