@@ -221,7 +221,11 @@ public class PlayerController : NetworkBehaviour
 
     public void CallCombinedJump()
     {
-        Jump();
+        if (isGrounded || coyoteTimeCounter > 0f)
+        {
+            Jump();
+            coyoteTimeCounter = 0f;
+        }
     }
 
     public void CallCombinedAction()
