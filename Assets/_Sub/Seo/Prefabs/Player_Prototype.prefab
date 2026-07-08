@@ -285,6 +285,24 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
+  moveAction:
+    m_Name: Move
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: e4f330c3-bea0-4d3a-95d9-bdbc5c897e4c
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  jumpAction:
+    m_Name: Jump
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 0ffc16fc-b060-4897-858b-c80a69bb9a58
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
   currentSpawnPoint: {x: 0, y: 0, z: 0}
   moveSpeed: 7
   normalFriction: 20
@@ -300,7 +318,6 @@ MonoBehaviour:
   knockPowerX: 15
   knockPowerY: 35
   stunTime: 0.7
-  knockbackFallMultiplier: 5
   criticalUI: {fileID: 8806499510481094465}
   showGizmo: 1
   checkRadius: 0.1
@@ -470,11 +487,38 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   isCombined: 0
-  myRole: 
+  myRole: 0
   bodyTarget: {fileID: 0}
   ghostLeftInput: 0
   ghostRightInput: 0
   ghostDuoInput: 0
+  moveAction:
+    m_Name: Move
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 64d0dd9c-9349-4e18-9cb8-51fea926f4b1
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  jumpAction:
+    m_Name: Jump
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 11155dc7-e328-47b5-bd66-3db33f798231
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  actionAction:
+    m_Name: Action
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 9399acc5-9dd3-470a-9f36-54cb51b6d38f
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
 --- !u!70 &7471808521593955061
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -522,7 +566,7 @@ BoxCollider2D:
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 1b82a4cf7e4e4874a83ad0b783ff1132, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -557,7 +601,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   m_Size: {x: 0.66, y: 0.017151594}
-  m_EdgeRadius: 0
+  m_EdgeRadius: 0.02
 --- !u!61 &6195919149362805391
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -568,7 +612,7 @@ BoxCollider2D:
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 1b82a4cf7e4e4874a83ad0b783ff1132, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -603,7 +647,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   m_Size: {x: 0.66, y: 0.05196625}
-  m_EdgeRadius: 0
+  m_EdgeRadius: 0.02
 --- !u!114 &4921669254971416826
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -656,6 +700,15 @@ MonoBehaviour:
   canInvertGravity: 0
   isGravityInverted: 0
   gravityMultiplier: 1
+  invertAction:
+    m_Name: Invert
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 6e15a325-1291-4949-9fcf-5622f911b40d
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
 --- !u!1 &8806499510481094465
 GameObject:
   m_ObjectHideFlags: 0
