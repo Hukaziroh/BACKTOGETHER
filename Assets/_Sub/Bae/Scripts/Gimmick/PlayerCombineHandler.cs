@@ -1,6 +1,6 @@
 using UnityEngine;
 using Mirror;
-using UnityEngine.InputSystem; 
+using UnityEngine.InputSystem;
 
 public class PlayerCombineHandler : NetworkBehaviour
 {
@@ -35,58 +35,6 @@ public class PlayerCombineHandler : NetworkBehaviour
         RpcApplyCombineVisual(body);
     }
 
-    [Server]
-    public void StopCombineMode(Vector3 releasePosition)
-    {
-        isCombined = false;
-        myRole = "";
-        bodyTarget = null;
-
-        ghostLeftInput = 0f;
-        ghostRightInput = 0f;
-        ghostDuoInput = 0f;
-
-        RpcApplySeparateVisual(releasePosition);
-    }
-
-    [ClientRpc]
-    private void RpcApplySeparateVisual(Vector3 releasePosition)
-    {
-        spriteRenderer.enabled = true;
-        col.enabled = true;
-        rb.simulated = true;
-        if (isLocalPlayer)
-        {
-            transform.position = releasePosition;
-            rb.position = releasePosition;
-            rb.linearVelocity = Vector2.zero; 
-            Camera mainCam = Camera.main;
-            if (mainCam != null)
-            {
-                CameraFollow cam = mainCam.GetComponent<CameraFollow>();
-                if (cam != null) cam.target = transform;
-            }
-        }
-    }
-
-    [ClientRpc]
-    private void RpcApplySeparateVisual()
-    {
-        spriteRenderer.enabled = true;
-        col.enabled = true;
-        rb.simulated = true;
-
-        if (isLocalPlayer)
-        {
-            Camera mainCam = Camera.main;
-            if (mainCam != null)
-            {
-                CameraFollow cam = mainCam.GetComponent<CameraFollow>();
-                if (cam != null) cam.target = transform;
-            }
-        }
-    }
-
     [ClientRpc]
     private void RpcApplyCombineVisual(GameObject body)
     {
@@ -103,10 +51,7 @@ public class PlayerCombineHandler : NetworkBehaviour
             if (mainCam != null)
             {
                 CameraFollow cam = mainCam.GetComponent<CameraFollow>();
-                if (cam != null)
-                {
-                    cam.target = body.transform;
-                }
+                if (cam != null) cam.target = body.transform;
             }
         }
     }
@@ -114,7 +59,7 @@ public class PlayerCombineHandler : NetworkBehaviour
     void Update()
     {
         if (!isLocalPlayer || !isCombined) return;
-        if (Keyboard.current == null) return; 
+        if (Keyboard.current == null) return;
 
         if (gameObject != bodyTarget)
         {
@@ -156,6 +101,13 @@ public class PlayerCombineHandler : NetworkBehaviour
         }
     }
 
+    void LateUpdate()
+    {
+        if (isCombined && bodyTarget != null && gameObject != bodyTarget)
+        {
+            transform.position = bodyTarget.transform.position;
+        }
+    }
     public float GetCombinedHorizontalInput()
     {
         float totalInput = 0f;
@@ -212,4 +164,42 @@ public class PlayerCombineHandler : NetworkBehaviour
 
     [TargetRpc]
     public void TargetDoAction(NetworkConnection target) { GetComponent<PlayerController>().CallCombinedAction(); }
+
+    [Server]
+    public void StopCombineMode(Vector3 releasePosition)
+    {
+        isCombined = false;
+        myRole = "";
+        bodyTarget = null;
+
+        ghostLeftInput = 0f;
+        ghostRightInput = 0f;
+        ghostDuoInput = 0f;
+
+        transform.position = releasePosition;
+
+        RpcApplySeparateVisual(releasePosition);
+    }
+
+    [ClientRpc]
+    private void RpcApplySeparateVisual(Vector3 releasePosition)
+    {
+        spriteRenderer.enabled = true;
+        col.enabled = true;
+        rb.simulated = true;
+
+        if (isLocalPlayer)
+        {
+            transform.position = releasePosition;
+            rb.position = releasePosition;
+            rb.linearVelocity = Vector2.zero;
+
+            Camera mainCam = Camera.main;
+            if (mainCam != null)
+            {
+                CameraFollow cam = mainCam.GetComponent<CameraFollow>();
+                if (cam != null) cam.target = transform;
+            }
+        }
+    }
 }
