@@ -36,7 +36,6 @@ public class PlayerController : NetworkBehaviour
     public float knockPowerX = 10f;
     public float knockPowerY = 5f;
     public float stunTime = 0.5f;
-    public float knockbackFallMultiplier = 5f;
     private float stunTimer;
 
     [Header("크리티컬 ")]
@@ -102,7 +101,7 @@ public class PlayerController : NetworkBehaviour
 
     void Update()
     {
-
+        
         if (!isLocalPlayer) return;
 
         if (ckTimer > 0f) ckTimer -= Time.deltaTime;
@@ -132,7 +131,6 @@ public class PlayerController : NetworkBehaviour
                 stunTimer = stunTime;
             }
         }
-
         else if (stunTimer > 0f)
         {
             stunTimer -= Time.deltaTime;
@@ -170,7 +168,7 @@ public class PlayerController : NetworkBehaviour
                     if (Keyboard.current.spaceKey.wasPressedThisFrame) jumpBufferCounter = jumpBufferTime;
                     else jumpBufferCounter -= Time.deltaTime;
 
-                    if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f && !isKnockedBack)
+                    if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f)
                     {
                         Jump();
                         jumpBufferCounter = 0f;
@@ -336,30 +334,6 @@ public class PlayerController : NetworkBehaviour
 
         // 🌟 최고 낙하 속도(maxFallSpeed) 천장 패치
         bool isInverted = gravityModule != null && gravityModule.isGravityInverted;
-        float mult = gravityModule != null ? gravityModule.gravityMultiplier : 1f;
-
-        if (isKnockedBack)
-        {
-            // 넉백 중: 상승 중일 땐 일반 중력, 떨어지기 시작하면 knockbackFallMultiplier 적용
-            bool isFalling = isInverted ? (rb.linearVelocity.y > 0f) : (rb.linearVelocity.y < 0f);
-
-            if (isFalling)
-                rb.gravityScale = jumpSpeed * knockbackFallMultiplier * mult;
-            else
-                rb.gravityScale = jumpSpeed * mult;
-        }
-        else if (stunTimer <= 0f)
-        {
-            // 일반 상태: 기존 fallSpeed 로직 사용
-            bool isFalling = isInverted ? (rb.linearVelocity.y > 0f) : (rb.linearVelocity.y < 0f);
-
-            if (isFalling)
-                rb.gravityScale = jumpSpeed * fallSpeed * mult;
-            else
-                rb.gravityScale = jumpSpeed * mult;
-        }
-
-        // 🌟 최고 낙하 속도(maxFallSpeed) 제한 (이건 그대로 유지)
         if (isInverted)
         {
             if (rb.linearVelocity.y > maxFallSpeed)
@@ -374,6 +348,7 @@ public class PlayerController : NetworkBehaviour
 
     void CheckGroundOrPlayer()
     {
+
         Collider2D[] colliders = Physics2D.OverlapCircleAll(groundCheck.position, checkRadius);
         isGrounded = false;
         platformVelocity = Vector2.zero;
@@ -463,7 +438,7 @@ public class PlayerController : NetworkBehaviour
         // 🌟 기획 의도대로 무조건 왼쪽(-1f)으로 튕기도록 롤백
         if (spikeHitCount >= 3 && criticalCooldownTimer <= 0f)
         {
-            if (Random.value <= 1f)
+            if (Random.value <= 0.5f)
             {
                 StartCoroutine(CriticalEscape(0.1f));
                 criticalCooldownTimer = 1.0f;
@@ -484,7 +459,6 @@ public class PlayerController : NetworkBehaviour
 
     private void ApplyLocalKnockback(Vector2 knockDir)
     {
-        jumpBufferCounter = 0f;
         activeKnockbackX = knockDir.x * knockPowerX;
 
         float mult = gravityModule != null ? gravityModule.gravityMultiplier : 1f;
@@ -498,15 +472,15 @@ public class PlayerController : NetworkBehaviour
         CmdPlayHitAnimation();
     }
 
-    private System.Collections.IEnumerator CriticalEscape(float seconds)
+   private System.Collections.IEnumerator CriticalEscape(float seconds)
     {
         if (criticalUI != null) criticalUI.SetActive(true);
 
         // 🌟 크리티컬 시에도 무조건 왼쪽(-30f)으로 날아가도록 롤백
-        activeKnockbackX = -25f;
-
+        activeKnockbackX = -30f;
+        
         float mult = gravityModule != null ? gravityModule.gravityMultiplier : 1f;
-        rb.linearVelocity = new Vector2(activeKnockbackX, 30f * mult);
+        rb.linearVelocity = new Vector2(activeKnockbackX, 40f * mult);
 
         isKnockedBack = true;
         stunTimer = 0f;
