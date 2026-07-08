@@ -1,5 +1,6 @@
-using UnityEngine;
 using Mirror;
+using Unity.Netcode.Components;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerCombineHandler : NetworkBehaviour
@@ -37,11 +38,18 @@ public class PlayerCombineHandler : NetworkBehaviour
     [ClientRpc]
     private void RpcApplyCombineVisual(GameObject body)
     {
+        isCombined = true;
+
         if (gameObject != body)
         {
             spriteRenderer.enabled = false;
             col.enabled = false;
             rb.simulated = false;
+            var nt = GetComponent<NetworkTransform>();
+            if (nt != null) nt.enabled = false;
+
+            var nr = GetComponent<NetworkRigidbody2D>();
+            if (nr != null) nr.enabled = false;
         }
 
         if (isLocalPlayer && body != null)
@@ -50,7 +58,11 @@ public class PlayerCombineHandler : NetworkBehaviour
             if (mainCam != null)
             {
                 CameraFollow cam = mainCam.GetComponent<CameraFollow>();
-                if (cam != null) cam.target = body.transform;
+                if (cam != null)
+                {
+                    cam.target = body.transform;
+                    cam.smoothTime = 0f;
+                }
             }
         }
     }
@@ -175,11 +187,16 @@ public class PlayerCombineHandler : NetworkBehaviour
         rb.simulated = true;
 
         if (isLocalPlayer)
-        {
-            transform.position = releasePosition;
+        {            transform.position = releasePosition;
             rb.position = releasePosition;
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
+
+            var nt = GetComponent<NetworkTransform>();
+            if (nt != null) nt.enabled = true;
+
+            var nr = GetComponent<NetworkRigidbody2D>();
+            if (nr != null) nr.enabled = true;
 
             PlayerController pc = GetComponent<PlayerController>();
             if (pc != null) pc.ResetStateForSeparation();
@@ -188,7 +205,11 @@ public class PlayerCombineHandler : NetworkBehaviour
             if (mainCam != null)
             {
                 CameraFollow cam = mainCam.GetComponent<CameraFollow>();
-                if (cam != null) cam.target = transform;
+                if (cam != null)
+                {
+                    cam.target = transform;
+                    cam.smoothTime = 0.1f;
+                }
             }
         }
     }
