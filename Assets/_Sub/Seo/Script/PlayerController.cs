@@ -374,19 +374,28 @@ public class PlayerController : NetworkBehaviour
         }
 
         // 🌟 최고 낙하 속도(maxFallSpeed) 천장 패치
+        float maxSpeedX = 25f; // X축 폭주 제한 속도 (너무 튕겨나간다 싶으면 줄이세요)
+        Vector2 clampedVelocity = rb.linearVelocity;
+
+        // 1. X축 폭주 강제 제한 (벽 뚫고 나가는 현상 방지)
+        clampedVelocity.x = Mathf.Clamp(clampedVelocity.x, -maxSpeedX, maxSpeedX);
+
+        // 2. Y축 낙하 속도 및 폭주 제한 (중력 반전 고려)
         bool isInverted = gravityModule != null && gravityModule.isGravityInverted;
         if (isInverted)
         {
-            if (rb.linearVelocity.y > maxFallSpeed)
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, maxFallSpeed);
+            // 중력 반전: 위로 떨어지는 속도(maxFallSpeed) 제한, 아래로 튕기는 폭주 제한
+            clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed * 1.5f, maxFallSpeed);
         }
         else
         {
-            if (rb.linearVelocity.y < -maxFallSpeed)
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, -maxFallSpeed);
+            // 정상 중력: 아래로 떨어지는 속도(-maxFallSpeed) 제한, 위로 튕기는 폭주 제한
+            clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed, maxFallSpeed * 1.5f);
         }
-    }
 
+        // 최종 안전한 속도 적용
+        rb.linearVelocity = clampedVelocity;
+    }
     void CheckGroundOrPlayer()
     {
 
