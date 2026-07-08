@@ -101,7 +101,7 @@ public class PlayerController : NetworkBehaviour
 
     void Update()
     {
-        
+
         if (!isLocalPlayer) return;
 
         if (ckTimer > 0f) ckTimer -= Time.deltaTime;
@@ -476,13 +476,13 @@ public class PlayerController : NetworkBehaviour
         CmdPlayHitAnimation();
     }
 
-   private System.Collections.IEnumerator CriticalEscape(float seconds)
+    private System.Collections.IEnumerator CriticalEscape(float seconds)
     {
         if (criticalUI != null) criticalUI.SetActive(true);
 
         // 🌟 크리티컬 시에도 무조건 왼쪽(-30f)으로 날아가도록 롤백
         activeKnockbackX = -30f;
-        
+
         float mult = gravityModule != null ? gravityModule.gravityMultiplier : 1f;
         rb.linearVelocity = new Vector2(activeKnockbackX, 40f * mult);
 
@@ -544,23 +544,5 @@ public class PlayerController : NetworkBehaviour
         Gizmos.color = Color.yellow;
         Vector2 checkPosition = (Vector2)transform.position + checkOffset;
         Gizmos.DrawWireSphere(checkPosition, checkRadius);
-    }
-
-    public void ResetStateForSeparation()
-    {
-        horizontalInput = 0f;
-        isGrounded = true;
-        isOnIce = false;
-        wasOnIceLastFrame = false;
-        platformVelocity = Vector2.zero;
-        currentPlatform = null;
-        stunTimer = 0f;
-        isKnockedBack = false;
-        knockbackGraceTimer = 0f;
-
-        if (rb != null)
-        {
-            rb.linearVelocity = Vector2.zero;
-        }
     }
 }
