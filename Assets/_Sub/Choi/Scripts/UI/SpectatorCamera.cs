@@ -26,13 +26,8 @@ public class SpectatorCamera : MonoBehaviour
         // 2. 관전 모드가 아닐 경우, 본인의 캐릭터를 찾아 타겟으로 설정
         else
         {
-            // "Player" 태그를 가진 오브젝트를 찾습니다. 
-            // 본인의 캐릭터에 "Player" 태그가 붙어있는지 꼭 확인하세요!
-            GameObject localPlayer = GameObject.FindGameObjectWithTag("Player");
-            if (localPlayer != null)
-            {
-                targetToFollow = localPlayer.transform;
-            }
+            // 💡 Mirror의 네트워크 딕셔너리를 사용하여 내 캐릭터(isLocalPlayer)를 정확히 찾습니다.
+            targetToFollow = GetLocalPlayerTransform();
         }
 
         // 3. 타겟이 결정되었다면 부드럽게 이동
@@ -46,5 +41,20 @@ public class SpectatorCamera : MonoBehaviour
             // SmoothDamp로 부드럽게 이동
             transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref currentVelocity, smoothTime);
         }
+    }
+
+    // 내 캐릭터만 찾아내는 함수
+    private Transform GetLocalPlayerTransform()
+    {
+        // CoopPlayerIdentity에 있는 static 딕셔너리를 순회
+        foreach (var player in CoopPlayerIdentity.players.Values)
+        {
+            // Mirror에서 제공하는 isLocalPlayer 속성을 사용하여 본인 캐릭터인지 확인
+            if (player != null && player.isLocalPlayer)
+            {
+                return player.transform;
+            }
+        }
+        return null;
     }
 }

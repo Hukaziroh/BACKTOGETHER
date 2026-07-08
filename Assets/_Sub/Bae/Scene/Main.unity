@@ -119,6 +119,25 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &20359760 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9071347035235099874, guid: d391139454a53e341889149a36646d1d, type: 3}
+  m_PrefabInstance: {fileID: 6870475135527063537}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &20359766
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 20359760}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fff1be9a193028249b9f538cf01fb3ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpectatorSubtitle
+  uiContainer: {fileID: 1141214999}
+  subtitleText: {fileID: 868254414}
 --- !u!1 &73748759
 GameObject:
   m_ObjectHideFlags: 0
@@ -1860,6 +1879,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 813834664}
   m_CullTransparentMesh: 1
+--- !u!114 &868254414 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8032071910890231719, guid: d391139454a53e341889149a36646d1d, type: 3}
+  m_PrefabInstance: {fileID: 6870475135527063537}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!1 &895060676
 GameObject:
   m_ObjectHideFlags: 0
@@ -2013,6 +2043,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2da0c512f12947e489f739169773d7ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TMP_InputField
+--- !u!1 &1141214999 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5086998270296546513, guid: d391139454a53e341889149a36646d1d, type: 3}
+  m_PrefabInstance: {fileID: 6870475135527063537}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1506203213 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 9118601658099520460, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
@@ -2873,10 +2908,14 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 3781369582234686597, guid: d391139454a53e341889149a36646d1d, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 9071347035235099874, guid: d391139454a53e341889149a36646d1d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 20359766}
   m_SourcePrefab: {fileID: 100100000, guid: d391139454a53e341889149a36646d1d, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
