@@ -1,13 +1,23 @@
 using Mirror;
-using Mirror.Examples.Common.Controllers.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
+
+public enum CombineRole
+{
+    None,
+    Move_Left,
+    Move_Right,
+    Move,
+    Jump,
+    Action
+}
 
 public class PlayerCombineHandler : NetworkBehaviour
 {
     [Header("합체 상태")]
     [SyncVar] public bool isCombined = false;
-    [SyncVar] public string myRole = "";
+
+    [SyncVar] public CombineRole myRole = CombineRole.None;
     [SyncVar] public GameObject bodyTarget;
 
     [HideInInspector] public float ghostLeftInput = 0f;
@@ -15,7 +25,6 @@ public class PlayerCombineHandler : NetworkBehaviour
     [HideInInspector] public float ghostDuoInput = 0f;
 
     private float lastSentMove = 0f;
-
     private SpriteRenderer spriteRenderer;
     private Collider2D col;
     private Rigidbody2D rb;
@@ -28,7 +37,7 @@ public class PlayerCombineHandler : NetworkBehaviour
     }
 
     [Server]
-    public void StartCombineMode(string role, GameObject body)
+    public void StartCombineMode(CombineRole role, GameObject body)
     {
         isCombined = true;
         myRole = role;
@@ -66,9 +75,9 @@ public class PlayerCombineHandler : NetworkBehaviour
         {
             float currentMove = 0f;
 
-            if (myRole == "Move_Left" && (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)) currentMove = -1f;
-            else if (myRole == "Move_Right" && (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)) currentMove = 1f;
-            else if (myRole == "Move")
+            if (myRole == CombineRole.Move_Left && (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)) currentMove = -1f;
+            else if (myRole == CombineRole.Move_Right && (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)) currentMove = 1f;
+            else if (myRole == CombineRole.Move)
             {
                 if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) currentMove = -1f;
                 else if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) currentMove = 1f;
@@ -80,22 +89,22 @@ public class PlayerCombineHandler : NetworkBehaviour
                 CmdSendMoveState(bodyTarget, currentMove, myRole);
             }
 
-            if ((myRole == "Jump" || myRole == "Move") && (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame))
+            if ((myRole == CombineRole.Jump || myRole == CombineRole.Move) && (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame))
             {
                 CmdSendJumpToBody(bodyTarget);
             }
-            if (myRole == "Action" && (Keyboard.current.downArrowKey.wasPressedThisFrame || Keyboard.current.sKey.wasPressedThisFrame))
+            if (myRole == CombineRole.Action && (Keyboard.current.downArrowKey.wasPressedThisFrame || Keyboard.current.sKey.wasPressedThisFrame))
             {
                 CmdSendActionToBody(bodyTarget);
             }
         }
         else
         {
-            if (myRole == "Jump" && (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame))
+            if (myRole == CombineRole.Jump && (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame))
             {
                 GetComponent<PlayerController>().CallCombinedJump();
             }
-            if (myRole == "Action" && (Keyboard.current.downArrowKey.wasPressedThisFrame || Keyboard.current.sKey.wasPressedThisFrame))
+            if (myRole == CombineRole.Action && (Keyboard.current.downArrowKey.wasPressedThisFrame || Keyboard.current.sKey.wasPressedThisFrame))
             {
                 GetComponent<PlayerController>().CallCombinedAction();
             }
@@ -109,15 +118,16 @@ public class PlayerCombineHandler : NetworkBehaviour
             transform.position = bodyTarget.transform.position;
         }
     }
+
     public float GetCombinedHorizontalInput()
     {
         float totalInput = 0f;
 
         if (Keyboard.current != null)
         {
-            if (myRole == "Move_Left" && (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)) totalInput += -1f;
-            if (myRole == "Move_Right" && (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)) totalInput += 1f;
-            if (myRole == "Move")
+            if (myRole == CombineRole.Move_Left && (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)) totalInput += -1f;
+            if (myRole == CombineRole.Move_Right && (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)) totalInput += 1f;
+            if (myRole == CombineRole.Move)
             {
                 if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) totalInput += -1f;
                 else if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) totalInput += 1f;
@@ -132,18 +142,18 @@ public class PlayerCombineHandler : NetworkBehaviour
     }
 
     [Command]
-    private void CmdSendMoveState(GameObject body, float moveValue, string role)
+    private void CmdSendMoveState(GameObject body, float moveValue, CombineRole role) 
     {
         if (body == null) return;
         body.GetComponent<PlayerCombineHandler>().TargetReceiveMoveState(body.GetComponent<NetworkIdentity>().connectionToClient, moveValue, role);
     }
 
     [TargetRpc]
-    private void TargetReceiveMoveState(NetworkConnection target, float moveValue, string role)
+    private void TargetReceiveMoveState(NetworkConnection target, float moveValue, CombineRole role) 
     {
-        if (role == "Move_Left") ghostLeftInput = moveValue;
-        else if (role == "Move_Right") ghostRightInput = moveValue;
-        else if (role == "Move") ghostDuoInput = moveValue;
+        if (role == CombineRole.Move_Left) ghostLeftInput = moveValue;
+        else if (role == CombineRole.Move_Right) ghostRightInput = moveValue;
+        else if (role == CombineRole.Move) ghostDuoInput = moveValue;
     }
 
     [Command]
@@ -170,7 +180,7 @@ public class PlayerCombineHandler : NetworkBehaviour
     public void StopCombineMode(Vector3 releasePosition)
     {
         isCombined = false;
-        myRole = "";
+        myRole = CombineRole.None; 
         bodyTarget = null;
 
         ghostLeftInput = 0f;
