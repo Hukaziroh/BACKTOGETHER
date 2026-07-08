@@ -39,18 +39,13 @@ public class StageProgressTracker : MonoBehaviour
 
     private void InitializeScene()
     {
-        // 1. 기존 아이콘들 전부 제거 (잔재 삭제)
         foreach (Transform child in iconContainer)
         {
             if (child != null) Destroy(child.gameObject);
         }
         playerIcons.Clear();
         isInitialized = false;
-
-        // 2. 새로운 씬의 포인트 찾기
         InitializePoints();
-
-        // 3. 관전 시스템 다시 찾기
         spectatorSystem = Object.FindAnyObjectByType<SpectatorSystem>();
     }
 
@@ -64,10 +59,6 @@ public class StageProgressTracker : MonoBehaviour
             startPos = startObj.transform.position;
             endPos = doorObj.transform.position;
             isInitialized = true;
-        }
-        else
-        {
-            isInitialized = false;
         }
     }
 
@@ -84,22 +75,17 @@ public class StageProgressTracker : MonoBehaviour
         float mapLengthX = endPos.x - startPos.x;
         if (mapLengthX <= 0) return;
 
-        // --- 1. 잔재 및 끊김 처리 ---
         GameObject[] currentPlayers = GameObject.FindGameObjectsWithTag("Player");
-        List<GameObject> toRemove = new List<GameObject>();
 
-        // 딕셔너리에는 있는데 실제 게임에는 없는 플레이어 찾기
+        // --- 1. 잔재 및 끊김 처리 ---
+        List<GameObject> toRemove = new List<GameObject>();
         foreach (var kvp in playerIcons)
         {
             bool found = false;
-            foreach (var p in currentPlayers)
-            {
-                if (p == kvp.Key) { found = true; break; }
-            }
+            foreach (var p in currentPlayers) { if (p == kvp.Key) { found = true; break; } }
             if (!found || kvp.Key == null) toRemove.Add(kvp.Key);
         }
 
-        // 삭제 처리
         foreach (var p in toRemove)
         {
             if (playerIcons.ContainsKey(p))
@@ -114,7 +100,7 @@ public class StageProgressTracker : MonoBehaviour
         {
             if (player == null) continue;
 
-            // 아이콘 없으면 생성
+            // 1) 생성
             if (!playerIcons.ContainsKey(player))
             {
                 GameObject newIcon = Instantiate(playerIconPrefab, iconContainer);
@@ -122,40 +108,41 @@ public class StageProgressTracker : MonoBehaviour
                 playerIcons.Add(player, newIcon.GetComponent<RectTransform>());
             }
 
-            // 💡 [핵심 수정] 색상 지속 업데이트
+            RectTransform iconRect = playerIcons[player];
+            Image iconImage = iconRect.GetComponent<Image>();
             CoopPlayerIdentity identity = player.GetComponent<CoopPlayerIdentity>();
-            Image iconImage = playerIcons[player].GetComponent<Image>();
 
+            // 2) 색상 업데이트 (생성 시 + 데이터 수신 시 딱 한 번씩만 수행)
             if (identity != null && iconImage != null)
             {
-                // 인덱스가 정상 할당된 경우 색상 적용
                 if (identity.playerIndex >= 0 && identity.playerIndex < identity.playerColors.Length)
                 {
-                    iconImage.color = identity.playerColors[identity.playerIndex];
-                }
-                else
-                {
-                    // 💡 아직 네트워크 동기화 전이라면 기본색(흰색) 유지
-                    // 혹은 투명도 조절 등을 통해 데이터 대기 중임을 표시할 수 있음
-                    iconImage.color = Color.white;
+                    Color targetColor = identity.playerColors[identity.playerIndex];
+                    // 💡 현재 색상과 다를 때만 변경 (효율적인 갱신)
+                    if (iconImage.color != targetColor)
+                    {
+                        iconImage.color = targetColor;
+                    }
                 }
             }
 
-            // 관전 강조 로직
-            Transform highlight = playerIcons[player].Find("HighlightBorder");
+            // 3) 관전 강조 로직
+            Transform highlight = iconRect.Find("HighlightBorder");
             if (highlight != null)
             {
                 bool isSpectated = (spectatorSystem != null && spectatorSystem.CurrentTarget != null && player.transform == spectatorSystem.CurrentTarget);
-                highlight.gameObject.SetActive(isSpectated);
+                // 💡 여기도 매 프레임 SetActive 하지 않도록 최적화 가능
+                if (highlight.gameObject.activeSelf != isSpectated)
+                {
+                    highlight.gameObject.SetActive(isSpectated);
+                }
             }
 
-            // 위치 업데이트
+            // 4) 위치 업데이트
             float currentDistX = player.transform.position.x - startPos.x;
             float progress = Mathf.Clamp01(currentDistX / mapLengthX);
             float xPos = progress * iconContainer.rect.width;
-
-            if (playerIcons.ContainsKey(player))
-                playerIcons[player].anchoredPosition = new Vector2(xPos, 0);
+            iconRect.anchoredPosition = new Vector2(xPos, 0);
         }
     }
 }
