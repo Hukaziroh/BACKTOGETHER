@@ -70,7 +70,7 @@ public class CoopPlayerIdentity : NetworkBehaviour
     [Server]
     private void AssignAvailableIndex()
     {
-        CoopPlayerIdentity[] allPlayers = FindObjectsByType<CoopPlayerIdentity>(FindObjectsSortMode.None);
+        CoopPlayerIdentity[] allPlayers = FindObjectsByType<CoopPlayerIdentity>();
         bool[] isIndexTaken = new bool[4];
 
         foreach (var p in allPlayers)
@@ -146,7 +146,7 @@ public class CoopPlayerIdentity : NetworkBehaviour
 
     private void NotifyReadyManager()
     {
-        LobbyReadyManager readyManager = FindFirstObjectByType<LobbyReadyManager>();
+        LobbyReadyManager readyManager = FindAnyObjectByType<LobbyReadyManager>();
         if (readyManager != null) readyManager.UpdateLobbyUI();
     }
 }

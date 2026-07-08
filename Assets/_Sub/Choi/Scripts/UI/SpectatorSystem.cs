@@ -10,11 +10,14 @@ public class SpectatorSystem : MonoBehaviour
     // 관전 대상 변경 로직 (UIManager에서 호출)
     public void SelectTarget(int index)
     {
-        if (CoopPlayerIdentity.players.ContainsKey(index))
+        if (CoopPlayerIdentity.players.TryGetValue(index, out CoopPlayerIdentity playerIdentity))
         {
-            CurrentTarget = CoopPlayerIdentity.players[index].transform;
-            currentSpectateIndex = index;
-            Debug.Log($"{index + 1}P 관전 시작");
+            CurrentTarget = playerIdentity.transform;
+            Debug.Log($"[관전] {index + 1}P를 관전합니다.");
+        }
+        else
+        {
+            Debug.LogWarning($"[관전] {index + 1}P를 찾을 수 없습니다.");
         }
     }
 
