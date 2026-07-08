@@ -230,7 +230,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 20
   m_MaskInteraction: 0
   m_Sprite: {fileID: -2136357951393217447, guid: b841ab0dd1e67bc43bd8db12d80d1915, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -300,6 +300,7 @@ MonoBehaviour:
   knockPowerX: 15
   knockPowerY: 35
   stunTime: 0.7
+  knockbackFallMultiplier: 5
   criticalUI: {fileID: 8806499510481094465}
   showGizmo: 1
   checkRadius: 0.1
