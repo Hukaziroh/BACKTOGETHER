@@ -148,7 +148,6 @@ GameObject:
   - component: {fileID: 8263912520698240538}
   - component: {fileID: 5236505412368399357}
   - component: {fileID: 2306595240848296434}
-  - component: {fileID: 3781369582234686597}
   m_Layer: 0
   m_Name: TextPanel
   m_TagString: Untagged
@@ -214,20 +213,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &3781369582234686597
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5086998270296546513}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fff1be9a193028249b9f538cf01fb3ef, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SpectatorSubtitle
-  uiContainer: {fileID: 5086998270296546513}
-  subtitleText: {fileID: 8032071910890231719}
 --- !u!1 &6436939434990537395
 GameObject:
   m_ObjectHideFlags: 0
@@ -474,6 +459,8 @@ GameObject:
   - component: {fileID: 3894012771846626613}
   - component: {fileID: 5980980681081755393}
   - component: {fileID: 4549912752351875501}
+  - component: {fileID: 4971910430708125192}
+  - component: {fileID: 2304823993813371790}
   m_Layer: 0
   m_Name: UIMaster
   m_TagString: Untagged
@@ -559,6 +546,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 588adb9bb695e434b84dba6894e4a055, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpectatorSystem
+--- !u!114 &4971910430708125192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9071347035235099874}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fff1be9a193028249b9f538cf01fb3ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpectatorSubtitle
+  uiContainer: {fileID: 5086998270296546513}
+  subtitleText: {fileID: 8032071910890231719}
+--- !u!114 &2304823993813371790
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9071347035235099874}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 480ecce4566e76141a5f390cd69a8109, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HostDisconnectHandler
+  disconnectPanel: {fileID: 8279698965767927787, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+  lobbySceneName: Main
 --- !u!1001 &4410633173489485314
 PrefabInstance:
   m_ObjectHideFlags: 0

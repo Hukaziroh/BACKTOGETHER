@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 6581624734982250841}
   - component: {fileID: 3709791003795818089}
   - component: {fileID: 7257518310161370580}
-  - component: {fileID: 561525279299010606}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -139,17 +138,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EOSLobby
   AttributeKeys:
   - lobby_name
---- !u!114 &561525279299010606
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9010855181338360226}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 480ecce4566e76141a5f390cd69a8109, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HostDisconnectHandler
-  disconnectPanel: {fileID: 8279698965767927787, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
-  lobbySceneName: Test

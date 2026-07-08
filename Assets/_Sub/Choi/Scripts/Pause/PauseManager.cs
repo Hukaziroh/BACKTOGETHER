@@ -58,6 +58,12 @@ public class PauseManager : MonoBehaviour
     {
         ResumeGame();
 
+        HostDisconnectHandler disconnectHandler = FindFirstObjectByType<HostDisconnectHandler>();
+        if (disconnectHandler != null)
+        {
+            disconnectHandler.enabled = false;
+        }
+
         if (NetworkServer.active && NetworkClient.isConnected)
             NetworkManager.singleton.StopHost();
         else if (NetworkClient.isConnected)

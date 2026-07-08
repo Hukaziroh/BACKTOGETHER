@@ -44,7 +44,6 @@ public class PlayerCombineHandler : NetworkBehaviour
                 .With("Positive", "<Keyboard>/d").With("Positive", "<Keyboard>/rightArrow");
         }
 
-        // 🌟 에러 해결: 각각InputAction에 직접 바인딩을 추가하도록 분리합니다.
         if (jumpAction == null || jumpAction.bindings.Count == 0)
         {
             jumpAction = new InputAction("CombineJump", InputActionType.Button);
@@ -89,7 +88,6 @@ public class PlayerCombineHandler : NetworkBehaviour
     [ClientRpc]
     private void RpcApplyCombineVisual(GameObject body)
     {
-        // 시각적 효과 코드는 동일하게 유지
         if (gameObject != body)
         {
             spriteRenderer.enabled = false;
@@ -115,7 +113,7 @@ public class PlayerCombineHandler : NetworkBehaviour
         if (gameObject != bodyTarget)
         {
             float currentMove = 0f;
-            float inputVal = moveAction.ReadValue<float>(); // 🌟 단 한 줄로 A/D 입력값 획득
+            float inputVal = moveAction.ReadValue<float>();
 
             if (myRole == CombineRole.Move_Left && inputVal < 0) currentMove = -1f;
             else if (myRole == CombineRole.Move_Right && inputVal > 0) currentMove = 1f;
@@ -126,22 +124,18 @@ public class PlayerCombineHandler : NetworkBehaviour
                 lastSentMove = currentMove;
                 CmdSendMoveState(bodyTarget, currentMove, myRole);
             }
-
             if ((myRole == CombineRole.Jump || myRole == CombineRole.Move) && jumpAction.WasPressedThisFrame())
             {
-                ShowLocalInputFeedback(); // 🌟 3번 문제: 핑 지연 방어용 즉각 피드백
                 CmdSendJumpToBody(bodyTarget);
             }
 
             if (myRole == CombineRole.Action && actionAction.WasPressedThisFrame())
             {
-                ShowLocalInputFeedback();
                 CmdSendActionToBody(bodyTarget);
             }
         }
         else
         {
-            // 본체인 경우
             if (myRole == CombineRole.Jump && jumpAction.WasPressedThisFrame())
                 GetComponent<PlayerController>().CallCombinedJump();
 
@@ -244,23 +238,5 @@ public class PlayerCombineHandler : NetworkBehaviour
                 if (cam != null) cam.target = transform;
             }
         }
-    }
-
-    // 🌟 로컬 피드백 코루틴
-    private void ShowLocalInputFeedback()
-    {
-        if (bodyTarget != null)
-        {
-            SpriteRenderer bodySprite = bodyTarget.GetComponent<SpriteRenderer>();
-            if (bodySprite != null) StartCoroutine(FlashRoutine(bodySprite));
-        }
-    }
-
-    private System.Collections.IEnumerator FlashRoutine(SpriteRenderer sr)
-    {
-        Color originalColor = sr.color;
-        sr.color = Color.white;
-        yield return new WaitForSeconds(0.05f);
-        sr.color = originalColor;
     }
 }
