@@ -32,7 +32,7 @@ public class SpectatorSubtitle : MonoBehaviour
             CoopPlayerIdentity identity = currentTarget.GetComponent<CoopPlayerIdentity>();
             if (identity != null)
             {
-                subtitleText.text = $"[관전 중] {identity.playerIndex + 1}P 플레이어를 보는 중...";
+                subtitleText.text = $"[Specting] {identity.playerIndex + 1}P Player Specting...";
             }
         }
     }
