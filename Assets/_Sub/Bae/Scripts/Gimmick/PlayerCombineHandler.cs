@@ -35,6 +35,33 @@ public class PlayerCombineHandler : NetworkBehaviour
         RpcApplyCombineVisual(body);
     }
 
+    [Server]
+    public void StopCombineMode()
+    {
+        isCombined = false;
+        myRole = "";
+        bodyTarget = null;
+        RpcApplySeparateVisual();
+    }
+
+    [ClientRpc]
+    private void RpcApplySeparateVisual()
+    {
+        spriteRenderer.enabled = true;
+        col.enabled = true;
+        rb.simulated = true;
+
+        if (isLocalPlayer)
+        {
+            Camera mainCam = Camera.main;
+            if (mainCam != null)
+            {
+                CameraFollow cam = mainCam.GetComponent<CameraFollow>();
+                if (cam != null) cam.target = transform;
+            }
+        }
+    }
+
     [ClientRpc]
     private void RpcApplyCombineVisual(GameObject body)
     {
