@@ -4,19 +4,13 @@ using UnityEngine.InputSystem;
 
 public enum CombineRole
 {
-    None,
-    Move_Left,
-    Move_Right,
-    Move,
-    Jump,
-    Action
+    None, Move_Left, Move_Right, Move, Jump, Action
 }
 
 public class PlayerCombineHandler : NetworkBehaviour
 {
     [Header("합체 상태")]
     [SyncVar] public bool isCombined = false;
-
     [SyncVar] public CombineRole myRole = CombineRole.None;
     [SyncVar] public GameObject bodyTarget;
 
@@ -25,15 +19,62 @@ public class PlayerCombineHandler : NetworkBehaviour
     [HideInInspector] public float ghostDuoInput = 0f;
 
     private float lastSentMove = 0f;
+
     private SpriteRenderer spriteRenderer;
     private Collider2D col;
     private Rigidbody2D rb;
+
+    [Header("입력 설정")]
+    public InputAction moveAction;
+    public InputAction jumpAction;
+    public InputAction actionAction;
 
     void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         col = GetComponent<Collider2D>();
         rb = GetComponent<Rigidbody2D>();
+
+        // 입력 바인딩 초기화
+        if (moveAction == null || moveAction.bindings.Count == 0)
+        {
+            moveAction = new InputAction("CombineMove", InputActionType.Value);
+            moveAction.AddCompositeBinding("1DAxis")
+                .With("Negative", "<Keyboard>/a").With("Negative", "<Keyboard>/leftArrow")
+                .With("Positive", "<Keyboard>/d").With("Positive", "<Keyboard>/rightArrow");
+        }
+
+        // 🌟 에러 해결: 각각InputAction에 직접 바인딩을 추가하도록 분리합니다.
+        if (jumpAction == null || jumpAction.bindings.Count == 0)
+        {
+            jumpAction = new InputAction("CombineJump", InputActionType.Button);
+            jumpAction.AddBinding("<Keyboard>/space");
+            jumpAction.AddBinding("<Keyboard>/w");
+            jumpAction.AddBinding("<Keyboard>/upArrow");
+        }
+
+        if (actionAction == null || actionAction.bindings.Count == 0)
+        {
+            actionAction = new InputAction("CombineAction", InputActionType.Button);
+            actionAction.AddBinding("<Keyboard>/s");
+            actionAction.AddBinding("<Keyboard>/downArrow");
+        }
+    }
+
+    public override void OnStartLocalPlayer()
+    {
+        base.OnStartLocalPlayer();
+        moveAction.Enable();
+        jumpAction.Enable();
+        actionAction.Enable();
+    }
+
+    void OnDisable()
+    {
+        if (isLocalPlayer)
+        {
+            moveAction.Disable(); jumpAction.Disable(); actionAction.Disable();
+        }
     }
 
     [Server]
@@ -48,6 +89,7 @@ public class PlayerCombineHandler : NetworkBehaviour
     [ClientRpc]
     private void RpcApplyCombineVisual(GameObject body)
     {
+        // 시각적 효과 코드는 동일하게 유지
         if (gameObject != body)
         {
             spriteRenderer.enabled = false;
@@ -69,19 +111,15 @@ public class PlayerCombineHandler : NetworkBehaviour
     void Update()
     {
         if (!isLocalPlayer || !isCombined) return;
-        if (Keyboard.current == null) return;
 
         if (gameObject != bodyTarget)
         {
             float currentMove = 0f;
+            float inputVal = moveAction.ReadValue<float>(); // 🌟 단 한 줄로 A/D 입력값 획득
 
-            if (myRole == CombineRole.Move_Left && (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)) currentMove = -1f;
-            else if (myRole == CombineRole.Move_Right && (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)) currentMove = 1f;
-            else if (myRole == CombineRole.Move)
-            {
-                if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) currentMove = -1f;
-                else if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) currentMove = 1f;
-            }
+            if (myRole == CombineRole.Move_Left && inputVal < 0) currentMove = -1f;
+            else if (myRole == CombineRole.Move_Right && inputVal > 0) currentMove = 1f;
+            else if (myRole == CombineRole.Move) currentMove = inputVal;
 
             if (currentMove != lastSentMove)
             {
@@ -89,25 +127,26 @@ public class PlayerCombineHandler : NetworkBehaviour
                 CmdSendMoveState(bodyTarget, currentMove, myRole);
             }
 
-            if ((myRole == CombineRole.Jump || myRole == CombineRole.Move) && (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame))
+            if ((myRole == CombineRole.Jump || myRole == CombineRole.Move) && jumpAction.WasPressedThisFrame())
             {
+                ShowLocalInputFeedback(); // 🌟 3번 문제: 핑 지연 방어용 즉각 피드백
                 CmdSendJumpToBody(bodyTarget);
             }
-            if (myRole == CombineRole.Action && (Keyboard.current.downArrowKey.wasPressedThisFrame || Keyboard.current.sKey.wasPressedThisFrame))
+
+            if (myRole == CombineRole.Action && actionAction.WasPressedThisFrame())
             {
+                ShowLocalInputFeedback();
                 CmdSendActionToBody(bodyTarget);
             }
         }
         else
         {
-            if (myRole == CombineRole.Jump && (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame))
-            {
+            // 본체인 경우
+            if (myRole == CombineRole.Jump && jumpAction.WasPressedThisFrame())
                 GetComponent<PlayerController>().CallCombinedJump();
-            }
-            if (myRole == CombineRole.Action && (Keyboard.current.downArrowKey.wasPressedThisFrame || Keyboard.current.sKey.wasPressedThisFrame))
-            {
+
+            if (myRole == CombineRole.Action && actionAction.WasPressedThisFrame())
                 GetComponent<PlayerController>().CallCombinedAction();
-            }
         }
     }
 
@@ -122,17 +161,11 @@ public class PlayerCombineHandler : NetworkBehaviour
     public float GetCombinedHorizontalInput()
     {
         float totalInput = 0f;
+        float inputVal = moveAction.ReadValue<float>();
 
-        if (Keyboard.current != null)
-        {
-            if (myRole == CombineRole.Move_Left && (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)) totalInput += -1f;
-            if (myRole == CombineRole.Move_Right && (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)) totalInput += 1f;
-            if (myRole == CombineRole.Move)
-            {
-                if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) totalInput += -1f;
-                else if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) totalInput += 1f;
-            }
-        }
+        if (myRole == CombineRole.Move_Left && inputVal < 0) totalInput += -1f;
+        if (myRole == CombineRole.Move_Right && inputVal > 0) totalInput += 1f;
+        if (myRole == CombineRole.Move) totalInput += inputVal;
 
         totalInput += ghostLeftInput;
         totalInput += ghostRightInput;
@@ -142,14 +175,14 @@ public class PlayerCombineHandler : NetworkBehaviour
     }
 
     [Command]
-    private void CmdSendMoveState(GameObject body, float moveValue, CombineRole role) 
+    private void CmdSendMoveState(GameObject body, float moveValue, CombineRole role)
     {
         if (body == null) return;
         body.GetComponent<PlayerCombineHandler>().TargetReceiveMoveState(body.GetComponent<NetworkIdentity>().connectionToClient, moveValue, role);
     }
 
     [TargetRpc]
-    private void TargetReceiveMoveState(NetworkConnection target, float moveValue, CombineRole role) 
+    private void TargetReceiveMoveState(NetworkConnection target, float moveValue, CombineRole role)
     {
         if (role == CombineRole.Move_Left) ghostLeftInput = moveValue;
         else if (role == CombineRole.Move_Right) ghostRightInput = moveValue;
@@ -180,7 +213,7 @@ public class PlayerCombineHandler : NetworkBehaviour
     public void StopCombineMode(Vector3 releasePosition)
     {
         isCombined = false;
-        myRole = CombineRole.None; 
+        myRole = CombineRole.None;
         bodyTarget = null;
 
         ghostLeftInput = 0f;
@@ -188,7 +221,6 @@ public class PlayerCombineHandler : NetworkBehaviour
         ghostDuoInput = 0f;
 
         transform.position = releasePosition;
-
         RpcApplySeparateVisual(releasePosition);
     }
 
@@ -212,5 +244,23 @@ public class PlayerCombineHandler : NetworkBehaviour
                 if (cam != null) cam.target = transform;
             }
         }
+    }
+
+    // 🌟 로컬 피드백 코루틴
+    private void ShowLocalInputFeedback()
+    {
+        if (bodyTarget != null)
+        {
+            SpriteRenderer bodySprite = bodyTarget.GetComponent<SpriteRenderer>();
+            if (bodySprite != null) StartCoroutine(FlashRoutine(bodySprite));
+        }
+    }
+
+    private System.Collections.IEnumerator FlashRoutine(SpriteRenderer sr)
+    {
+        Color originalColor = sr.color;
+        sr.color = Color.white;
+        yield return new WaitForSeconds(0.05f);
+        sr.color = originalColor;
     }
 }
