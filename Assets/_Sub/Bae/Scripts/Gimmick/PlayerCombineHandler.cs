@@ -1,6 +1,6 @@
 using UnityEngine;
 using Mirror;
-using UnityEngine.InputSystem; // 🌟 새로운 인풋 시스템 추가!
+using UnityEngine.InputSystem; 
 
 public class PlayerCombineHandler : NetworkBehaviour
 {
@@ -40,23 +40,34 @@ public class PlayerCombineHandler : NetworkBehaviour
     {
         if (gameObject == body)
         {
-            transform.localScale = new Vector3(2f, 2f, 1f); // 본체 커짐
+            transform.localScale = new Vector3(2f, 2f, 1f);
         }
         else
         {
-            // 유령 투명화 및 충돌 해제
             spriteRenderer.enabled = false;
             col.enabled = false;
             rb.simulated = false;
+        }
+
+        if (isLocalPlayer && body != null)
+        {
+            Camera mainCam = Camera.main;
+            if (mainCam != null)
+            {
+                CameraFollow cam = mainCam.GetComponent<CameraFollow>();
+                if (cam != null)
+                {
+                    cam.target = body.transform;
+                }
+            }
         }
     }
 
     void Update()
     {
         if (!isLocalPlayer || !isCombined) return;
-        if (Keyboard.current == null) return; // 🌟 키보드 연결 확인
+        if (Keyboard.current == null) return; 
 
-        // 1. [내가 유령(Ghost)일 때]
         if (gameObject != bodyTarget)
         {
             float currentMove = 0f;
@@ -75,7 +86,6 @@ public class PlayerCombineHandler : NetworkBehaviour
                 CmdSendMoveState(bodyTarget, currentMove, myRole);
             }
 
-            // 점프 / 액션 전송
             if ((myRole == "Jump" || myRole == "Move") && (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame))
             {
                 CmdSendJumpToBody(bodyTarget);
@@ -85,7 +95,6 @@ public class PlayerCombineHandler : NetworkBehaviour
                 CmdSendActionToBody(bodyTarget);
             }
         }
-        // 2. [내가 본체(Body)일 때]
         else
         {
             if (myRole == "Jump" && (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame))
