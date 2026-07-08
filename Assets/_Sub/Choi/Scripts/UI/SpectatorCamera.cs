@@ -2,23 +2,23 @@ using UnityEngine;
 
 public class SpectatorCamera : MonoBehaviour
 {
-    [SerializeField] private float smoothSpeed = 5f;
+    [SerializeField] private float smoothTime = 1000f;
+    [SerializeField] private float yOffset = 2.0f;    // 캐릭터 머리 위로 띄움
+    private Vector3 currentVelocity = Vector3.zero;
     private SpectatorSystem spectatorSystem;
 
     void LateUpdate()
     {
-        // 씬 전환 등으로 시스템이 유실되면 다시 찾음
-        if (spectatorSystem == null)
-        {
-            spectatorSystem = FindFirstObjectByType<SpectatorSystem>();
-        }
+        if (spectatorSystem == null) spectatorSystem = FindFirstObjectByType<SpectatorSystem>();
 
         if (spectatorSystem != null && spectatorSystem.CurrentTarget != null)
         {
-            Vector3 targetPos = spectatorSystem.CurrentTarget.position;
-            // Z축은 카메라 위치를 유지
-            Vector3 desiredPosition = new Vector3(targetPos.x, targetPos.y, transform.position.z);
-            transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
+            // 💡 머리 위로 2유닛만큼 offset 추가
+            Vector3 targetPos = spectatorSystem.CurrentTarget.position + Vector3.up * yOffset;
+            targetPos.z = transform.position.z; // 카메라 Z축은 유지
+
+            // Lerp 대신 SmoothDamp를 쓰면 떨림이 거의 사라집니다.
+            transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref currentVelocity, smoothTime);
         }
     }
 }

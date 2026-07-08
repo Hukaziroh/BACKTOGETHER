@@ -48,6 +48,8 @@ public class UIManager : MonoBehaviour
         // 2. 관전 키 입력 처리 (최신 Input System 방식으로 수정)
         if (spectatorSystem != null && Keyboard.current != null)
         {
+            if (Keyboard.current.qKey.wasPressedThisFrame) spectatorSystem.StopSpectating();
+
             if (Keyboard.current.digit1Key.wasPressedThisFrame) spectatorSystem.SelectTarget(0);
             if (Keyboard.current.digit2Key.wasPressedThisFrame) spectatorSystem.SelectTarget(1);
             if (Keyboard.current.digit3Key.wasPressedThisFrame) spectatorSystem.SelectTarget(2);
