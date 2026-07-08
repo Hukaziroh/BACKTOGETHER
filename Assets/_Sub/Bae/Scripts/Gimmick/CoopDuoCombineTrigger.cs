@@ -48,11 +48,12 @@ public class CoopDuoCombineTrigger : NetworkBehaviour
 
         Debug.Log("2인 기믹 발동!");
 
-        AssignRole(playerList[0], playerList[1], "Move", "Jump");
+        // 🌟 문자열 대신 Enum 값을 넘겨주도록 변경
+        AssignRole(playerList[0], playerList[1], CombineRole.Move, CombineRole.Jump);
     }
 
     [Server]
-    private void AssignRole(GameObject playerA, GameObject playerB, string roleA, string roleB)
+    private void AssignRole(GameObject playerA, GameObject playerB, CombineRole roleA, CombineRole roleB) // 🌟 매개변수 타입 변경
     {
         PlayerCombineHandler a = playerA.GetComponent<PlayerCombineHandler>();
         PlayerCombineHandler b = playerB.GetComponent<PlayerCombineHandler>();

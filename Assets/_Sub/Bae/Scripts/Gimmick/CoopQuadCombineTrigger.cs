@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class CoopQuadCombineTrigger : NetworkBehaviour
 {
-    [Header("4인 1체 합체 기믹 설정")]
+    [Header("4인 1조 합체 기믹 설정")]
     public int requiredPlayers = 4;
 
     [SyncVar]
@@ -48,29 +48,32 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
 
         Debug.Log("4인 기믹 발동!");
 
-        AssignFourRoles(playerList[0], playerList[1], playerList[2], playerList[3]);
+        AssignRole(playerList[0], playerList[1], playerList[2], playerList[3],
+                   CombineRole.Move_Left, CombineRole.Move_Right, CombineRole.Jump, CombineRole.Action);
     }
 
     [Server]
-    private void AssignFourRoles(GameObject p1, GameObject p2, GameObject p3, GameObject p4)
+    private void AssignRole(GameObject playerA, GameObject playerB, GameObject playerC, GameObject playerD,
+                            CombineRole roleA, CombineRole roleB, CombineRole roleC, CombineRole roleD)
     {
-        PlayerCombineHandler h1 = p1.GetComponent<PlayerCombineHandler>();
-        PlayerCombineHandler h2 = p2.GetComponent<PlayerCombineHandler>();
-        PlayerCombineHandler h3 = p3.GetComponent<PlayerCombineHandler>();
-        PlayerCombineHandler h4 = p4.GetComponent<PlayerCombineHandler>();
+        PlayerCombineHandler a = playerA.GetComponent<PlayerCombineHandler>();
+        PlayerCombineHandler b = playerB.GetComponent<PlayerCombineHandler>();
+        PlayerCombineHandler c = playerC.GetComponent<PlayerCombineHandler>();
+        PlayerCombineHandler d = playerD.GetComponent<PlayerCombineHandler>();
 
-        if (h1 == null || h2 == null || h3 == null || h4 == null)
+        if (a == null || b == null || c == null || d == null)
         {
-            Debug.LogError("플레이어 중 PlayerCombineHandler가 없는 오브젝트가 있습니다.");
+            Debug.LogError("PlayerCombineHandler가 없는 플레이어가 있습니다.");
             return;
         }
 
-        // p1을 본체로 만들고, 각각 역할을 분담시킴
-        h1.StartCombineMode("Move_Left", p1);
-        h2.StartCombineMode("Move_Right", p1);
-        h3.StartCombineMode("Jump", p1);
-        h4.StartCombineMode("Action", p1);
+        // playerA를 본체로 설정
+        a.StartCombineMode(roleA, playerA);
+        // 나머지는 playerA를 조종
+        b.StartCombineMode(roleB, playerA);
+        c.StartCombineMode(roleC, playerA);
+        d.StartCombineMode(roleD, playerA);
 
-        Debug.Log($"[4인 1체] {p1.name}(본체/왼쪽), {p2.name}(오른쪽), {p3.name}(점프), {p4.name}(액션)");
+        Debug.Log($"[4인 1조 합체 완료] 본체:{playerA.name}({roleA}) / 파츠:{playerB.name}({roleB}), {playerC.name}({roleC}), {playerD.name}({roleD})");
     }
 }
