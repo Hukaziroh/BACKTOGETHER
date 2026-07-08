@@ -8,12 +8,23 @@ public class CoopSeparateZone : NetworkBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            PlayerCombineHandler combine = other.GetComponent<PlayerCombineHandler>();
-
-            if (combine != null && combine.isCombined)
+            PlayerCombineHandler hitCombine = other.GetComponent<PlayerCombineHandler>();
+            if (hitCombine != null && hitCombine.isCombined)
             {
-                combine.StopCombineMode();
-                Debug.Log($"[{other.name}] 합체 해제 존 통과 -> 강제 분리 완료!");
+                GameObject body = hitCombine.bodyTarget;
+                if (body == null) return;
+
+                Vector3 releasePos = body.transform.position;
+                PlayerCombineHandler[] allPlayers = FindObjectsByType<PlayerCombineHandler>(FindObjectsSortMode.None);
+                foreach (var p in allPlayers)
+                {
+                    if (p.isCombined && p.bodyTarget == body)
+                    {
+                        p.StopCombineMode(releasePos);
+                    }
+                }
+
+                Debug.Log("합체 해제 구역 통과 -> 연결된 모든 파티원 강제 분리 및 소환 완료!");
             }
         }
     }

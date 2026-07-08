@@ -36,12 +36,37 @@ public class PlayerCombineHandler : NetworkBehaviour
     }
 
     [Server]
-    public void StopCombineMode()
+    public void StopCombineMode(Vector3 releasePosition)
     {
         isCombined = false;
         myRole = "";
         bodyTarget = null;
-        RpcApplySeparateVisual();
+
+        ghostLeftInput = 0f;
+        ghostRightInput = 0f;
+        ghostDuoInput = 0f;
+
+        RpcApplySeparateVisual(releasePosition);
+    }
+
+    [ClientRpc]
+    private void RpcApplySeparateVisual(Vector3 releasePosition)
+    {
+        spriteRenderer.enabled = true;
+        col.enabled = true;
+        rb.simulated = true;
+        if (isLocalPlayer)
+        {
+            transform.position = releasePosition;
+            rb.position = releasePosition;
+            rb.linearVelocity = Vector2.zero; 
+            Camera mainCam = Camera.main;
+            if (mainCam != null)
+            {
+                CameraFollow cam = mainCam.GetComponent<CameraFollow>();
+                if (cam != null) cam.target = transform;
+            }
+        }
     }
 
     [ClientRpc]
