@@ -26968,6 +26968,7 @@ GameObject:
   - component: {fileID: 1051177059}
   - component: {fileID: 1051177058}
   - component: {fileID: 1051177057}
+  - component: {fileID: 1051177061}
   m_Layer: 0
   m_Name: WallTriggerZone (2)
   m_TagString: Untagged
@@ -27070,6 +27071,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1051177061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1051177056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a30f7c8a3a173794191641f754bb245d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoopQuadCombineTrigger
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  requiredPlayers: 4
 --- !u!1001 &1086077041
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -28199,6 +28216,7 @@ GameObject:
   - component: {fileID: 1277170809}
   - component: {fileID: 1277170808}
   - component: {fileID: 1277170807}
+  - component: {fileID: 1277170811}
   m_Layer: 0
   m_Name: WallTriggerZone (1)
   m_TagString: Untagged
@@ -28301,6 +28319,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1277170811
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1277170806}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8799ed6878fbf0343a389a328a1e19f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoopDuoCombineTrigger
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  requiredPlayers: 2
 --- !u!1 &1293209092
 GameObject:
   m_ObjectHideFlags: 0
