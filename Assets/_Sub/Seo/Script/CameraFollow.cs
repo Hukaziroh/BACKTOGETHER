@@ -3,7 +3,7 @@ using UnityEngine;
 public class CameraFollow : MonoBehaviour
 {
     public Transform target;
-    public float smoothTime = 0.1f;
+    public float smoothTime = 100;
     public Vector3 offset = new Vector3(0f, 1.5f, -10f);
 
     [Header("카메라 시야 설정")]
