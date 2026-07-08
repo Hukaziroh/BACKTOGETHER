@@ -11,13 +11,12 @@ public class CoopDuoCombineTrigger : NetworkBehaviour
     private bool isTriggered = false;
 
     private HashSet<GameObject> playersInZone = new HashSet<GameObject>();
-
     [ServerCallback]
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (isTriggered) return;
 
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && other.gameObject == other.transform.root.gameObject)
         {
             playersInZone.Add(other.gameObject);
 
@@ -28,13 +27,12 @@ public class CoopDuoCombineTrigger : NetworkBehaviour
             }
         }
     }
-
     [ServerCallback]
     private void OnTriggerExit2D(Collider2D other)
     {
         if (isTriggered) return;
 
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && other.gameObject == other.transform.root.gameObject)
         {
             playersInZone.Remove(other.gameObject);
         }

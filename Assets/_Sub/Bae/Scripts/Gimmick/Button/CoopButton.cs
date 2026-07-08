@@ -24,7 +24,7 @@ public class CoopButton : NetworkBehaviour
     [ServerCallback]
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && other.gameObject == other.transform.root.gameObject)
         {
             playersOnButton.Add(other.gameObject);
             UpdateButtonState();
@@ -34,7 +34,7 @@ public class CoopButton : NetworkBehaviour
     [ServerCallback]
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && other.gameObject == other.transform.root.gameObject)
         {
             playersOnButton.Remove(other.gameObject);
             UpdateButtonState();

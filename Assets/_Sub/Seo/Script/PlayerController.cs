@@ -4,6 +4,10 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : NetworkBehaviour
 {
+    [Header("입력 설정 (New Input System)")]
+    public InputAction moveAction;
+    public InputAction jumpAction;
+
     [Header("스폰 시스템")]
     public Vector3 currentSpawnPoint;
 
@@ -82,6 +86,35 @@ public class PlayerController : NetworkBehaviour
     // 🌟 중력 모듈 변수 추가
     private PlayerGravityController gravityModule;
 
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        boxCollider = GetComponent<BoxCollider2D>();
+        anim = GetComponent<Animator>();
+        gravityModule = GetComponent<PlayerGravityController>();
+        if (moveAction == null || moveAction.bindings.Count == 0)
+        {
+            moveAction = new InputAction("Move", InputActionType.Value);
+            moveAction.AddCompositeBinding("1DAxis")
+                .With("Negative", "<Keyboard>/a")
+                .With("Negative", "<Keyboard>/leftArrow")
+                .With("Negative", "<Gamepad>/dpad/left")
+                .With("Negative", "<Gamepad>/leftStick/left")
+                .With("Positive", "<Keyboard>/d")
+                .With("Positive", "<Keyboard>/rightArrow")
+                .With("Positive", "<Gamepad>/dpad/right")
+                .With("Positive", "<Gamepad>/leftStick/right");
+        }
+        if (jumpAction == null || jumpAction.bindings.Count == 0)
+        {
+            jumpAction = new InputAction("Jump", InputActionType.Button);
+            jumpAction.AddBinding("<Keyboard>/space");
+            jumpAction.AddBinding("<Keyboard>/w");
+            jumpAction.AddBinding("<Keyboard>/upArrow");
+            jumpAction.AddBinding("<Gamepad>/buttonSouth");
+        }
+    }
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -98,7 +131,14 @@ public class PlayerController : NetworkBehaviour
             transform.rotation = Quaternion.identity;
         }
     }
-
+    void OnDisable()
+    {
+        if (isLocalPlayer)
+        {
+            moveAction.Disable();
+            jumpAction.Disable();
+        }
+    }
     void Update()
     {
 
@@ -149,11 +189,8 @@ public class PlayerController : NetworkBehaviour
             }
             else
             {
-                if (Keyboard.current != null)
-                {
-                    if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) horizontalInput = -1f;
-                    else if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) horizontalInput = 1f;
-                }
+                // 🌟 복잡했던 키보드 비교문이 이 한 줄로 끝납니다!
+                horizontalInput = moveAction.ReadValue<float>();
             }
 
             if (isReversedControl)
@@ -163,25 +200,23 @@ public class PlayerController : NetworkBehaviour
 
             if (combine == null || !combine.isCombined)
             {
-                if (Keyboard.current != null)
+                // 🌟 점프 입력 처리
+                if (jumpAction.WasPressedThisFrame()) jumpBufferCounter = jumpBufferTime;
+                else jumpBufferCounter -= Time.deltaTime;
+
+                if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f)
                 {
-                    if (Keyboard.current.spaceKey.wasPressedThisFrame) jumpBufferCounter = jumpBufferTime;
-                    else jumpBufferCounter -= Time.deltaTime;
-
-                    if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f)
-                    {
-                        Jump();
-                        jumpBufferCounter = 0f;
-                        coyoteTimeCounter = 0f;
-                    }
-
-                    // 🌟 역중력 상태에서의 슈퍼점프 대응
-                    bool inverted = gravityModule != null && gravityModule.isGravityInverted;
-                    bool isMovingUp = inverted ? (rb.linearVelocity.y < 0f) : (rb.linearVelocity.y > 0f);
-
-                    if (Keyboard.current.spaceKey.wasReleasedThisFrame && isMovingUp)
-                        rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump);
+                    Jump();
+                    jumpBufferCounter = 0f;
+                    coyoteTimeCounter = 0f;
                 }
+
+                bool inverted = gravityModule != null && gravityModule.isGravityInverted;
+                bool isMovingUp = inverted ? (rb.linearVelocity.y < 0f) : (rb.linearVelocity.y > 0f);
+
+                // 🌟 숏점프(슈퍼점프) 처리
+                if (jumpAction.WasReleasedThisFrame() && isMovingUp)
+                    rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump);
             }
             else
             {
@@ -197,6 +232,7 @@ public class PlayerController : NetworkBehaviour
                 }
             }
         }
+
 
         // 🌟 중력 방향에 따른 낙하 가속(fallSpeed) 역방향 패치
         bool isInverted = gravityModule != null && gravityModule.isGravityInverted;
@@ -218,6 +254,7 @@ public class PlayerController : NetworkBehaviour
 
         if (transform.position.y < -50f || transform.position.y > 50f) Respawn();
     }
+
 
     public void CallCombinedJump()
     {
@@ -510,6 +547,9 @@ public class PlayerController : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
+        moveAction.Enable();
+        jumpAction.Enable();
+
         currentSpawnPoint = transform.position;
         Camera mainCam = Camera.main;
         if (mainCam != null)
