@@ -9,7 +9,7 @@ public class SpectatorCamera : MonoBehaviour
 
     void LateUpdate()
     {
-        if (spectatorSystem == null) spectatorSystem = FindFirstObjectByType<SpectatorSystem>();
+        if (spectatorSystem == null) spectatorSystem = Object.FindAnyObjectByType<SpectatorSystem>();
 
         if (spectatorSystem != null && spectatorSystem.CurrentTarget != null)
         {

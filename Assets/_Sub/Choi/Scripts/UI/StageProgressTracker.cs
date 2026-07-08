@@ -55,7 +55,7 @@ public class StageProgressTracker : MonoBehaviour
         InitializePoints();
 
         // 3. 관전 시스템 다시 찾기
-        spectatorSystem = FindFirstObjectByType<SpectatorSystem>();
+        spectatorSystem = Object.FindAnyObjectByType<SpectatorSystem>();
     }
 
     private void InitializePoints()
@@ -85,7 +85,7 @@ public class StageProgressTracker : MonoBehaviour
         }
 
         // 시스템 유실 시 다시 캐싱
-        if (spectatorSystem == null) spectatorSystem = FindFirstObjectByType<SpectatorSystem>();
+        if (spectatorSystem == null) spectatorSystem = Object.FindAnyObjectByType<SpectatorSystem>();
 
         float mapLengthX = endPos.x - startPos.x;
         if (mapLengthX <= 0) return;
@@ -100,18 +100,17 @@ public class StageProgressTracker : MonoBehaviour
             if (!playerIcons.ContainsKey(player))
             {
                 GameObject newIcon = Instantiate(playerIconPrefab, iconContainer);
-                newIcon.transform.localScale = Vector3.one;
                 playerIcons.Add(player, newIcon.GetComponent<RectTransform>());
+            }
 
-                // 색상 적용
-                CoopPlayerIdentity identity = player.GetComponent<CoopPlayerIdentity>();
-                Image iconImage = newIcon.GetComponent<Image>();
-                if (iconImage != null && identity != null)
-                {
-                    // 인덱스 범위 체크 추가
-                    if (identity.playerIndex >= 0 && identity.playerIndex < identity.playerColors.Length)
-                        iconImage.color = identity.playerColors[identity.playerIndex];
-                }
+            // 💡 색상 지속 업데이트 (이 부분이 핵심!)
+            CoopPlayerIdentity identity = player.GetComponent<CoopPlayerIdentity>();
+            Image iconImage = playerIcons[player].GetComponent<Image>();
+
+            // 아직 색상이 제대로 할당되지 않았거나 초기 상태일 경우 업데이트
+            if (identity != null && iconImage != null && identity.playerIndex >= 0)
+            {
+                iconImage.color = identity.playerColors[identity.playerIndex];
             }
 
             // 2. 관전 강조 로직
