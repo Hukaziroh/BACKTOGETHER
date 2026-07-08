@@ -60,11 +60,13 @@ public class CoopMirrorPlatforms : NetworkBehaviour
             case PlatformState.Meeting:
                 MovePlatform(leftPlatform, meetingPoint.position - le);
                 MovePlatform(rightPlatform, meetingPoint.position + ri);
-
-                if (playersOnLeft.Count < requiredPlayers && !isWaitingToReturn)
+                if (!isWaitingToReturn &&
+                     Vector2.Distance(leftPlatform.position, (Vector2)(meetingPoint.position - le)) < 0.05f &&
+                     Vector2.Distance(rightPlatform.position, (Vector2)(meetingPoint.position + ri)) < 0.05f)
                 {
                     StartCoroutine(WaitAndReturn());
                 }
+
                 break;
 
             case PlatformState.Returning:
