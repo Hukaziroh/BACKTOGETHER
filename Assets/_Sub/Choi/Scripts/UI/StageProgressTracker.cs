@@ -122,16 +122,22 @@ public class StageProgressTracker : MonoBehaviour
                 playerIcons.Add(player, newIcon.GetComponent<RectTransform>());
             }
 
-            // 💡 색상 지속 업데이트 (네트워크 지연 보완)
+            // 💡 [핵심 수정] 색상 지속 업데이트
             CoopPlayerIdentity identity = player.GetComponent<CoopPlayerIdentity>();
             Image iconImage = playerIcons[player].GetComponent<Image>();
 
-            // 매 프레임 올바른 색상인지 체크함 (네트워크 데이터가 늦게 도착해도 곧바로 색상이 바뀜)
             if (identity != null && iconImage != null)
             {
+                // 인덱스가 정상 할당된 경우 색상 적용
                 if (identity.playerIndex >= 0 && identity.playerIndex < identity.playerColors.Length)
                 {
                     iconImage.color = identity.playerColors[identity.playerIndex];
+                }
+                else
+                {
+                    // 💡 아직 네트워크 동기화 전이라면 기본색(흰색) 유지
+                    // 혹은 투명도 조절 등을 통해 데이터 대기 중임을 표시할 수 있음
+                    iconImage.color = Color.white;
                 }
             }
 
