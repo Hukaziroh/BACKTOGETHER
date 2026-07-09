@@ -72,7 +72,7 @@ public class PlayerController : NetworkBehaviour
     private bool isOnIce = false;
     private bool wasOnIceLastFrame = false;
 
-    private CapsuleCollider2D mainCollider;
+    private BoxCollider2D mainCollider;
     private Animator anim;
 
     [Header("외부 환경 속도")]
@@ -88,7 +88,7 @@ public class PlayerController : NetworkBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        mainCollider = GetComponent<CapsuleCollider2D>();
+        mainCollider = GetComponent<BoxCollider2D>();
         anim = GetComponent<Animator>();
         gravityModule = GetComponent<PlayerGravityController>();
         if (moveAction == null || moveAction.bindings.Count == 0)
@@ -117,7 +117,7 @@ public class PlayerController : NetworkBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        mainCollider = GetComponent<CapsuleCollider2D>();
+        mainCollider = GetComponent<BoxCollider2D>();
         anim = GetComponent<Animator>();
 
         // 🌟 중력 모듈 연결
