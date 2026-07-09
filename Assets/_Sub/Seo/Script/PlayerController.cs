@@ -28,8 +28,7 @@ public class PlayerController : NetworkBehaviour
     [Header("점프세부셋팅")]
     public float coyoteTime = 0.15f;
     private float coyoteTimeCounter;
-    public float jumpBufferTime = 0.2f;
-    private float jumpBufferCounter;
+  
 
     [Range(0f, 1f)]
     public float superJump = 0.5f;
@@ -73,7 +72,7 @@ public class PlayerController : NetworkBehaviour
     private bool isOnIce = false;
     private bool wasOnIceLastFrame = false;
 
-    private BoxCollider2D boxCollider;
+    private CapsuleCollider2D mainCollider;
     private Animator anim;
 
     [Header("외부 환경 속도")]
@@ -89,7 +88,7 @@ public class PlayerController : NetworkBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        boxCollider = GetComponent<BoxCollider2D>();
+        mainCollider = GetComponent<CapsuleCollider2D>();
         anim = GetComponent<Animator>();
         gravityModule = GetComponent<PlayerGravityController>();
         if (moveAction == null || moveAction.bindings.Count == 0)
@@ -118,7 +117,7 @@ public class PlayerController : NetworkBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        boxCollider = GetComponent<BoxCollider2D>();
+        mainCollider = GetComponent<CapsuleCollider2D>();
         anim = GetComponent<Animator>();
 
         // 🌟 중력 모듈 연결
@@ -200,27 +199,20 @@ public class PlayerController : NetworkBehaviour
 
             if (combine == null || !combine.isCombined)
             {
-                // 🌟 점프 입력 처리
-                if (jumpAction.WasPressedThisFrame()) jumpBufferCounter = jumpBufferTime;
-                else jumpBufferCounter -= Time.deltaTime;
-
-                if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f)
+                // 🌟 점프 버퍼 관련 복잡한 계산 싹 다 날림! 
+                // 스페이스바를 '누른 그 프레임'에, '코요테 타임(또는 땅)'이 살아있고, '넉백'이 아니면 바로 점프!
+                if (jumpAction.WasPressedThisFrame() && coyoteTimeCounter > 0f && !isKnockedBack)
                 {
                     Jump();
-                    jumpBufferCounter = 0f;
                     coyoteTimeCounter = 0f;
                 }
 
+                // (슈퍼점프 로직은 그대로 유지)
                 bool inverted = gravityModule != null && gravityModule.isGravityInverted;
                 bool isMovingUp = inverted ? (rb.linearVelocity.y < 0f) : (rb.linearVelocity.y > 0f);
 
-                // 🌟 숏점프(슈퍼점프) 처리
                 if (jumpAction.WasReleasedThisFrame() && isMovingUp)
                     rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump);
-            }
-            else
-            {
-                jumpBufferCounter -= Time.deltaTime;
             }
 
             if (isReversedControl)
@@ -331,13 +323,15 @@ public class PlayerController : NetworkBehaviour
         else if (stunTimer <= 0f)
         {
             float targetVelocityX = (horizontalInput * moveSpeed) + platformVelocity.x + windVelocity;
+            bool isBlocked = false; // 🌟 막혔는지 확인하는 스위치!
 
             if (Mathf.Abs(horizontalInput) > 0.1f)
             {
                 Vector2 checkDir = horizontalInput > 0 ? Vector2.right : Vector2.left;
 
-                Vector2 boxSize = new Vector2(boxCollider.bounds.size.x, boxCollider.bounds.size.y * 0.8f);
-                RaycastHit2D[] hits = Physics2D.BoxCastAll(boxCollider.bounds.center, boxSize, 0f, checkDir, 0.15f);
+                // 🌟 boxCollider 대신 mainCollider 사용!
+                Vector2 boxSize = new Vector2(mainCollider.bounds.size.x, mainCollider.bounds.size.y * 0.8f);
+                RaycastHit2D[] hits = Physics2D.BoxCastAll(mainCollider.bounds.center, boxSize, 0f, checkDir, 0.15f);
 
                 foreach (var hit in hits)
                 {
@@ -346,6 +340,7 @@ public class PlayerController : NetworkBehaviour
                         if (((1 << hit.collider.gameObject.layer) & groundLayer) != 0 || hit.collider.CompareTag("Player"))
                         {
                             targetVelocityX = platformVelocity.x + windVelocity;
+                            isBlocked = true; // 🌟 벽이나 플레이어에 막힘 감지!
                             break;
                         }
                     }
@@ -358,6 +353,12 @@ public class PlayerController : NetworkBehaviour
             float currentFriction = isSlippery ? (isGrounded ? iceSlideFriction : airFriction) : normalFriction;
 
             float smoothedVelocityX = Mathf.Lerp(rb.linearVelocity.x, targetVelocityX, currentFriction * Time.fixedDeltaTime);
+
+            // 🌟 막혔을 때는 서서히 멈추지 말고 즉시 멈추기! (벽 파고들기 차단)
+            if (isBlocked)
+            {
+                smoothedVelocityX = targetVelocityX;
+            }
 
             if (Mathf.Abs(horizontalInput) < 0.01f && Mathf.Abs(platformVelocity.x) < 0.01f && Mathf.Abs(windVelocity) < 0.01f)
             {
