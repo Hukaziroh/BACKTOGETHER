@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Mirror;
-
+using System.Collections;
 public class PauseManager : MonoBehaviour
 {
     public static PauseManager instance;
@@ -58,20 +58,33 @@ public class PauseManager : MonoBehaviour
     {
         ResumeGame();
 
-        // 🌟 1. 네트워크를 끊기 전에 "내가 스스로 나간다"고 핸들러에 알림
+        // 1. 내가 스스로 나가는 것이므로 튕김 UI 방지 (기존 코드 유지)
         HostDisconnectHandler disconnectHandler = FindFirstObjectByType<HostDisconnectHandler>();
         if (disconnectHandler != null)
         {
             disconnectHandler.SetIntentionalExit();
         }
 
-        // 🌟 2. 네트워크 연결 종료
+        // 2. 🌟 즉시 씬을 바꾸지 않고, 안전하게 대기한 뒤 나가는 코루틴 실행
+        StartCoroutine(LeaveGameGracefullyRoutine());
+    }
+
+    private IEnumerator LeaveGameGracefullyRoutine()
+    {
+        // 네트워크 연결 종료 명령 전달
         if (NetworkServer.active && NetworkClient.isConnected)
             NetworkManager.singleton.StopHost();
         else if (NetworkClient.isConnected)
             NetworkManager.singleton.StopClient();
 
-        // 🌟 3. 씬 이동
+        // 4. ⭐ 핵심: Mirror 서버와 클라이언트 루프가 완전히 꺼질 때까지 한 프레임씩 대기
+        // active 상태가 둘 다 false가 될 때까지 다음 프레임으로 양보합니다.
+        while (NetworkServer.active || NetworkClient.active)
+        {
+            yield return null;
+        }
+
+        // 5. 에픽 트랜스포트와 Mirror가 완벽히 정리를 끝낸 후 안전하게 씬 이동
         SceneManager.LoadScene(mainMenuSceneName);
     }
 }
