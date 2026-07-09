@@ -41,15 +41,11 @@ public class PlayerSyncJump : NetworkBehaviour
     [TargetRpc]
     public void TargetDoJump(NetworkConnection target)
     {
-        if (playerController != null && rb != null)
+        if (playerController != null)
         {
-            float jumpForce = playerController.jumpSpeed;
-
-            bool inverted = gravityModule != null && gravityModule.isGravityInverted;
-            if (inverted) jumpForce = -jumpForce;
-
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-
+            // PlayerController의 Jump() 메서드가 private라면 public으로 변경하거나,
+            // 아래와 같이 CallCombinedJump()를 활용합니다.
+            playerController.CallCombinedJump();
         }
     }
 }

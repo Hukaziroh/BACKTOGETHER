@@ -215,7 +215,6 @@ public class PlayerController : NetworkBehaviour
                 PlayerSyncJump syncJump = GetComponent<PlayerSyncJump>();
                 bool isSyncJumping = (syncJump != null && syncJump.isInSyncZone);
 
-                // 수정: 동기화 점프 중이 아닐 때만 숏점프(점프 끊기)가 작동하도록 조건(!isSyncJumping) 추가!
                 if (!isSyncJumping && jumpAction.WasReleasedThisFrame() && isMovingUp)
                 {
                     rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump);
@@ -463,16 +462,14 @@ public class PlayerController : NetworkBehaviour
         if (isGrounded) wasOnIceLastFrame = isOnIce;
     }
 
-    void Jump()
+    public void Jump()
     {
         float gravity = Mathf.Abs(Physics2D.gravity.y) * jumpSpeed;
         float jumpForce = Mathf.Sqrt(2f * gravity * jumpHeight);
 
-        // 🌟 모듈의 multiplier 곱하기 (뒤집히면 아래로 점프)
         float mult = gravityModule != null ? gravityModule.gravityMultiplier : 1f;
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce * mult);
 
-        ckTimer = jumpCk;
     }
 
     private void OnTriggerStay2D(Collider2D other)
