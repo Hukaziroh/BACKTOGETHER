@@ -17,7 +17,8 @@ public class CoopSyncJumpZone : NetworkBehaviour
             PlayerSyncJump syncJump = other.GetComponent<PlayerSyncJump>();
             if (syncJump != null)
             {
-                syncJump.TargetSetZone(other.GetComponent<NetworkIdentity>().connectionToClient, this);
+                syncJump.serverZone = this;
+                syncJump.isInSyncZone = true;
             }
         }
     }
@@ -32,7 +33,8 @@ public class CoopSyncJumpZone : NetworkBehaviour
             PlayerSyncJump syncJump = other.GetComponent<PlayerSyncJump>();
             if (syncJump != null)
             {
-                syncJump.TargetClearZone(other.GetComponent<NetworkIdentity>().connectionToClient);
+                if (syncJump.serverZone == this) syncJump.serverZone = null;
+                syncJump.isInSyncZone = false;
             }
         }
     }
