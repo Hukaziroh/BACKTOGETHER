@@ -159,6 +159,7 @@ GameObject:
   - component: {fileID: 6195919149362805391}
   - component: {fileID: 4921669254971416826}
   - component: {fileID: 3475600457935097304}
+  - component: {fileID: 7761479740853381908}
   m_Layer: 0
   m_Name: Player_Prototype
   m_TagString: Player
@@ -313,7 +314,6 @@ MonoBehaviour:
   fallSpeed: 2.5
   maxFallSpeed: 20
   coyoteTime: 0.25
-  jumpBufferTime: 0.25
   superJump: 0.4
   knockPowerX: 15
   knockPowerY: 35
@@ -709,6 +709,22 @@ MonoBehaviour:
     m_Interactions: 
     m_SingletonActionBindings: []
     m_Flags: 0
+--- !u!114 &7761479740853381908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8453197966436518037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e48e41ab0ee540646b4f859111ed1bed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSyncJump
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  isInSyncZone: 0
 --- !u!1 &8806499510481094465
 GameObject:
   m_ObjectHideFlags: 0
