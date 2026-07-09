@@ -28,7 +28,7 @@ public class PlayerController : NetworkBehaviour
     [Header("점프세부셋팅")]
     public float coyoteTime = 0.15f;
     private float coyoteTimeCounter;
-  
+
 
     [Range(0f, 1f)]
     public float superJump = 0.5f;
@@ -95,14 +95,14 @@ public class PlayerController : NetworkBehaviour
         {
             moveAction = new InputAction("Move", InputActionType.Value);
             moveAction.AddCompositeBinding("1DAxis")
-                .With("Negative", "<Keyboard>/a")
-                .With("Negative", "<Keyboard>/leftArrow")
-                .With("Negative", "<Gamepad>/dpad/left")
-                .With("Negative", "<Gamepad>/leftStick/left")
-                .With("Positive", "<Keyboard>/d")
-                .With("Positive", "<Keyboard>/rightArrow")
-                .With("Positive", "<Gamepad>/dpad/right")
-                .With("Positive", "<Gamepad>/leftStick/right");
+               .With("Negative", "<Keyboard>/a")
+               .With("Negative", "<Keyboard>/leftArrow")
+               .With("Negative", "<Gamepad>/dpad/left")
+               .With("Negative", "<Gamepad>/leftStick/left")
+               .With("Positive", "<Keyboard>/d")
+               .With("Positive", "<Keyboard>/rightArrow")
+               .With("Positive", "<Gamepad>/dpad/right")
+               .With("Positive", "<Gamepad>/leftStick/right");
         }
         if (jumpAction == null || jumpAction.bindings.Count == 0)
         {
@@ -181,6 +181,22 @@ public class PlayerController : NetworkBehaviour
 
             PlayerCombineHandler combine = GetComponent<PlayerCombineHandler>();
 
+            if (combine != null && combine.isCombined)
+            {
+                if (gameObject != combine.bodyTarget) return;
+                horizontalInput = combine.GetCombinedHorizontalInput();
+            }
+            else
+            {
+                // 🌟 복잡했던 키보드 비교문이 이 한 줄로 끝납니다!
+                horizontalInput = moveAction.ReadValue<float>();
+            }
+
+            if (isReversedControl)
+            {
+                horizontalInput *= -1f;
+            }
+
             if (combine == null || !combine.isCombined)
             {
                 // 🌟 점프 버퍼 관련 복잡한 계산 싹 다 날림! 
@@ -195,11 +211,11 @@ public class PlayerController : NetworkBehaviour
                 bool inverted = gravityModule != null && gravityModule.isGravityInverted;
                 bool isMovingUp = inverted ? (rb.linearVelocity.y < 0f) : (rb.linearVelocity.y > 0f);
 
-                // 🌟 추가: 현재 플레이어가 동기화 점프 구역에 있는지 확인
+                // 추가: 현재 플레이어가 동기화 점프 구역에 있는지 확인
                 PlayerSyncJump syncJump = GetComponent<PlayerSyncJump>();
                 bool isSyncJumping = (syncJump != null && syncJump.isInSyncZone);
 
-                // 🌟 수정: 동기화 점프 중이 아닐 때만 숏점프(점프 끊기)가 작동하도록 조건(!isSyncJumping) 추가!
+                // 수정: 동기화 점프 중이 아닐 때만 숏점프(점프 끊기)가 작동하도록 조건(!isSyncJumping) 추가!
                 if (!isSyncJumping && jumpAction.WasReleasedThisFrame() && isMovingUp)
                 {
                     rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump);
@@ -217,8 +233,8 @@ public class PlayerController : NetworkBehaviour
         }
 
 
-            // 🌟 중력 방향에 따른 낙하 가속(fallSpeed) 역방향 패치
-            bool isInverted = gravityModule != null && gravityModule.isGravityInverted;
+        // 🌟 중력 방향에 따른 낙하 가속(fallSpeed) 역방향 패치
+        bool isInverted = gravityModule != null && gravityModule.isGravityInverted;
         float mult = gravityModule != null ? gravityModule.gravityMultiplier : 1f;
         bool isFalling = isInverted ? (rb.linearVelocity.y > 0f) : (rb.linearVelocity.y < 0f);
 
