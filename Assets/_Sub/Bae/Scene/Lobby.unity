@@ -734,7 +734,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 502843981146151821, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: Test-chapter3
+      value: chapter5
       objectReference: {fileID: 0}
     - target: {fileID: 674766322139722017, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
