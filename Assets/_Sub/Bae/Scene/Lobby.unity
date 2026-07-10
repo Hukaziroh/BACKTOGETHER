@@ -1329,6 +1329,18 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2305371984838188515, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 800
+      objectReference: {fileID: 0}
+    - target: {fileID: 2305371984838188515, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -538
+      objectReference: {fileID: 0}
+    - target: {fileID: 2305371984838188515, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 392
+      objectReference: {fileID: 0}
     - target: {fileID: 2773752274983787383, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_SizeDelta.x
       value: 0
@@ -1353,6 +1365,18 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 479596964}
+    - target: {fileID: 3901372747266802389, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 800
+      objectReference: {fileID: 0}
+    - target: {fileID: 3901372747266802389, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 229
+      objectReference: {fileID: 0}
+    - target: {fileID: 3901372747266802389, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 392
+      objectReference: {fileID: 0}
     - target: {fileID: 4383775811692024024, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -1361,6 +1385,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1972353631}
+    - target: {fileID: 7549401996362473519, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 600
+      objectReference: {fileID: 0}
     - target: {fileID: 7807857631120254117, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
