@@ -12,7 +12,10 @@ public class BlizzardZone : MonoBehaviour
         {
             if (other.TryGetComponent<PlayerController>(out var player))
             {
-                player.windVelocity = windStrength;
+                if (player.isLocalPlayer)
+                {
+                    player.windVelocity = windStrength;
+                }
             }
         }
     }
@@ -22,8 +25,11 @@ public class BlizzardZone : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             if (other.TryGetComponent<PlayerController>(out var player))
-            { 
-                player.windVelocity = 0f;
+            {
+                if (player.isLocalPlayer)
+                {
+                    player.windVelocity = 0f;
+                }
             }
         }
     }
