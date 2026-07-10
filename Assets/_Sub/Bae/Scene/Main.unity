@@ -1252,14 +1252,6 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
       objectReference: {fileID: 1506203213}
-    - target: {fileID: 1430784019729467397, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
-      value: CloseOptionPanel
-      objectReference: {fileID: 0}
-    - target: {fileID: 1430784019729467397, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
-      value: ClientMenu, Assembly-CSharp
-      objectReference: {fileID: 0}
     - target: {fileID: 2760473294395730080, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -1352,46 +1344,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
       objectReference: {fileID: 1506203213}
-    - target: {fileID: 3552379308435807786, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OpenOption
-      objectReference: {fileID: 0}
-    - target: {fileID: 3552379308435807786, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
-      value: OpenOptionPanel
-      objectReference: {fileID: 0}
-    - target: {fileID: 3552379308435807786, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: OnlyOptionExit, Assembly-CSharp
-      objectReference: {fileID: 0}
-    - target: {fileID: 4665141533479455424, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4665141533479455424, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 4665141533479455424, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 700180063}
-    - target: {fileID: 4665141533479455424, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 4665141533479455424, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnStartPrivateHostClicked
-      objectReference: {fileID: 0}
-    - target: {fileID: 4665141533479455424, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: PrivateLobbyManager, Assembly-CSharp
-      objectReference: {fileID: 0}
-    - target: {fileID: 4665141533479455424, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
-      value: UnityEngine.Object, UnityEngine
-      objectReference: {fileID: 0}
     - target: {fileID: 5526660350761867251, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -1408,13 +1364,13 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 426090129}
-    - target: {fileID: 8076807666703242262, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: QuitGame
+    - target: {fileID: 8245278758810434696, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8076807666703242262, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: OnlyOptionExit, Assembly-CSharp
+    - target: {fileID: 8245278758810434696, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
