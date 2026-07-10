@@ -27,6 +27,12 @@ public class ClientMenu : MonoBehaviour
         if (optionsPanel != null) optionsPanel.SetActive(true);
     }
 
+    public void CloseOptionPanel()
+    {
+        if (ConnectPanel != null) ConnectPanel.SetActive(true);
+        if (optionsPanel != null) optionsPanel.SetActive(false);
+    }
+
     // 붙여넣기 전용 기능
     public void PasteCode()
     {
