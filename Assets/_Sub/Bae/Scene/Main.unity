@@ -1225,6 +1225,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08a540b1d67bce140a57970f8d153e1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GlobalSceneInputManager
+--- !u!114 &551634709 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3894012771846626613, guid: d391139454a53e341889149a36646d1d, type: 3}
+  m_PrefabInstance: {fileID: 6870475135527063537}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 551634701}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4de81c08694039d499ce5d48f6fe0100, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PauseManager
 --- !u!1001 &552944003
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3035,6 +3046,30 @@ PrefabInstance:
     - target: {fileID: 3736384809310231300, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_Color.a
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4051397137647730821, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4051397137647730821, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 551634709}
+    - target: {fileID: 4051397137647730821, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: CloseOptions
+      objectReference: {fileID: 0}
+    - target: {fileID: 4051397137647730821, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: CloseOptionPanel
+      objectReference: {fileID: 0}
+    - target: {fileID: 4051397137647730821, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: PauseManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 4051397137647730821, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: ClientMenu, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 5086998270296546513, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_IsActive
