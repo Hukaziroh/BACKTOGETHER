@@ -1,12 +1,19 @@
 using UnityEngine;
 using Mirror;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : NetworkBehaviour
 {
     [Header("입력 설정 (New Input System)")]
     public InputAction moveAction;
     public InputAction jumpAction;
+    public InputAction actionAction;
+
+    [Header("손전등 설정")]
+    public GameObject flashlightObj;
+    [SyncVar(hook = nameof(OnFlashlightToggled))]
+    public bool isFlashlightOn = true;
 
     [Header("스폰 시스템")]
     public Vector3 currentSpawnPoint;
@@ -112,6 +119,11 @@ public class PlayerController : NetworkBehaviour
             jumpAction.AddBinding("<Keyboard>/upArrow");
             jumpAction.AddBinding("<Gamepad>/buttonSouth");
         }
+        if (actionAction == null || actionAction.bindings.Count == 0)
+        {
+            actionAction = new InputAction("Action", InputActionType.Button);
+            actionAction.AddBinding("<Keyboard>/v"); 
+        }
     }
 
     void Start()
@@ -136,12 +148,20 @@ public class PlayerController : NetworkBehaviour
         {
             moveAction.Disable();
             jumpAction.Disable();
+            actionAction.Disable();
         }
     }
     void Update()
     {
 
         if (!isLocalPlayer) return;
+        if (actionAction.WasPressedThisFrame())
+        {
+            if (SceneManager.GetActiveScene().name == "chapter5")
+            {
+                CmdToggleFlashlight();
+            }
+        }
 
         if (ckTimer > 0f) ckTimer -= Time.deltaTime;
 
@@ -199,63 +219,62 @@ public class PlayerController : NetworkBehaviour
 
             if (combine == null || !combine.isCombined)
             {
-                // 🌟 점프 버퍼 관련 복잡한 계산 싹 다 날림! 
-                // 스페이스바를 '누른 그 프레임'에, '코요테 타임(또는 땅)'이 살아있고, '넉백'이 아니면 바로 점프!
+                // 🌟 점프 시작 
                 if (jumpAction.WasPressedThisFrame() && coyoteTimeCounter > 0f && !isKnockedBack)
                 {
                     Jump();
                     coyoteTimeCounter = 0f;
                 }
 
-                // 🌟 수정된 숏점프(슈퍼점프) 로직
+                // 🌟 수정된 숏점프 로직 (합체 중이 아닐 때와 동기화 존일 때만 여기서 처리)
                 bool inverted = gravityModule != null && gravityModule.isGravityInverted;
                 bool isMovingUp = inverted ? (rb.linearVelocity.y < 0f) : (rb.linearVelocity.y > 0f);
 
-                // 추가: 현재 플레이어가 동기화 점프 구역에 있는지 확인
-                PlayerSyncJump syncJump = GetComponent<PlayerSyncJump>();
-                bool isSyncJumping = (syncJump != null && syncJump.isInSyncZone);
                 if (jumpAction.WasReleasedThisFrame() && isMovingUp)
                 {
-                    ApplyShortJump(); // 1. 나 자신의 점프 끊기 (아래에서 새로 만들 메서드)
+                    PlayerSyncJump syncJump = GetComponent<PlayerSyncJump>();
 
-                    // 2. 동기화 구역 안이라면, 다른 사람들도 똑같이 점프를 끊으라고 서버에 신호 전송
-                    if (isSyncJumping)
+                    if (syncJump != null && syncJump.isInSyncZone)
                     {
-                        syncJump.CmdCutSyncJump();
+                        syncJump.CmdCutSyncJump(); // 동기화 존이면 서버에 숏점프 신호 보내기
+                    }
+                    else
+                    {
+                        ApplyShortJump(); // 평상시(혼자일 때) 즉시 숏점프 적용
+                    }
+                }
+
+                if (isReversedControl)
+                {
+                    reverseTimer -= Time.deltaTime;
+                    if (reverseTimer <= 0f)
+                    {
+                        StopReverseControl();
                     }
                 }
             }
 
-            if (isReversedControl)
+
+            // 🌟 중력 방향에 따른 낙하 가속(fallSpeed) 역방향 패치
+            bool isInverted = gravityModule != null && gravityModule.isGravityInverted;
+            float mult = gravityModule != null ? gravityModule.gravityMultiplier : 1f;
+            bool isFalling = isInverted ? (rb.linearVelocity.y > 0f) : (rb.linearVelocity.y < 0f);
+
+            if (isFalling) rb.gravityScale = jumpSpeed * fallSpeed * mult;
+            else rb.gravityScale = jumpSpeed * mult;
+
+            anim.SetFloat("Speed", Mathf.Abs(horizontalInput));
+            anim.SetBool("isGrounded", isGrounded);
+
+            // 🌟 좌우 이동 시 Y축 스케일 고정 버그 수정
+            if (horizontalInput != 0 && stunTimer <= 0f)
             {
-                reverseTimer -= Time.deltaTime;
-                if (reverseTimer <= 0f)
-                {
-                    StopReverseControl();
-                }
+                float currentY = isInverted ? -1f : 1f;
+                transform.localScale = new Vector3(horizontalInput > 0 ? 1 : -1, currentY, 1);
             }
+
+            if (transform.position.y < -50f || transform.position.y > 50f) Respawn();
         }
-
-
-        // 🌟 중력 방향에 따른 낙하 가속(fallSpeed) 역방향 패치
-        bool isInverted = gravityModule != null && gravityModule.isGravityInverted;
-        float mult = gravityModule != null ? gravityModule.gravityMultiplier : 1f;
-        bool isFalling = isInverted ? (rb.linearVelocity.y > 0f) : (rb.linearVelocity.y < 0f);
-
-        if (isFalling) rb.gravityScale = jumpSpeed * fallSpeed * mult;
-        else rb.gravityScale = jumpSpeed * mult;
-
-        anim.SetFloat("Speed", Mathf.Abs(horizontalInput));
-        anim.SetBool("isGrounded", isGrounded);
-
-        // 🌟 좌우 이동 시 Y축 스케일 고정 버그 수정
-        if (horizontalInput != 0 && stunTimer <= 0f)
-        {
-            float currentY = isInverted ? -1f : 1f;
-            transform.localScale = new Vector3(horizontalInput > 0 ? 1 : -1, currentY, 1);
-        }
-
-        if (transform.position.y < -50f || transform.position.y > 50f) Respawn();
     }
 
 
@@ -570,6 +589,7 @@ public class PlayerController : NetworkBehaviour
         base.OnStartLocalPlayer();
         moveAction.Enable();
         jumpAction.Enable();
+        actionAction.Enable();
 
         currentSpawnPoint = transform.position;
         Camera mainCam = Camera.main;
@@ -577,6 +597,23 @@ public class PlayerController : NetworkBehaviour
         {
             CameraFollow cam = mainCam.GetComponent<CameraFollow>() ?? mainCam.gameObject.AddComponent<CameraFollow>();
             cam.target = transform;
+        }
+        if (SceneManager.GetActiveScene().name != "chapter5")
+        {
+            if (flashlightObj != null) flashlightObj.SetActive(false);
+        }
+    }
+    [Command]
+    public void CmdToggleFlashlight()
+    {
+        isFlashlightOn = !isFlashlightOn;
+    }
+
+    private void OnFlashlightToggled(bool oldState, bool newState)
+    {
+        if (flashlightObj != null)
+        {
+            flashlightObj.SetActive(newState);
         }
     }
 
@@ -598,8 +635,6 @@ public class PlayerController : NetworkBehaviour
     {
         bool inverted = gravityModule != null && gravityModule.isGravityInverted;
         bool isMovingUpCheck = inverted ? (rb.linearVelocity.y < 0f) : (rb.linearVelocity.y > 0f);
-
-        // 올라가고 있는 중일 때만 속도를 깎아서 숏점프 적용
         if (isMovingUpCheck)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump);

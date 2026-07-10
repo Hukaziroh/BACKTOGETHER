@@ -124,9 +124,15 @@ public class PlayerCombineHandler : NetworkBehaviour
                 lastSentMove = currentMove;
                 CmdSendMoveState(bodyTarget, currentMove, myRole);
             }
-            if ((myRole == CombineRole.Jump || myRole == CombineRole.Move) && jumpAction.WasPressedThisFrame())
+
+            // 🌟 꼬리(합체 파티원) 점프 처리
+            if (myRole == CombineRole.Jump || myRole == CombineRole.Move)
             {
-                CmdSendJumpToBody(bodyTarget);
+                if (jumpAction.WasPressedThisFrame())
+                    CmdSendJumpToBody(bodyTarget); // 길게 누르기 시작 (풀점프)
+
+                if (jumpAction.WasReleasedThisFrame())
+                    CmdSendShortJumpToBody(bodyTarget); // 🌟 손 뗐을 때 (숏점프)
             }
 
             if (myRole == CombineRole.Action && actionAction.WasPressedThisFrame())
@@ -136,11 +142,14 @@ public class PlayerCombineHandler : NetworkBehaviour
         }
         else
         {
-            if (myRole == CombineRole.Jump && jumpAction.WasPressedThisFrame())
-                GetComponent<PlayerController>().CallCombinedJump();
-            if ((myRole == CombineRole.Jump || myRole == CombineRole.Move) &&jumpAction.WasReleasedThisFrame())
+            // 🌟 본체 점프 처리
+            if (myRole == CombineRole.Jump)
             {
-                CmdSendCutJump(bodyTarget);
+                if (jumpAction.WasPressedThisFrame())
+                    GetComponent<PlayerController>().CallCombinedJump(); // 길게 누르기 시작 (풀점프)
+
+                if (jumpAction.WasReleasedThisFrame())
+                    GetComponent<PlayerController>().ApplyShortJump(); // 🌟 손 뗐을 때 즉시 (숏점프)
             }
 
             if (myRole == CombineRole.Action && actionAction.WasPressedThisFrame())
@@ -197,26 +206,26 @@ public class PlayerCombineHandler : NetworkBehaviour
     [TargetRpc]
     public void TargetDoJump(NetworkConnection target) { GetComponent<PlayerController>().CallCombinedJump(); }
 
+    // 🌟 추가된 숏점프 신호 네트워크 통신
+    [Command]
+    private void CmdSendShortJumpToBody(GameObject body)
+    {
+        if (body == null) return;
+        body.GetComponent<PlayerCombineHandler>().TargetDoShortJump(body.GetComponent<NetworkIdentity>().connectionToClient);
+    }
+
+    // 🌟 숏점프 명령을 받은 '본체'는 즉시 속도를 줄임
+    [TargetRpc]
+    public void TargetDoShortJump(NetworkConnection target)
+    {
+        GetComponent<PlayerController>().ApplyShortJump();
+    }
+
     [Command]
     private void CmdSendActionToBody(GameObject body)
     {
         if (body == null) return;
         body.GetComponent<PlayerCombineHandler>().TargetDoAction(body.GetComponent<NetworkIdentity>().connectionToClient);
-    }
-
-    [Command]
-    private void CmdSendCutJump(GameObject body)
-    {
-        if (body == null) return;
-
-        body.GetComponent<PlayerCombineHandler>()
-            .TargetCutJump(body.GetComponent<NetworkIdentity>().connectionToClient);
-    }
-
-    [TargetRpc]
-    private void TargetCutJump(NetworkConnection target)
-    {
-        GetComponent<PlayerController>().ApplyShortJump();
     }
 
     [TargetRpc]
