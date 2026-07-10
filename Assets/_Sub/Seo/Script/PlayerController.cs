@@ -469,6 +469,7 @@ public class PlayerController : NetworkBehaviour
 
         float mult = gravityModule != null ? gravityModule.gravityMultiplier : 1f;
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce * mult);
+        ckTimer = jumpCk;
 
     }
 
