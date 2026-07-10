@@ -2599,7 +2599,7 @@ GameObject:
   - component: {fileID: 343984787}
   - component: {fileID: 343984786}
   - component: {fileID: 343984785}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Tilemap_ReverseGround
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19972,7 +19972,7 @@ GameObject:
   - component: {fileID: 456778686}
   m_Layer: 0
   m_Name: Tilemap_Spikes
-  m_TagString: Untagged
+  m_TagString: Spike
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -25692,7 +25692,7 @@ GameObject:
   - component: {fileID: 684500715}
   m_Layer: 0
   m_Name: "\uC0C1\uC2DC \uB0B4\uB824\uAC00\uC788\uB294 \uAC00\uC2DC"
-  m_TagString: Untagged
+  m_TagString: Spike
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -27148,7 +27148,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   wallObject: {fileID: 1420895745}
-  requiredPlayers: 1
+  requiredPlayers: 4
 --- !u!4 &1051177060
 Transform:
   m_ObjectHideFlags: 0
@@ -27870,7 +27870,7 @@ MonoBehaviour:
   endPoint: {fileID: 1649270318}
   goSpeed: 2
   returnSpeed: 2
-  requiredPlayers: 1
+  requiredPlayers: 4
   platformRigidbody: {fileID: 1170841063}
 --- !u!61 &1170841065
 BoxCollider2D:
@@ -28380,7 +28380,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   wallObject: {fileID: 151212236}
-  requiredPlayers: 1
+  requiredPlayers: 4
 --- !u!4 &1277170810
 Transform:
   m_ObjectHideFlags: 0
@@ -29757,7 +29757,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   wallObject: {fileID: 1293209092}
-  requiredPlayers: 1
+  requiredPlayers: 4
 --- !u!4 &1307105223
 Transform:
   m_ObjectHideFlags: 0
@@ -91778,7 +91778,7 @@ GameObject:
   - component: {fileID: 1533263020}
   m_Layer: 0
   m_Name: "\uBE60\uB974\uAC8C \uC62C\uB77C\uC624\uB294 \uAC00\uC2DC"
-  m_TagString: Untagged
+  m_TagString: Spike
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -92428,7 +92428,7 @@ MonoBehaviour:
   endPoint: {fileID: 761354843}
   goSpeed: 2
   returnSpeed: 2
-  requiredPlayers: 1
+  requiredPlayers: 4
   platformRigidbody: {fileID: 1741664188}
 --- !u!61 &1741664190
 BoxCollider2D:
@@ -94161,7 +94161,7 @@ MonoBehaviour:
   endPoint: {fileID: 2071813238}
   goSpeed: 2
   returnSpeed: 2
-  requiredPlayers: 1
+  requiredPlayers: 2
   platformRigidbody: {fileID: 2136700252}
 --- !u!114 &2136700254
 MonoBehaviour:
