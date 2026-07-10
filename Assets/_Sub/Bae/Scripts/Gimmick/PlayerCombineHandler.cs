@@ -138,6 +138,10 @@ public class PlayerCombineHandler : NetworkBehaviour
         {
             if (myRole == CombineRole.Jump && jumpAction.WasPressedThisFrame())
                 GetComponent<PlayerController>().CallCombinedJump();
+            if ((myRole == CombineRole.Jump || myRole == CombineRole.Move) &&jumpAction.WasReleasedThisFrame())
+            {
+                CmdSendCutJump(bodyTarget);
+            }
 
             if (myRole == CombineRole.Action && actionAction.WasPressedThisFrame())
                 GetComponent<PlayerController>().CallCombinedAction();
@@ -198,6 +202,21 @@ public class PlayerCombineHandler : NetworkBehaviour
     {
         if (body == null) return;
         body.GetComponent<PlayerCombineHandler>().TargetDoAction(body.GetComponent<NetworkIdentity>().connectionToClient);
+    }
+
+    [Command]
+    private void CmdSendCutJump(GameObject body)
+    {
+        if (body == null) return;
+
+        body.GetComponent<PlayerCombineHandler>()
+            .TargetCutJump(body.GetComponent<NetworkIdentity>().connectionToClient);
+    }
+
+    [TargetRpc]
+    private void TargetCutJump(NetworkConnection target)
+    {
+        GetComponent<PlayerController>().ApplyShortJump();
     }
 
     [TargetRpc]

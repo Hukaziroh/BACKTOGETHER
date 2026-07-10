@@ -263,6 +263,7 @@ public class PlayerController : NetworkBehaviour
     {
         if (isGrounded || coyoteTimeCounter > 0f)
         {
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
             Jump();
             coyoteTimeCounter = 0f;
         }
