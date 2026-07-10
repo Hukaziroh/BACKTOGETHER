@@ -728,22 +728,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 479596970}
-    - target: {fileID: 502843981146151821, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: StartGame
-      objectReference: {fileID: 0}
-    - target: {fileID: 502843981146151821, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: chapter5
-      objectReference: {fileID: 0}
     - target: {fileID: 674766322139722017, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 479596970}
-    - target: {fileID: 674766322139722017, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: StartGame
-      objectReference: {fileID: 0}
     - target: {fileID: 1935513447292932673, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -828,42 +816,18 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 479596970}
-    - target: {fileID: 4774972115979565342, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: StartGame
-      objectReference: {fileID: 0}
-    - target: {fileID: 4774972115979565342, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: chapter1
-      objectReference: {fileID: 0}
     - target: {fileID: 6939290752242453789, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 479596970}
-    - target: {fileID: 6939290752242453789, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: StartGame
-      objectReference: {fileID: 0}
-    - target: {fileID: 6939290752242453789, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: TestMap
-      objectReference: {fileID: 0}
     - target: {fileID: 7060667796035086083, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 479596970}
-    - target: {fileID: 7060667796035086083, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: RequestCloseChapter
-      objectReference: {fileID: 0}
     - target: {fileID: 7184890527272513282, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 479596970}
-    - target: {fileID: 7184890527272513282, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: StartGame
-      objectReference: {fileID: 0}
     - target: {fileID: 8626817663852988630, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
       propertyPath: m_Name
       value: ChapterPanel
@@ -876,14 +840,6 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 479596970}
-    - target: {fileID: 8991079813903025369, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: StartGame
-      objectReference: {fileID: 0}
-    - target: {fileID: 8991079813903025369, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: chapter3
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1369,6 +1325,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: LobbyPanel
       objectReference: {fileID: 0}
+    - target: {fileID: 1381074218888706539, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3615863084788188071, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3893653936201414830, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -1583,8 +1547,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Host picking a chapter...
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2627e9ca796b22d4fb592f60230c2fec, type: 2}
+  m_sharedMaterial: {fileID: 4301745327245154971, guid: 2627e9ca796b22d4fb592f60230c2fec, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
