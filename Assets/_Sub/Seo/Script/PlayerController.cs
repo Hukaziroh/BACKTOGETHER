@@ -215,7 +215,7 @@ public class PlayerController : NetworkBehaviour
                 PlayerSyncJump syncJump = GetComponent<PlayerSyncJump>();
                 bool isSyncJumping = (syncJump != null && syncJump.isInSyncZone);
 
-                if (!isSyncJumping && jumpAction.WasReleasedThisFrame() && isMovingUp)
+                if (jumpAction.WasReleasedThisFrame() && isMovingUp)
                 {
                     rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump);
                 }
