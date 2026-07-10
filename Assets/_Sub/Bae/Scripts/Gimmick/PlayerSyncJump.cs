@@ -48,4 +48,23 @@ public class PlayerSyncJump : NetworkBehaviour
             playerController.CallCombinedJump();
         }
     }
+    [Command]
+    public void CmdCutSyncJump()
+    {
+        if (serverZone != null)
+        {
+            serverZone.BroadcastCutJump(gameObject);
+        }
+    }
+
+    // 🌟 추가: 서버가 특정 클라이언트(다른 파티원들)에게 점프를 끊으라고 명령
+    [TargetRpc]
+    public void TargetCutJump(NetworkConnection target)
+    {
+        PlayerController pc = GetComponent<PlayerController>();
+        if (pc != null)
+        {
+            pc.ApplyShortJump(); // 지시를 받은 사람도 즉시 점프 끊기!
+        }
+    }
 }

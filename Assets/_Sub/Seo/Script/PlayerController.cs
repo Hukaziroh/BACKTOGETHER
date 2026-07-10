@@ -214,10 +214,15 @@ public class PlayerController : NetworkBehaviour
                 // 추가: 현재 플레이어가 동기화 점프 구역에 있는지 확인
                 PlayerSyncJump syncJump = GetComponent<PlayerSyncJump>();
                 bool isSyncJumping = (syncJump != null && syncJump.isInSyncZone);
-
                 if (jumpAction.WasReleasedThisFrame() && isMovingUp)
                 {
-                    rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump);
+                    ApplyShortJump(); // 1. 나 자신의 점프 끊기 (아래에서 새로 만들 메서드)
+
+                    // 2. 동기화 구역 안이라면, 다른 사람들도 똑같이 점프를 끊으라고 서버에 신호 전송
+                    if (isSyncJumping)
+                    {
+                        syncJump.CmdCutSyncJump();
+                    }
                 }
             }
 
@@ -586,6 +591,18 @@ public class PlayerController : NetworkBehaviour
         if (!isLocalPlayer) return;
         isReversedControl = false;
         reverseTimer = 0f;
+    }
+
+    public void ApplyShortJump()
+    {
+        bool inverted = gravityModule != null && gravityModule.isGravityInverted;
+        bool isMovingUpCheck = inverted ? (rb.linearVelocity.y < 0f) : (rb.linearVelocity.y > 0f);
+
+        // 올라가고 있는 중일 때만 속도를 깎아서 숏점프 적용
+        if (isMovingUpCheck)
+        {
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * superJump);
+        }
     }
 
     public void LateUpdate()
