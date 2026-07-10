@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using Mirror;
 
-public class SpikeDownButton : NetworkBehaviour
+public class PermanentSpikeButton : NetworkBehaviour
 {
     [Header("연결할 버튼들")]
     [Tooltip("여기에 버튼을 드래그해서 넣으세요. (하나만 넣어도 작동합니다)")]
