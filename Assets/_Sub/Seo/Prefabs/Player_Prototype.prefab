@@ -421,6 +421,17 @@ MonoBehaviour:
     m_Interactions: 
     m_SingletonActionBindings: []
     m_Flags: 0
+  actionAction:
+    m_Name: Action
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 36e987d1-8bf8-4630-b40c-1bd6eedc276d
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  flashlightObj: {fileID: 5034516759592894567}
+  isFlashlightOn: 1
   currentSpawnPoint: {x: 0, y: 0, z: 0}
   moveSpeed: 7
   normalFriction: 20
