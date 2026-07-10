@@ -1,0 +1,86 @@
+using UnityEngine;
+using Mirror;
+
+[RequireComponent(typeof(Rigidbody2D), typeof(CapsuleCollider2D), typeof(Animator))]
+public class PlayerController : NetworkBehaviour
+{
+    [Header("Core Components")]
+    public Rigidbody2D rb { get; private set; }
+    public CapsuleCollider2D mainCollider { get; private set; }
+    public Animator anim { get; private set; }
+
+    [Header("External Modules (기믹)")]
+    public PlayerGravityController gravityModule { get; private set; }
+    public PlayerCombineHandler combineHandler { get; private set; }
+    public PlayerSyncJump syncJumpHandler { get; private set; }
+
+    [Header("Internal Modules (분리된 기능들)")]
+    public PlayerInput input { get; private set; }
+    public PlayerMovement movement { get; private set; }
+    public PlayerKnockback knockback { get; private set; }
+    public PlayerRespawn respawn { get; private set; }
+    public PlayerFlashlight flashlight { get; private set; }
+    public PlayerAnimation animationModule { get; private set; }
+
+    void Awake()
+    {
+        // 공통 컴포넌트 캐싱
+        rb = GetComponent<Rigidbody2D>();
+        mainCollider = GetComponent<CapsuleCollider2D>();
+        anim = GetComponent<Animator>();
+
+        // 외부 기믹 모듈 캐싱
+        gravityModule = GetComponent<PlayerGravityController>();
+        combineHandler = GetComponent<PlayerCombineHandler>();
+        syncJumpHandler = GetComponent<PlayerSyncJump>();
+
+        // 내부 모듈 캐싱
+        input = GetComponent<PlayerInput>();
+        movement = GetComponent<PlayerMovement>();
+        knockback = GetComponent<PlayerKnockback>();
+        respawn = GetComponent<PlayerRespawn>();
+        flashlight = GetComponent<PlayerFlashlight>();
+        animationModule = GetComponent<PlayerAnimation>();
+    }
+
+    void Start()
+    {
+        if (!isLocalPlayer)
+        {
+            rb.bodyType = RigidbodyType2D.Kinematic;
+            rb.interpolation = RigidbodyInterpolation2D.None;
+        }
+    }
+
+    public override void OnStartLocalPlayer()
+    {
+        base.OnStartLocalPlayer();
+
+        // 메인 카메라 세팅
+        Camera mainCam = Camera.main;
+        if (mainCam != null)
+        {
+            CameraFollow cam = mainCam.GetComponent<CameraFollow>() ?? mainCam.gameObject.AddComponent<CameraFollow>();
+            cam.target = transform;
+        }
+    }
+    public Vector3 currentSpawnPoint
+    {
+        get => respawn.currentSpawnPoint;
+        set => respawn.currentSpawnPoint = value;
+    }
+    public void SetSpawnPoint(Vector3 newPoint) => respawn.SetSpawnPoint(newPoint);
+
+    public UnityEngine.InputSystem.InputAction jumpAction => input.jumpAction;
+    public void StartReverseControl(float duration) => input.StartReverseControl(duration);
+    public void StopReverseControl() => input.StopReverseControl();
+
+    public float windVelocity
+    {
+        get => movement.windVelocity;
+        set => movement.windVelocity = value;
+    }
+    public void CallCombinedJump() => movement.CallCombinedJump();
+    public void ApplyShortJump() => movement.ApplyShortJump();
+    public void CallCombinedAction() => movement.CallCombinedAction();
+}

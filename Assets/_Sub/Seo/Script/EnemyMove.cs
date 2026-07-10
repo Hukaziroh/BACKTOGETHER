@@ -1,6 +1,8 @@
 using UnityEngine;
 
-public class EnemyMove : MonoBehaviour
+using Mirror;
+
+public class EnemyMove : NetworkBehaviour
 {
     public float moveSpeed = 3f;
     private int moveDirection = -1; // 1이면 오른쪽, -1이면 왼쪽
