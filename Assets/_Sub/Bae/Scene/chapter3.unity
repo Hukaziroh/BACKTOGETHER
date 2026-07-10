@@ -25932,6 +25932,7 @@ GameObject:
   - component: {fileID: 747448829}
   - component: {fileID: 747448828}
   - component: {fileID: 747448827}
+  - component: {fileID: 747448830}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -26016,6 +26017,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &747448830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 747448826}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 2914889835
+  _assetId: 0
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1 &748153382
 GameObject:
   m_ObjectHideFlags: 0
@@ -26427,6 +26445,7 @@ GameObject:
   - component: {fileID: 924752886}
   - component: {fileID: 924752885}
   - component: {fileID: 924752884}
+  - component: {fileID: 924752887}
   m_Layer: 0
   m_Name: JumpTrigger
   m_TagString: Untagged
@@ -26510,6 +26529,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &924752887
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 924752883}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 3229969873
+  _assetId: 0
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1001 &938070800
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -26642,8 +26678,33 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3742478716910255884, guid: 500167d921f352344953d87262a30cb8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 943868640}
   m_SourcePrefab: {fileID: 100100000, guid: 500167d921f352344953d87262a30cb8, type: 3}
+--- !u!1 &943868639 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3742478716910255884, guid: 500167d921f352344953d87262a30cb8, type: 3}
+  m_PrefabInstance: {fileID: 943868638}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &943868640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 943868639}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 1785700848
+  _assetId: 3370235393
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1001 &944020765
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -28248,8 +28309,33 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 761487662372461992, guid: 380cedef780275b458e8552654128d80, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1250989673}
   m_SourcePrefab: {fileID: 100100000, guid: 380cedef780275b458e8552654128d80, type: 3}
+--- !u!1 &1250989672 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 761487662372461992, guid: 380cedef780275b458e8552654128d80, type: 3}
+  m_PrefabInstance: {fileID: 1250989671}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1250989673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1250989672}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 1524960609
+  _assetId: 3948965857
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1 &1255406134
 GameObject:
   m_ObjectHideFlags: 0
@@ -29784,6 +29870,7 @@ GameObject:
   - component: {fileID: 1321032942}
   - component: {fileID: 1321032941}
   - component: {fileID: 1321032940}
+  - component: {fileID: 1321032943}
   m_Layer: 0
   m_Name: Triiger
   m_TagString: Untagged
@@ -29867,6 +29954,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1321032943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1321032939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 2000738498
+  _assetId: 0
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1001 &1399968712
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -31825,6 +31929,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1440938515}
   - component: {fileID: 1440938516}
+  - component: {fileID: 1440938517}
   m_Layer: 0
   m_Name: CoopSpikeManager
   m_TagString: Untagged
@@ -31871,6 +31976,23 @@ MonoBehaviour:
   moveDistance: 1
   moveSpeed: 5
   hideDuration: 10
+--- !u!114 &1440938517
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1440938514}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 868057531
+  _assetId: 0
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1001 &1458089363
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -93054,6 +93176,7 @@ GameObject:
   - component: {fileID: 1902580363}
   - component: {fileID: 1902580362}
   - component: {fileID: 1902580365}
+  - component: {fileID: 1902580366}
   m_Layer: 0
   m_Name: GameObject (1)
   m_TagString: Untagged
@@ -93151,6 +93274,23 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   requiredPlayers: 4
+--- !u!114 &1902580366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1902580361}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 1541096577
+  _assetId: 0
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1001 &1902994364
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -93571,6 +93711,7 @@ GameObject:
   - component: {fileID: 2019069930}
   - component: {fileID: 2019069929}
   - component: {fileID: 2019069928}
+  - component: {fileID: 2019069931}
   m_Layer: 0
   m_Name: Triiger (1)
   m_TagString: Untagged
@@ -93654,6 +93795,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2019069931
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2019069927}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 2144930416
+  _assetId: 0
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1001 &2043638421
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -93788,6 +93946,7 @@ GameObject:
   - component: {fileID: 2064440961}
   - component: {fileID: 2064440960}
   - component: {fileID: 2064440962}
+  - component: {fileID: 2064440963}
   m_Layer: 0
   m_Name: duoTrigger
   m_TagString: Untagged
@@ -93872,6 +94031,23 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 12.51619, y: 7.205614}
   m_EdgeRadius: 0
+--- !u!114 &2064440963
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2064440959}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 2872021488
+  _assetId: 0
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1 &2071813237
 GameObject:
   m_ObjectHideFlags: 0
@@ -94301,6 +94477,10 @@ PrefabInstance:
     - target: {fileID: 6724294060395140996, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8243132816064576173, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
+      propertyPath: sceneId
+      value: 2452628993
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
