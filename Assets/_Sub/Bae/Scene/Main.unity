@@ -1721,6 +1721,17 @@ PrefabInstance:
       addedObject: {fileID: 97406932}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+--- !u!114 &552944004 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4665141533479455424, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+  m_PrefabInstance: {fileID: 552944003}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!114 &700180063 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
@@ -5092,6 +5103,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
+      propertyPath: hostCreateButton
+      value: 
+      objectReference: {fileID: 552944004}
     - target: {fileID: 8422485441135400866, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
       propertyPath: m_Name
       value: MainManager

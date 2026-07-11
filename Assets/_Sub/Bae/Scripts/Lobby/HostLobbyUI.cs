@@ -1,7 +1,6 @@
 using System.Collections;
 using UnityEngine;
 using TMPro;
-using EpicTransport;
 
 public class HostLobbyUI : MonoBehaviour
 {
@@ -9,34 +8,31 @@ public class HostLobbyUI : MonoBehaviour
 
     void Start()
     {
-        StartCoroutine(WaitForEOSProductID());
+        StartCoroutine(ShowShortCodeRoutine());
     }
 
-    private IEnumerator WaitForEOSProductID()
+    private IEnumerator ShowShortCodeRoutine()
     {
-        while (string.IsNullOrEmpty(EOSSDKComponent.LocalUserProductIdString))
+        // PrivateLobbyManager에서 숏코드를 발급할 때까지 대기
+        while (string.IsNullOrEmpty(PrivateLobbyManager.currentShortCode))
         {
             yield return null;
         }
+
         if (roomCodeText != null)
         {
-            roomCodeText.text = "Room Code: " + EOSSDKComponent.LocalUserProductIdString;
-            Debug.Log("방 코드 로드 완료: " + EOSSDKComponent.LocalUserProductIdString);
+            roomCodeText.text = "Room Code: " + PrivateLobbyManager.currentShortCode;
         }
     }
 
     public void OnCopyButtonClicked()
     {
-        string currentCode = EOSSDKComponent.LocalUserProductIdString;
+        string currentCode = PrivateLobbyManager.currentShortCode;
 
         if (!string.IsNullOrEmpty(currentCode))
         {
             GUIUtility.systemCopyBuffer = currentCode;
             Debug.Log("방 코드가 복사되었습니다: " + currentCode);
-        }
-        else
-        {
-            Debug.LogWarning("아직 방 코드가 발급되지 않았습니다. 잠시 후 다시 시도해주세요.");
         }
     }
 }
