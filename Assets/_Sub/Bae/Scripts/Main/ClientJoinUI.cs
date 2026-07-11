@@ -1,4 +1,4 @@
-#nullable enable // 🌟 Nullable(?) 컴파일 에러를 해결하기 위한 구문
+#nullable enable //Nullable(?) 컴파일 에러를 해결하기 위한 구문
 
 using System.Collections;
 using UnityEngine;
@@ -66,7 +66,6 @@ public class ClientJoinUI : MonoBehaviour
             currentSearchHandle.Find(findOptions, null, OnLobbySearchCompleted);
         }
 
-        // 검색이 끝날 때까지 대기
         while (!searchFinished) yield return null;
 
         if (!string.IsNullOrEmpty(foundHostAddress))
@@ -81,32 +80,27 @@ public class ClientJoinUI : MonoBehaviour
         }
     }
 
-    // 🌟 전용 콜백 함수
     private void OnLobbySearchCompleted(LobbySearchFindCallbackInfo data)
     {
         if (data.ResultCode == Result.Success && currentSearchHandle != null)
         {
-            // 🌟 에러 수정: 정확한 구조체 풀네임(LobbySearch...) 적용
             LobbySearchGetSearchResultCountOptions countOptions = new LobbySearchGetSearchResultCountOptions();
             uint count = currentSearchHandle.GetSearchResultCount(countOptions);
 
             if (count > 0)
             {
-                // 🌟 에러 수정: 정확한 구조체 풀네임(LobbySearch...) 적용
                 LobbySearchCopySearchResultByIndexOptions copyOptions = new LobbySearchCopySearchResultByIndexOptions();
                 copyOptions.LobbyIndex = 0;
 
                 currentSearchHandle.CopySearchResultByIndex(copyOptions, out LobbyDetails lobbyDetails);
 
                 LobbyDetailsCopyInfoOptions infoOptions = new LobbyDetailsCopyInfoOptions();
-
-                // 🌟 에러 수정: var를 사용하여 타입 추론 유도
                 lobbyDetails.CopyInfo(infoOptions, out var lobbyInfo);
 
                 foundHostAddress = lobbyInfo?.LobbyOwnerUserId.ToString() ?? "";
             }
         }
 
-        searchFinished = true; // 검색 완료 처리
+        searchFinished = true; 
     }
 }

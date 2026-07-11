@@ -71,20 +71,24 @@ public class PauseManager : MonoBehaviour
 
     private IEnumerator LeaveGameGracefullyRoutine()
     {
-        // 네트워크 연결 종료 명령 전달
-        if (NetworkServer.active && NetworkClient.isConnected)
+        // 1. 방장(서버)이 활성화되어 있다면 무조건 StopHost() 실행!
+        if (NetworkServer.active)
+        {
             NetworkManager.singleton.StopHost();
+        }
+        // 2. 일반 클라이언트 접속만 되어 있다면 StopClient() 실행!
         else if (NetworkClient.isConnected)
+        {
             NetworkManager.singleton.StopClient();
+        }
 
-        // 4. ⭐ 핵심: Mirror 서버와 클라이언트 루프가 완전히 꺼질 때까지 한 프레임씩 대기
-        // active 상태가 둘 다 false가 될 때까지 다음 프레임으로 양보합니다.
-        while (NetworkServer.active || NetworkClient.active)
+        // 3. 서버와 클라이언트가 완전히 꺼질 때까지 대기
+        while (NetworkServer.active || NetworkClient.isConnected)
         {
             yield return null;
         }
 
-        // 5. 에픽 트랜스포트와 Mirror가 완벽히 정리를 끝낸 후 안전하게 씬 이동
+        // 4. 안전하게 메인 화면으로 이동
         SceneManager.LoadScene(mainMenuSceneName);
     }
 }
