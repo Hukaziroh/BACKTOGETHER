@@ -13,7 +13,6 @@ public class HostLobbyUI : MonoBehaviour
 
     private IEnumerator ShowShortCodeRoutine()
     {
-        // PrivateLobbyManager에서 숏코드를 발급할 때까지 대기
         while (string.IsNullOrEmpty(PrivateLobbyManager.currentShortCode))
         {
             yield return null;
