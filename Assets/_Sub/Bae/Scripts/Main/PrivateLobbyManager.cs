@@ -2,69 +2,66 @@ using UnityEngine;
 using EpicTransport;
 using Mirror;
 using System.Collections;
-using UnityEngine.UI; // 버튼 제어를 위해 추가
+using UnityEngine.UI;
 
 public class PrivateLobbyManager : MonoBehaviour
 {
     [Header("UI 연결")]
-    [Tooltip("방 만들기 버튼을 연결하세요 (광클 방지용)")]
     public Button hostCreateButton;
+
+    // 생성된 숏코드를 UI에 전달하기 위한 전역 변수
+    public static string currentShortCode = "";
 
     public void OnStartPrivateHostClicked()
     {
-        EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
-
-        if (eosLobby == null)
-        {
-            Debug.LogError("NetworkManager에서 EOSLobby 컴포넌트를 찾을 수 없습니다!");
-            return;
-        }
-
-        // 1. 유저 광클 방지 (버튼 비활성화)
-        if (hostCreateButton != null)
-        {
-            hostCreateButton.interactable = false;
-        }
-
-        // 2. 안전한 방 생성을 위한 코루틴 시작
-        StartCoroutine(CleanAndCreateLobbyRoutine(eosLobby));
+        if (hostCreateButton != null) hostCreateButton.interactable = false;
+        StartCoroutine(CleanAndCreateLobbyRoutine());
     }
 
-    private IEnumerator CleanAndCreateLobbyRoutine(EOSLobby eosLobby)
+    private IEnumerator CleanAndCreateLobbyRoutine()
     {
-        Debug.Log("[로비 시스템] 1단계: 기존 네트워크 연결 및 잔류 세션 강제 종료 중...");
-
-        // 기존 Mirror 클라이언트 및 서버 접속 강제 종료
+        // 1. 기존 네트워크 정리
         if (NetworkClient.active) NetworkManager.singleton.StopClient();
         if (NetworkServer.active) NetworkManager.singleton.StopHost();
 
-        // 에픽 서버에 기존 로비 폭파 요청
-        eosLobby.LeaveLobby();
+        EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
+        if (eosLobby != null) eosLobby.LeaveLobby();
 
-        // 🌟 [매우 중요] 에픽 클라우드 서버가 기존 세션을 완전히 삭제할 때까지 기다립니다.
-        // 인터넷 환경을 고려해 1.5초 ~ 2초 정도 넉넉히 주는 것이 가장 안전합니다.
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1.5f); // 세션 청소 대기
 
-        Debug.Log("[로비 시스템] 2단계: 세션 초기화 완료. 새로운 에픽 로비를 생성합니다.");
+        // 2. 6자리 숏코드 발급
+        currentShortCode = GenerateShortCode();
+        Debug.Log("[로비 시스템] 발급된 숏코드: " + currentShortCode);
 
-        // 새 로비 생성 세팅
+        // 3. FakeByte 내장 함수로 안전하게 방 생성
         uint maxPlayers = 4;
-        Epic.OnlineServices.Lobby.LobbyPermissionLevel permissionLevel = Epic.OnlineServices.Lobby.LobbyPermissionLevel.Inviteonly;
+        Epic.OnlineServices.Lobby.LobbyPermissionLevel permissionLevel = Epic.OnlineServices.Lobby.LobbyPermissionLevel.Publicadvertised;
         bool presenceEnabled = true;
 
-        // 에픽 서버에 신규 로비 할당 명령 실행
         eosLobby.CreateLobby(maxPlayers, permissionLevel, presenceEnabled);
 
-        // 로비가 에픽 서버에 완전히 등록될 때까지 아주 짧은 대기
-        yield return new WaitForSeconds(0.5f);
-
-        Debug.Log("[로비 시스템] 3단계: 새 방 생성 완료! Mirror 호스트를 시작합니다.");
-        NetworkManager.singleton.StartHost();
-
-        // 방 생성이 완료되었으므로 다시 버튼 활성화 (혹은 씬이 넘어가면 비활성 상태로 유지됨)
-        if (hostCreateButton != null)
+        // 🌟 [핵심] FakeByte 내장 함수(GetCurrentLobbyId)를 사용해 로비 ID가 나올 때까지 대기
+        while (string.IsNullOrEmpty(eosLobby.GetCurrentLobbyId()))
         {
-            hostCreateButton.interactable = true;
+            yield return null;
         }
+
+        // 🌟 [핵심] FakeByte 내장 함수(UpdateLobbyAttribute)를 사용해 에러 없이 숏코드 간판 등록!
+        eosLobby.UpdateLobbyAttribute("SHORTCODE", currentShortCode);
+
+        yield return new WaitForSeconds(0.5f); // 등록 안정화 대기
+
+        // 4. Mirror 호스트 시작
+        NetworkManager.singleton.StartHost();
+        if (hostCreateButton != null) hostCreateButton.interactable = true;
+    }
+
+    // 영문+숫자 6자리 무작위 생성
+    private string GenerateShortCode()
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        string code = "";
+        for (int i = 0; i < 6; i++) code += chars[Random.Range(0, chars.Length)];
+        return code;
     }
 }
