@@ -1,6 +1,7 @@
 using UnityEngine;
 using Mirror;
 using UnityEngine.SceneManagement;
+using EpicTransport; // 추가
 
 public class HostDisconnectHandler : MonoBehaviour
 {
@@ -20,7 +21,7 @@ public class HostDisconnectHandler : MonoBehaviour
         if (NetworkClient.isConnected && !wasConnected)
         {
             wasConnected = true;
-            isIntentionalExit = false; 
+            isIntentionalExit = false;
         }
         if (wasConnected && !NetworkClient.isConnected)
         {
@@ -40,19 +41,35 @@ public class HostDisconnectHandler : MonoBehaviour
         {
             disconnectPanel.SetActive(true);
         }
-        if (NetworkManager.singleton != null)
-        {
-            NetworkManager.singleton.StopClient();
-        }
+
+        ClearNetworkSession(); // 🌟 강제 종료 시 에픽 세션 즉시 정리
     }
 
     public void GoBackToLobby()
     {
+        ClearNetworkSession(); // 🌟 로비로 돌아갈 때 에픽 세션 즉시 정리
         SceneManager.LoadScene(lobbySceneName);
-        disconnectPanel.SetActive(false);
+        if (disconnectPanel != null) disconnectPanel.SetActive(false);
     }
+
     public void SetIntentionalExit()
     {
         isIntentionalExit = true;
+        ClearNetworkSession(); // 🌟 의도적 종료 시에도 정리
+    }
+
+    // 🌟 에픽 로비와 미러 연결을 즉시 끊어버리는 핵심 함수 추가
+    private void ClearNetworkSession()
+    {
+        if (NetworkManager.singleton != null)
+        {
+            NetworkManager.singleton.StopClient(); // 클라이언트 접속 종료
+
+            EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
+            if (eosLobby != null)
+            {
+                eosLobby.LeaveLobby(); // 에픽 온라인 서비스 방 즉시 퇴장 요청
+            }
+        }
     }
 }
