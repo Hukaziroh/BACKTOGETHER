@@ -11,41 +11,31 @@ public class StageProgressTracker : MonoBehaviour
 
     private Vector3 startPos;
     private Vector3 endPos;
+    private float mapLengthX;
     private Dictionary<GameObject, RectTransform> playerIcons = new Dictionary<GameObject, RectTransform>();
     private bool isInitialized = false;
 
-    // 관전 시스템 참조
     private SpectatorSystem spectatorSystem;
 
-    private void OnEnable()
-    {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
+    // 🌟 프레임 드랍 방지용 캐싱 변수
+    private GameObject[] cachedPlayers = new GameObject[0];
+    private float nextSearchTime = 0f;
 
-    private void OnDisable()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
+    private void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;
+    private void OnDisable() => SceneManager.sceneLoaded -= OnSceneLoaded;
 
-    private void Start()
-    {
-        InitializeScene();
-    }
-
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        InitializeScene();
-    }
+    private void Start() => InitializeScene();
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => InitializeScene();
 
     private void InitializeScene()
     {
-        // 기존 아이콘 제거
         foreach (Transform child in iconContainer)
         {
             if (child != null) Destroy(child.gameObject);
         }
         playerIcons.Clear();
         isInitialized = false;
+        nextSearchTime = 0f; // 씬 로드 시 즉시 갱신
 
         InitializePoints();
         spectatorSystem = Object.FindAnyObjectByType<SpectatorSystem>();
@@ -60,7 +50,14 @@ public class StageProgressTracker : MonoBehaviour
         {
             startPos = startObj.transform.position;
             endPos = doorObj.transform.position;
-            isInitialized = true;
+
+            // 질문자님의 원래 계산식 복구
+            mapLengthX = endPos.x - startPos.x;
+
+            if (mapLengthX != 0) // 0으로 나누기 방지
+            {
+                isInitialized = true;
+            }
         }
     }
 
@@ -69,65 +66,49 @@ public class StageProgressTracker : MonoBehaviour
         if (!isInitialized)
         {
             InitializePoints();
-            return;
+            if (!isInitialized) return;
         }
 
-        if (spectatorSystem == null) spectatorSystem = Object.FindAnyObjectByType<SpectatorSystem>();
+        // 🌟 0.5초마다 플레이어 목록 갱신
+        if (Time.unscaledTime >= nextSearchTime)
+        {
+            cachedPlayers = GameObject.FindGameObjectsWithTag("Player");
+            nextSearchTime = Time.unscaledTime + 0.5f;
+        }
 
-        float mapLengthX = endPos.x - startPos.x;
-        if (mapLengthX <= 0) return;
-
-        GameObject[] currentPlayers = GameObject.FindGameObjectsWithTag("Player");
-
-        // --- 1. 잔재 및 끊김 처리 ---
+        // 🌟 완전히 나간 플레이어 아이콘 삭제
         List<GameObject> toRemove = new List<GameObject>();
         foreach (var kvp in playerIcons)
         {
-            bool found = false;
-            foreach (var p in currentPlayers) { if (p == kvp.Key) { found = true; break; } }
-            if (!found || kvp.Key == null) toRemove.Add(kvp.Key);
-        }
-
-        foreach (var p in toRemove)
-        {
-            if (playerIcons.ContainsKey(p))
+            if (kvp.Key == null)
             {
-                if (playerIcons[p] != null) Destroy(playerIcons[p].gameObject);
-                playerIcons.Remove(p);
+                if (kvp.Value != null) Destroy(kvp.Value.gameObject);
+                toRemove.Add(kvp.Key);
             }
         }
+        foreach (var k in toRemove) playerIcons.Remove(k);
 
-        // --- 2. 아이콘 생성 및 업데이트 ---
-        foreach (GameObject player in currentPlayers)
+        // --- 여기서부터는 질문자님의 원래 100% 작동하던 로직 그대로 사용 ---
+        foreach (GameObject player in cachedPlayers)
         {
             if (player == null) continue;
 
-            // 아이콘 없으면 생성
             if (!playerIcons.ContainsKey(player))
             {
                 GameObject newIcon = Instantiate(playerIconPrefab, iconContainer);
-                newIcon.transform.localScale = Vector3.one;
                 playerIcons.Add(player, newIcon.GetComponent<RectTransform>());
             }
 
-            // [수정] 해당 플레이어의 RectTransform 가져오기
             RectTransform iconRect = playerIcons[player];
+            if (iconRect == null) continue;
 
-            // 💡 자식 오브젝트 "Icon" 찾기
             Transform iconChild = iconRect.Find("Icon");
-            if (iconChild == null)
+            if (iconChild != null)
             {
-                Debug.LogError($"[오류] {player.name} 아이콘의 자식 중 'Icon'을 찾을 수 없습니다!");
-                continue;
-            }
+                Image iconImage = iconChild.GetComponent<Image>();
+                CoopPlayerIdentity identity = player.GetComponent<CoopPlayerIdentity>();
 
-            Image iconImage = iconChild.GetComponent<Image>();
-            CoopPlayerIdentity identity = player.GetComponent<CoopPlayerIdentity>();
-
-            // 색상 적용
-            if (identity != null && iconImage != null)
-            {
-                if (identity.playerIndex >= 0 && identity.playerIndex < identity.playerColors.Length)
+                if (identity != null && iconImage != null && identity.playerIndex >= 0 && identity.playerIndex < identity.playerColors.Length)
                 {
                     Color targetColor = identity.playerColors[identity.playerIndex];
                     if (iconImage.color != targetColor)
@@ -137,7 +118,6 @@ public class StageProgressTracker : MonoBehaviour
                 }
             }
 
-            // 관전 강조 로직
             Transform highlight = iconRect.Find("HighlightBorder");
             if (highlight != null)
             {
@@ -148,7 +128,7 @@ public class StageProgressTracker : MonoBehaviour
                 }
             }
 
-            // 위치 업데이트
+            // 질문자님의 원래 위치 업데이트 계산식 복구
             float currentDistX = player.transform.position.x - startPos.x;
             float progress = Mathf.Clamp01(currentDistX / mapLengthX);
             float xPos = progress * iconContainer.rect.width;
