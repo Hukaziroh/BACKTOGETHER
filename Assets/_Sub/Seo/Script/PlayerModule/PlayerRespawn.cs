@@ -1,5 +1,6 @@
 using UnityEngine;
 using Mirror;
+using UnityEngine.InputSystem; 
 
 public class PlayerRespawn : NetworkBehaviour
 {
@@ -7,6 +8,8 @@ public class PlayerRespawn : NetworkBehaviour
 
     [Header("스폰 시스템")]
     public Vector3 currentSpawnPoint;
+    private float holdTimer = 0f;
+    private const float HOLD_TIME_TO_RESPAWN = 2f; 
 
     void Awake()
     {
@@ -16,6 +19,31 @@ public class PlayerRespawn : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         currentSpawnPoint = transform.position;
+    }
+    void Update()
+    {
+        if (!isLocalPlayer) return;
+
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.rKey.isPressed)
+            {
+                holdTimer += Time.deltaTime;
+                if (holdTimer >= HOLD_TIME_TO_RESPAWN)
+                {
+                    Debug.Log("[시스템] 비상 탈출! 마지막 체크포인트로 강제 이동합니다.");
+                    Respawn();
+                    holdTimer = 0f;
+                }
+            }
+            else
+            {
+                if (holdTimer > 0f)
+                {
+                    holdTimer = 0f;
+                }
+            }
+        }
     }
 
     void FixedUpdate()
@@ -33,10 +61,8 @@ public class PlayerRespawn : NetworkBehaviour
     public void Respawn()
     {
         if (!isLocalPlayer) return;
-
         transform.position = currentSpawnPoint;
         controller.rb.linearVelocity = Vector2.zero;
-
         if (controller.knockback != null)
         {
             controller.knockback.ResetKnockback();
