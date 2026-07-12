@@ -160,4 +160,10 @@ public class PlayerKnockback : NetworkBehaviour
         isKnockedBack = false;
         stunTimer = 0f;
     }
+
+    public void ApplyKnockbackFromEye(Vector3 eyePosition)
+    {
+        if (!isLocalPlayer) return;
+        ApplyLocalKnockback(new Vector2(-1, 0.5f));
+    }
 }
