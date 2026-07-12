@@ -39,7 +39,7 @@ public class StageDoor : NetworkBehaviour
                 RpcUpdateCount(arrivedPlayers.Count, NetworkServer.connections.Count);
 
                 // 모든 플레이어가 도착했는지 확인
-                if (arrivedPlayers.Count >= NetworkServer.connections.Count)
+                if (arrivedPlayers.Count >= CoopPlayerIdentity.players.Count)
                 {
                     RpcTriggerClearEffect();
                     StartCoroutine(WaitAndLoadScene());
