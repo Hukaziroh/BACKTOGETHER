@@ -26833,6 +26833,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Moving Platform
       objectReference: {fileID: 0}
+    - target: {fileID: 3742478716910255884, guid: 500167d921f352344953d87262a30cb8, type: 3}
+      propertyPath: m_TagString
+      value: MovingPlatform
+      objectReference: {fileID: 0}
     - target: {fileID: 6426469386026468056, guid: 500167d921f352344953d87262a30cb8, type: 3}
       propertyPath: m_LocalPosition.x
       value: 454.79926
@@ -28013,6 +28017,10 @@ PrefabInstance:
     - target: {fileID: 3742478716910255884, guid: 500167d921f352344953d87262a30cb8, type: 3}
       propertyPath: m_Layer
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3742478716910255884, guid: 500167d921f352344953d87262a30cb8, type: 3}
+      propertyPath: m_TagString
+      value: MovingPlatform
       objectReference: {fileID: 0}
     - target: {fileID: 6426469386026468056, guid: 500167d921f352344953d87262a30cb8, type: 3}
       propertyPath: m_LocalPosition.x
@@ -92627,6 +92635,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 3742478716910255884, guid: 500167d921f352344953d87262a30cb8, type: 3}
+      propertyPath: m_TagString
+      value: MovingPlatform
+      objectReference: {fileID: 0}
     - target: {fileID: 6426469386026468056, guid: 500167d921f352344953d87262a30cb8, type: 3}
       propertyPath: m_LocalPosition.x
       value: -114.07211
@@ -95016,7 +95028,7 @@ GameObject:
   - component: {fileID: 2136700254}
   m_Layer: 3
   m_Name: "2\uC778/ \uC655\uBCF51\uD68C"
-  m_TagString: Untagged
+  m_TagString: MovingPlatform
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

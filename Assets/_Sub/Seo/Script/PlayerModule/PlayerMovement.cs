@@ -41,9 +41,6 @@ public class PlayerMovement : NetworkBehaviour
 
     [Header("외부 환경 속도")]
     public float windVelocity = 0f;
-    private Vector2 platformVelocity = Vector2.zero;
-    private Vector2 storedPlatformVelocity = Vector2.zero;
-    private Vector2 platformNetworkVelocity = Vector2.zero;
     private Transform currentPlatform;
     private Vector3 lastPlatformPos;
 
@@ -55,19 +52,15 @@ public class PlayerMovement : NetworkBehaviour
     void Update()
     {
         if (!isLocalPlayer) return;
-
         UpdateTimers();
         UpdateCoyoteTime();
         HandleJumpInput();
         UpdateGravity();
     }
 
-   
-
     void FixedUpdate()
     {
         if (!isLocalPlayer) return;
-
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
 
@@ -77,11 +70,7 @@ public class PlayerMovement : NetworkBehaviour
         ClampVelocity();
     }
 
-    private void UpdateTimers()
-    {
-        if (ckTimer > 0f) ckTimer -= Time.deltaTime;
-    }
-
+    private void UpdateTimers() { if (ckTimer > 0f) ckTimer -= Time.deltaTime; }
     private void UpdateCoyoteTime()
     {
         if (isGrounded && ckTimer <= 0f) coyoteTimeCounter = coyoteTime;
@@ -97,22 +86,14 @@ public class PlayerMovement : NetworkBehaviour
                 Jump();
                 coyoteTimeCounter = 0f;
             }
-
             bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
             bool isMovingUp = inverted ? (controller.rb.linearVelocity.y < 0f) : (controller.rb.linearVelocity.y > 0f);
 
             if (controller.input.JumpReleasedThisFrame && isMovingUp && !controller.knockback.IsStunned)
             {
-                if (controller.syncJumpHandler != null && controller.syncJumpHandler.isInSyncZone)
-                {
-                    controller.syncJumpHandler.CmdCutSyncJump();
-                }
-                else
-                {
-                    ApplyShortJump();
-                }
+                if (controller.syncJumpHandler != null && controller.syncJumpHandler.isInSyncZone) controller.syncJumpHandler.CmdCutSyncJump();
+                else ApplyShortJump();
             }
-
         }
     }
 
@@ -121,7 +102,6 @@ public class PlayerMovement : NetworkBehaviour
         if (controller.knockback.isKnockedBack) return;
         float gravity = Mathf.Abs(Physics2D.gravity.y) * jumpSpeed;
         float jumpForce = Mathf.Sqrt(2f * gravity * jumpHeight);
-
         float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
         controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, jumpForce * mult);
         ckTimer = jumpCk;
@@ -131,10 +111,7 @@ public class PlayerMovement : NetworkBehaviour
     {
         bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
         bool isMovingUpCheck = inverted ? (controller.rb.linearVelocity.y < 0f) : (controller.rb.linearVelocity.y > 0f);
-        if (isMovingUpCheck)
-        {
-            controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, controller.rb.linearVelocity.y * superJump);
-        }
+        if (isMovingUpCheck) controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, controller.rb.linearVelocity.y * superJump);
     }
 
     private void UpdateGravity()
@@ -142,14 +119,12 @@ public class PlayerMovement : NetworkBehaviour
         bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
         float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
         bool isFalling = isInverted ? (controller.rb.linearVelocity.y > 0f) : (controller.rb.linearVelocity.y < 0f);
-
         controller.rb.gravityScale = isFalling ? (jumpSpeed * fallSpeed * mult) : (jumpSpeed * mult);
     }
 
     private void HandleMovementPhysics()
     {
-        if (controller.knockback.isKnockedBack) return; // 넉백 처리는 PlayerKnockback에서 수행
-
+        if (controller.knockback.isKnockedBack) return;
         if (controller.knockback.IsStunned)
         {
             float slideSpeed = Mathf.Lerp(controller.rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
@@ -157,13 +132,15 @@ public class PlayerMovement : NetworkBehaviour
             return;
         }
 
-        float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + platformVelocity.x + windVelocity;
+        // 🌟 오류 수정: platformVelocity 변수 참조 삭제됨
+        float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
+
         bool isSlippery = isOnIce || (!isGrounded && wasOnIceLastFrame);
         float currentFriction = isSlippery ? (isGrounded ? iceSlideFriction : airFriction) : normalFriction;
-
         float smoothedVelocityX = Mathf.Lerp(controller.rb.linearVelocity.x, targetVelocityX, currentFriction * Time.fixedDeltaTime);
 
-        if (Mathf.Abs(controller.input.HorizontalInput) < 0.01f && Mathf.Abs(platformVelocity.x) < 0.01f && Mathf.Abs(windVelocity) < 0.01f)
+        // 🌟 수정: 오류가 나던 platformVelocity.x 삭제
+        if (Mathf.Abs(controller.input.HorizontalInput) < 0.01f && Mathf.Abs(windVelocity) < 0.01f)
         {
             if (Mathf.Abs(smoothedVelocityX) < 0.5f) smoothedVelocityX = 0f;
         }
@@ -176,17 +153,9 @@ public class PlayerMovement : NetworkBehaviour
         float maxSpeedX = 25f;
         Vector2 clampedVelocity = controller.rb.linearVelocity;
         clampedVelocity.x = Mathf.Clamp(clampedVelocity.x, -maxSpeedX, maxSpeedX);
-
         bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
-        if (isInverted)
-        {
-            clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed * 1.5f, maxFallSpeed);
-        }
-        else
-        {
-            clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed, maxFallSpeed * 1.5f);
-        }
-
+        if (isInverted) clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed * 1.5f, maxFallSpeed);
+        else clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed, maxFallSpeed * 1.5f);
         controller.rb.linearVelocity = clampedVelocity;
     }
 
@@ -196,7 +165,6 @@ public class PlayerMovement : NetworkBehaviour
         filter.useLayerMask = true;
         filter.useTriggers = false;
         filter.layerMask = groundLayer | (1 << LayerMask.NameToLayer("Player"));
-
         int hitCount = Physics2D.OverlapCircle(groundCheck.position, checkRadius, filter, groundCheckResults);
 
         isGrounded = false;
@@ -209,9 +177,7 @@ public class PlayerMovement : NetworkBehaviour
             Collider2D col = groundCheckResults[i];
             if (col.CompareTag("Spike")) continue;
             if (col.gameObject == gameObject || col.isTrigger) continue;
-
             isGrounded = true;
-
             if (col.CompareTag("Ice")) currentOnIce = true;
             if (col.CompareTag("MovingPlatform"))
             {
@@ -219,30 +185,16 @@ public class PlayerMovement : NetworkBehaviour
                 foundPlatform = true;
             }
         }
+
         if (foundPlatform)
         {
             if (currentPlatform != detectedPlatform)
             {
                 currentPlatform = detectedPlatform;
                 lastPlatformPos = currentPlatform.position;
-                storedPlatformVelocity = Vector2.zero;
             }
-            platformVelocity = Vector2.zero;
         }
-        else
-        {
-            if (currentPlatform != null && !isGrounded)
-            {
-                platformVelocity = Vector2.zero;
-            }
-            else if (isGrounded)
-            {
-                platformVelocity = Vector2.zero;
-            }
-
-            currentPlatform = null;
-            storedPlatformVelocity = Vector2.zero;
-        }
+        else currentPlatform = null;
 
         isOnIce = currentOnIce;
         if (isGrounded) wasOnIceLastFrame = isOnIce;
@@ -250,39 +202,16 @@ public class PlayerMovement : NetworkBehaviour
 
     private void HandleMovingPlatform()
     {
-        if (currentPlatform == null)
-        {
-            platformNetworkVelocity = Vector2.zero;
-            return;
-        }
+        if (currentPlatform == null) return;
 
-        Vector3 currentPlatPos = currentPlatform.position;
-        Vector3 platformDelta = currentPlatPos - lastPlatformPos;
-
-        if (platformDelta.magnitude > 0.0001f && platformDelta.magnitude < 5f)
+        Vector3 platformDelta = currentPlatform.position - lastPlatformPos;
+        if (platformDelta.magnitude < 5f)
         {
             controller.rb.position += (Vector2)platformDelta;
-
-            Vector2 instantVelocity = (Vector2)platformDelta / Time.fixedDeltaTime;
-            platformNetworkVelocity = Vector2.Lerp(platformNetworkVelocity, instantVelocity, 20f * Time.fixedDeltaTime);
         }
-        else
-        {
-            platformNetworkVelocity = Vector2.Lerp(platformNetworkVelocity, Vector2.zero, 10f * Time.fixedDeltaTime);
-        }
-
-        storedPlatformVelocity = platformNetworkVelocity;
-
-        bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
-        bool isFalling = inverted ? (controller.rb.linearVelocity.y > 0f) : (controller.rb.linearVelocity.y < 0f);
-
-        if (Mathf.Abs(platformDelta.y) > 0.001f && isFalling)
-        {
-            controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
-        }
-
-        lastPlatformPos = currentPlatPos;
+        lastPlatformPos = currentPlatform.position;
     }
+
     public void CallCombinedJump()
     {
         if (isGrounded || coyoteTimeCounter > 0f)
@@ -302,6 +231,7 @@ public class PlayerMovement : NetworkBehaviour
     private void OnDrawGizmosSelected()
     {
         if (!showGizmo || groundCheck == null) return;
+
         Gizmos.color = Color.yellow;
         Vector2 checkPosition = (Vector2)groundCheck.position + checkOffset;
         Gizmos.DrawWireSphere(checkPosition, checkRadius);

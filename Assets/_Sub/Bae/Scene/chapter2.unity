@@ -50491,7 +50491,7 @@ GameObject:
   - component: {fileID: 1955070955263460230}
   m_Layer: 3
   m_Name: "\uC778\uC6D04 / 1\uD68C \uC655\uBCF5"
-  m_TagString: Untagged
+  m_TagString: MovingPlatform
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -50513,7 +50513,7 @@ GameObject:
   - component: {fileID: 1955070955199667613}
   m_Layer: 3
   m_Name: "\uC67C\uCABD\uACFC \uAC70\uC6B8\uCC98\uB7FC"
-  m_TagString: Ice
+  m_TagString: MovingPlatform
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -50535,7 +50535,7 @@ GameObject:
   - component: {fileID: 1955070954915025387}
   m_Layer: 3
   m_Name: "\uC778\uC6D04 / \uC989\uAC01\uBC18\uC751"
-  m_TagString: Untagged
+  m_TagString: MovingPlatform
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -51044,7 +51044,7 @@ GameObject:
   - component: {fileID: 870401039}
   m_Layer: 0
   m_Name: "\uC790\uB3D9 / \uC88C\uC6B0\uC774\uB3D9"
-  m_TagString: Untagged
+  m_TagString: MovingPlatform
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -51352,7 +51352,7 @@ GameObject:
   - component: {fileID: 6253726046169652273}
   m_Layer: 3
   m_Name: "\uC778\uC6D04 / 1\uD68C \uC655\uBCF5"
-  m_TagString: Untagged
+  m_TagString: MovingPlatform
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -51684,7 +51684,7 @@ MonoBehaviour:
   endPoint: {fileID: 540560347}
   goSpeed: 2
   returnSpeed: 4
-  requiredPlayers: 4
+  requiredPlayers: 1
   platformRigidbody: {fileID: 6253726046169652271}
 --- !u!4 &6426469386292725457
 Transform:

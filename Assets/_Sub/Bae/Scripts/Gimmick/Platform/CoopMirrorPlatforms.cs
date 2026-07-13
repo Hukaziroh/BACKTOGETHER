@@ -27,6 +27,8 @@ public class CoopMirrorPlatforms : NetworkBehaviour
     private HashSet<GameObject> playersOnRight = new HashSet<GameObject>();
 
     private bool isWaitingToReturn = false;
+    public Vector2 LeftVelocity { get; private set; }
+    public Vector2 RightVelocity { get; private set; }
 
     private enum PlatformState { Idle, Meeting, Returning }
     [SyncVar]
@@ -86,8 +88,14 @@ public class CoopMirrorPlatforms : NetworkBehaviour
     private void MovePlatform(Rigidbody2D rb, Vector2 targetPos)
     {
         if (rb == null) return;
-        Vector2 nextPos = Vector2.MoveTowards(rb.position, targetPos, moveSpeed * Time.fixedDeltaTime);
+
+        Vector2 currentPos = rb.position;
+        Vector2 nextPos = Vector2.MoveTowards(currentPos, targetPos, moveSpeed * Time.fixedDeltaTime);
         rb.MovePosition(nextPos);
+
+        Vector2 velocity = (nextPos - currentPos) / Time.fixedDeltaTime;
+        if (rb == leftPlatform) LeftVelocity = velocity;
+        else RightVelocity = velocity;
     }
 
     private System.Collections.IEnumerator WaitAndReturn()
