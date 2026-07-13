@@ -432,6 +432,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: 'Moving Platform '
       objectReference: {fileID: 0}
+    - target: {fileID: 3742478716910255884, guid: 8894e59eadf2c8b49914c510ceea3eba, type: 3}
+      propertyPath: m_TagString
+      value: MovingPlatform
+      objectReference: {fileID: 0}
     - target: {fileID: 6426469386026468056, guid: 8894e59eadf2c8b49914c510ceea3eba, type: 3}
       propertyPath: m_LocalPosition.x
       value: 51.56163
