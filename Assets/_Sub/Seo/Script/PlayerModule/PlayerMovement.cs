@@ -71,8 +71,8 @@ public class PlayerMovement : NetworkBehaviour
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
 
-        CheckGroundOrPlayer();
         HandleMovingPlatform();
+        CheckGroundOrPlayer();
         HandleMovementPhysics();
         ClampVelocity();
     }
@@ -219,7 +219,6 @@ public class PlayerMovement : NetworkBehaviour
                 foundPlatform = true;
             }
         }
-
         if (foundPlatform)
         {
             if (currentPlatform != detectedPlatform)
@@ -234,7 +233,7 @@ public class PlayerMovement : NetworkBehaviour
         {
             if (currentPlatform != null && !isGrounded)
             {
-                platformVelocity = storedPlatformVelocity;
+                platformVelocity = Vector2.zero;
             }
             else if (isGrounded)
             {
@@ -260,7 +259,7 @@ public class PlayerMovement : NetworkBehaviour
         Vector3 currentPlatPos = currentPlatform.position;
         Vector3 platformDelta = currentPlatPos - lastPlatformPos;
 
-        if (platformDelta.magnitude > 0.0001f && platformDelta.magnitude < 1.5f)
+        if (platformDelta.magnitude > 0.0001f && platformDelta.magnitude < 5f)
         {
             controller.rb.position += (Vector2)platformDelta;
 
