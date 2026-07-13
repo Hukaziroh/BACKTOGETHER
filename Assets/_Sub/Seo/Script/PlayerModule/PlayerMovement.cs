@@ -43,6 +43,7 @@ public class PlayerMovement : NetworkBehaviour
     public float windVelocity = 0f;
     private Vector2 platformVelocity = Vector2.zero;
     private Vector2 storedPlatformVelocity = Vector2.zero;
+    private Vector2 platformNetworkVelocity = Vector2.zero;
     private Transform currentPlatform;
     private Vector3 lastPlatformPos;
 
@@ -59,6 +60,33 @@ public class PlayerMovement : NetworkBehaviour
         UpdateCoyoteTime();
         HandleJumpInput();
         UpdateGravity();
+        CalculatePlatformVelocityNetwork();
+    }
+
+    private void CalculatePlatformVelocityNetwork()
+    {
+        if (currentPlatform != null)
+        {
+            Vector3 delta = currentPlatform.position - lastPlatformPos;
+
+            // 네트워크 보간(Update)된 이동량을 초당 속도로 변환
+            if (Time.deltaTime > 0f && delta.magnitude > 0.0001f && delta.magnitude < 1.5f)
+            {
+                platformNetworkVelocity = delta / Time.deltaTime;
+            }
+            else if (delta.magnitude == 0)
+            {
+                // 🔥 핵심 해결책: 클라이언트에서 패킷이 늦게 와서 플랫폼이 1프레임 멈추더라도, 
+                // 관성이 증발하지 않도록 이전 속도를 부드럽게 유지(Lerp)해줍니다!
+                platformNetworkVelocity = Vector2.Lerp(platformNetworkVelocity, Vector2.zero, Time.deltaTime * 10f);
+            }
+
+            lastPlatformPos = currentPlatform.position;
+        }
+        else
+        {
+            platformNetworkVelocity = Vector2.zero;
+        }
     }
 
     void FixedUpdate()
@@ -254,33 +282,21 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (currentPlatform == null) return;
 
-        Vector3 currentPlatPos = currentPlatform.position;
-        Vector3 platformDelta = currentPlatPos - lastPlatformPos;
+        Vector2 platformMoveDelta = platformNetworkVelocity * Time.fixedDeltaTime;
 
-        if (platformDelta.magnitude > 0.0001f && platformDelta.magnitude < 1.5f)
+        controller.rb.position += platformMoveDelta;
+
+        storedPlatformVelocity = platformNetworkVelocity;
+
+        bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
+        bool isFalling = inverted ? (controller.rb.linearVelocity.y > 0f) : (controller.rb.linearVelocity.y < 0f);
+
+        if (Mathf.Abs(platformMoveDelta.y) > 0.001f && isFalling)
         {
-            controller.rb.position += (Vector2)platformDelta;
-
-            // 🌟 다음 프레임에서 점프할 때 물려주기 위해 플랫폼의 속도를 계산해서 저장해둡니다.
-            storedPlatformVelocity = (Vector2)platformDelta / Time.fixedDeltaTime;
-
-            bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
-            bool isFalling = inverted ? (controller.rb.linearVelocity.y > 0f) : (controller.rb.linearVelocity.y < 0f);
-
-            if (Mathf.Abs(platformDelta.y) > 0.001f && isFalling)
-            {
-                controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
-            }
-        }
-        else
-        {
-            storedPlatformVelocity = Vector2.zero;
+            controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
         }
 
-        lastPlatformPos = currentPlatPos;
     }
-
-    // 합체 기능 지원을 위한 외부 함수
     public void CallCombinedJump()
     {
         if (isGrounded || coyoteTimeCounter > 0f)
