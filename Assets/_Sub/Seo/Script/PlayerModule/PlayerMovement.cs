@@ -42,6 +42,7 @@ public class PlayerMovement : NetworkBehaviour
     [Header("외부 환경 속도")]
     public float windVelocity = 0f;
     private Vector2 platformVelocity = Vector2.zero;
+    private Vector2 storedPlatformVelocity = Vector2.zero;
     private Transform currentPlatform;
     private Vector3 lastPlatformPos;
 
@@ -191,38 +192,59 @@ public class PlayerMovement : NetworkBehaviour
         ContactFilter2D filter = new ContactFilter2D();
         filter.useLayerMask = true;
         filter.useTriggers = false;
-        filter.layerMask = groundLayer;
+        filter.layerMask = groundLayer | (1 << LayerMask.NameToLayer("Player"));
 
         int hitCount = Physics2D.OverlapCircle(groundCheck.position, checkRadius, filter, groundCheckResults);
-        isGrounded = false;
-        platformVelocity = Vector2.zero;
 
+        isGrounded = false;
         bool currentOnIce = false;
         bool foundPlatform = false;
+        Transform detectedPlatform = null;
 
         for (int i = 0; i < hitCount; i++)
         {
             Collider2D col = groundCheckResults[i];
-
             if (col.CompareTag("Spike")) continue;
             if (col.gameObject == gameObject || col.isTrigger) continue;
 
-            bool isGroundLayer = ((1 << col.gameObject.layer) & groundLayer) != 0;
-            bool isOtherPlayer = col.CompareTag("Player");
-            if (isGroundLayer || isOtherPlayer)
+            isGrounded = true;
+
+            if (col.CompareTag("Ice")) currentOnIce = true;
+            if (col.CompareTag("MovingPlatform"))
             {
-                isGrounded = true;
-                if (col.CompareTag("Ice")) currentOnIce = true;
-                if (col.CompareTag("MovingPlatform"))
-                {
-                    currentPlatform = col.transform;
-                    foundPlatform = true;
-                }
-                break;
+                detectedPlatform = col.transform;
+                foundPlatform = true;
             }
         }
 
-        if (!foundPlatform) currentPlatform = null;
+        if (foundPlatform)
+        {
+            if (currentPlatform != detectedPlatform)
+            {
+                currentPlatform = detectedPlatform;
+                lastPlatformPos = currentPlatform.position;
+                storedPlatformVelocity = Vector2.zero;
+            }
+            // 🌟 플랫폼 위에서는 위치 강제 이동을 쓰므로, 속도 기반 관성은 0으로 끕니다 (이중 이동 방지)
+            platformVelocity = Vector2.zero;
+        }
+        else
+        {
+            // 🌟 방금 전까지 플랫폼에 있다가 발이 떨어졌을 때 (점프 or 낙하) -> 플랫폼의 속도를 그대로 물려받음!
+            if (currentPlatform != null && !isGrounded)
+            {
+                platformVelocity = storedPlatformVelocity;
+            }
+            // 일반 바닥에 착지했을 때 -> 관성 초기화
+            else if (isGrounded)
+            {
+                platformVelocity = Vector2.zero;
+            }
+
+            currentPlatform = null;
+            storedPlatformVelocity = Vector2.zero;
+        }
+
         isOnIce = currentOnIce;
         if (isGrounded) wasOnIceLastFrame = isOnIce;
     }
@@ -234,9 +256,12 @@ public class PlayerMovement : NetworkBehaviour
         Vector3 currentPlatPos = currentPlatform.position;
         Vector3 platformDelta = currentPlatPos - lastPlatformPos;
 
-        if (platformDelta.magnitude < 1.5f)
+        if (platformDelta.magnitude > 0.0001f && platformDelta.magnitude < 1.5f)
         {
             controller.rb.position += (Vector2)platformDelta;
+
+            // 🌟 다음 프레임에서 점프할 때 물려주기 위해 플랫폼의 속도를 계산해서 저장해둡니다.
+            storedPlatformVelocity = (Vector2)platformDelta / Time.fixedDeltaTime;
 
             bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
             bool isFalling = inverted ? (controller.rb.linearVelocity.y > 0f) : (controller.rb.linearVelocity.y < 0f);
@@ -245,6 +270,10 @@ public class PlayerMovement : NetworkBehaviour
             {
                 controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
             }
+        }
+        else
+        {
+            storedPlatformVelocity = Vector2.zero;
         }
 
         lastPlatformPos = currentPlatPos;
