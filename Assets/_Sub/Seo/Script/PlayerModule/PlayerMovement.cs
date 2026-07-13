@@ -43,6 +43,7 @@ public class PlayerMovement : NetworkBehaviour
     public float windVelocity = 0f;
     private Vector2 platformVelocity = Vector2.zero;
     private Vector2 storedPlatformVelocity = Vector2.zero;
+    private Vector2 platformNetworkVelocity = Vector2.zero;
     private Transform currentPlatform;
     private Vector3 lastPlatformPos;
 
@@ -61,16 +62,17 @@ public class PlayerMovement : NetworkBehaviour
         UpdateGravity();
     }
 
+   
+
     void FixedUpdate()
     {
         if (!isLocalPlayer) return;
 
-        // 다른 플레이어에 합체되어 종속된 상태라면 자체 물리 이동 금지
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
 
-        CheckGroundOrPlayer();
         HandleMovingPlatform();
+        CheckGroundOrPlayer();
         HandleMovementPhysics();
         ClampVelocity();
     }
@@ -217,7 +219,6 @@ public class PlayerMovement : NetworkBehaviour
                 foundPlatform = true;
             }
         }
-
         if (foundPlatform)
         {
             if (currentPlatform != detectedPlatform)
@@ -226,17 +227,14 @@ public class PlayerMovement : NetworkBehaviour
                 lastPlatformPos = currentPlatform.position;
                 storedPlatformVelocity = Vector2.zero;
             }
-            // 🌟 플랫폼 위에서는 위치 강제 이동을 쓰므로, 속도 기반 관성은 0으로 끕니다 (이중 이동 방지)
             platformVelocity = Vector2.zero;
         }
         else
         {
-            // 🌟 방금 전까지 플랫폼에 있다가 발이 떨어졌을 때 (점프 or 낙하) -> 플랫폼의 속도를 그대로 물려받음!
             if (currentPlatform != null && !isGrounded)
             {
-                platformVelocity = storedPlatformVelocity;
+                platformVelocity = Vector2.zero;
             }
-            // 일반 바닥에 착지했을 때 -> 관성 초기화
             else if (isGrounded)
             {
                 platformVelocity = Vector2.zero;
@@ -252,35 +250,39 @@ public class PlayerMovement : NetworkBehaviour
 
     private void HandleMovingPlatform()
     {
-        if (currentPlatform == null) return;
+        if (currentPlatform == null)
+        {
+            platformNetworkVelocity = Vector2.zero;
+            return;
+        }
 
         Vector3 currentPlatPos = currentPlatform.position;
         Vector3 platformDelta = currentPlatPos - lastPlatformPos;
 
-        if (platformDelta.magnitude > 0.0001f && platformDelta.magnitude < 1.5f)
+        if (platformDelta.magnitude > 0.0001f && platformDelta.magnitude < 5f)
         {
             controller.rb.position += (Vector2)platformDelta;
 
-            // 🌟 다음 프레임에서 점프할 때 물려주기 위해 플랫폼의 속도를 계산해서 저장해둡니다.
-            storedPlatformVelocity = (Vector2)platformDelta / Time.fixedDeltaTime;
-
-            bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
-            bool isFalling = inverted ? (controller.rb.linearVelocity.y > 0f) : (controller.rb.linearVelocity.y < 0f);
-
-            if (Mathf.Abs(platformDelta.y) > 0.001f && isFalling)
-            {
-                controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
-            }
+            Vector2 instantVelocity = (Vector2)platformDelta / Time.fixedDeltaTime;
+            platformNetworkVelocity = Vector2.Lerp(platformNetworkVelocity, instantVelocity, 20f * Time.fixedDeltaTime);
         }
         else
         {
-            storedPlatformVelocity = Vector2.zero;
+            platformNetworkVelocity = Vector2.Lerp(platformNetworkVelocity, Vector2.zero, 10f * Time.fixedDeltaTime);
+        }
+
+        storedPlatformVelocity = platformNetworkVelocity;
+
+        bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
+        bool isFalling = inverted ? (controller.rb.linearVelocity.y > 0f) : (controller.rb.linearVelocity.y < 0f);
+
+        if (Mathf.Abs(platformDelta.y) > 0.001f && isFalling)
+        {
+            controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
         }
 
         lastPlatformPos = currentPlatPos;
     }
-
-    // 합체 기능 지원을 위한 외부 함수
     public void CallCombinedJump()
     {
         if (isGrounded || coyoteTimeCounter > 0f)
