@@ -3478,6 +3478,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5980980681081755393, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: excludedScenes.Array.size
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6643343443759548763, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_text
       value: Exit

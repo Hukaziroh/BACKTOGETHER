@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Mirror;
 using System.Collections;
+
 public class PauseManager : MonoBehaviour
 {
     public static PauseManager instance;
@@ -31,12 +32,24 @@ public class PauseManager : MonoBehaviour
     {
         if (pausePanel != null) pausePanel.SetActive(true);
         isPaused = true;
+
+        // ★ [추가] 퍼즈창이 켜질 때 포커스를 퍼즈창 내부로 격리 (뒷배경 UI 차단)
+        if (GlobalSceneInputManager.Instance != null && pausePanel != null)
+        {
+            GlobalSceneInputManager.Instance.SetFocusScope(pausePanel);
+        }
     }
 
     public void ResumeGame()
     {
         if (pausePanel != null) pausePanel.SetActive(false);
         isPaused = false;
+
+        // ★ [추가] 퍼즈창이 닫힐 때 포커스 격리를 해제하고 배경 UI들을 원래대로 복구
+        if (GlobalSceneInputManager.Instance != null)
+        {
+            GlobalSceneInputManager.Instance.ClearFocusScope();
+        }
     }
 
     // --- 옵션창 전환 (자신은 숨기고 옵션 매니저를 호출) ---
@@ -44,6 +57,12 @@ public class PauseManager : MonoBehaviour
     {
         if (pausePanel != null) pausePanel.SetActive(false);
         OptionsManager.instance.Open();
+
+        // ★ [추가] 옵션창이 열릴 때 포커스 범위를 옵션 매니저 UI 내부로 전환
+        if (GlobalSceneInputManager.Instance != null && OptionsManager.instance != null)
+        {
+            GlobalSceneInputManager.Instance.SetFocusScope(OptionsManager.instance.gameObject);
+        }
     }
 
     // 옵션에서 뒤로가기 눌렀을 때 호출
@@ -51,6 +70,12 @@ public class PauseManager : MonoBehaviour
     {
         OptionsManager.instance.Close();
         if (pausePanel != null) pausePanel.SetActive(true);
+
+        // ★ [추가] 옵션에서 다시 퍼즈창으로 돌아올 때 퍼즈창 내부로 포커스 재격리
+        if (GlobalSceneInputManager.Instance != null && pausePanel != null)
+        {
+            GlobalSceneInputManager.Instance.SetFocusScope(pausePanel);
+        }
     }
 
     // --- 시스템 로직 (그대로 유지) ---
@@ -59,7 +84,7 @@ public class PauseManager : MonoBehaviour
         ResumeGame();
 
         // 1. 내가 스스로 나가는 것이므로 튕김 UI 방지 (기존 코드 유지)
-        HostDisconnectHandler disconnectHandler = FindFirstObjectByType<HostDisconnectHandler>();
+        HostDisconnectHandler disconnectHandler = FindAnyObjectByType<HostDisconnectHandler>();
         if (disconnectHandler != null)
         {
             disconnectHandler.SetIntentionalExit();
