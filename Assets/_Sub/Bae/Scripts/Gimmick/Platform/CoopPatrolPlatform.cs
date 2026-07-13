@@ -28,18 +28,14 @@ public class CoopPatrolPlatform : NetworkBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
-        {
-            if (isServer) playersOnPlatform.Add(other.gameObject);
-        }
+        if (other.CompareTag("Player") && isServer)
+            playersOnPlatform.Add(other.gameObject);
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
-        {
-            if (isServer) playersOnPlatform.Remove(other.gameObject);
-        }
+        if (other.CompareTag("Player") && isServer)
+            playersOnPlatform.Remove(other.gameObject);
     }
 
     void FixedUpdate()
@@ -54,9 +50,9 @@ public class CoopPatrolPlatform : NetworkBehaviour
                 Vector2 currentPos = platformRigidbody.position;
                 Vector2 nextPos = Vector2.MoveTowards(currentPos, currentTarget.position, moveSpeed * Time.fixedDeltaTime);
 
-                CurrentVelocity = (nextPos - currentPos) / Time.fixedDeltaTime;
-
                 platformRigidbody.MovePosition(nextPos);
+
+                CurrentVelocity = (nextPos - currentPos) / Time.fixedDeltaTime;
 
                 if (Vector2.Distance(currentPos, currentTarget.position) < 0.05f)
                     currentTarget = (currentTarget == endPoint) ? startPoint : endPoint;
@@ -67,5 +63,4 @@ public class CoopPatrolPlatform : NetworkBehaviour
             }
         }
     }
-
 }

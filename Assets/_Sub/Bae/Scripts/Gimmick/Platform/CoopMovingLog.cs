@@ -14,6 +14,7 @@ public class CoopMovingLog : NetworkBehaviour
 
     private Vector2 startPos;
     private HashSet<GameObject> playersOnLog = new HashSet<GameObject>();
+    public Vector2 CurrentVelocity { get; private set; }
 
     void Start()
     {
@@ -46,6 +47,12 @@ public class CoopMovingLog : NetworkBehaviour
             Vector2 nextPos = Vector2.MoveTowards(currentPos, targetPos, moveSpeed * Time.fixedDeltaTime);
 
             logRigidbody.MovePosition(nextPos);
+            
+            CurrentVelocity = (nextPos - currentPos) / Time.fixedDeltaTime;
+        }
+        else
+        {
+            CurrentVelocity = Vector2.zero;
         }
     }
 }

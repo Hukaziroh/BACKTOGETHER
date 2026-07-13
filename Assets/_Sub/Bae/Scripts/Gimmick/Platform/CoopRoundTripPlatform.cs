@@ -20,6 +20,9 @@ public class CoopRoundTripPlatform : NetworkBehaviour
     [Header("물리 설정")]
     public Rigidbody2D platformRigidbody;
 
+    // 🌟 추가: 플레이어가 관성을 계산할 수 있도록 속도 정보 노출
+    public Vector2 CurrentVelocity { get; private set; }
+
     private HashSet<GameObject> playersOnPlatform = new HashSet<GameObject>();
 
     private bool isTriggered = false;
@@ -35,21 +38,18 @@ public class CoopRoundTripPlatform : NetworkBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && isServer)
         {
-            if (isServer)
-            {
-                playersOnPlatform.Add(other.gameObject);
-                CheckTrigger();
-            }
+            playersOnPlatform.Add(other.gameObject);
+            CheckTrigger();
         }
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && isServer)
         {
-            if (isServer) playersOnPlatform.Remove(other.gameObject);
+            playersOnPlatform.Remove(other.gameObject);
         }
     }
 
@@ -71,27 +71,45 @@ public class CoopRoundTripPlatform : NetworkBehaviour
 
     void FixedUpdate()
     {
-        if (isServer && isTriggered && platformRigidbody != null && startPoint != null && endPoint != null)
+        if (isServer && platformRigidbody != null && startPoint != null && endPoint != null)
         {
-            Vector2 currentPos = platformRigidbody.position;
-            Vector2 targetPos = isReturning ? (Vector2)startPoint.position : (Vector2)endPoint.position;
-
-            float currentSpeed = isReturning ? returnSpeed : goSpeed;
-            Vector2 nextPos = Vector2.MoveTowards(currentPos, targetPos, currentSpeed * Time.fixedDeltaTime);
-            platformRigidbody.MovePosition(nextPos);
-
-            if (Vector2.Distance(currentPos, targetPos) < 0.05f)
+            if (isTriggered)
             {
-                if (!isReturning)
+                // 1. 현재 위치 저장
+                Vector2 currentPos = platformRigidbody.position;
+                Vector2 targetPos = isReturning ? (Vector2)startPoint.position : (Vector2)endPoint.position;
+
+                float currentSpeed = isReturning ? returnSpeed : goSpeed;
+
+                // 2. 이동 계산
+                Vector2 nextPos = Vector2.MoveTowards(currentPos, targetPos, currentSpeed * Time.fixedDeltaTime);
+
+                // 3. 물리 이동 수행
+                platformRigidbody.MovePosition(nextPos);
+
+                // 4. 속도 계산 (핵심: 플레이어 점프 시 관성 반영을 위해)
+                CurrentVelocity = (nextPos - currentPos) / Time.fixedDeltaTime;
+
+                // 5. 도착 체크
+                if (Vector2.Distance(currentPos, targetPos) < 0.05f)
                 {
-                    isReturning = true;
+                    if (!isReturning)
+                    {
+                        isReturning = true;
+                    }
+                    else
+                    {
+                        isTriggered = false;
+                        isReturning = false;
+                        CurrentVelocity = Vector2.zero; // 정지 시 속도 초기화
+                        Debug.Log($"[{gameObject.name}] 1회 왕복 완료! 대기 상태로 돌아갑니다.");
+                    }
                 }
-                else
-                {
-                    isTriggered = false;
-                    isReturning = false;
-                    Debug.Log($"[{gameObject.name}] 1회 왕복 완료! 대기 상태로 돌아갑니다.");
-                }
+            }
+            else
+            {
+                // 대기 중일 때는 속도 0
+                CurrentVelocity = Vector2.zero;
             }
         }
     }
