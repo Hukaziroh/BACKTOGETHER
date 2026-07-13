@@ -63,13 +63,15 @@ public class PlayerKnockback : NetworkBehaviour
 
             if (knockbackGraceTimer <= 0f && controller.movement.isGrounded && Mathf.Abs(controller.rb.linearVelocity.y) <= 0.1f)
             {
-                isKnockedBack = false;
+                isKnockedBack = false; 
                 stunTimer = stunTime;
             }
         }
         else if (stunTimer > 0f)
         {
             stunTimer -= Time.fixedDeltaTime;
+            float slideSpeed = Mathf.Lerp(controller.rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
+            controller.rb.linearVelocity = new Vector2(slideSpeed, controller.rb.linearVelocity.y);
         }
     }
 
@@ -120,8 +122,9 @@ public class PlayerKnockback : NetworkBehaviour
         controller.rb.linearVelocity = new Vector2(activeKnockbackX, knockDir.y * knockPowerY * mult);
 
         isKnockedBack = true;
-        stunTimer = 0f;
-        knockbackGraceTimer = 0.2f;
+        stunTimer = 0f; 
+
+        knockbackGraceTimer = 0.2f; 
 
         CmdPlayHitAnimation();
     }
