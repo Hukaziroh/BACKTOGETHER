@@ -1,5 +1,6 @@
-using UnityEngine;
 using Mirror;
+using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class LobbyManager : NetworkBehaviour
 {
@@ -11,6 +12,20 @@ public class LobbyManager : NetworkBehaviour
     // 호스트가 챕터 선택창을 열었는지 상태 동기화
     [SyncVar(hook = nameof(OnChapterSelectionOpened))]
     private bool isChapterSelectionOpen = false;
+
+    // ★ [추가] 매 프레임 ESC 입력을 감지
+    private void Update()
+    {
+        // 오직 방장(isServer)이면서, 현재 챕터 선택창이 열려있을 때만 작동
+        if (isServer && isChapterSelectionOpen)
+        {
+            // ★ Keyboard.current가 null인지 먼저 안전하게 체크한 후 ESC 키 입력을 감지합니다.
+            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                RequestCloseChapter();
+            }
+        }
+    }
 
     // 1. [로비] 플레이 버튼 클릭 시 (서버에 요청)
     public void RequestOpenChapter()
@@ -63,6 +78,7 @@ public class LobbyManager : NetworkBehaviour
             NetworkManager.singleton.ServerChangeScene(sceneName);
         }
     }
+
     public void ReturnToMainMenu(string mainMenuSceneName)
     {
         if (isServer)
