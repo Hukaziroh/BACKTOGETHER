@@ -55,13 +55,16 @@ public class PrivateLobbyManager : MonoBehaviour
         NetworkManager.singleton.StartHost();
         if (hostCreateButton != null) hostCreateButton.interactable = true;
     }
-
-    // 영문+숫자 6자리 무작위 생성
     private string GenerateShortCode()
     {
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        string allowedChars = "0123456789";
         string code = "";
-        for (int i = 0; i < 6; i++) code += chars[Random.Range(0, chars.Length)];
+
+        for (int i = 0; i < 6; i++)
+        {
+            code += allowedChars[Random.Range(0, allowedChars.Length)];
+        }
+
         return code;
     }
 }
