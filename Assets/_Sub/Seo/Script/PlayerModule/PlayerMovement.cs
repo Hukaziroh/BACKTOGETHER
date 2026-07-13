@@ -60,40 +60,14 @@ public class PlayerMovement : NetworkBehaviour
         UpdateCoyoteTime();
         HandleJumpInput();
         UpdateGravity();
-        CalculatePlatformVelocityNetwork();
     }
 
-    private void CalculatePlatformVelocityNetwork()
-    {
-        if (currentPlatform != null)
-        {
-            Vector3 delta = currentPlatform.position - lastPlatformPos;
-
-            // 네트워크 보간(Update)된 이동량을 초당 속도로 변환
-            if (Time.deltaTime > 0f && delta.magnitude > 0.0001f && delta.magnitude < 1.5f)
-            {
-                platformNetworkVelocity = delta / Time.deltaTime;
-            }
-            else if (delta.magnitude == 0)
-            {
-                // 🔥 핵심 해결책: 클라이언트에서 패킷이 늦게 와서 플랫폼이 1프레임 멈추더라도, 
-                // 관성이 증발하지 않도록 이전 속도를 부드럽게 유지(Lerp)해줍니다!
-                platformNetworkVelocity = Vector2.Lerp(platformNetworkVelocity, Vector2.zero, Time.deltaTime * 10f);
-            }
-
-            lastPlatformPos = currentPlatform.position;
-        }
-        else
-        {
-            platformNetworkVelocity = Vector2.zero;
-        }
-    }
+   
 
     void FixedUpdate()
     {
         if (!isLocalPlayer) return;
 
-        // 다른 플레이어에 합체되어 종속된 상태라면 자체 물리 이동 금지
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
 
@@ -254,17 +228,14 @@ public class PlayerMovement : NetworkBehaviour
                 lastPlatformPos = currentPlatform.position;
                 storedPlatformVelocity = Vector2.zero;
             }
-            // 🌟 플랫폼 위에서는 위치 강제 이동을 쓰므로, 속도 기반 관성은 0으로 끕니다 (이중 이동 방지)
             platformVelocity = Vector2.zero;
         }
         else
         {
-            // 🌟 방금 전까지 플랫폼에 있다가 발이 떨어졌을 때 (점프 or 낙하) -> 플랫폼의 속도를 그대로 물려받음!
             if (currentPlatform != null && !isGrounded)
             {
                 platformVelocity = storedPlatformVelocity;
             }
-            // 일반 바닥에 착지했을 때 -> 관성 초기화
             else if (isGrounded)
             {
                 platformVelocity = Vector2.zero;
@@ -280,22 +251,38 @@ public class PlayerMovement : NetworkBehaviour
 
     private void HandleMovingPlatform()
     {
-        if (currentPlatform == null) return;
+        if (currentPlatform == null)
+        {
+            platformNetworkVelocity = Vector2.zero;
+            return;
+        }
 
-        Vector2 platformMoveDelta = platformNetworkVelocity * Time.fixedDeltaTime;
+        Vector3 currentPlatPos = currentPlatform.position;
+        Vector3 platformDelta = currentPlatPos - lastPlatformPos;
 
-        controller.rb.position += platformMoveDelta;
+        if (platformDelta.magnitude > 0.0001f && platformDelta.magnitude < 1.5f)
+        {
+            controller.rb.position += (Vector2)platformDelta;
+
+            Vector2 instantVelocity = (Vector2)platformDelta / Time.fixedDeltaTime;
+            platformNetworkVelocity = Vector2.Lerp(platformNetworkVelocity, instantVelocity, 20f * Time.fixedDeltaTime);
+        }
+        else
+        {
+            platformNetworkVelocity = Vector2.Lerp(platformNetworkVelocity, Vector2.zero, 10f * Time.fixedDeltaTime);
+        }
 
         storedPlatformVelocity = platformNetworkVelocity;
 
         bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
         bool isFalling = inverted ? (controller.rb.linearVelocity.y > 0f) : (controller.rb.linearVelocity.y < 0f);
 
-        if (Mathf.Abs(platformMoveDelta.y) > 0.001f && isFalling)
+        if (Mathf.Abs(platformDelta.y) > 0.001f && isFalling)
         {
             controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
         }
 
+        lastPlatformPos = currentPlatPos;
     }
     public void CallCombinedJump()
     {
