@@ -2,17 +2,17 @@ using UnityEngine;
 
 public class ReverseZone : MonoBehaviour
 {
-    [Header("반전 지속시간")]
-    public float reverseDuration = 5f;
+    [Header("변경 주기 (초)")]
+    public float toggleInterval = 5f;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Player"))
         {
             PlayerController player = collision.GetComponent<PlayerController>();
-            if(player != null)
+            if (player != null)
             {
-                player.StartReverseControl(reverseDuration);
+                player.StartReverseToggle(toggleInterval);
             }
         }
     }
@@ -22,9 +22,9 @@ public class ReverseZone : MonoBehaviour
         if (collision.CompareTag("Player"))
         {
             PlayerController player = collision.GetComponent<PlayerController>();
-            if(player != null)
+            if (player != null)
             {
-                player.StopReverseControl();
+                player.StopReverseToggle();
             }
         }
     }

@@ -17,8 +17,8 @@ public class PlayerInput : NetworkBehaviour
     public bool ActionPressedThisFrame => actionAction.WasPressedThisFrame();
 
     [Header("기믹: 좌우반전")]
-    public bool isReversedControl = false;
-    private float reverseTimer = 0f;
+    public bool isReversed { get; private set; } = false;
+    private Coroutine reverseToggleCoroutine;
 
     void Awake()
     {
@@ -79,7 +79,8 @@ public class PlayerInput : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
-        // 합체 상태 체크
+        float rawInput = 0f;
+
         if (controller.combineHandler != null && controller.combineHandler.isCombined)
         {
             if (gameObject != controller.combineHandler.bodyTarget)
@@ -87,32 +88,62 @@ public class PlayerInput : NetworkBehaviour
                 HorizontalInput = 0f;
                 return;
             }
-            HorizontalInput = controller.combineHandler.GetCombinedHorizontalInput();
+            rawInput = controller.combineHandler.GetCombinedHorizontalInput();
         }
         else
         {
-            HorizontalInput = moveAction.ReadValue<float>();
+            rawInput = moveAction.ReadValue<float>();
         }
 
-        if (isReversedControl)
+        if (isReversed)
         {
-            HorizontalInput *= -1f;
-            reverseTimer -= Time.deltaTime;
-            if (reverseTimer <= 0f) StopReverseControl();
+            rawInput *= -1f; 
         }
+
+        HorizontalInput = rawInput;
     }
 
-    public void StartReverseControl(float duration)
+    public void StartReverseToggle(float interval)
     {
         if (!isLocalPlayer) return;
-        isReversedControl = true;
-        reverseTimer = duration;
+
+        if (reverseToggleCoroutine != null)
+        {
+            StopCoroutine(reverseToggleCoroutine);
+        }
+
+        reverseToggleCoroutine = StartCoroutine(ReverseToggleRoutine(interval));
     }
 
-    public void StopReverseControl()
+    public void StopReverseToggle()
     {
         if (!isLocalPlayer) return;
-        isReversedControl = false;
-        reverseTimer = 0f;
+
+        if (reverseToggleCoroutine != null)
+        {
+            StopCoroutine(reverseToggleCoroutine);
+            reverseToggleCoroutine = null;
+        }
+
+        isReversed = false;
+        Debug.Log("반전 구역 이탈: 조작이 정상으로 돌아옵니다.");
+    }
+
+    private System.Collections.IEnumerator ReverseToggleRoutine(float interval)
+    {
+        isReversed = false;
+        Debug.Log($"반전 구역 진입: {interval}초 뒤부터 조작이 주기적으로 바뀝니다.");
+
+        while (true)
+        {
+            yield return new WaitForSeconds(interval);
+
+            isReversed = !isReversed;
+
+            if (isReversed)
+                Debug.Log("🚨 조작 방향 [역방향]으로 변경!");
+            else
+                Debug.Log("🟢 조작 방향 [정방향]으로 변경!");
+        }
     }
 }

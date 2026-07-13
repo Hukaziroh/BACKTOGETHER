@@ -24,17 +24,14 @@ public class PlayerController : NetworkBehaviour
 
     void Awake()
     {
-        // 공통 컴포넌트 캐싱
         rb = GetComponent<Rigidbody2D>();
         mainCollider = GetComponent<CapsuleCollider2D>();
         anim = GetComponent<Animator>();
 
-        // 외부 기믹 모듈 캐싱
         gravityModule = GetComponent<PlayerGravityController>();
         combineHandler = GetComponent<PlayerCombineHandler>();
         syncJumpHandler = GetComponent<PlayerSyncJump>();
 
-        // 내부 모듈 캐싱
         input = GetComponent<PlayerInput>();
         movement = GetComponent<PlayerMovement>();
         knockback = GetComponent<PlayerKnockback>();
@@ -55,8 +52,6 @@ public class PlayerController : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
-
-        // 메인 카메라 세팅
         Camera mainCam = Camera.main;
         if (mainCam != null)
         {
@@ -64,6 +59,7 @@ public class PlayerController : NetworkBehaviour
             cam.target = transform;
         }
     }
+
     public Vector3 currentSpawnPoint
     {
         get => respawn.currentSpawnPoint;
@@ -72,8 +68,7 @@ public class PlayerController : NetworkBehaviour
     public void SetSpawnPoint(Vector3 newPoint) => respawn.SetSpawnPoint(newPoint);
 
     public UnityEngine.InputSystem.InputAction jumpAction => input.jumpAction;
-    public void StartReverseControl(float duration) => input.StartReverseControl(duration);
-    public void StopReverseControl() => input.StopReverseControl();
+
 
     public float windVelocity
     {
@@ -83,4 +78,7 @@ public class PlayerController : NetworkBehaviour
     public void CallCombinedJump() => movement.CallCombinedJump();
     public void ApplyShortJump() => movement.ApplyShortJump();
     public void CallCombinedAction() => movement.CallCombinedAction();
+
+    public void StartReverseToggle(float interval) => input.StartReverseToggle(interval);
+    public void StopReverseToggle() => input.StopReverseToggle();
 }
