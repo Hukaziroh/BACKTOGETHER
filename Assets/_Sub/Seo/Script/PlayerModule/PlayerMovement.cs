@@ -90,7 +90,7 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (controller.combineHandler == null || !controller.combineHandler.isCombined)
         {
-            if (controller.input.JumpPressedThisFrame && coyoteTimeCounter > 0f && !controller.knockback.isKnockedBack)
+            if (controller.input.JumpPressedThisFrame && coyoteTimeCounter > 0f && !controller.knockback.IsStunned)
             {
                 Jump();
                 coyoteTimeCounter = 0f;
@@ -99,7 +99,7 @@ public class PlayerMovement : NetworkBehaviour
             bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
             bool isMovingUp = inverted ? (controller.rb.linearVelocity.y < 0f) : (controller.rb.linearVelocity.y > 0f);
 
-            if (controller.input.JumpReleasedThisFrame && isMovingUp)
+            if (controller.input.JumpReleasedThisFrame && isMovingUp && !controller.knockback.IsStunned)
             {
                 if (controller.syncJumpHandler != null && controller.syncJumpHandler.isInSyncZone)
                 {
@@ -110,6 +110,7 @@ public class PlayerMovement : NetworkBehaviour
                     ApplyShortJump();
                 }
             }
+
         }
     }
 
