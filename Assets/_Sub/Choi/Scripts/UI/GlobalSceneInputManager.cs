@@ -15,6 +15,10 @@ public class GlobalSceneInputManager : MonoBehaviour
     private bool _isLocked = false;
     private GameObject _lockedObject = null;
 
+    // ★ [추가] 특정 팝업창 내부로만 포커스를 격리하기 위한 변수들
+    private GameObject _currentFocusScope = null;
+    private List<Selectable> _temporarilyDisabled = new List<Selectable>();
+
     private void Awake()
     {
         if (_instance != null)
@@ -35,11 +39,14 @@ public class GlobalSceneInputManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // 새로운 씬으로 넘어가면 잠금 상태 초기화
         _isLocked = false;
         _lockedObject = null;
-
         _isResettingFocus = false;
+
+        // 씬 전환 시 범위 제한 초기화
+        _currentFocusScope = null;
+        _temporarilyDisabled.Clear();
+
         RefreshAllSelectables();
     }
 
@@ -47,7 +54,6 @@ public class GlobalSceneInputManager : MonoBehaviour
     {
         if (EventSystem.current == null) return;
 
-        // 잠금 상태일 때의 처리
         if (_isLocked)
         {
             if (_lockedObject == null)
@@ -56,7 +62,6 @@ public class GlobalSceneInputManager : MonoBehaviour
                 return;
             }
 
-            // 포커스가 다른 곳으로 튀지 못하게 강제 해제 상태 유지
             if (EventSystem.current.currentSelectedGameObject != null)
             {
                 EventSystem.current.SetSelectedGameObject(null);
@@ -96,7 +101,7 @@ public class GlobalSceneInputManager : MonoBehaviour
     {
         if (EventSystem.current == null) return;
 
-        Selectable[] activeSelectables = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        Selectable[] activeSelectables = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude);
 
         if (activeSelectables == null || activeSelectables.Length == 0) return;
 
@@ -112,11 +117,33 @@ public class GlobalSceneInputManager : MonoBehaviour
 
         if (validList.Count == 0) return;
 
+        // 스마트 정렬 시스템
         validList.Sort((a, b) => {
+            Canvas canvasA = a.GetComponentInParent<Canvas>();
+            Canvas canvasB = b.GetComponentInParent<Canvas>();
+            int orderA = canvasA != null ? canvasA.sortingOrder : 0;
+            int orderB = canvasB != null ? canvasB.sortingOrder : 0;
+
+            if (orderA != orderB)
+            {
+                return orderB.CompareTo(orderA);
+            }
+
+            if (a.transform.parent != b.transform.parent)
+            {
+                Transform rootA = GetTopLevelPanel(a.transform, canvasA?.transform);
+                Transform rootB = GetTopLevelPanel(b.transform, canvasB?.transform);
+                if (rootA != null && rootB != null && rootA != rootB)
+                {
+                    return rootB.GetSiblingIndex().CompareTo(rootA.GetSiblingIndex());
+                }
+            }
+
             if (a.transform.parent == b.transform.parent)
             {
                 return a.transform.GetSiblingIndex().CompareTo(b.transform.GetSiblingIndex());
             }
+
             return b.transform.position.y.CompareTo(a.transform.position.y);
         });
 
@@ -126,7 +153,17 @@ public class GlobalSceneInputManager : MonoBehaviour
         UpdateHighlights(activeSelectables);
     }
 
-    // [최적화] 커서 이동(Select) 시 하이라이트 갱신 기능만 깔끔하게 남김
+    private Transform GetTopLevelPanel(Transform child, Transform limit)
+    {
+        if (child == null) return null;
+        Transform current = child;
+        while (current.parent != null && current.parent != limit)
+        {
+            current = current.parent;
+        }
+        return current;
+    }
+
     private void ConfigureTrigger(GameObject obj)
     {
         EventTrigger trigger = obj.GetComponent<EventTrigger>();
@@ -142,7 +179,7 @@ public class GlobalSceneInputManager : MonoBehaviour
         selectEntry.callback.RemoveAllListeners();
         selectEntry.callback.AddListener((data) =>
         {
-            Selectable[] currentActives = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            Selectable[] currentActives = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude);
             UpdateHighlights(currentActives);
         });
     }
@@ -165,7 +202,45 @@ public class GlobalSceneInputManager : MonoBehaviour
         }
     }
 
-    // ButtonLockTrigger가 버튼 눌렸을 때 직접 호출해줄 함수
+    // ★ [추가] 특정 패널(창) 내부로 포커스를 격리하고 배경을 얼리는 함수
+    public void SetFocusScope(GameObject scopeRoot)
+    {
+        if (scopeRoot == null) return;
+
+        ClearFocusScope(); // 기존 격리가 있다면 해제
+
+        _currentFocusScope = scopeRoot;
+
+        // 현재 하이어라키에 켜져 있는 모든 버튼 탐색
+        Selectable[] allSelectables = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude);
+        foreach (var sel in allSelectables)
+        {
+            // 지정한 창(scopeRoot)의 자식이 아니면서 현재 켜져 있는 버튼들만 비활성화 대상으로 지정
+            if (sel != null && sel.interactable && !sel.transform.IsChildOf(scopeRoot.transform))
+            {
+                sel.interactable = false;
+                _temporarilyDisabled.Add(sel);
+            }
+        }
+
+        RefreshAllSelectables();
+    }
+
+    // ★ [추가] 격리를 해제하고 배경 버튼들을 원래대로 복구하는 함수
+    public void ClearFocusScope()
+    {
+        _currentFocusScope = null;
+
+        // 일시정지 시켜두었던 배경 버튼들을 다시 interactable = true로 복구
+        foreach (var sel in _temporarilyDisabled)
+        {
+            if (sel != null) sel.interactable = true;
+        }
+        _temporarilyDisabled.Clear();
+
+        RefreshAllSelectables();
+    }
+
     public void LockUI(GameObject targetButton)
     {
         _isLocked = true;
@@ -176,7 +251,7 @@ public class GlobalSceneInputManager : MonoBehaviour
             EventSystem.current.SetSelectedGameObject(null);
         }
 
-        Selectable[] currentActives = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        Selectable[] currentActives = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude);
         UpdateHighlights(currentActives);
     }
 

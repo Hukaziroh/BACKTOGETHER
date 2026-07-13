@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-using System.Linq; // 💡 배열 처리를 쉽게 하기 위해 추가
 
 public class UIManager : MonoBehaviour
 {
@@ -12,14 +11,15 @@ public class UIManager : MonoBehaviour
     [SerializeField] private OptionsManager optionsManager;
 
     [Header("UI 연결")]
-    // 변수 이름을 목적에 맞게 변경했습니다 (progressBarUI -> progressTrackerUI)
     [SerializeField] private GameObject progressTrackerUI;
 
     [Header("관전 연결")]
     [SerializeField] private SpectatorSystem spectatorSystem;
 
-    [Header("설정")]
-    [SerializeField] private string[] excludedScenes = { "Main", "Lobby" };
+    [Header("씬 이름 설정")]
+    // 인펙터에서 자유롭게 수정할 수 있도록 변수로 분리했습니다.
+    [SerializeField] private string mainSceneName = "Main";
+    [SerializeField] private string lobbySceneName = "Lobby";
 
     private void Awake()
     {
@@ -39,13 +39,13 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
-        // 1. ESC 입력 처리 (이미 잘 작성하신 부분)
+        // 1. ESC 입력 처리
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             HandleEscapeInput();
         }
 
-        // 2. 관전 키 입력 처리 (최신 Input System 방식으로 수정)
+        // 2. 관전 키 입력 처리
         if (spectatorSystem != null && Keyboard.current != null)
         {
             if (Keyboard.current.qKey.wasPressedThisFrame) spectatorSystem.StopSpectating();
@@ -61,17 +61,14 @@ public class UIManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // 💡 씬 포함 여부를 한 줄로 간단하게 체크
-        bool isChapter = !excludedScenes.Contains(scene.name);
-
-        // 💡 null 체크를 간결하게 (progressTrackerUI가 할당 안 되어도 에러 방지)
+        // ★ [핵심] 메인 씬도 아니고 "로비 씬도 아닐 때" (즉, 인게임 챕터 씬일 때만) 프로그레스 바를 활성화합니다.
+        bool isChapter = (scene.name != mainSceneName && scene.name != lobbySceneName);
         progressTrackerUI?.SetActive(isChapter);
 
-        // [추가] 관전 카메라 자동 연결 로직
+        // 관전 카메라 자동 연결 로직
         GameObject mainCam = GameObject.FindGameObjectWithTag("MainCamera");
         if (mainCam != null)
         {
-            // 만약 카메라에 SpectatorCamera 스크립트가 없다면?
             if (mainCam.GetComponent<SpectatorCamera>() == null)
             {
                 mainCam.AddComponent<SpectatorCamera>();
@@ -84,8 +81,8 @@ public class UIManager : MonoBehaviour
     {
         string currentScene = SceneManager.GetActiveScene().name;
 
-        // 메인/로비 씬에서는 퍼즈 작동 안 함
-        if (excludedScenes.Contains(currentScene)) return;
+        // ★ [핵심] 오직 메인 씬("Main")에서만 ESC 입력을 무시합니다. (로비 씬은 무사히 통과하여 퍼즈 작동!)
+        if (currentScene == mainSceneName) return;
 
         // 옵션창이 켜져 있으면 -> 옵션 닫고 퍼즈창으로 복귀
         if (optionsManager?.optionsPanel != null && optionsManager.optionsPanel.activeSelf)
