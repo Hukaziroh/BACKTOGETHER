@@ -7,7 +7,13 @@ using System.Collections.Generic;
 public class GlobalSceneInputManager : MonoBehaviour
 {
     private static GlobalSceneInputManager _instance;
+    public static GlobalSceneInputManager Instance => _instance;
+
     private bool _isResettingFocus = false;
+
+    // 잠금 상태 관리 변수
+    private bool _isLocked = false;
+    private GameObject _lockedObject = null;
 
     private void Awake()
     {
@@ -29,6 +35,10 @@ public class GlobalSceneInputManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        // 새로운 씬으로 넘어가면 잠금 상태 초기화
+        _isLocked = false;
+        _lockedObject = null;
+
         _isResettingFocus = false;
         RefreshAllSelectables();
     }
@@ -37,9 +47,25 @@ public class GlobalSceneInputManager : MonoBehaviour
     {
         if (EventSystem.current == null) return;
 
+        // 잠금 상태일 때의 처리
+        if (_isLocked)
+        {
+            if (_lockedObject == null)
+            {
+                UnlockUI();
+                return;
+            }
+
+            // 포커스가 다른 곳으로 튀지 못하게 강제 해제 상태 유지
+            if (EventSystem.current.currentSelectedGameObject != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+            }
+            return;
+        }
+
         GameObject selected = EventSystem.current.currentSelectedGameObject;
 
-        // [핵심 수정] 포커스가 아예 없거나(null), 선택된 오브젝트가 비활성화(패널 끔) 되었다면 즉시 감지!
         if (selected == null || !selected.activeInHierarchy)
         {
             if (!_isResettingFocus)
@@ -52,14 +78,11 @@ public class GlobalSceneInputManager : MonoBehaviour
     private System.Collections.IEnumerator ResetFocusDelayed()
     {
         _isResettingFocus = true;
-
-        // 유니티 내부 UI 구조가 정리될 때까지 안전하게 1프레임 대기
         yield return null;
 
         if (EventSystem.current != null)
         {
             GameObject selected = EventSystem.current.currentSelectedGameObject;
-            // 한 턴 쉬었는데도 여전히 유령 상태거나 null이면 현재 화면 기준으로 강제 재배치
             if (selected == null || !selected.activeInHierarchy)
             {
                 RefreshAllSelectables();
@@ -73,7 +96,6 @@ public class GlobalSceneInputManager : MonoBehaviour
     {
         if (EventSystem.current == null) return;
 
-        // 현재 화면에 '실제로 켜져 있는' UI 요소들만 수집
         Selectable[] activeSelectables = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
 
         if (activeSelectables == null || activeSelectables.Length == 0) return;
@@ -90,31 +112,27 @@ public class GlobalSceneInputManager : MonoBehaviour
 
         if (validList.Count == 0) return;
 
-        // Y축 좌표 기준 정렬 (화면상 가장 위에 있는 UI가 무조건 첫 타깃)
-        // Hierarchy 창에 정렬된 순서대로 우선순위 지정 (같은 부모 안에서 위에 있는 놈이 우선)
         validList.Sort((a, b) => {
             if (a.transform.parent == b.transform.parent)
             {
                 return a.transform.GetSiblingIndex().CompareTo(b.transform.GetSiblingIndex());
             }
-            // 만약 서로 다른 패널에 속해 있다면, 화면 위쪽에 있는 패널을 우선시
             return b.transform.position.y.CompareTo(a.transform.position.y);
         });
 
-        // 첫 번째 UI 강제 포커스
         EventSystem.current.SetSelectedGameObject(null);
         EventSystem.current.SetSelectedGameObject(validList[0].gameObject);
 
         UpdateHighlights(activeSelectables);
     }
 
+    // [최적화] 커서 이동(Select) 시 하이라이트 갱신 기능만 깔끔하게 남김
     private void ConfigureTrigger(GameObject obj)
     {
         EventTrigger trigger = obj.GetComponent<EventTrigger>();
         if (trigger == null) trigger = obj.AddComponent<EventTrigger>();
 
         EventTrigger.Entry selectEntry = trigger.triggers.Find(e => e.eventID == EventTriggerType.Select);
-
         if (selectEntry == null)
         {
             selectEntry = new EventTrigger.Entry { eventID = EventTriggerType.Select };
@@ -133,7 +151,7 @@ public class GlobalSceneInputManager : MonoBehaviour
     {
         if (EventSystem.current == null || selectables == null) return;
 
-        GameObject selectedObj = EventSystem.current.currentSelectedGameObject;
+        GameObject targetObj = (_isLocked && _lockedObject != null) ? _lockedObject : EventSystem.current.currentSelectedGameObject;
 
         foreach (var sel in selectables)
         {
@@ -142,8 +160,30 @@ public class GlobalSceneInputManager : MonoBehaviour
             Transform highlight = sel.transform.Find("Highlight");
             if (highlight != null)
             {
-                highlight.gameObject.SetActive(sel.gameObject == selectedObj);
+                highlight.gameObject.SetActive(sel.gameObject == targetObj);
             }
         }
+    }
+
+    // ButtonLockTrigger가 버튼 눌렸을 때 직접 호출해줄 함수
+    public void LockUI(GameObject targetButton)
+    {
+        _isLocked = true;
+        _lockedObject = targetButton;
+
+        if (EventSystem.current != null)
+        {
+            EventSystem.current.SetSelectedGameObject(null);
+        }
+
+        Selectable[] currentActives = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        UpdateHighlights(currentActives);
+    }
+
+    public void UnlockUI()
+    {
+        _isLocked = false;
+        _lockedObject = null;
+        RefreshAllSelectables();
     }
 }
