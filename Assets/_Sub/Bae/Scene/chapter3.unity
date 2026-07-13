@@ -30144,7 +30144,7 @@ GameObject:
   - component: {fileID: 1321032940}
   - component: {fileID: 1321032943}
   m_Layer: 0
-  m_Name: Triiger
+  m_Name: SepartateTriiger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -93454,7 +93454,7 @@ GameObject:
   - component: {fileID: 1902580365}
   - component: {fileID: 1902580366}
   m_Layer: 0
-  m_Name: GameObject (1)
+  m_Name: QuadTrigger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -94024,7 +94024,7 @@ GameObject:
   - component: {fileID: 2019069928}
   - component: {fileID: 2019069931}
   m_Layer: 0
-  m_Name: Triiger (1)
+  m_Name: SepartateTriiger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
