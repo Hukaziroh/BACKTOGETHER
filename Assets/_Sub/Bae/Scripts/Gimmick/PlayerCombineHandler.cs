@@ -113,11 +113,20 @@ public class PlayerCombineHandler : NetworkBehaviour
         if (gameObject != bodyTarget)
         {
             float currentMove = 0f;
-            float inputVal = moveAction.ReadValue<float>();
+            float inputVal = moveAction.ReadValue<float>(); // -1 ~ 1
 
-            if (myRole == CombineRole.Move_Left && inputVal < 0) currentMove = -1f;
-            else if (myRole == CombineRole.Move_Right && inputVal > 0) currentMove = 1f;
-            else if (myRole == CombineRole.Move) currentMove = inputVal;
+            if (myRole == CombineRole.Move_Left)
+            {
+                currentMove = Mathf.Clamp(inputVal, -1f, 0f);
+            }
+            else if (myRole == CombineRole.Move_Right)
+            {
+                currentMove = Mathf.Clamp(inputVal, 0f, 1f);
+            }
+            else if (myRole == CombineRole.Move)
+            {
+                currentMove = inputVal;
+            }
 
             if (currentMove != lastSentMove)
             {
@@ -125,14 +134,10 @@ public class PlayerCombineHandler : NetworkBehaviour
                 CmdSendMoveState(bodyTarget, currentMove, myRole);
             }
 
-            // 🌟 꼬리(합체 파티원) 점프 처리
-            if (myRole == CombineRole.Jump || myRole == CombineRole.Move)
+            if (myRole == CombineRole.Jump)
             {
-                if (jumpAction.WasPressedThisFrame())
-                    CmdSendJumpToBody(bodyTarget); // 길게 누르기 시작 (풀점프)
-
-                if (jumpAction.WasReleasedThisFrame())
-                    CmdSendShortJumpToBody(bodyTarget); // 🌟 손 뗐을 때 (숏점프)
+                if (jumpAction.WasPressedThisFrame()) CmdSendJumpToBody(bodyTarget);
+                if (jumpAction.WasReleasedThisFrame()) CmdSendShortJumpToBody(bodyTarget);
             }
 
             if (myRole == CombineRole.Action && actionAction.WasPressedThisFrame())
@@ -142,14 +147,13 @@ public class PlayerCombineHandler : NetworkBehaviour
         }
         else
         {
-            // 🌟 본체 점프 처리
             if (myRole == CombineRole.Jump)
             {
                 if (jumpAction.WasPressedThisFrame())
-                    GetComponent<PlayerController>().CallCombinedJump(); // 길게 누르기 시작 (풀점프)
+                    GetComponent<PlayerController>().CallCombinedJump(); 
 
                 if (jumpAction.WasReleasedThisFrame())
-                    GetComponent<PlayerController>().ApplyShortJump(); // 🌟 손 뗐을 때 즉시 (숏점프)
+                    GetComponent<PlayerController>().ApplyShortJump(); 
             }
 
             if (myRole == CombineRole.Action && actionAction.WasPressedThisFrame())
@@ -206,7 +210,6 @@ public class PlayerCombineHandler : NetworkBehaviour
     [TargetRpc]
     public void TargetDoJump(NetworkConnection target) { GetComponent<PlayerController>().CallCombinedJump(); }
 
-    // 🌟 추가된 숏점프 신호 네트워크 통신
     [Command]
     private void CmdSendShortJumpToBody(GameObject body)
     {
@@ -214,7 +217,6 @@ public class PlayerCombineHandler : NetworkBehaviour
         body.GetComponent<PlayerCombineHandler>().TargetDoShortJump(body.GetComponent<NetworkIdentity>().connectionToClient);
     }
 
-    // 🌟 숏점프 명령을 받은 '본체'는 즉시 속도를 줄임
     [TargetRpc]
     public void TargetDoShortJump(NetworkConnection target)
     {
