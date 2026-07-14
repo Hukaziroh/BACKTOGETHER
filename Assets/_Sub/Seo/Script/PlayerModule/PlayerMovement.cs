@@ -51,7 +51,7 @@ public class PlayerMovement : NetworkBehaviour
     public float windVelocity = 0f;
     private Transform currentPlatform;
     private Vector3 lastPlatformPos;
-
+    private ContactPoint2D[] contacts = new ContactPoint2D[10];
     void Awake()
     {
         controller = GetComponent<PlayerController>();
@@ -135,45 +135,48 @@ public class PlayerMovement : NetworkBehaviour
     private void HandleMovementPhysics()
     {
         if (controller.knockback.isKnockedBack) return;
+
         if (controller.knockback.IsStunned)
         {
-            float slideSpeed = Mathf.Lerp(controller.rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
+            float slideSpeed = Mathf.MoveTowards(controller.rb.linearVelocity.x, 0f, 50f * Time.fixedDeltaTime);
             controller.rb.linearVelocity = new Vector2(slideSpeed, controller.rb.linearVelocity.y);
             return;
         }
 
         float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
 
-        bool isSlippery = isOnIce || (!isGrounded && wasOnIceLastFrame);
-        float currentFriction = isSlippery ? (isGrounded ? iceSlideFriction : airFriction) : normalFriction;
+        bool isPushingPlayer = false;
 
-        bool isTouchingOtherPlayer = false;
-        ContactPoint2D[] contacts = new ContactPoint2D[10];
         int contactCount = controller.rb.GetContacts(contacts);
         for (int i = 0; i < contactCount; i++)
         {
-            if (contacts[i].collider.gameObject != gameObject && contacts[i].collider.gameObject.layer == LayerMask.NameToLayer("Player"))
+            Collider2D otherCol = contacts[i].collider;
+
+            if (otherCol.gameObject != gameObject && otherCol.gameObject.layer == LayerMask.NameToLayer("Player"))
             {
-                isTouchingOtherPlayer = true;
-                break;
+                Vector2 normal = contacts[i].normal;
+                if (Mathf.Abs(normal.x) > 0.5f)
+                {
+                    if ((normal.x < 0f && controller.input.HorizontalInput > 0.01f) ||
+                        (normal.x > 0f && controller.input.HorizontalInput < -0.01f))
+                    {
+                        isPushingPlayer = true;
+                        break;
+                    }
+                }
             }
         }
 
-        if (isTouchingOtherPlayer && Mathf.Abs(controller.input.HorizontalInput) < 0.01f)
+        if (isPushingPlayer)
         {
-            currentFriction = airFriction;
+            targetVelocityX = 0f;
         }
 
-        float smoothedVelocityX = Mathf.Lerp(controller.rb.linearVelocity.x, targetVelocityX, currentFriction * Time.fixedDeltaTime);
+        float accel = isGrounded ? 60f : 25f;
+        float velocityX = Mathf.MoveTowards(controller.rb.linearVelocity.x, targetVelocityX, accel * Time.fixedDeltaTime);
 
-        if (Mathf.Abs(controller.input.HorizontalInput) < 0.01f && Mathf.Abs(windVelocity) < 0.01f)
-        {
-            if (Mathf.Abs(smoothedVelocityX) < 0.5f) smoothedVelocityX = 0f;
-        }
-
-        controller.rb.linearVelocity = new Vector2(smoothedVelocityX, controller.rb.linearVelocity.y);
+        controller.rb.linearVelocity = new Vector2(velocityX, controller.rb.linearVelocity.y);
     }
-
     private void ClampVelocity()
     {
         float maxSpeedX = 25f;
@@ -265,7 +268,7 @@ public class PlayerMovement : NetworkBehaviour
         Vector3 platformDelta = currentPlatform.position - lastPlatformPos;
         if (platformDelta.magnitude < 5f)
         {
-            controller.rb.position += (Vector2)platformDelta;
+            controller.rb.MovePosition(controller.rb.position + (Vector2)platformDelta);
         }
         lastPlatformPos = currentPlatform.position;
     }
