@@ -146,6 +146,24 @@ public class PlayerMovement : NetworkBehaviour
 
         bool isSlippery = isOnIce || (!isGrounded && wasOnIceLastFrame);
         float currentFriction = isSlippery ? (isGrounded ? iceSlideFriction : airFriction) : normalFriction;
+
+        bool isTouchingOtherPlayer = false;
+        ContactPoint2D[] contacts = new ContactPoint2D[10];
+        int contactCount = controller.rb.GetContacts(contacts);
+        for (int i = 0; i < contactCount; i++)
+        {
+            if (contacts[i].collider.gameObject != gameObject && contacts[i].collider.gameObject.layer == LayerMask.NameToLayer("Player"))
+            {
+                isTouchingOtherPlayer = true;
+                break;
+            }
+        }
+
+        if (isTouchingOtherPlayer && Mathf.Abs(controller.input.HorizontalInput) < 0.01f)
+        {
+            currentFriction = airFriction;
+        }
+
         float smoothedVelocityX = Mathf.Lerp(controller.rb.linearVelocity.x, targetVelocityX, currentFriction * Time.fixedDeltaTime);
 
         if (Mathf.Abs(controller.input.HorizontalInput) < 0.01f && Mathf.Abs(windVelocity) < 0.01f)
