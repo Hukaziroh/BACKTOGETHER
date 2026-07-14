@@ -28,22 +28,30 @@ public class PlayerMovement : NetworkBehaviour
 
     [Header("기즈모 및 감지 범위 설정")]
     public bool showGizmo = true;
+
+    [Header("그라운드 체크")]
     [Range(0.01f, 5f)]
     public float checkRadius = 0.5f;
     public Vector2 checkOffset = Vector2.zero;
     public Transform groundCheck;
     public LayerMask groundLayer;
-
     public bool isGrounded { get; private set; }
+    [Header("헤드 체크 (머리 위 플레이어 감지)")]
+    public Vector2 headCheckBoxSize = new Vector2(0.8f, 0.2f);
+    public Vector2 headCheckOffset = Vector2.zero; 
+    public Transform headCheck;
+    public bool hasPlayerOnHead { get; private set; }
+
     private bool isOnIce = false;
     private bool wasOnIceLastFrame = false;
     private Collider2D[] groundCheckResults = new Collider2D[5];
+    private Collider2D[] headCheckResults = new Collider2D[5];
 
     [Header("외부 환경 속도")]
     public float windVelocity = 0f;
     private Transform currentPlatform;
     private Vector3 lastPlatformPos;
-
+    private ContactPoint2D[] contacts = new ContactPoint2D[10];
     void Awake()
     {
         controller = GetComponent<PlayerController>();
@@ -66,9 +74,10 @@ public class PlayerMovement : NetworkBehaviour
 
         HandleMovingPlatform();
         CheckGroundOrPlayer();
+        CheckHeadForPlayer(); 
         HandleMovementPhysics();
         ClampVelocity();
-    }
+    } 
 
     private void UpdateTimers() { if (ckTimer > 0f) ckTimer -= Time.deltaTime; }
     private void UpdateCoyoteTime()
@@ -81,11 +90,12 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (controller.combineHandler == null || !controller.combineHandler.isCombined)
         {
-            if (controller.input.JumpPressedThisFrame && coyoteTimeCounter > 0f && !controller.knockback.IsStunned)
+            if (controller.input.JumpPressedThisFrame && coyoteTimeCounter > 0f && !controller.knockback.IsStunned && !hasPlayerOnHead)
             {
                 Jump();
                 coyoteTimeCounter = 0f;
             }
+
             bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
             bool isMovingUp = inverted ? (controller.rb.linearVelocity.y < 0f) : (controller.rb.linearVelocity.y > 0f);
 
@@ -125,29 +135,48 @@ public class PlayerMovement : NetworkBehaviour
     private void HandleMovementPhysics()
     {
         if (controller.knockback.isKnockedBack) return;
+
         if (controller.knockback.IsStunned)
         {
-            float slideSpeed = Mathf.Lerp(controller.rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
+            float slideSpeed = Mathf.MoveTowards(controller.rb.linearVelocity.x, 0f, 50f * Time.fixedDeltaTime);
             controller.rb.linearVelocity = new Vector2(slideSpeed, controller.rb.linearVelocity.y);
             return;
         }
 
-        // 🌟 오류 수정: platformVelocity 변수 참조 삭제됨
         float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
 
-        bool isSlippery = isOnIce || (!isGrounded && wasOnIceLastFrame);
-        float currentFriction = isSlippery ? (isGrounded ? iceSlideFriction : airFriction) : normalFriction;
-        float smoothedVelocityX = Mathf.Lerp(controller.rb.linearVelocity.x, targetVelocityX, currentFriction * Time.fixedDeltaTime);
+        bool isPushingPlayer = false;
 
-        // 🌟 수정: 오류가 나던 platformVelocity.x 삭제
-        if (Mathf.Abs(controller.input.HorizontalInput) < 0.01f && Mathf.Abs(windVelocity) < 0.01f)
+        int contactCount = controller.rb.GetContacts(contacts);
+        for (int i = 0; i < contactCount; i++)
         {
-            if (Mathf.Abs(smoothedVelocityX) < 0.5f) smoothedVelocityX = 0f;
+            Collider2D otherCol = contacts[i].collider;
+
+            if (otherCol.gameObject != gameObject && otherCol.gameObject.layer == LayerMask.NameToLayer("Player"))
+            {
+                Vector2 normal = contacts[i].normal;
+                if (Mathf.Abs(normal.x) > 0.5f)
+                {
+                    if ((normal.x < 0f && controller.input.HorizontalInput > 0.01f) ||
+                        (normal.x > 0f && controller.input.HorizontalInput < -0.01f))
+                    {
+                        isPushingPlayer = true;
+                        break;
+                    }
+                }
+            }
         }
 
-        controller.rb.linearVelocity = new Vector2(smoothedVelocityX, controller.rb.linearVelocity.y);
-    }
+        if (isPushingPlayer)
+        {
+            targetVelocityX = 0f;
+        }
 
+        float accel = isGrounded ? 60f : 25f;
+        float velocityX = Mathf.MoveTowards(controller.rb.linearVelocity.x, targetVelocityX, accel * Time.fixedDeltaTime);
+
+        controller.rb.linearVelocity = new Vector2(velocityX, controller.rb.linearVelocity.y);
+    }
     private void ClampVelocity()
     {
         float maxSpeedX = 25f;
@@ -200,6 +229,38 @@ public class PlayerMovement : NetworkBehaviour
         if (isGrounded) wasOnIceLastFrame = isOnIce;
     }
 
+    void CheckHeadForPlayer()
+    {
+        if (headCheck == null) return;
+
+        hasPlayerOnHead = false;
+
+        ContactFilter2D filter = new ContactFilter2D();
+        filter.useLayerMask = true;
+        filter.useTriggers = false;
+        filter.layerMask = 1 << LayerMask.NameToLayer("Player");
+
+        Vector2 checkPosition = (Vector2)headCheck.position + headCheckOffset;
+
+        int hitCount = Physics2D.OverlapBox(checkPosition, headCheckBoxSize, 0f, filter, headCheckResults);
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            Collider2D col = headCheckResults[i];
+
+            if (col.gameObject == gameObject || col.isTrigger) continue;
+
+            Vector2 dir = col.transform.position - transform.position;
+            if (dir.y <= 0.2f) continue;
+
+            if (col.attachedRigidbody != null && col.attachedRigidbody.linearVelocity.y > 0.1f)
+                continue;
+
+            hasPlayerOnHead = true;
+            break;
+        }
+    }
+
     private void HandleMovingPlatform()
     {
         if (currentPlatform == null) return;
@@ -207,14 +268,14 @@ public class PlayerMovement : NetworkBehaviour
         Vector3 platformDelta = currentPlatform.position - lastPlatformPos;
         if (platformDelta.magnitude < 5f)
         {
-            controller.rb.position += (Vector2)platformDelta;
+            controller.rb.MovePosition(controller.rb.position + (Vector2)platformDelta);
         }
         lastPlatformPos = currentPlatform.position;
     }
 
     public void CallCombinedJump()
     {
-        if (isGrounded || coyoteTimeCounter > 0f)
+        if ((isGrounded || coyoteTimeCounter > 0f) && !hasPlayerOnHead)
         {
             controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
             Jump();
@@ -230,10 +291,20 @@ public class PlayerMovement : NetworkBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        if (!showGizmo || groundCheck == null) return;
+        if (!showGizmo) return;
 
-        Gizmos.color = Color.yellow;
-        Vector2 checkPosition = (Vector2)groundCheck.position + checkOffset;
-        Gizmos.DrawWireSphere(checkPosition, checkRadius);
+        if (groundCheck != null)
+        {
+            Gizmos.color = Color.yellow;
+            Vector2 gCheckPosition = (Vector2)groundCheck.position + checkOffset;
+            Gizmos.DrawWireSphere(gCheckPosition, checkRadius);
+        }
+
+        if (headCheck != null)
+        {
+            Gizmos.color = Color.cyan;
+            Vector2 hCheckPosition = (Vector2)headCheck.position + headCheckOffset;
+            Gizmos.DrawWireCube(hCheckPosition, headCheckBoxSize);
+        }
     }
 }
