@@ -1,12 +1,12 @@
 using UnityEngine;
 using Mirror;
 
-[RequireComponent(typeof(Rigidbody2D), typeof(PolygonCollider2D), typeof(Animator))]
+[RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D), typeof(Animator))]
 public class PlayerController : NetworkBehaviour
 {
     [Header("Core Components")]
     public Rigidbody2D rb { get; private set; }
-    public CapsuleCollider2D mainCollider { get; private set; }
+    public BoxCollider2D mainCollider { get; private set; }
     public Animator anim { get; private set; }
 
     [Header("External Modules (기믹)")]
@@ -25,7 +25,7 @@ public class PlayerController : NetworkBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        mainCollider = GetComponent<CapsuleCollider2D>();
+        mainCollider = GetComponent<BoxCollider2D>();
         anim = GetComponent<Animator>();
 
         gravityModule = GetComponent<PlayerGravityController>();
@@ -68,7 +68,6 @@ public class PlayerController : NetworkBehaviour
     public void SetSpawnPoint(Vector3 newPoint) => respawn.SetSpawnPoint(newPoint);
 
     public UnityEngine.InputSystem.InputAction jumpAction => input.jumpAction;
-
 
     public float windVelocity
     {
