@@ -1,7 +1,7 @@
 using UnityEngine;
 using Mirror;
 
-[RequireComponent(typeof(Rigidbody2D), typeof(CapsuleCollider2D), typeof(Animator))]
+[RequireComponent(typeof(Rigidbody2D), typeof(PolygonCollider2D), typeof(Animator))]
 public class PlayerController : NetworkBehaviour
 {
     [Header("Core Components")]
