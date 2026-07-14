@@ -17,8 +17,10 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
     {
         if (isTriggered) return;
 
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && other.gameObject == other.transform.root.gameObject)
         {
+            playersInZone.RemoveWhere(p => p == null || !p.activeInHierarchy);
+
             playersInZone.Add(other.gameObject);
 
             if (playersInZone.Count >= requiredPlayers)
@@ -34,7 +36,7 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
     {
         if (isTriggered) return;
 
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && other.gameObject == other.transform.root.gameObject)
         {
             playersInZone.Remove(other.gameObject);
         }

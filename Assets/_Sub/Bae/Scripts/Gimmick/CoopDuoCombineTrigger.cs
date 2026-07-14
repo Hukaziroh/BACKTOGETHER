@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class CoopDuoCombineTrigger : NetworkBehaviour
 {
     [Header("2인 1조 합체 기믹 설정")]
-    public int requiredPlayers = 2;
+    public int requiredPlayers = 4;
 
     [SyncVar]
     private bool isTriggered = false;
@@ -42,12 +42,13 @@ public class CoopDuoCombineTrigger : NetworkBehaviour
     private void ActivateDuoCombine()
     {
         List<GameObject> playerList = new List<GameObject>(playersInZone);
-        if (playerList.Count < 2) return;
 
-        Debug.Log("2인 기믹 발동!");
+        if (playerList.Count < 4) return;
 
-        // 🌟 문자열 대신 Enum 값을 넘겨주도록 변경
+        Debug.Log("4인 진입 완료 -> 2:2 듀오 기믹 발동!");
+
         AssignRole(playerList[0], playerList[1], CombineRole.Move, CombineRole.Jump);
+        AssignRole(playerList[2], playerList[3], CombineRole.Move, CombineRole.Jump);
     }
 
     [Server]
