@@ -94167,7 +94167,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  requiredPlayers: 2
+  requiredPlayers: 4
 --- !u!4 &2064440961
 Transform:
   m_ObjectHideFlags: 0
