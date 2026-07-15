@@ -767,7 +767,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  requiredPlayers: 2
+  requiredPlayers: 4
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
