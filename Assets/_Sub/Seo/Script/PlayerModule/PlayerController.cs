@@ -42,10 +42,17 @@ public class PlayerController : NetworkBehaviour
 
     void Start()
     {
-        if (!isLocalPlayer)
+        rb.freezeRotation = true;
+
+        if (isLocalPlayer)
         {
-            rb.bodyType = RigidbodyType2D.Kinematic;
-            rb.interpolation = RigidbodyInterpolation2D.None;
+            rb.bodyType = RigidbodyType2D.Dynamic;
+            rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+        }
+        else
+        {
+            rb.bodyType = RigidbodyType2D.Dynamic;
+            rb.interpolation = RigidbodyInterpolation2D.Interpolate;
         }
     }
 
