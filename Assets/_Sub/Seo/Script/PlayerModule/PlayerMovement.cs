@@ -55,10 +55,12 @@ public class PlayerMovement : NetworkBehaviour
     private Transform currentPlatform;
     private Vector2 platformVelocity;
 
+    private bool isPushingPlayer = false;
+
     void Awake()
     {
         controller = GetComponent<PlayerController>();
-        playerLayerMask = 1 << LayerMask.NameToLayer("PlayerBody");
+        playerLayerMask = 1 << LayerMask.NameToLayer("Player");
     }
 
     void Update()
@@ -135,34 +137,7 @@ public class PlayerMovement : NetworkBehaviour
         bool isFalling = isInverted ? (controller.rb.linearVelocity.y > 0f) : (controller.rb.linearVelocity.y < 0f);
         controller.rb.gravityScale = isFalling ? (jumpSpeed * fallSpeed * mult) : (jumpSpeed * mult);
     }
-    private bool IsWallAhead(float velocityX)
-    {
-        if (Mathf.Abs(velocityX) < 0.01f) return false;
 
-        float dir = Mathf.Sign(velocityX);
-        Bounds bounds = controller.bodyCollider.bounds;
-
-        float originX = bounds.center.x + (dir * bounds.extents.x);
-
-        Vector2 topOrigin = new Vector2(originX, bounds.max.y - 0.1f);
-        Vector2 midOrigin = new Vector2(originX, bounds.center.y);
-        Vector2 botOrigin = new Vector2(originX, bounds.min.y + 0.1f);
-
-        Vector2 rayDir = Vector2.right * dir;
-        float rayDist = 0.03f;
-        int wallMask = groundLayer;
-
-        RaycastHit2D hitTop = Physics2D.Raycast(topOrigin, rayDir, rayDist, wallMask);
-        RaycastHit2D hitMid = Physics2D.Raycast(midOrigin, rayDir, rayDist, wallMask);
-        RaycastHit2D hitBot = Physics2D.Raycast(botOrigin, rayDir, rayDist, wallMask);
-        bool IsValid(RaycastHit2D hit) => hit.collider != null && !hit.collider.isTrigger && !hit.collider.CompareTag("Pushable");
-
-        bool top = IsValid(hitTop);
-        bool mid = IsValid(hitMid);
-        bool bot = IsValid(hitBot);
-        return (top && mid) || (mid && bot);
-    }
-  
     private void HandleMovementPhysics()
     {
         if (controller.knockback.isKnockedBack) return;
@@ -173,15 +148,14 @@ public class PlayerMovement : NetworkBehaviour
             controller.rb.linearVelocity = new Vector2(slideSpeed, controller.rb.linearVelocity.y);
             return;
         }
+
         float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
 
-        if (Mathf.Abs(targetVelocityX) > 0.01f)
+        if (isPushingPlayer)
         {
-            if (IsWallAhead(targetVelocityX))
-            {
-                targetVelocityX = 0f;
-            }
+            targetVelocityX = 0f;
         }
+
         bool isSlippery = isOnIce || (!isGrounded && wasOnIceLastFrame);
         float currentFriction = isSlippery ? (isGrounded ? iceSlideFriction : airFriction) : normalFriction;
         float accel = currentFriction * moveSpeed;
@@ -322,6 +296,41 @@ public class PlayerMovement : NetworkBehaviour
     {
         controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
         controller.rb.AddForce(Vector2.down * 18f, ForceMode2D.Impulse);
+    }
+    
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (!isLocalPlayer) return;
+
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Player"))
+        {
+            foreach (ContactPoint2D contact in collision.contacts)
+            {
+                if (Mathf.Abs(contact.normal.x) > 0.7f)
+                {
+                    float normalX = contact.normal.x;
+                    float inputX = controller.input.HorizontalInput;
+
+                    if ((inputX > 0.1f && normalX < 0f) || (inputX < -0.1f && normalX > 0f))
+                    {
+                        isPushingPlayer = true;
+                        return;
+                    }
+                }
+            }
+        }
+
+        isPushingPlayer = false;
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (!isLocalPlayer) return;
+
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Player"))
+        {
+            isPushingPlayer = false;
+        }
     }
 
     private void OnDrawGizmosSelected()
