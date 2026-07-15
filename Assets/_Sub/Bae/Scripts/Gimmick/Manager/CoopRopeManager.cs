@@ -25,25 +25,28 @@ public class CoopRopeManager : NetworkBehaviour
     public void StartRopeGimmick()
     {
         if (isRopeActive) return;
-
+        Debug.Log("성공");
+        // 씬에 있는 모든 플레이어 찾기 (CoopPlayerIdentity 기준 정렬)
         CoopPlayerIdentity[] players = FindObjectsByType<CoopPlayerIdentity>(FindObjectsSortMode.None);
-
-        // 🌟 2명 이상만 되면 작동하도록 조건 완화
-        if (players.Length < 2)
+        if (players.Length < 4)
         {
-            Debug.LogWarning("[로프 기믹] 로프를 연결할 최소 인원(2명)이 모이지 않았습니다!");
+            Debug.LogWarning("[로프 기믹] 4명이 모이지 않아 로프를 연결할 수 없습니다!");
             return;
         }
 
+        // 1P -> 2P -> 3P -> 4P 순서대로 정렬
         System.Array.Sort(players, (a, b) => a.playerIndex.CompareTo(b.playerIndex));
 
         isRopeActive = true;
 
-        // 🌟 [수정] 4개 고정 인자가 아니라, 찾은 플레이어들을 리스트로 전달
-        List<GameObject> playerList = new List<GameObject>();
-        foreach (var p in players) playerList.Add(p.gameObject);
-
-        RpcLinkPlayers(playerList.ToArray(), maxRopeLength);
+        // 클라이언트들에게 물리 조인트와 비주얼 선을 생성하라고 명령
+        RpcLinkPlayers(
+            players[0].gameObject,
+            players[1].gameObject,
+            players[2].gameObject,
+            players[3].gameObject,
+            maxRopeLength
+        );
     }
 
     [Server]
@@ -54,20 +57,20 @@ public class CoopRopeManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void RpcLinkPlayers(GameObject[] players, float maxLength)
+    private void RpcLinkPlayers(GameObject p1, GameObject p2, GameObject p3, GameObject p4, float maxLength)
     {
-        connectedPlayers = new List<GameObject>(players);
+        connectedPlayers = new List<GameObject> { p1, p2, p3, p4 };
 
-        // 🌟 [수정] 플레이어 수 - 1만큼만 루프를 돌며 조인트 생성
-        for (int i = 0; i < connectedPlayers.Count - 1; i++)
-        {
-            AttachJoint(connectedPlayers[i], connectedPlayers[i + 1], maxLength);
-        }
+        // 1. 물리 조인트 연결 (P1-P2, P2-P3, P3-P4)
+        AttachJoint(p1, p2, maxLength);
+        AttachJoint(p2, p3, maxLength);
+        AttachJoint(p3, p4, maxLength);
 
-        SetupLineRenderers(connectedPlayers.Count - 1); // 필요한 줄 개수만큼 생성
+        // 2. 비주얼 라인 렌더러 세팅
+        SetupLineRenderers();
     }
 
-        [ClientRpc]
+    [ClientRpc]
     private void RpcUnlinkPlayers()
     {
         // 조인트 파괴
@@ -103,12 +106,12 @@ public class CoopRopeManager : NetworkBehaviour
         joint.maxDistanceOnly = true;
     }
 
-    private void SetupLineRenderers(int ropeCount) // 매개변수 추가
+    private void SetupLineRenderers()
     {
-        for (int i = 0; i < ropeCount; i++) // 🌟 고정 숫자 3 대신 ropeCount 사용
+        for (int i = 0; i < 3; i++)
         {
             GameObject lrObj = new GameObject($"RopeLine_{i}");
-            lrObj.transform.SetParent(this.transform);
+            lrObj.transform.SetParent(this.transform); // 매니저 하위에 깔끔하게 정리
 
             LineRenderer lr = lrObj.AddComponent<LineRenderer>();
             lr.startWidth = ropeWidth;
@@ -120,6 +123,7 @@ public class CoopRopeManager : NetworkBehaviour
             lr.textureMode = LineTextureMode.Tile;
             lr.sortingLayerName = "Foreground"; // 플레이어와 겹칠 때 순서 조정 (필요시 변경)
             lr.sortingOrder = 10;
+
             lineRenderers.Add(lr);
         }
     }
