@@ -155,7 +155,7 @@ public class PlayerMovement : NetworkBehaviour
         RaycastHit2D hitTop = Physics2D.Raycast(topOrigin, rayDir, rayDist, wallMask);
         RaycastHit2D hitMid = Physics2D.Raycast(midOrigin, rayDir, rayDist, wallMask);
         RaycastHit2D hitBot = Physics2D.Raycast(botOrigin, rayDir, rayDist, wallMask);
-        bool IsValid(RaycastHit2D hit) => hit.collider != null && !hit.collider.CompareTag("Pushable");
+        bool IsValid(RaycastHit2D hit) => hit.collider != null && !hit.collider.isTrigger && !hit.collider.CompareTag("Pushable");
 
         bool top = IsValid(hitTop);
         bool mid = IsValid(hitMid);
