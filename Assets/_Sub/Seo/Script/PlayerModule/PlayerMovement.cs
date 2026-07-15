@@ -58,7 +58,7 @@ public class PlayerMovement : NetworkBehaviour
     void Awake()
     {
         controller = GetComponent<PlayerController>();
-        playerLayerMask = 1 << LayerMask.NameToLayer("Player");
+        playerLayerMask = 1 << LayerMask.NameToLayer("PlayerBody");
     }
 
     void Update()
@@ -189,7 +189,8 @@ public class PlayerMovement : NetworkBehaviour
         ContactFilter2D filter = new ContactFilter2D();
         filter.useLayerMask = true;
         filter.useTriggers = false;
-        filter.layerMask = groundLayer | playerLayerMask;
+        filter.layerMask = groundLayer;
+
         int hitCount = Physics2D.OverlapCircle(groundCheck.position, checkRadius, filter, groundCheckResults);
 
         isGrounded = false;
@@ -202,6 +203,7 @@ public class PlayerMovement : NetworkBehaviour
             Collider2D col = groundCheckResults[i];
             if (col.CompareTag("Spike")) continue;
             if (col.gameObject == gameObject || col.isTrigger) continue;
+
             isGrounded = true;
             if (col.CompareTag("Ice")) currentOnIce = true;
             if (col.CompareTag("MovingPlatform"))
