@@ -8,9 +8,34 @@ public class PrivateLobbyManager : MonoBehaviour
 {
     [Header("UI 연결")]
     public Button hostCreateButton;
+    public Button joinButton; // 🌟 새로 추가됨: 참가 버튼도 같이 잠그기 위해
 
     // 생성된 숏코드를 UI에 전달하기 위한 전역 변수
     public static string currentShortCode = "";
+
+    // 🌟 새로 추가됨: 시작하자마자 버튼을 잠그고 로그인을 기다림
+    private void Start()
+    {
+        if (hostCreateButton != null) hostCreateButton.interactable = false;
+        if (joinButton != null) joinButton.interactable = false;
+
+        StartCoroutine(WaitForEpicLoginRoutine());
+    }
+
+    // 🌟 새로 추가됨: 401 권한 에러를 막아주는 핵심 대기 로직
+    private IEnumerator WaitForEpicLoginRoutine()
+    {
+        Debug.Log("[로비 시스템] 에픽 서버 로그인 상태를 확인 중입니다...");
+
+        while (string.IsNullOrEmpty(EOSSDKComponent.LocalUserProductIdString))
+        {
+            yield return null;
+        }
+
+        Debug.Log("[로비 시스템] 에픽 온라인 서비스 로그인 성공! 버튼을 활성화합니다.");
+        if (hostCreateButton != null) hostCreateButton.interactable = true;
+        if (joinButton != null) joinButton.interactable = true;
+    }
 
     public void OnStartPrivateHostClicked()
     {
@@ -20,33 +45,27 @@ public class PrivateLobbyManager : MonoBehaviour
 
     private IEnumerator CleanAndCreateLobbyRoutine()
     {
-        // 1. 기존 네트워크 정리
         if (NetworkClient.active) NetworkManager.singleton.StopClient();
         if (NetworkServer.active) NetworkManager.singleton.StopHost();
 
         EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
         if (eosLobby != null) eosLobby.LeaveLobby();
 
-        yield return new WaitForSeconds(1.5f); // 세션 청소 대기
+        yield return new WaitForSeconds(1.5f); 
 
-        // 2. 6자리 숏코드 발급
         currentShortCode = GenerateShortCode();
         Debug.Log("[로비 시스템] 발급된 숏코드: " + currentShortCode);
 
-        // 3. FakeByte 내장 함수로 안전하게 방 생성
         uint maxPlayers = 4;
         Epic.OnlineServices.Lobby.LobbyPermissionLevel permissionLevel = Epic.OnlineServices.Lobby.LobbyPermissionLevel.Publicadvertised;
         bool presenceEnabled = true;
 
         eosLobby.CreateLobby(maxPlayers, permissionLevel, presenceEnabled);
 
-        // 🌟 [핵심] FakeByte 내장 함수(GetCurrentLobbyId)를 사용해 로비 ID가 나올 때까지 대기
         while (string.IsNullOrEmpty(eosLobby.GetCurrentLobbyId()))
         {
             yield return null;
         }
-
-        // 🌟 [핵심] FakeByte 내장 함수(UpdateLobbyAttribute)를 사용해 에러 없이 숏코드 간판 등록!
         eosLobby.UpdateLobbyAttribute("SHORTCODE", currentShortCode);
 
         yield return new WaitForSeconds(0.5f); // 등록 안정화 대기
@@ -55,6 +74,7 @@ public class PrivateLobbyManager : MonoBehaviour
         NetworkManager.singleton.StartHost();
         if (hostCreateButton != null) hostCreateButton.interactable = true;
     }
+
     private string GenerateShortCode()
     {
         string allowedChars = "0123456789";
