@@ -1,13 +1,12 @@
 using UnityEngine;
 using Mirror;
 
-[RequireComponent(typeof(Rigidbody2D),typeof(Animator))]
+[RequireComponent(typeof(Rigidbody2D), typeof(Animator), typeof(BoxCollider2D))]
 public class PlayerController : NetworkBehaviour
 {
     [Header("Core Components")]
     public Rigidbody2D rb { get; private set; }
-    [SerializeField] private BoxCollider2D _bodyCollider; 
-    public BoxCollider2D bodyCollider => _bodyCollider; 
+    public BoxCollider2D bodyCollider { get; private set; }
     public Animator anim { get; private set; }
 
     [Header("External Modules (기믹)")]
@@ -27,6 +26,7 @@ public class PlayerController : NetworkBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        bodyCollider = GetComponent<BoxCollider2D>();
 
         gravityModule = GetComponent<PlayerGravityController>();
         combineHandler = GetComponent<PlayerCombineHandler>();
