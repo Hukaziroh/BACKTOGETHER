@@ -1,10 +1,7 @@
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class ClientMenu : MonoBehaviour
 {
-    public TMP_InputField roomCodeInput;
     public GameObject ClientPanel;
     public GameObject ConnectPanel;
     public GameObject optionsPanel;
@@ -31,11 +28,5 @@ public class ClientMenu : MonoBehaviour
     {
         if (ConnectPanel != null) ConnectPanel.SetActive(true);
         if (optionsPanel != null) optionsPanel.SetActive(false);
-    }
-
-    // 붙여넣기 전용 기능
-    public void PasteCode()
-    {
-        roomCodeInput.text = GUIUtility.systemCopyBuffer;
     }
 }

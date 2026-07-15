@@ -1,8 +1,6 @@
-#nullable enable //Nullable(?) 컴파일 에러를 해결하기 위한 구문
-
+#nullable enable
 using System.Collections;
 using UnityEngine;
-using TMPro;
 using Mirror;
 using EpicTransport;
 using Epic.OnlineServices;
@@ -10,7 +8,8 @@ using Epic.OnlineServices.Lobby;
 
 public class ClientJoinUI : MonoBehaviour
 {
-    public TMP_InputField roomCodeInput;
+    // [수정] 6자리 숫자 입력 UI 컨트롤러 연결
+    public SixDigitCodeInputUI sixDigitUI;
 
     private LobbySearch? currentSearchHandle;
     private string foundHostAddress = "";
@@ -18,7 +17,14 @@ public class ClientJoinUI : MonoBehaviour
 
     public void OnJoinByCodeButtonClicked()
     {
-        string roomCode = roomCodeInput.text.Trim().ToUpper();
+        if (sixDigitUI == null)
+        {
+            Debug.LogError("SixDigitCodeInputUI가 연결되지 않았습니다!");
+            return;
+        }
+
+        // [수정] 6자리 코드를 가져옵니다.
+        string roomCode = sixDigitUI.GetCode();
 
         if (string.IsNullOrEmpty(roomCode) || roomCode.Length != 6)
         {
@@ -101,6 +107,6 @@ public class ClientJoinUI : MonoBehaviour
             }
         }
 
-        searchFinished = true; 
+        searchFinished = true;
     }
 }
