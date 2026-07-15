@@ -111,7 +111,15 @@ public class CoopRopeManager : NetworkBehaviour
             lrObj.transform.SetParent(this.transform);
 
             LineRenderer lr = lrObj.AddComponent<LineRenderer>();
-            // ... (나머지 세팅 동일)
+            lr.startWidth = ropeWidth;
+            lr.endWidth = ropeWidth;
+            lr.material = ropeMaterial;
+            lr.positionCount = 2;
+
+            // 🌟 핵심: 로프 텍스처가 늘어나지 않고 타일처럼 반복되게 설정
+            lr.textureMode = LineTextureMode.Tile;
+            lr.sortingLayerName = "Foreground"; // 플레이어와 겹칠 때 순서 조정 (필요시 변경)
+            lr.sortingOrder = 10;
             lineRenderers.Add(lr);
         }
     }
