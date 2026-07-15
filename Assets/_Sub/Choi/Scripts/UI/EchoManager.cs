@@ -3,65 +3,94 @@ using Unity.Netcode;
 
 public class EchoManager : MonoBehaviour
 {
-    // 자동으로 할당할 것이므로 private으로 변경
     private Transform player;
+    private Vector3 waveOrigin;
 
-    public float waveSpeed = 10f;
-    public float maxRadius = 20f;
+    public float waveSpeed = 20f;
+    public float maxRadius = 30f;
     public float waveWidth = 3f;
 
-    private float currentRadius = 0f;
-    private float timer = 0f;
+    // 3개의 파동 상태 관리
+    private float[] radii = new float[3] { -1f, -1f, -1f };
+    private float[] alphas = new float[3] { 0f, 0f, 0f };
+    private bool[] active = new bool[3] { false, false, false };
 
-    // 오브젝트가 켜질 때마다 호스트를 찾음
+    private float timer = 0f;
+    private float burstTimer = 0f;
+    private int burstCount = 0;
+    private bool isCooldown = false; // 3초 대기 상태인지 확인
+
     void OnEnable()
     {
         FindHostPlayer();
+        Shader.SetGlobalFloat("_OutlineEnabled", 1.0f);
+    }
+
+    void OnDisable()
+    {
+        Shader.SetGlobalFloat("_OutlineEnabled", 0.0f);
+        // 끄면 모든 파동 초기화
+        for (int i = 0; i < 3; i++) active[i] = false;
     }
 
     void FindHostPlayer()
     {
-        // 1. 네트워크 환경 체크
-        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
-        {
-            // 호스트(ClientId 0) 찾기
-            if (NetworkManager.Singleton.ConnectedClients.TryGetValue(0, out var hostClient))
-            {
-                if (hostClient.PlayerObject != null)
-                {
-                    player = hostClient.PlayerObject.transform;
-                    return;
-                }
-            }
-        }
-
-        // 2. 네트워크 연결 전이거나 호스트를 못 찾은 경우 태그로 찾기 (안전장치)
         GameObject p = GameObject.FindGameObjectWithTag("Player");
         if (p != null) player = p.transform;
     }
 
     void Update()
     {
-        // 플레이어를 아직 못 찾았다면 매 프레임 찾기를 시도함
-        if (player == null)
-        {
-            FindHostPlayer();
-            return;
-        }
+        if (player == null) { FindHostPlayer(); return; }
 
         timer += Time.deltaTime;
-        if (timer >= 3.0f) // 3초 주기
+
+        // --- 파동 발사 로직 (버스트) ---
+        if (!isCooldown)
         {
-            currentRadius = 0f;
+            burstTimer += Time.deltaTime;
+            if (burstCount < 3 && burstTimer >= 1f)
+            {
+                // 새 파동 생성
+                radii[burstCount] = 0f;
+                active[burstCount] = true;
+                waveOrigin = player.position; // 쏠 때의 위치 고정
+
+                burstCount++;
+                burstTimer = 0f;
+            }
+
+            // 3번 다 쐈으면 쿨다운 진입
+            if (burstCount >= 3) { isCooldown = true; timer = 0f; }
+        }
+        // --- 쿨다운 로직 ---
+        else if (timer >= 3.0f)
+        {
+            // 3초 지나면 리셋
+            isCooldown = false;
+            burstCount = 0;
+            burstTimer = 0f;
             timer = 0f;
         }
 
-        if (currentRadius < maxRadius)
-            currentRadius += Time.deltaTime * waveSpeed;
+        // 파동 확장 및 알파 계산
+        for (int i = 0; i < 3; i++)
+        {
+            if (active[i])
+            {
+                radii[i] += Time.deltaTime * waveSpeed;
+                alphas[i] = (radii[i] > maxRadius) ? 0f : 1.0f; // 간단하게 거리 기반
 
-        // 셰이더 전역 변수 업데이트
-        Shader.SetGlobalVector("_WavePos", player.position);
-        Shader.SetGlobalFloat("_WaveRadius", currentRadius);
+                if (radii[i] > maxRadius) active[i] = false;
+            }
+            else { radii[i] = -1f; alphas[i] = 0f; }
+        }
+
+        // 셰이더로 데이터 전달 (1, 2, 3번 파동 각각 전달)
+        Shader.SetGlobalVector("_WavePos", waveOrigin);
+        Shader.SetGlobalFloat("_WaveRadius1", radii[0]); Shader.SetGlobalFloat("_WaveAlpha1", alphas[0]);
+        Shader.SetGlobalFloat("_WaveRadius2", radii[1]); Shader.SetGlobalFloat("_WaveAlpha2", alphas[1]);
+        Shader.SetGlobalFloat("_WaveRadius3", radii[2]); Shader.SetGlobalFloat("_WaveAlpha3", alphas[2]);
         Shader.SetGlobalFloat("_WaveWidth", waveWidth);
     }
 }
