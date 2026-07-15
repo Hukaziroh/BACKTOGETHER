@@ -1,12 +1,13 @@
 using UnityEngine;
 using Mirror;
 
-[RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D), typeof(Animator))]
+[RequireComponent(typeof(Rigidbody2D),typeof(Animator))]
 public class PlayerController : NetworkBehaviour
 {
     [Header("Core Components")]
     public Rigidbody2D rb { get; private set; }
-    public BoxCollider2D mainCollider { get; private set; }
+    [SerializeField] private BoxCollider2D _bodyCollider; 
+    public BoxCollider2D bodyCollider => _bodyCollider; 
     public Animator anim { get; private set; }
 
     [Header("External Modules (기믹)")]
@@ -25,7 +26,6 @@ public class PlayerController : NetworkBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        mainCollider = GetComponent<BoxCollider2D>();
         anim = GetComponent<Animator>();
 
         gravityModule = GetComponent<PlayerGravityController>();
