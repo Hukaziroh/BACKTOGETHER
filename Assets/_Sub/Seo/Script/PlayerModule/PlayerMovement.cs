@@ -135,10 +135,38 @@ public class PlayerMovement : NetworkBehaviour
         bool isFalling = isInverted ? (controller.rb.linearVelocity.y > 0f) : (controller.rb.linearVelocity.y < 0f);
         controller.rb.gravityScale = isFalling ? (jumpSpeed * fallSpeed * mult) : (jumpSpeed * mult);
     }
+    private bool IsWallAhead(float velocityX)
+    {
+        if (Mathf.Abs(velocityX) < 0.01f) return false;
 
+        float dir = Mathf.Sign(velocityX);
+        Bounds bounds = controller.bodyCollider.bounds;
+
+        float originX = bounds.center.x + (dir * bounds.extents.x);
+
+        Vector2 topOrigin = new Vector2(originX, bounds.max.y - 0.1f);
+        Vector2 midOrigin = new Vector2(originX, bounds.center.y);
+        Vector2 botOrigin = new Vector2(originX, bounds.min.y + 0.1f);
+
+        Vector2 rayDir = Vector2.right * dir;
+        float rayDist = 0.03f;
+        int wallMask = groundLayer;
+
+        RaycastHit2D hitTop = Physics2D.Raycast(topOrigin, rayDir, rayDist, wallMask);
+        RaycastHit2D hitMid = Physics2D.Raycast(midOrigin, rayDir, rayDist, wallMask);
+        RaycastHit2D hitBot = Physics2D.Raycast(botOrigin, rayDir, rayDist, wallMask);
+        bool IsValid(RaycastHit2D hit) => hit.collider != null && !hit.collider.CompareTag("Pushable");
+
+        bool top = IsValid(hitTop);
+        bool mid = IsValid(hitMid);
+        bool bot = IsValid(hitBot);
+        return (top && mid) || (mid && bot);
+    }
+  
     private void HandleMovementPhysics()
     {
         if (controller.knockback.isKnockedBack) return;
+
         if (controller.knockback.IsStunned)
         {
             float slideSpeed = Mathf.Lerp(controller.rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
@@ -147,6 +175,13 @@ public class PlayerMovement : NetworkBehaviour
         }
         float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
 
+        if (Mathf.Abs(targetVelocityX) > 0.01f)
+        {
+            if (IsWallAhead(targetVelocityX))
+            {
+                targetVelocityX = 0f;
+            }
+        }
         bool isSlippery = isOnIce || (!isGrounded && wasOnIceLastFrame);
         float currentFriction = isSlippery ? (isGrounded ? iceSlideFriction : airFriction) : normalFriction;
         float accel = currentFriction * moveSpeed;
@@ -265,7 +300,6 @@ public class PlayerMovement : NetworkBehaviour
         if (currentPlatform == null)
             return;
 
-        // [변경 3 반영] 자식 구조(콜라이더)를 감안해 GetComponentInParent로 변경하여 안전성 확보
         CoopRoundTripPlatform platform = currentPlatform.GetComponentInParent<CoopRoundTripPlatform>();
 
         if (platform != null)
