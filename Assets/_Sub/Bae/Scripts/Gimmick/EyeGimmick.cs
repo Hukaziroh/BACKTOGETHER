@@ -5,7 +5,9 @@ using System.Collections;
 public class EyeGimmick : NetworkBehaviour
 {
     [Header("눈 감시 설정")]
+    [Tooltip("눈이 켜져 있는 시간 (초)")]
     public float onDuration = 2f;
+    [Tooltip("눈이 꺼져 있는 시간 (초)")]
     public float offDuration = 2f;
     [Tooltip("빛을 가려줄 지형지물(땅)의 레이어 마스크")]
     public LayerMask obstacleLayer;
@@ -23,10 +25,9 @@ public class EyeGimmick : NetworkBehaviour
 
     private void Start()
     {
-        UpdateVisuals(); // 시작 시 무조건 꺼진 상태로 세팅
+        UpdateVisuals(); 
     }
 
-    // EyeRoomTrigger에서 4명이 들어오면 호출하는 함수
     [Server]
     public void StartEyeGimmick()
     {
@@ -37,20 +38,30 @@ public class EyeGimmick : NetworkBehaviour
     }
 
     [Server]
+    public void ClearGimmick()
+    {
+        if (!isGimmickActive) return;
+
+        isGimmickActive = false;
+        isEyeOn = false;
+        Debug.Log("[첫번째 눈 기믹] 클리어 완료! 눈이 영구적으로 꺼집니다.");
+    }
+
+    [Server]
     private IEnumerator EyeToggleRoutine()
     {
-        // 원한다면 여기에 시작 전 대기 시간을 넣어도 됩니다. (예: yield return new WaitForSeconds(1f);)
         while (isGimmickActive)
         {
             isEyeOn = true;
             yield return new WaitForSeconds(onDuration);
+
+            if (!isGimmickActive) break;
 
             isEyeOn = false;
             yield return new WaitForSeconds(offDuration);
         }
     }
 
-    // 🌟 이 충돌은 오직 '눈 시야 콜라이더' 영역에서만 일어남!
     [ServerCallback]
     private void OnTriggerStay2D(Collider2D other)
     {
@@ -63,7 +74,7 @@ public class EyeGimmick : NetworkBehaviour
 
             RaycastHit2D hit = Physics2D.Raycast(transform.position, directionToPlayer.normalized, distanceToPlayer, obstacleLayer);
 
-            if (hit.collider == null) // 가려주는 땅이 없다면
+            if (hit.collider == null) 
             {
                 NetworkIdentity identity = other.GetComponent<NetworkIdentity>();
                 if (identity != null)
@@ -79,7 +90,7 @@ public class EyeGimmick : NetworkBehaviour
     {
         if (playerObj != null)
         {
-            PlayerKnockback knockback = playerObj.GetComponent<PlayerKnockback>();
+            PlayerKnockback knockback = playerObj.GetComponent<NetworkIdentity>().GetComponent<PlayerKnockback>();
             if (knockback != null)
             {
                 knockback.ApplyKnockbackFromEye(transform.position);
@@ -94,7 +105,7 @@ public class EyeGimmick : NetworkBehaviour
     {
         if (eyeRenderer != null)
         {
-            if (!isGimmickActive) eyeRenderer.color = offColor;
+            if (!isGimmickActive) eyeRenderer.color = offColor; 
             else eyeRenderer.color = isEyeOn ? onColor : offColor;
         }
     }
