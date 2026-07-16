@@ -934,8 +934,8 @@ MonoBehaviour:
   coyoteTime: 0.15
   superJump: 0.5
   showGizmo: 1
-  checkRadius: 0.04
-  checkOffset: {x: 0, y: 0.04}
+  checkRadius: 0.3
+  checkOffset: {x: 0, y: 0}
   groundCheck: {fileID: 286342587236517845}
   groundLayer:
     serializedVersion: 2
@@ -944,6 +944,9 @@ MonoBehaviour:
   headCheckOffset: {x: 0, y: 0.444}
   headCheck: {fileID: 234135565813763668}
   windVelocity: 0
+  ropeLeftNeighbor: {fileID: 0}
+  ropeRightNeighbor: {fileID: 0}
+  maxRopeLength: 0
 --- !u!114 &106991141419042085
 MonoBehaviour:
   m_ObjectHideFlags: 0

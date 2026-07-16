@@ -61,7 +61,7 @@ public class PlayerMovement : NetworkBehaviour
     [HideInInspector] public Transform ropeLeftNeighbor;
     [HideInInspector] public Transform ropeRightNeighbor;
     [HideInInspector] public float maxRopeLength;
-    private float ropePullForce = 80f; // 텐션 강도
+    private float ropePullForce = 100f; // 텐션 강도
 
     void Awake()
     {
