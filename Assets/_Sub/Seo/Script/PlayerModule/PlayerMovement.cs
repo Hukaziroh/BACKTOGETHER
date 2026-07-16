@@ -55,8 +55,6 @@ public class PlayerMovement : NetworkBehaviour
     private Transform currentPlatform;
     private Vector2 platformVelocity;
 
-    [Header("로프 기믹 상태")]
-    public bool isTiedToRope = false;
     private bool isPushingPlayer = false;
 
     void Awake()
@@ -82,6 +80,19 @@ public class PlayerMovement : NetworkBehaviour
 
         HandleMovingPlatform();
         CheckGroundOrPlayer();
+
+        // 🌟 [핵심 물리 보정] 피코파크식 줄다리기 밸런스!
+        // 밧줄이 몸에 달려있다면, 땅에 있을 땐 무게 2, 공중에 뜰 땐 무게 1로 설정합니다.
+        // 이동/점프 속도는 그대로 유지되면서, 서로를 당기는 저항력(질량)만 확 달라집니다.
+        if (GetComponent<DistanceJoint2D>() != null)
+        {
+            controller.rb.mass = isGrounded ? 2.0f : 1.0f;
+        }
+        else
+        {
+            controller.rb.mass = 1.0f; // 밧줄이 없으면 기본값 복구
+        }
+
         CheckHeadForPlayer();
         HandleMovementPhysics();
         ClampVelocity();
@@ -150,13 +161,7 @@ public class PlayerMovement : NetworkBehaviour
             controller.rb.linearVelocity = new Vector2(slideSpeed, controller.rb.linearVelocity.y);
             return;
         }
-        DistanceJoint2D ropeJoint = GetComponent<DistanceJoint2D>();
-        if (ropeJoint != null && !isGrounded && controller.rb.linearVelocity.y <= 0.1f)
-        {
-            // 이대로 return 하면 스크립트가 X속도를 0으로 강제 고정하지 않게 됩니다.
-            // 즉, 위에 있는 사람들이 당기면 아주 가볍게 슈루룩 끌려 올라가게 됩니다!
-            return;
-        }
+
         float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
 
         if (isPushingPlayer)
@@ -282,12 +287,21 @@ public class PlayerMovement : NetworkBehaviour
         if (currentPlatform == null)
             return;
 
-        CoopRoundTripPlatform platform = currentPlatform.GetComponentInParent<CoopRoundTripPlatform>();
+        // 1. 왕복 발판 (Round Trip)
+        var roundTrip = currentPlatform.GetComponentInParent<CoopRoundTripPlatform>();
+        if (roundTrip != null) platformVelocity = roundTrip.CurrentVelocity;
 
-        if (platform != null)
-        {
-            platformVelocity = platform.CurrentVelocity;
-        }
+        // 2. 통나무 발판 (Moving Log)
+        var movingLog = currentPlatform.GetComponentInParent<CoopMovingLog>();
+        if (movingLog != null) platformVelocity = movingLog.CurrentVelocity;
+
+        // 3. 패트롤 발판 (Patrol)
+        var patrol = currentPlatform.GetComponentInParent<CoopPatrolPlatform>();
+        if (patrol != null) platformVelocity = patrol.CurrentVelocity;
+
+        // 4. 패러렐 발판 (Parallel)
+        var parallel = currentPlatform.GetComponentInParent<CoopParallelPlatform>();
+        if (parallel != null) platformVelocity = parallel.CurrentVelocity;
     }
 
     public void CallCombinedJump()
