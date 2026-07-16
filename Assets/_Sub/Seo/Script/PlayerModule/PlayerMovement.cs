@@ -55,8 +55,6 @@ public class PlayerMovement : NetworkBehaviour
     private Transform currentPlatform;
     private Vector2 platformVelocity;
 
-    [Header("로프 기믹 상태")]
-    public bool isTiedToRope = false;
     private bool isPushingPlayer = false;
 
     void Awake()
@@ -299,7 +297,7 @@ public class PlayerMovement : NetworkBehaviour
         controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
         controller.rb.AddForce(Vector2.down * 18f, ForceMode2D.Impulse);
     }
-    
+
     private void OnCollisionStay2D(Collision2D collision)
     {
         if (!isLocalPlayer) return;
