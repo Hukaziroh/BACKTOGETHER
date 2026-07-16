@@ -45,20 +45,22 @@ public class PlayerInput : NetworkBehaviour
         if (jumpAction == null || jumpAction.bindings.Count == 0)
         {
             jumpAction = new InputAction("Jump", InputActionType.Button);
-            jumpAction.AddBinding("<Keyboard>/space");
             jumpAction.AddBinding("<Keyboard>/w");
             jumpAction.AddBinding("<Keyboard>/upArrow");
+            jumpAction.AddBinding("<Keyboard>/space");
             jumpAction.AddBinding("<Gamepad>/buttonSouth");
         }
 
         if (actionAction == null || actionAction.bindings.Count == 0)
         {
             actionAction = new InputAction("Action", InputActionType.Button);
-            actionAction.AddBinding("<Keyboard>/v");
+            actionAction.AddBinding("<Keyboard>/s");
+            actionAction.AddBinding("<Keyboard>/downArrow");
+            actionAction.AddBinding("<Gamepad>/buttonEast");
         }
     }
 
-    public override void OnStartLocalPlayer()
+    void OnEnable()
     {
         moveAction.Enable();
         jumpAction.Enable();
@@ -67,12 +69,9 @@ public class PlayerInput : NetworkBehaviour
 
     void OnDisable()
     {
-        if (isLocalPlayer)
-        {
-            moveAction.Disable();
-            jumpAction.Disable();
-            actionAction.Disable();
-        }
+        moveAction.Disable();
+        jumpAction.Disable();
+        actionAction.Disable();
     }
 
     void Update()
@@ -81,6 +80,7 @@ public class PlayerInput : NetworkBehaviour
 
         float rawInput = 0f;
 
+        // 합체 상태 체크
         if (controller.combineHandler != null && controller.combineHandler.isCombined)
         {
             if (gameObject != controller.combineHandler.bodyTarget)
@@ -98,15 +98,6 @@ public class PlayerInput : NetworkBehaviour
         if (isReversed)
         {
             rawInput *= -1f;
-        }
-
-        if (controller.movement != null && controller.movement.isTiedToRope)
-        {
-            Rigidbody2D rb = controller.GetComponent<Rigidbody2D>();
-            if (rb != null && !controller.movement.isGrounded && rb.linearVelocity.y <= 0.1f)
-            {
-                rawInput = 0f;
-            }
         }
 
         HorizontalInput = rawInput;
@@ -152,7 +143,7 @@ public class PlayerInput : NetworkBehaviour
             if (isReversed)
                 Debug.Log("🚨 조작 방향 [역방향]으로 변경!");
             else
-                Debug.Log("🟢 조작 방향 [정방향]으로 변경!");
+                Debug.Log("🟢 조작 방향 [정방향]으로 복구!");
         }
     }
 }
