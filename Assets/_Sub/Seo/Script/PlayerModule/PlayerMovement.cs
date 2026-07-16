@@ -149,12 +149,8 @@ public class PlayerMovement : NetworkBehaviour
             return;
         }
 
-        // 🌟 [유일한 변경점] 밧줄에 묶인 채 공중에 매달려 있다면, X축 속도를 강제로 0으로 만들지 않습니다!
-        // 이렇게 해야 닻처럼 버티지 않고 2명이 당기는 힘에 의해 부드럽게 딸려갑니다.
-        if (GetComponent<DistanceJoint2D>() != null && !isGrounded)
-        {
-            return;
-        }
+        // 🟢 인위적으로 강제 속도를 리턴시키거나 0으로 만들던 오류 코드를 싹 제거했습니다!
+        // 이제 유니티 물리 엔진이 조인트를 통해 정직하고 자연스럽게 힘을 주고받습니다.
 
         float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
 

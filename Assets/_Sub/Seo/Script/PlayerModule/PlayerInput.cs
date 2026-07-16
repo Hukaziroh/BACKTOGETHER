@@ -81,6 +81,7 @@ public class PlayerInput : NetworkBehaviour
 
         float rawInput = 0f;
 
+        // 합체 상태 체크
         if (controller.combineHandler != null && controller.combineHandler.isCombined)
         {
             if (gameObject != controller.combineHandler.bodyTarget)
@@ -100,12 +101,16 @@ public class PlayerInput : NetworkBehaviour
             rawInput *= -1f;
         }
 
-        // 🌟 매달린 사람은 발버둥 금지
-        if (GetComponent<DistanceJoint2D>() != null && controller.movement != null)
+        // 🌟 [교차 검증된 정밀 조작 제한]
+        // 내가 땅에 서 있지 않고(!isGrounded) + 내 몸에 밧줄(DistanceJoint2D)이 활성화되어 있을 때만
+        // 공중에서 멋대로 흔드는 걸 막기 위해 좌우 입력만 0으로 잠급니다.
+        // (발판 위에 있는 유저들은 isGrounded가 true이므로 이 조건문을 완벽하게 통과하여 좌우로 잘 움직입니다!)
+        if (controller.movement != null && !controller.movement.isGrounded)
         {
-            if (!controller.movement.isGrounded && GetComponent<Rigidbody2D>().linearVelocity.y <= 0.1f)
+            DistanceJoint2D ropeJoint = GetComponent<DistanceJoint2D>();
+            if (ropeJoint != null && ropeJoint.enabled)
             {
-                rawInput = 0f;
+                rawInput = 0f; // 매달린 유저 본인만 좌우 조작 제한 (점프 인풋은 정상 작동)
             }
         }
 
