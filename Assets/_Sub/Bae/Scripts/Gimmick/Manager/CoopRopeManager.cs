@@ -5,13 +5,10 @@ using System.Collections.Generic;
 public class CoopRopeManager : NetworkBehaviour
 {
     [Header("로프 물리 설정")]
-    [Tooltip("로프가 늘어날 수 있는 최대 길이 (인스펙터 조절)")]
     public float maxRopeLength = 4f;
 
     [Header("로프 비주얼 설정")]
-    [Tooltip("로프의 두께")]
     public float ropeWidth = 0.3f;
-    [Tooltip("로프 스프라이트가 적용된 머티리얼")]
     public Material ropeMaterial;
 
     [SyncVar(hook = nameof(OnRopeActiveChanged))]
@@ -26,24 +23,14 @@ public class CoopRopeManager : NetworkBehaviour
         if (isRopeActive) return;
         CoopPlayerIdentity[] players = FindObjectsByType<CoopPlayerIdentity>(FindObjectsSortMode.None);
 
-        // 🌟 [변경됨] 수동 인원 설정 없이, 최소 2명 이상만 있으면 무조건 작동!
-        if (players.Length < 2)
-        {
-            Debug.LogWarning("[로프 기믹] 최소 2명의 플레이어가 필요합니다!");
-            return;
-        }
+        if (players.Length < 2) return;
 
         System.Array.Sort(players, (a, b) => a.playerIndex.CompareTo(b.playerIndex));
-
         isRopeActive = true;
 
-        // 🌟 [변경됨] 현재 맵에 들어와 있는 실제 인원수(최대 4명)를 자동으로 계산해서 묶음
         int actualPlayerCount = Mathf.Min(players.Length, 4);
         GameObject[] playersToLink = new GameObject[actualPlayerCount];
-        for (int i = 0; i < actualPlayerCount; i++)
-        {
-            playersToLink[i] = players[i].gameObject;
-        }
+        for (int i = 0; i < actualPlayerCount; i++) playersToLink[i] = players[i].gameObject;
 
         RpcLinkPlayers(playersToLink, maxRopeLength);
     }
@@ -59,9 +46,16 @@ public class CoopRopeManager : NetworkBehaviour
     private void RpcLinkPlayers(GameObject[] playersToLink, float maxLength)
     {
         connectedPlayers = new List<GameObject>(playersToLink);
-        for (int i = 0; i < connectedPlayers.Count - 1; i++)
+
+        // 🌟 [핵심 변경] 조인트를 쓰지 않고, 플레이어 스크립트에 이웃 정보만 전달합니다.
+        for (int i = 0; i < connectedPlayers.Count; i++)
         {
-            AttachJoint(connectedPlayers[i], connectedPlayers[i + 1], maxLength);
+            if (connectedPlayers[i].TryGetComponent<PlayerMovement>(out var pm))
+            {
+                pm.ropeLeftNeighbor = (i > 0) ? connectedPlayers[i - 1].transform : null;
+                pm.ropeRightNeighbor = (i < connectedPlayers.Count - 1) ? connectedPlayers[i + 1].transform : null;
+                pm.maxRopeLength = maxLength;
+            }
         }
         SetupLineRenderers(connectedPlayers.Count - 1);
     }
@@ -71,31 +65,16 @@ public class CoopRopeManager : NetworkBehaviour
     {
         foreach (var player in connectedPlayers)
         {
-            if (player != null)
+            if (player != null && player.TryGetComponent<PlayerMovement>(out var pm))
             {
-                DistanceJoint2D[] joints = player.GetComponents<DistanceJoint2D>();
-                foreach (var j in joints) Destroy(j);
+                pm.ropeLeftNeighbor = null;
+                pm.ropeRightNeighbor = null;
             }
         }
-        foreach (var lr in lineRenderers)
-        {
-            if (lr != null) Destroy(lr.gameObject);
-        }
+        foreach (var lr in lineRenderers) if (lr != null) Destroy(lr.gameObject);
 
         lineRenderers.Clear();
         connectedPlayers.Clear();
-    }
-
-    private void AttachJoint(GameObject bodyA, GameObject bodyB, float length)
-    {
-        if (bodyA == null || bodyB == null) return;
-
-        DistanceJoint2D joint = bodyA.AddComponent<DistanceJoint2D>();
-        joint.connectedBody = bodyB.GetComponent<Rigidbody2D>();
-        joint.autoConfigureDistance = false;
-        joint.distance = length;
-        joint.maxDistanceOnly = true;
-        joint.enableCollision = true;
     }
 
     private void SetupLineRenderers(int lineCount)
@@ -110,11 +89,9 @@ public class CoopRopeManager : NetworkBehaviour
             lr.endWidth = ropeWidth;
             lr.material = ropeMaterial;
             lr.positionCount = 2;
-
             lr.textureMode = LineTextureMode.Tile;
             lr.sortingLayerName = "Foreground";
             lr.sortingOrder = 10;
-
             lineRenderers.Add(lr);
         }
     }
