@@ -767,7 +767,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  requiredPlayers: 4
+  requiredPlayers: 2
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
@@ -30004,6 +30004,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
+  requiredPlayers: 2
   maxRopeLength: 4
   ropeWidth: 0.3
   ropeMaterial: {fileID: 2100000, guid: 89791c100ea13d54da5e11f2b3085c7b, type: 2}
