@@ -100,12 +100,16 @@ public class PlayerInput : NetworkBehaviour
             rawInput *= -1f;
         }
 
-        if (controller.movement != null && controller.movement.isTiedToRope)
+        // 🌟 밧줄 매달림 감지 및 조작 차단 (중복 없이 이거 하나면 충분합니다!)
+        DistanceJoint2D ropeJoint = GetComponent<DistanceJoint2D>();
+        if (ropeJoint != null && controller.movement != null)
         {
-            Rigidbody2D rb = controller.GetComponent<Rigidbody2D>();
-            if (rb != null && !controller.movement.isGrounded && rb.linearVelocity.y <= 0.1f)
+            Rigidbody2D rb = GetComponent<Rigidbody2D>();
+
+            // 땅에 닿지 않았고 && 상승하는 점프 중이 아닐 때만 차단
+            if (!controller.movement.isGrounded && rb.linearVelocity.y <= 0.1f)
             {
-                rawInput = 0f;
+                rawInput = 0f; // 매달린 사람은 짐짝이 됩니다.
             }
         }
 

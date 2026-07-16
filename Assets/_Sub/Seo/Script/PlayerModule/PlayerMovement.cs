@@ -150,7 +150,13 @@ public class PlayerMovement : NetworkBehaviour
             controller.rb.linearVelocity = new Vector2(slideSpeed, controller.rb.linearVelocity.y);
             return;
         }
-
+        DistanceJoint2D ropeJoint = GetComponent<DistanceJoint2D>();
+        if (ropeJoint != null && !isGrounded && controller.rb.linearVelocity.y <= 0.1f)
+        {
+            // 이대로 return 하면 스크립트가 X속도를 0으로 강제 고정하지 않게 됩니다.
+            // 즉, 위에 있는 사람들이 당기면 아주 가볍게 슈루룩 끌려 올라가게 됩니다!
+            return;
+        }
         float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
 
         if (isPushingPlayer)
