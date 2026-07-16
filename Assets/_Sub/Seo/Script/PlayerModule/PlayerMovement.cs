@@ -56,6 +56,7 @@ public class PlayerMovement : NetworkBehaviour
     private Vector2 platformVelocity;
 
     private bool isPushingPlayer = false;
+    private float pushGraceTimer = 0f;
 
     void Awake()
     {
@@ -70,6 +71,7 @@ public class PlayerMovement : NetworkBehaviour
         UpdateCoyoteTime();
         HandleJumpInput();
         UpdateGravity();
+        
     }
 
     void FixedUpdate()
@@ -77,6 +79,14 @@ public class PlayerMovement : NetworkBehaviour
         if (!isLocalPlayer) return;
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
+        if (pushGraceTimer > 0f)
+        {
+            pushGraceTimer -= Time.deltaTime;
+            if (pushGraceTimer <= 0f)
+            {
+                isPushingPlayer = false; 
+            }
+        }
 
         HandleMovingPlatform();
         CheckGroundOrPlayer();
@@ -149,8 +159,6 @@ public class PlayerMovement : NetworkBehaviour
             return;
         }
 
-        // 🟢 인위적으로 강제 속도를 리턴시키거나 0으로 만들던 오류 코드를 싹 제거했습니다!
-        // 이제 유니티 물리 엔진이 조인트를 통해 정직하고 자연스럽게 힘을 주고받습니다.
 
         float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
 
@@ -192,7 +200,6 @@ public class PlayerMovement : NetworkBehaviour
         clampedVelocity.x = Mathf.Clamp(clampedVelocity.x, -maxSpeedX, maxSpeedX);
         bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
         if (isInverted) clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed * 1.5f, maxFallSpeed);
-        else clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed, maxFallSpeed * 1.5f);
         controller.rb.linearVelocity = clampedVelocity;
     }
 
@@ -277,12 +284,17 @@ public class PlayerMovement : NetworkBehaviour
         if (currentPlatform == null)
             return;
 
-        CoopRoundTripPlatform platform = currentPlatform.GetComponentInParent<CoopRoundTripPlatform>();
+        var roundTrip = currentPlatform.GetComponentInParent<CoopRoundTripPlatform>();
+        if (roundTrip != null) platformVelocity = roundTrip.CurrentVelocity;
 
-        if (platform != null)
-        {
-            platformVelocity = platform.CurrentVelocity;
-        }
+        var movingLog = currentPlatform.GetComponentInParent<CoopMovingLog>();
+        if (movingLog != null) platformVelocity = movingLog.CurrentVelocity;
+
+        var patrol = currentPlatform.GetComponentInParent<CoopPatrolPlatform>();
+        if (patrol != null) platformVelocity = patrol.CurrentVelocity;
+
+        var parallel = currentPlatform.GetComponentInParent<CoopParallelPlatform>();
+        if (parallel != null) platformVelocity = parallel.CurrentVelocity;
     }
 
     public void CallCombinedJump()
@@ -317,23 +329,19 @@ public class PlayerMovement : NetworkBehaviour
                     if ((inputX > 0.1f && normalX < 0f) || (inputX < -0.1f && normalX > 0f))
                     {
                         isPushingPlayer = true;
+                        pushGraceTimer = 0.1f; 
                         return;
                     }
                 }
             }
         }
-
-        isPushingPlayer = false;
     }
 
     private void OnCollisionExit2D(Collision2D collision)
     {
         if (!isLocalPlayer) return;
 
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Player"))
-        {
-            isPushingPlayer = false;
-        }
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Player")) { }
     }
 
     private void OnDrawGizmosSelected()
