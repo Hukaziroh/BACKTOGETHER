@@ -100,25 +100,40 @@ public class PlayerInput : NetworkBehaviour
             rawInput *= -1f;
         }
 
-        // 🌟 억지로 공중 조작을 막던 코드를 완전히 삭제했습니다!
+        if (controller.movement != null && controller.movement.isTiedToRope)
+        {
+            Rigidbody2D rb = controller.GetComponent<Rigidbody2D>();
+            if (rb != null && !controller.movement.isGrounded && rb.linearVelocity.y <= 0.1f)
+            {
+                rawInput = 0f;
+            }
+        }
+
         HorizontalInput = rawInput;
     }
 
     public void StartReverseToggle(float interval)
     {
         if (!isLocalPlayer) return;
-        if (reverseToggleCoroutine != null) StopCoroutine(reverseToggleCoroutine);
+
+        if (reverseToggleCoroutine != null)
+        {
+            StopCoroutine(reverseToggleCoroutine);
+        }
+
         reverseToggleCoroutine = StartCoroutine(ReverseToggleRoutine(interval));
     }
 
     public void StopReverseToggle()
     {
         if (!isLocalPlayer) return;
+
         if (reverseToggleCoroutine != null)
         {
             StopCoroutine(reverseToggleCoroutine);
             reverseToggleCoroutine = null;
         }
+
         isReversed = false;
         Debug.Log("반전 구역 이탈: 조작이 정상으로 돌아옵니다.");
     }
@@ -127,10 +142,17 @@ public class PlayerInput : NetworkBehaviour
     {
         isReversed = false;
         Debug.Log($"반전 구역 진입: {interval}초 뒤부터 조작이 주기적으로 바뀝니다.");
+
         while (true)
         {
             yield return new WaitForSeconds(interval);
+
             isReversed = !isReversed;
+
+            if (isReversed)
+                Debug.Log("🚨 조작 방향 [역방향]으로 변경!");
+            else
+                Debug.Log("🟢 조작 방향 [정방향]으로 변경!");
         }
     }
 }
