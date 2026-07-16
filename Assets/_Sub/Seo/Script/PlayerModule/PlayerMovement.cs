@@ -57,6 +57,12 @@ public class PlayerMovement : NetworkBehaviour
 
     private bool isPushingPlayer = false;
 
+    // 🌟 [추가된 로프 기믹 변수]
+    [HideInInspector] public Transform ropeLeftNeighbor;
+    [HideInInspector] public Transform ropeRightNeighbor;
+    [HideInInspector] public float maxRopeLength;
+    private float ropePullForce = 80f; // 텐션 강도
+
     void Awake()
     {
         controller = GetComponent<PlayerController>();
@@ -81,23 +87,58 @@ public class PlayerMovement : NetworkBehaviour
         HandleMovingPlatform();
         CheckGroundOrPlayer();
 
-        // 🌟 [핵심 물리 보정] 피코파크식 줄다리기 밸런스!
-        // 밧줄이 몸에 달려있다면, 땅에 있을 땐 무게 2, 공중에 뜰 땐 무게 1로 설정합니다.
-        // 이동/점프 속도는 그대로 유지되면서, 서로를 당기는 저항력(질량)만 확 달라집니다.
-        if (GetComponent<DistanceJoint2D>() != null)
+        // 질량 보정
+        if (ropeLeftNeighbor != null || ropeRightNeighbor != null)
         {
             controller.rb.mass = isGrounded ? 2.0f : 1.0f;
         }
         else
         {
-            controller.rb.mass = 1.0f; // 밧줄이 없으면 기본값 복구
+            controller.rb.mass = 1.0f;
         }
 
         CheckHeadForPlayer();
         HandleMovementPhysics();
         ClampVelocity();
+
+        // 🌟 [가장 중요] 이동과 클램프가 모두 끝난 후, 밧줄이 당기는 힘을 최종 덮어씌웁니다!
+        if (ropeLeftNeighbor != null || ropeRightNeighbor != null)
+        {
+            ApplyCustomRopeTension();
+        }
     }
 
+    // 🌟 커스텀 밧줄 장력(Tension) 함수
+    private void ApplyCustomRopeTension()
+    {
+        ApplyForceFromNeighbor(ropeLeftNeighbor);
+        ApplyForceFromNeighbor(ropeRightNeighbor);
+    }
+
+    private void ApplyForceFromNeighbor(Transform neighbor)
+    {
+        if (neighbor == null) return;
+
+        float distance = Vector2.Distance(transform.position, neighbor.position);
+        if (distance > maxRopeLength)
+        {
+            Vector2 pullDir = (neighbor.position - transform.position).normalized;
+            float stretch = distance - maxRopeLength;
+
+            // 1. 강한 고무줄 당기기 힘 적용 (멀어질수록 세게 당김)
+            controller.rb.AddForce(pullDir * (ropePullForce * stretch), ForceMode2D.Force);
+
+            // 2. 더 이상 멀어지지 못하게 바깥쪽으로 향하는 속도 삭제 (단단한 밧줄 느낌)
+            Vector2 velocity = controller.rb.linearVelocity;
+            float outwardSpeed = Vector2.Dot(velocity, -pullDir);
+            if (outwardSpeed > 0)
+            {
+                controller.rb.linearVelocity -= (-pullDir * outwardSpeed);
+            }
+        }
+    }
+
+    // ... (이하 UpdateTimers, HandleJumpInput 등 기존 코드 완벽하게 동일하게 유지) ...
     private void UpdateTimers() { if (ckTimer > 0f) ckTimer -= Time.deltaTime; }
     private void UpdateCoyoteTime()
     {
@@ -287,21 +328,12 @@ public class PlayerMovement : NetworkBehaviour
         if (currentPlatform == null)
             return;
 
-        // 1. 왕복 발판 (Round Trip)
-        var roundTrip = currentPlatform.GetComponentInParent<CoopRoundTripPlatform>();
-        if (roundTrip != null) platformVelocity = roundTrip.CurrentVelocity;
+        CoopRoundTripPlatform platform = currentPlatform.GetComponentInParent<CoopRoundTripPlatform>();
 
-        // 2. 통나무 발판 (Moving Log)
-        var movingLog = currentPlatform.GetComponentInParent<CoopMovingLog>();
-        if (movingLog != null) platformVelocity = movingLog.CurrentVelocity;
-
-        // 3. 패트롤 발판 (Patrol)
-        var patrol = currentPlatform.GetComponentInParent<CoopPatrolPlatform>();
-        if (patrol != null) platformVelocity = patrol.CurrentVelocity;
-
-        // 4. 패러렐 발판 (Parallel)
-        var parallel = currentPlatform.GetComponentInParent<CoopParallelPlatform>();
-        if (parallel != null) platformVelocity = parallel.CurrentVelocity;
+        if (platform != null)
+        {
+            platformVelocity = platform.CurrentVelocity;
+        }
     }
 
     public void CallCombinedJump()

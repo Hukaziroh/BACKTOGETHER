@@ -100,12 +100,12 @@ public class PlayerInput : NetworkBehaviour
             rawInput *= -1f;
         }
 
-        // 🌟 [깔끔한 입력 차단 로직] 몸에 밧줄이 달려있고, 땅에서 떨어졌으며 하강 중일 때만 발버둥 방지!
-        DistanceJoint2D ropeJoint = GetComponent<DistanceJoint2D>();
-        if (ropeJoint != null && controller.movement != null)
+        // 🌟 [핵심 변경] 조인트를 쓰지 않으므로, 이웃 변수(ropeNeighbor)가 있는지를 체크합니다!
+        if (controller.movement != null && (controller.movement.ropeLeftNeighbor != null || controller.movement.ropeRightNeighbor != null))
         {
             Rigidbody2D rb = GetComponent<Rigidbody2D>();
 
+            // 땅에 닿지 않았고 && 상승하는 점프 중이 아닐 때만 발버둥(조작) 금지!
             if (!controller.movement.isGrounded && rb.linearVelocity.y <= 0.1f)
             {
                 rawInput = 0f;
