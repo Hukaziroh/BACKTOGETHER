@@ -4,11 +4,19 @@ using System.Collections.Generic;
 
 public class CoopRopeManager : NetworkBehaviour
 {
+    [Header("로프 인원 설정")]
+    [Tooltip("기믹 작동에 필요한 인원수입니다. (테스트 시 2로 낮추세요)")]
+    [Range(2, 4)]
+    public int requiredPlayers = 4;
+
     [Header("로프 물리 설정")]
+    [Tooltip("로프가 늘어날 수 있는 최대 길이 (인스펙터 조절)")]
     public float maxRopeLength = 4f;
 
     [Header("로프 비주얼 설정")]
+    [Tooltip("로프의 두께")]
     public float ropeWidth = 0.3f;
+    [Tooltip("로프 스프라이트가 적용된 머티리얼")]
     public Material ropeMaterial;
 
     [SyncVar(hook = nameof(OnRopeActiveChanged))]
@@ -23,15 +31,19 @@ public class CoopRopeManager : NetworkBehaviour
         if (isRopeActive) return;
         CoopPlayerIdentity[] players = FindObjectsByType<CoopPlayerIdentity>(FindObjectsSortMode.None);
 
-        if (players.Length < 2) return;
-
+        if (players.Length < requiredPlayers)
+        {
+            Debug.LogWarning($"[로프 기믹] {requiredPlayers}명이 모이지 않아 로프를 연결할 수 없습니다!");
+            return;
+        }
         System.Array.Sort(players, (a, b) => a.playerIndex.CompareTo(b.playerIndex));
+
         isRopeActive = true;
-
-        int actualPlayerCount = Mathf.Min(players.Length, 4);
-        GameObject[] playersToLink = new GameObject[actualPlayerCount];
-        for (int i = 0; i < actualPlayerCount; i++) playersToLink[i] = players[i].gameObject;
-
+        GameObject[] playersToLink = new GameObject[requiredPlayers];
+        for (int i = 0; i < requiredPlayers; i++)
+        {
+            playersToLink[i] = players[i].gameObject;
+        }
         RpcLinkPlayers(playersToLink, maxRopeLength);
     }
 
@@ -46,16 +58,9 @@ public class CoopRopeManager : NetworkBehaviour
     private void RpcLinkPlayers(GameObject[] playersToLink, float maxLength)
     {
         connectedPlayers = new List<GameObject>(playersToLink);
-
-        // 🌟 [핵심 변경] 조인트를 아예 붙이지 않고, 이웃 정보만 전달!
-        for (int i = 0; i < connectedPlayers.Count; i++)
+        for (int i = 0; i < connectedPlayers.Count - 1; i++)
         {
-            if (connectedPlayers[i] != null && connectedPlayers[i].TryGetComponent<PlayerMovement>(out var pm))
-            {
-                pm.ropeLeftNeighbor = (i > 0) ? connectedPlayers[i - 1] : null;
-                pm.ropeRightNeighbor = (i < connectedPlayers.Count - 1) ? connectedPlayers[i + 1] : null;
-                pm.maxRopeLength = maxLength;
-            }
+            AttachJoint(connectedPlayers[i], connectedPlayers[i + 1], maxLength);
         }
         SetupLineRenderers(connectedPlayers.Count - 1);
     }
@@ -65,16 +70,32 @@ public class CoopRopeManager : NetworkBehaviour
     {
         foreach (var player in connectedPlayers)
         {
-            if (player != null && player.TryGetComponent<PlayerMovement>(out var pm))
+            if (player != null)
             {
-                pm.ropeLeftNeighbor = null;
-                pm.ropeRightNeighbor = null;
+                DistanceJoint2D[] joints = player.GetComponents<DistanceJoint2D>();
+                foreach (var j in joints) Destroy(j);
             }
         }
-        foreach (var lr in lineRenderers) if (lr != null) Destroy(lr.gameObject);
+        foreach (var lr in lineRenderers)
+        {
+            if (lr != null) Destroy(lr.gameObject);
+        }
 
         lineRenderers.Clear();
         connectedPlayers.Clear();
+    }
+
+    private void AttachJoint(GameObject bodyA, GameObject bodyB, float length)
+    {
+        if (bodyA == null || bodyB == null) return;
+
+        DistanceJoint2D joint = bodyA.AddComponent<DistanceJoint2D>();
+        joint.connectedBody = bodyB.GetComponent<Rigidbody2D>();
+        joint.autoConfigureDistance = false;
+        joint.distance = length;
+
+        joint.maxDistanceOnly = true;
+        joint.enableCollision = true;
     }
 
     private void SetupLineRenderers(int lineCount)
@@ -89,9 +110,11 @@ public class CoopRopeManager : NetworkBehaviour
             lr.endWidth = ropeWidth;
             lr.material = ropeMaterial;
             lr.positionCount = 2;
+
             lr.textureMode = LineTextureMode.Tile;
             lr.sortingLayerName = "Foreground";
             lr.sortingOrder = 10;
+
             lineRenderers.Add(lr);
         }
     }
@@ -106,6 +129,7 @@ public class CoopRopeManager : NetworkBehaviour
                 {
                     Vector3 pos1 = connectedPlayers[i].transform.position;
                     Vector3 pos2 = connectedPlayers[i + 1].transform.position;
+
                     lineRenderers[i].SetPosition(0, pos1);
                     lineRenderers[i].SetPosition(1, pos2);
 
@@ -121,7 +145,7 @@ public class CoopRopeManager : NetworkBehaviour
 
     private void OnRopeActiveChanged(bool oldVal, bool newVal)
     {
-        if (newVal) Debug.Log($"우정 파괴 로프가 {connectedPlayers.Count}명에게 연결되었습니다!");
+        if (newVal) Debug.Log("우정 파괴 로프가 연결되었습니다!");
         else Debug.Log("로프가 해제되었습니다.");
     }
 }
