@@ -46,9 +46,16 @@ public class CoopRopeManager : NetworkBehaviour
     private void RpcLinkPlayers(GameObject[] playersToLink, float maxLength)
     {
         connectedPlayers = new List<GameObject>(playersToLink);
-        for (int i = 0; i < connectedPlayers.Count - 1; i++)
+
+        // 🌟 [핵심 변경] 조인트를 아예 붙이지 않고, 이웃 정보만 전달!
+        for (int i = 0; i < connectedPlayers.Count; i++)
         {
-            AttachJoint(connectedPlayers[i], connectedPlayers[i + 1], maxLength);
+            if (connectedPlayers[i] != null && connectedPlayers[i].TryGetComponent<PlayerMovement>(out var pm))
+            {
+                pm.ropeLeftNeighbor = (i > 0) ? connectedPlayers[i - 1] : null;
+                pm.ropeRightNeighbor = (i < connectedPlayers.Count - 1) ? connectedPlayers[i + 1] : null;
+                pm.maxRopeLength = maxLength;
+            }
         }
         SetupLineRenderers(connectedPlayers.Count - 1);
     }
@@ -58,28 +65,16 @@ public class CoopRopeManager : NetworkBehaviour
     {
         foreach (var player in connectedPlayers)
         {
-            if (player != null)
+            if (player != null && player.TryGetComponent<PlayerMovement>(out var pm))
             {
-                DistanceJoint2D[] joints = player.GetComponents<DistanceJoint2D>();
-                foreach (var j in joints) Destroy(j);
+                pm.ropeLeftNeighbor = null;
+                pm.ropeRightNeighbor = null;
             }
         }
         foreach (var lr in lineRenderers) if (lr != null) Destroy(lr.gameObject);
 
         lineRenderers.Clear();
         connectedPlayers.Clear();
-    }
-
-    private void AttachJoint(GameObject bodyA, GameObject bodyB, float length)
-    {
-        if (bodyA == null || bodyB == null) return;
-
-        DistanceJoint2D joint = bodyA.AddComponent<DistanceJoint2D>();
-        joint.connectedBody = bodyB.GetComponent<Rigidbody2D>();
-        joint.autoConfigureDistance = false;
-        joint.distance = length;
-        joint.maxDistanceOnly = true;
-        joint.enableCollision = true;
     }
 
     private void SetupLineRenderers(int lineCount)

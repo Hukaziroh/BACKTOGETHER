@@ -81,7 +81,6 @@ public class PlayerInput : NetworkBehaviour
 
         float rawInput = 0f;
 
-        // 합체 상태 체크
         if (controller.combineHandler != null && controller.combineHandler.isCombined)
         {
             if (gameObject != controller.combineHandler.bodyTarget)
@@ -101,19 +100,7 @@ public class PlayerInput : NetworkBehaviour
             rawInput *= -1f;
         }
 
-        // 🌟 [교차 검증된 정밀 조작 제한]
-        // 내가 땅에 서 있지 않고(!isGrounded) + 내 몸에 밧줄(DistanceJoint2D)이 활성화되어 있을 때만
-        // 공중에서 멋대로 흔드는 걸 막기 위해 좌우 입력만 0으로 잠급니다.
-        // (발판 위에 있는 유저들은 isGrounded가 true이므로 이 조건문을 완벽하게 통과하여 좌우로 잘 움직입니다!)
-        if (controller.movement != null && !controller.movement.isGrounded)
-        {
-            DistanceJoint2D ropeJoint = GetComponent<DistanceJoint2D>();
-            if (ropeJoint != null && ropeJoint.enabled)
-            {
-                rawInput = 0f; // 매달린 유저 본인만 좌우 조작 제한 (점프 인풋은 정상 작동)
-            }
-        }
-
+        // 🌟 억지로 공중 조작을 막던 코드를 완전히 삭제했습니다!
         HorizontalInput = rawInput;
     }
 
@@ -133,11 +120,13 @@ public class PlayerInput : NetworkBehaviour
             reverseToggleCoroutine = null;
         }
         isReversed = false;
+        Debug.Log("반전 구역 이탈: 조작이 정상으로 돌아옵니다.");
     }
 
     private System.Collections.IEnumerator ReverseToggleRoutine(float interval)
     {
         isReversed = false;
+        Debug.Log($"반전 구역 진입: {interval}초 뒤부터 조작이 주기적으로 바뀝니다.");
         while (true)
         {
             yield return new WaitForSeconds(interval);
