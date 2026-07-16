@@ -864,6 +864,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 479596970}
+    - target: {fileID: 6939290752242453789, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
+      value: RopeTest
+      objectReference: {fileID: 0}
     - target: {fileID: 7060667796035086083, guid: 461a91a42e8ef0b48b702f4c6a6ba696, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 

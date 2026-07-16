@@ -40,6 +40,9 @@ MonoBehaviour:
   - m_enabled: 1
     m_path: Assets/_Sub/Bae/Scene/chapter5.unity
     m_guid: 8f42a90c12ab6554693324b18ca16ab2
+  - m_enabled: 1
+    m_path: Assets/_Sub/Sin/Scene/RopeTest.unity
+    m_guid: 2cb7f8b40439ef846ab8b0de41c5806b
   m_HasScriptingDefines: 0
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:
