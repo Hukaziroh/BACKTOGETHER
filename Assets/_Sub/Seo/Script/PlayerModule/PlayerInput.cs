@@ -100,9 +100,13 @@ public class PlayerInput : NetworkBehaviour
             rawInput *= -1f;
         }
 
-        if (controller.movement != null && controller.movement.isTiedToRope && !controller.movement.isGrounded)
+        if (controller.movement != null && controller.movement.isTiedToRope)
         {
-            rawInput = 0f;
+            Rigidbody2D rb = controller.GetComponent<Rigidbody2D>();
+            if (rb != null && !controller.movement.isGrounded && rb.velocity.y <= 0.1f)
+            {
+                rawInput = 0f; 
+            }
         }
 
         HorizontalInput = rawInput;
