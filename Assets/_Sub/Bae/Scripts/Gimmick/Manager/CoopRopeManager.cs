@@ -4,11 +4,6 @@ using System.Collections.Generic;
 
 public class CoopRopeManager : NetworkBehaviour
 {
-    [Header("로프 인원 설정")]
-    [Tooltip("기믹 작동에 필요한 인원수입니다. (테스트 시 2로 낮추세요)")]
-    [Range(2, 4)]
-    public int requiredPlayers = 4;
-
     [Header("로프 물리 설정")]
     [Tooltip("로프가 늘어날 수 있는 최대 길이 (인스펙터 조절)")]
     public float maxRopeLength = 4f;
@@ -24,26 +19,32 @@ public class CoopRopeManager : NetworkBehaviour
 
     private List<GameObject> connectedPlayers = new List<GameObject>();
     private List<LineRenderer> lineRenderers = new List<LineRenderer>();
+
     [Server]
     public void StartRopeGimmick()
     {
         if (isRopeActive) return;
         CoopPlayerIdentity[] players = FindObjectsByType<CoopPlayerIdentity>(FindObjectsSortMode.None);
 
-        if (players.Length < requiredPlayers)
+        // 🌟 [변경됨] 수동 인원 설정 없이, 최소 2명 이상만 있으면 무조건 작동!
+        if (players.Length < 2)
         {
-            Debug.LogWarning($"[로프 기믹] {requiredPlayers}명이 모이지 않아 로프를 연결할 수 없습니다!");
+            Debug.LogWarning("[로프 기믹] 최소 2명의 플레이어가 필요합니다!");
             return;
         }
 
         System.Array.Sort(players, (a, b) => a.playerIndex.CompareTo(b.playerIndex));
 
         isRopeActive = true;
-        GameObject[] playersToLink = new GameObject[requiredPlayers];
-        for (int i = 0; i < requiredPlayers; i++)
+
+        // 🌟 [변경됨] 현재 맵에 들어와 있는 실제 인원수(최대 4명)를 자동으로 계산해서 묶음
+        int actualPlayerCount = Mathf.Min(players.Length, 4);
+        GameObject[] playersToLink = new GameObject[actualPlayerCount];
+        for (int i = 0; i < actualPlayerCount; i++)
         {
             playersToLink[i] = players[i].gameObject;
         }
+
         RpcLinkPlayers(playersToLink, maxRopeLength);
     }
 
@@ -53,6 +54,7 @@ public class CoopRopeManager : NetworkBehaviour
         isRopeActive = false;
         RpcUnlinkPlayers();
     }
+
     [ClientRpc]
     private void RpcLinkPlayers(GameObject[] playersToLink, float maxLength)
     {
@@ -95,6 +97,7 @@ public class CoopRopeManager : NetworkBehaviour
         joint.maxDistanceOnly = true;
         joint.enableCollision = true;
     }
+
     private void SetupLineRenderers(int lineCount)
     {
         for (int i = 0; i < lineCount; i++)
@@ -142,7 +145,7 @@ public class CoopRopeManager : NetworkBehaviour
 
     private void OnRopeActiveChanged(bool oldVal, bool newVal)
     {
-        if (newVal) Debug.Log("우정 파괴 로프가 연결되었습니다!");
+        if (newVal) Debug.Log($"우정 파괴 로프가 {connectedPlayers.Count}명에게 연결되었습니다!");
         else Debug.Log("로프가 해제되었습니다.");
     }
 }
