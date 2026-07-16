@@ -55,6 +55,8 @@ public class PlayerMovement : NetworkBehaviour
     private Transform currentPlatform;
     private Vector2 platformVelocity;
 
+    [Header("로프 기믹 상태")]
+    public bool isTiedToRope = false;
     private bool isPushingPlayer = false;
 
     void Awake()
