@@ -97,7 +97,12 @@ public class PlayerInput : NetworkBehaviour
 
         if (isReversed)
         {
-            rawInput *= -1f; 
+            rawInput *= -1f;
+        }
+
+        if (controller.movement != null && controller.movement.isTiedToRope && !controller.movement.isGrounded)
+        {
+            rawInput = 0f;
         }
 
         HorizontalInput = rawInput;

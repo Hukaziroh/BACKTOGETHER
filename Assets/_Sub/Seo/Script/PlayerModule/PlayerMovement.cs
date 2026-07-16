@@ -55,6 +55,8 @@ public class PlayerMovement : NetworkBehaviour
     private Transform currentPlatform;
     private Vector2 platformVelocity;
 
+    [Header("로프 기믹 상태")]
+    public bool isTiedToRope = false;
     private bool isPushingPlayer = false;
 
     void Awake()
@@ -74,6 +76,26 @@ public class PlayerMovement : NetworkBehaviour
 
     void FixedUpdate()
     {
+        if (!isLocalPlayer) return;
+        if (isTiedToRope)
+        {
+            if (!isGrounded)
+            {
+                controller.rb.mass = 0.5f;
+                controller.rb.linearDamping = 2.0f;
+            }
+            else
+            {
+                controller.rb.mass = 15f;
+                controller.rb.linearDamping = 0f;
+            }
+        }
+        else
+        {
+            if (controller.rb.mass != 1f) controller.rb.mass = 1f;
+            if (controller.rb.linearDamping != 0f) controller.rb.linearDamping = 0f;
+        }
+
         if (!isLocalPlayer) return;
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
