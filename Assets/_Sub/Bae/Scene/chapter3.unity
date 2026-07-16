@@ -25263,6 +25263,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2824015961851360424, guid: 42fe93001ee7ef7498675f94e766a5b6, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3394949383415033422, guid: 42fe93001ee7ef7498675f94e766a5b6, type: 3}
       propertyPath: m_Name
       value: TimerCanvas
@@ -25345,6 +25349,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3994751214551117270, guid: 42fe93001ee7ef7498675f94e766a5b6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7457450208247848507, guid: 42fe93001ee7ef7498675f94e766a5b6, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 2627e9ca796b22d4fb592f60230c2fec, type: 2}
+    - target: {fileID: 7457450208247848507, guid: 42fe93001ee7ef7498675f94e766a5b6, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 4301745327245154971, guid: 2627e9ca796b22d4fb592f60230c2fec, type: 2}
+    - target: {fileID: 7457450208247848507, guid: 42fe93001ee7ef7498675f94e766a5b6, type: 3}
+      propertyPath: m_hasFontAssetChanged
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8722093271700509940, guid: 42fe93001ee7ef7498675f94e766a5b6, type: 3}
@@ -27729,6 +27745,34 @@ PrefabInstance:
     - target: {fileID: 2766319342283358008, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
       propertyPath: m_Name
       value: Canvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 3607097073002954664, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 2627e9ca796b22d4fb592f60230c2fec, type: 2}
+    - target: {fileID: 3607097073002954664, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: m_fontColor.b
+      value: 0.5294118
+      objectReference: {fileID: 0}
+    - target: {fileID: 3607097073002954664, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: m_fontColor.g
+      value: 0.9803922
+      objectReference: {fileID: 0}
+    - target: {fileID: 3607097073002954664, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: m_fontColor.r
+      value: 0.9960785
+      objectReference: {fileID: 0}
+    - target: {fileID: 3607097073002954664, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 4301745327245154971, guid: 2627e9ca796b22d4fb592f60230c2fec, type: 2}
+    - target: {fileID: 3607097073002954664, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4287101694
+      objectReference: {fileID: 0}
+    - target: {fileID: 3607097073002954664, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8852211031347033358, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
       propertyPath: m_Pivot.x
