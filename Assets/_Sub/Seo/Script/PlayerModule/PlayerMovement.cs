@@ -57,16 +57,6 @@ public class PlayerMovement : NetworkBehaviour
 
     private bool isPushingPlayer = false;
 
-    [Header("로프 기믹 설정")]
-    [Tooltip("밧줄이 당기는 힘 (숫자가 클수록 확 끌려옵니다)")]
-    public float ropePullForce = 200f;
-    [Tooltip("진자운동 튕김 방지 (브레이크 역할)")]
-    public float ropeDamping = 10f;
-
-    [HideInInspector] public Transform ropeLeftNeighbor;
-    [HideInInspector] public Transform ropeRightNeighbor;
-    [HideInInspector] public float maxRopeLength;
-
     void Awake()
     {
         controller = GetComponent<PlayerController>();
@@ -90,58 +80,9 @@ public class PlayerMovement : NetworkBehaviour
 
         HandleMovingPlatform();
         CheckGroundOrPlayer();
-
-        // 🌟 [검증 1] 완벽한 질량 비대칭화
-        // 밧줄이 몸에 달려있을 때, 땅에 굳건히 서있으면 질량 2! 공중에 떨어지면 질량 1!
-        if (ropeLeftNeighbor != null || ropeRightNeighbor != null)
-        {
-            controller.rb.mass = isGrounded ? 2.0f : 1.0f;
-        }
-        else
-        {
-            controller.rb.mass = 1.0f;
-        }
-
         CheckHeadForPlayer();
         HandleMovementPhysics();
         ClampVelocity();
-
-        // 이동 코드가 다 끝난 후 가장 마지막에 밧줄 텐션을 더해줍니다.
-        if (ropeLeftNeighbor != null || ropeRightNeighbor != null)
-        {
-            ApplyCustomRopeTension();
-        }
-    }
-
-    // 🌟 [검증 2] 키네메틱 족쇄를 푼 커스텀 텐션
-    private void ApplyCustomRopeTension()
-    {
-        ApplyForceFromNeighbor(ropeLeftNeighbor);
-        ApplyForceFromNeighbor(ropeRightNeighbor);
-    }
-
-    private void ApplyForceFromNeighbor(Transform neighbor)
-    {
-        if (neighbor == null) return;
-
-        float distance = Vector2.Distance(transform.position, neighbor.position);
-        if (distance > maxRopeLength)
-        {
-            Vector2 pullDir = (neighbor.position - transform.position).normalized;
-            float stretch = distance - maxRopeLength;
-
-            // 1. 강한 고무줄 텐션 추가
-            controller.rb.AddForce(pullDir * (ropePullForce * stretch), ForceMode2D.Force);
-
-            // 2. 과거의 치명적이었던 '속도 강제 삭제(족쇄)' 코드를 지우고, 부드러운 소프트 댐핑으로 교체!
-            Vector2 velocity = controller.rb.linearVelocity;
-            float outwardSpeed = Vector2.Dot(velocity, -pullDir);
-            if (outwardSpeed > 0)
-            {
-                // 완전히 멈추지 않고 스프링처럼 부드럽게 감속시켜 진자운동만 제어합니다.
-                controller.rb.AddForce(-pullDir * (outwardSpeed * ropeDamping), ForceMode2D.Force);
-            }
-        }
     }
 
     private void UpdateTimers() { if (ckTimer > 0f) ckTimer -= Time.deltaTime; }
@@ -208,6 +149,13 @@ public class PlayerMovement : NetworkBehaviour
             return;
         }
 
+        // 🌟 [유일한 변경점] 밧줄에 묶인 채 공중에 매달려 있다면, X축 속도를 강제로 0으로 만들지 않습니다!
+        // 이렇게 해야 닻처럼 버티지 않고 2명이 당기는 힘에 의해 부드럽게 딸려갑니다.
+        if (GetComponent<DistanceJoint2D>() != null && !isGrounded)
+        {
+            return;
+        }
+
         float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
 
         if (isPushingPlayer)
@@ -217,17 +165,6 @@ public class PlayerMovement : NetworkBehaviour
 
         bool isSlippery = isOnIce || (!isGrounded && wasOnIceLastFrame);
         float currentFriction = isSlippery ? (isGrounded ? iceSlideFriction : airFriction) : normalFriction;
-
-        // 🌟 [검증 3] 브레이크(마찰) 제거 로직!
-        if (ropeLeftNeighbor != null || ropeRightNeighbor != null)
-        {
-            if (Mathf.Abs(controller.input.HorizontalInput) < 0.01f)
-            {
-                // 입력이 없을 때: 땅에선 버티라고 마찰력(2f) 부여, 공중에선 완벽한 짐짝이 되도록 마찰력(0f) 완전 제거!
-                currentFriction = isGrounded ? 2f : 0f;
-            }
-        }
-
         float accel = currentFriction * moveSpeed;
         float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
 
