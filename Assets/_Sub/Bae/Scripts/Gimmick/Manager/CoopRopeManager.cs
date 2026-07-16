@@ -24,7 +24,6 @@ public class CoopRopeManager : NetworkBehaviour
 
     private List<GameObject> connectedPlayers = new List<GameObject>();
     private List<LineRenderer> lineRenderers = new List<LineRenderer>();
-
     [Server]
     public void StartRopeGimmick()
     {
@@ -40,13 +39,11 @@ public class CoopRopeManager : NetworkBehaviour
         System.Array.Sort(players, (a, b) => a.playerIndex.CompareTo(b.playerIndex));
 
         isRopeActive = true;
-
         GameObject[] playersToLink = new GameObject[requiredPlayers];
         for (int i = 0; i < requiredPlayers; i++)
         {
             playersToLink[i] = players[i].gameObject;
         }
-
         RpcLinkPlayers(playersToLink, maxRopeLength);
     }
 
@@ -56,7 +53,6 @@ public class CoopRopeManager : NetworkBehaviour
         isRopeActive = false;
         RpcUnlinkPlayers();
     }
-
     [ClientRpc]
     private void RpcLinkPlayers(GameObject[] playersToLink, float maxLength)
     {
@@ -66,13 +62,6 @@ public class CoopRopeManager : NetworkBehaviour
             AttachJoint(connectedPlayers[i], connectedPlayers[i + 1], maxLength);
         }
         SetupLineRenderers(connectedPlayers.Count - 1);
-        foreach (var p in connectedPlayers)
-        {
-            if (p != null && p.TryGetComponent<PlayerMovement>(out var pm))
-            {
-                pm.isTiedToRope = true;
-            }
-        }
     }
 
     [ClientRpc]
@@ -82,15 +71,10 @@ public class CoopRopeManager : NetworkBehaviour
         {
             if (player != null)
             {
-                if (player.TryGetComponent<PlayerMovement>(out var pm))
-                {
-                    pm.isTiedToRope = false;
-                }
                 DistanceJoint2D[] joints = player.GetComponents<DistanceJoint2D>();
                 foreach (var j in joints) Destroy(j);
             }
         }
-
         foreach (var lr in lineRenderers)
         {
             if (lr != null) Destroy(lr.gameObject);
@@ -108,7 +92,6 @@ public class CoopRopeManager : NetworkBehaviour
         joint.connectedBody = bodyB.GetComponent<Rigidbody2D>();
         joint.autoConfigureDistance = false;
         joint.distance = length;
-
         joint.maxDistanceOnly = true;
         joint.enableCollision = true;
     }
