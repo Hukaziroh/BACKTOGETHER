@@ -61,12 +61,18 @@ public class CoopRopeManager : NetworkBehaviour
     private void RpcLinkPlayers(GameObject[] playersToLink, float maxLength)
     {
         connectedPlayers = new List<GameObject>(playersToLink);
-
         for (int i = 0; i < connectedPlayers.Count - 1; i++)
         {
             AttachJoint(connectedPlayers[i], connectedPlayers[i + 1], maxLength);
         }
         SetupLineRenderers(connectedPlayers.Count - 1);
+        foreach (var p in connectedPlayers)
+        {
+            if (p != null && p.TryGetComponent<PlayerMovement>(out var pm))
+            {
+                pm.isTiedToRope = true;
+            }
+        }
     }
 
     [ClientRpc]
@@ -76,10 +82,15 @@ public class CoopRopeManager : NetworkBehaviour
         {
             if (player != null)
             {
+                if (player.TryGetComponent<PlayerMovement>(out var pm))
+                {
+                    pm.isTiedToRope = false;
+                }
                 DistanceJoint2D[] joints = player.GetComponents<DistanceJoint2D>();
                 foreach (var j in joints) Destroy(j);
             }
         }
+
         foreach (var lr in lineRenderers)
         {
             if (lr != null) Destroy(lr.gameObject);
