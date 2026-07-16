@@ -100,13 +100,10 @@ public class PlayerInput : NetworkBehaviour
             rawInput *= -1f;
         }
 
-        // 🌟 [핵심 변경] 조인트를 쓰지 않으므로, 이웃 변수(ropeNeighbor)가 있는지를 체크합니다!
-        if (controller.movement != null && (controller.movement.ropeLeftNeighbor != null || controller.movement.ropeRightNeighbor != null))
+        // 🌟 매달린 사람은 발버둥 금지
+        if (GetComponent<DistanceJoint2D>() != null && controller.movement != null)
         {
-            Rigidbody2D rb = GetComponent<Rigidbody2D>();
-
-            // 땅에 닿지 않았고 && 상승하는 점프 중이 아닐 때만 발버둥(조작) 금지!
-            if (!controller.movement.isGrounded && rb.linearVelocity.y <= 0.1f)
+            if (!controller.movement.isGrounded && GetComponent<Rigidbody2D>().linearVelocity.y <= 0.1f)
             {
                 rawInput = 0f;
             }
@@ -118,44 +115,28 @@ public class PlayerInput : NetworkBehaviour
     public void StartReverseToggle(float interval)
     {
         if (!isLocalPlayer) return;
-
-        if (reverseToggleCoroutine != null)
-        {
-            StopCoroutine(reverseToggleCoroutine);
-        }
-
+        if (reverseToggleCoroutine != null) StopCoroutine(reverseToggleCoroutine);
         reverseToggleCoroutine = StartCoroutine(ReverseToggleRoutine(interval));
     }
 
     public void StopReverseToggle()
     {
         if (!isLocalPlayer) return;
-
         if (reverseToggleCoroutine != null)
         {
             StopCoroutine(reverseToggleCoroutine);
             reverseToggleCoroutine = null;
         }
-
         isReversed = false;
-        Debug.Log("반전 구역 이탈: 조작이 정상으로 돌아옵니다.");
     }
 
     private System.Collections.IEnumerator ReverseToggleRoutine(float interval)
     {
         isReversed = false;
-        Debug.Log($"반전 구역 진입: {interval}초 뒤부터 조작이 주기적으로 바뀝니다.");
-
         while (true)
         {
             yield return new WaitForSeconds(interval);
-
             isReversed = !isReversed;
-
-            if (isReversed)
-                Debug.Log("🚨 조작 방향 [역방향]으로 변경!");
-            else
-                Debug.Log("🟢 조작 방향 [정방향]으로 변경!");
         }
     }
 }

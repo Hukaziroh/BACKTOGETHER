@@ -46,16 +46,9 @@ public class CoopRopeManager : NetworkBehaviour
     private void RpcLinkPlayers(GameObject[] playersToLink, float maxLength)
     {
         connectedPlayers = new List<GameObject>(playersToLink);
-
-        // 🌟 [핵심 변경] 조인트를 쓰지 않고, 플레이어 스크립트에 이웃 정보만 전달합니다.
-        for (int i = 0; i < connectedPlayers.Count; i++)
+        for (int i = 0; i < connectedPlayers.Count - 1; i++)
         {
-            if (connectedPlayers[i].TryGetComponent<PlayerMovement>(out var pm))
-            {
-                pm.ropeLeftNeighbor = (i > 0) ? connectedPlayers[i - 1].transform : null;
-                pm.ropeRightNeighbor = (i < connectedPlayers.Count - 1) ? connectedPlayers[i + 1].transform : null;
-                pm.maxRopeLength = maxLength;
-            }
+            AttachJoint(connectedPlayers[i], connectedPlayers[i + 1], maxLength);
         }
         SetupLineRenderers(connectedPlayers.Count - 1);
     }
@@ -65,16 +58,28 @@ public class CoopRopeManager : NetworkBehaviour
     {
         foreach (var player in connectedPlayers)
         {
-            if (player != null && player.TryGetComponent<PlayerMovement>(out var pm))
+            if (player != null)
             {
-                pm.ropeLeftNeighbor = null;
-                pm.ropeRightNeighbor = null;
+                DistanceJoint2D[] joints = player.GetComponents<DistanceJoint2D>();
+                foreach (var j in joints) Destroy(j);
             }
         }
         foreach (var lr in lineRenderers) if (lr != null) Destroy(lr.gameObject);
 
         lineRenderers.Clear();
         connectedPlayers.Clear();
+    }
+
+    private void AttachJoint(GameObject bodyA, GameObject bodyB, float length)
+    {
+        if (bodyA == null || bodyB == null) return;
+
+        DistanceJoint2D joint = bodyA.AddComponent<DistanceJoint2D>();
+        joint.connectedBody = bodyB.GetComponent<Rigidbody2D>();
+        joint.autoConfigureDistance = false;
+        joint.distance = length;
+        joint.maxDistanceOnly = true;
+        joint.enableCollision = true;
     }
 
     private void SetupLineRenderers(int lineCount)
@@ -106,7 +111,6 @@ public class CoopRopeManager : NetworkBehaviour
                 {
                     Vector3 pos1 = connectedPlayers[i].transform.position;
                     Vector3 pos2 = connectedPlayers[i + 1].transform.position;
-
                     lineRenderers[i].SetPosition(0, pos1);
                     lineRenderers[i].SetPosition(1, pos2);
 
