@@ -4,7 +4,7 @@ using Mirror;
 public class PlayerMovement : NetworkBehaviour
 {
     private PlayerController controller;
-
+    public bool isRestrictedByRope = false;
     private int playerLayerMask;
 
     [Header("무브")]
@@ -168,7 +168,7 @@ public class PlayerMovement : NetworkBehaviour
         }
         else
         {
-            accelRate = airFriction;
+            accelRate = isRestrictedByRope ? 0f : airFriction;
         }
         float movementForce = velocityDiff * accelRate * controller.rb.mass;
 

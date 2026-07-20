@@ -51683,8 +51683,8 @@ MonoBehaviour:
   startPoint: {fileID: 1963704858}
   endPoint: {fileID: 540560347}
   goSpeed: 2
-  returnSpeed: 4
-  requiredPlayers: 1
+  returnSpeed: 6
+  requiredPlayers: 4
   platformRigidbody: {fileID: 6253726046169652271}
 --- !u!4 &6426469386292725457
 Transform:
