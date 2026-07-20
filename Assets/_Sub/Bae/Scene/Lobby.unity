@@ -92916,6 +92916,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 392
       objectReference: {fileID: 0}
+    - target: {fileID: 4215164014586056991, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_HorizontalAlignment
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 4383775811692024024, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -92927,6 +92931,14 @@ PrefabInstance:
     - target: {fileID: 7549401996362473519, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_SizeDelta.x
       value: 600
+      objectReference: {fileID: 0}
+    - target: {fileID: 7549401996362473519, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 642
+      objectReference: {fileID: 0}
+    - target: {fileID: 7549401996362473519, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 392
       objectReference: {fileID: 0}
     - target: {fileID: 7807857631120254117, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
@@ -93019,6 +93031,9 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 2612721367744183565, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+    - {fileID: 7149378464198730198, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+    - {fileID: 7450419807309079099, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+    - {fileID: 8067761047026483991, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
@@ -93054,28 +93069,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
---- !u!114 &1415804502 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4383775811692024024, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
-  m_PrefabInstance: {fileID: 1415804497}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
---- !u!114 &1444311484 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6052153817721097110, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
-  m_PrefabInstance: {fileID: 1415804497}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1 &1536115332
 GameObject:
   m_ObjectHideFlags: 0
@@ -107724,9 +107717,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 788838daf8c96eb47af49c94a5dc703e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LobbyReadyManager
-  startGameButton: {fileID: 1415804502}
-  readyButton: {fileID: 1444311484}
-  readySummaryText: {fileID: 2105017868}
+  startGameButton: {fileID: 0}
+  readyButton: {fileID: 0}
+  readySummaryText: {fileID: 0}
 --- !u!4 &1972353632
 Transform:
   m_ObjectHideFlags: 0
@@ -109461,17 +109454,6 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
---- !u!114 &2105017868 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 290155877486887300, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
-  m_PrefabInstance: {fileID: 1415804497}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!1 &2119491877
 GameObject:
   m_ObjectHideFlags: 0
