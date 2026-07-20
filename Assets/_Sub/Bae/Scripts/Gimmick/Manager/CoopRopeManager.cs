@@ -174,13 +174,15 @@ public class CoopRopeManager : NetworkBehaviour
 
                 if (localIndex > 0 && connectedPlayers[localIndex - 1] != null)
                 {
-                    if (ApplySpringForce(rb, connectedPlayers[localIndex - 1].transform.position))
+                    Rigidbody2D prevRb = connectedPlayers[localIndex - 1].GetComponent<Rigidbody2D>();
+                    if (prevRb != null && ApplyRopeConstraint(rb, prevRb))
                         isTensionActive = true;
                 }
 
                 if (localIndex < connectedPlayers.Count - 1 && connectedPlayers[localIndex + 1] != null)
                 {
-                    if (ApplySpringForce(rb, connectedPlayers[localIndex + 1].transform.position))
+                    Rigidbody2D nextRb = connectedPlayers[localIndex + 1].GetComponent<Rigidbody2D>();
+                    if (nextRb != null && ApplyRopeConstraint(rb, nextRb))
                         isTensionActive = true;
                 }
 
@@ -189,28 +191,30 @@ public class CoopRopeManager : NetworkBehaviour
         }
     }
 
-    private bool ApplySpringForce(Rigidbody2D rb, Vector3 targetPos)
+    private bool ApplyRopeConstraint(Rigidbody2D rb, Rigidbody2D targetRb)
     {
-        Vector2 direction = targetPos - rb.transform.position;
+        Vector2 targetPos = targetRb.position;
+        Vector2 direction = targetPos - rb.position;
         float distance = direction.magnitude;
 
         if (distance > maxRopeLength)
         {
             Vector2 dirNorm = direction.normalized;
-            float currentVelocityAlongRope = Vector2.Dot(rb.linearVelocity, dirNorm);
-            if (currentVelocityAlongRope < 0)
+            float stretch = distance - maxRopeLength;
+            float totalMass = rb.mass + targetRb.mass;
+            float myRatio = targetRb.mass / totalMass;
+            rb.position += dirNorm * (stretch * myRatio);
+
+            Vector2 relativeVelocity = rb.linearVelocity - targetRb.linearVelocity;
+            float relVelAlongRope = Vector2.Dot(relativeVelocity, dirNorm);
+
+            if (relVelAlongRope < 0)
             {
-                rb.linearVelocity -= dirNorm * currentVelocityAlongRope;
+                rb.linearVelocity -= dirNorm * (relVelAlongRope * myRatio);
             }
 
- 
-            float stretch = distance - maxRopeLength;
-            float pullForce = stretch * 300f; 
-            rb.AddForce(dirNorm * pullForce);
-
-
             Vector2 tangentialVelocity = rb.linearVelocity - (dirNorm * Vector2.Dot(rb.linearVelocity, dirNorm));
-            rb.linearVelocity -= tangentialVelocity * (Time.fixedDeltaTime * 2f);
+            rb.linearVelocity -= tangentialVelocity * (Time.fixedDeltaTime * 4f);
 
             return true; 
         }
