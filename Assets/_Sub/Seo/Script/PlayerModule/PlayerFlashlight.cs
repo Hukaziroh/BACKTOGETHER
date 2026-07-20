@@ -7,10 +7,12 @@ public class PlayerFlashlight : NetworkBehaviour
     private PlayerController controller;
 
     [Header("손전등 설정")]
-    public GameObject flashlightObj;
+    public GameObject[] flashlightObjs;
 
     [SyncVar(hook = nameof(OnFlashlightToggled))]
     public bool isFlashlightOn = true;
+
+    public bool canUseFlashlight = true;
 
     void Awake()
     {
@@ -21,7 +23,13 @@ public class PlayerFlashlight : NetworkBehaviour
     {
         if (SceneManager.GetActiveScene().name != "chapter5")
         {
-            if (flashlightObj != null) flashlightObj.SetActive(false);
+            if (flashlightObjs != null)
+            {
+                foreach (GameObject obj in flashlightObjs)
+                {
+                    if (obj != null) obj.SetActive(false);
+                }
+            }
         }
     }
 
@@ -31,7 +39,7 @@ public class PlayerFlashlight : NetworkBehaviour
 
         if (controller.input.ActionPressedThisFrame)
         {
-            if (SceneManager.GetActiveScene().name == "chapter5")
+            if (SceneManager.GetActiveScene().name == "chapter5" && canUseFlashlight)
             {
                 CmdToggleFlashlight();
             }
@@ -44,11 +52,32 @@ public class PlayerFlashlight : NetworkBehaviour
         isFlashlightOn = !isFlashlightOn;
     }
 
+    [Command]
+    public void CmdSetFlashlight(bool state)
+    {
+        isFlashlightOn = state;
+    }
+
     private void OnFlashlightToggled(bool oldState, bool newState)
     {
-        if (flashlightObj != null)
+        if (flashlightObjs != null)
         {
-            flashlightObj.SetActive(newState);
+            foreach (GameObject obj in flashlightObjs)
+            {
+                if (obj != null) obj.SetActive(newState);
+            }
+        }
+    }
+
+    public void SetFlashlightPermission(bool isAllowed)
+    {
+        if (!isLocalPlayer) return;
+
+        canUseFlashlight = isAllowed;
+
+        if (!canUseFlashlight && isFlashlightOn)
+        {
+            CmdSetFlashlight(false);
         }
     }
 }
