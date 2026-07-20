@@ -2087,7 +2087,7 @@ PrefabInstance:
     - target: {fileID: 61552078906226040, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_Navigation.m_SelectOnRight
       value: 
-      objectReference: {fileID: 1440561665}
+      objectReference: {fileID: 1852967234}
     - target: {fileID: 61552078906226040, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -6781,7 +6781,7 @@ MonoBehaviour:
     m_WrapAround: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnLeft: {fileID: 1440561665}
     m_SelectOnRight: {fileID: 12799890}
   m_Transition: 0
   m_Colors:
