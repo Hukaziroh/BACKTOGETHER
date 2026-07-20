@@ -64,7 +64,7 @@ public class PlayerRespawn : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
-        if (SceneManager.GetActiveScene().name == "chapter5")
+        if (SceneManager.GetActiveScene().name == "RopeTest")
         {           
             CmdTeamRespawn();
         }
