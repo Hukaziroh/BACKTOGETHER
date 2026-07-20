@@ -5,6 +5,9 @@ public class PlayerAnimation : NetworkBehaviour
 {
     private PlayerController controller;
 
+    [SyncVar(hook = nameof(OnDirectionChanged))]
+    public float syncDirectionX = 1f;
+
     void Awake()
     {
         controller = GetComponent<PlayerController>();
@@ -23,15 +26,42 @@ public class PlayerAnimation : NetworkBehaviour
         controller.anim.SetFloat("Speed", Mathf.Abs(controller.input.HorizontalInput));
         controller.anim.SetBool("isGrounded", controller.movement.isGrounded);
 
-        bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
-
-        // 스턴 상태가 아니고 입력이 있을 때만 방향 전환
         if (controller.input.HorizontalInput != 0 && !controller.knockback.IsStunned)
         {
-            transform.localScale = new Vector3(
-                controller.input.HorizontalInput > 0 ? 1 : -1,
-                isInverted ? -1f : 1f,
-                1);
+            float targetDirection = controller.input.HorizontalInput > 0 ? 1f : -1f;
+
+            if (syncDirectionX != targetDirection)
+            {
+                CmdSetDirection(targetDirection);
+            }
         }
+
+        ApplyScale(syncDirectionX);
+    }
+
+    [Command]
+    private void CmdSetDirection(float dir)
+    {
+        syncDirectionX = dir;
+    }
+
+    private void OnDirectionChanged(float oldDir, float newDir)
+    {
+        ApplyScale(newDir);
+    }
+
+    private void ApplyScale(float dirX)
+    {
+        bool isInverted = false;
+        if (controller != null && controller.gravityModule != null)
+        {
+            isInverted = controller.gravityModule.isGravityInverted;
+        }
+
+        transform.localScale = new Vector3(
+            dirX,
+            isInverted ? -1f : 1f,
+            1f
+        );
     }
 }
