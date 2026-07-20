@@ -144,8 +144,8 @@ public class PlayerMovement : NetworkBehaviour
 
         if (controller.knockback.IsStunned)
         {
-            float slideSpeed = Mathf.Lerp(controller.rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
-            controller.rb.linearVelocity = new Vector2(slideSpeed, controller.rb.linearVelocity.y);
+            float stunDecel = -controller.rb.linearVelocity.x * 10f * controller.rb.mass;
+            controller.rb.AddForce(stunDecel * Vector2.right);
             return;
         }
 
@@ -156,51 +156,32 @@ public class PlayerMovement : NetworkBehaviour
             targetVelocityX = 0f;
         }
 
-        // 1. 발판 속도 및 로컬 속도 계산 (움직이는 발판 대응)
         float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
         float currentLocalVelocityX = controller.rb.linearVelocity.x - currentPlatformVelX;
 
-        // 얼음판(또는 얼음판에서 막 점프한 공중)인지 체크
-        bool isSlippery = isOnIce || (!isGrounded && wasOnIceLastFrame);
+        float velocityDiff = targetVelocityX - currentLocalVelocityX;
 
-        float smoothedVelocityX;
-
-        // 2. 지형에 따른 가속도 처리 분리
-        if (isSlippery)
+        float accelRate;
+        if (isGrounded)
         {
-            // 🧊 [얼음판 상태] : 가속도와 관성 적용 (서서히 미끄러짐)
-            float currentFriction = isGrounded ? iceSlideFriction : airFriction;
-            float accel = currentFriction * moveSpeed;
-
-            smoothedVelocityX = Mathf.MoveTowards(
-                currentLocalVelocityX,
-                targetVelocityX,
-                accel * Time.fixedDeltaTime
-            );
-
-            // 아주 미세하게 미끄러질 때 완전히 멈추도록 처리
-            if (Mathf.Abs(controller.input.HorizontalInput) < 0.01f && Mathf.Abs(windVelocity) < 0.01f)
-            {
-                if (Mathf.Abs(smoothedVelocityX) < 0.5f) smoothedVelocityX = 0f;
-            }
+            accelRate = isOnIce ? iceSlideFriction : normalFriction;
         }
         else
         {
-            // 🧱 [일반 바닥 & 공중] : 가속도 무시, 목표 속도 즉시 꽂아버림 (스마일모식 칼조작)
-            smoothedVelocityX = targetVelocityX;
+            accelRate = airFriction;
         }
+        float movementForce = velocityDiff * accelRate * controller.rb.mass;
 
-        // 3. 최종 속도 적용 (발판 속도 다시 더해주기)
-        float finalX = smoothedVelocityX;
-
-        if (isGrounded)
+        if (Mathf.Abs(controller.input.HorizontalInput) < 0.01f && Mathf.Abs(windVelocity) < 0.01f && isGrounded && isOnIce)
         {
-            finalX += platformVelocity.x;
+            if (Mathf.Abs(currentLocalVelocityX) < 0.5f)
+            {
+                movementForce = -currentLocalVelocityX * normalFriction * controller.rb.mass;
+            }
         }
 
-        controller.rb.linearVelocity = new Vector2(finalX, controller.rb.linearVelocity.y);
+        controller.rb.AddForce(movementForce * Vector2.right);
     }
-
     private void ClampVelocity()
     {
         float maxSpeedX = 30f;
