@@ -54,7 +54,7 @@ public class PlayerInput : NetworkBehaviour
         if (actionAction == null || actionAction.bindings.Count == 0)
         {
             actionAction = new InputAction("Action", InputActionType.Button);
-            actionAction.AddBinding("<Keyboard>/s");
+            actionAction.AddBinding("<Keyboard>/v");
             actionAction.AddBinding("<Keyboard>/downArrow");
             actionAction.AddBinding("<Gamepad>/buttonEast");
         }
