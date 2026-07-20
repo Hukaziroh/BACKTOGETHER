@@ -96,24 +96,31 @@ public class PauseManager : MonoBehaviour
 
     private IEnumerator LeaveGameGracefullyRoutine()
     {
-        // 1. 방장(서버)이 활성화되어 있다면 무조건 StopHost() 실행!
+        Debug.Log("[퍼즈 시스템] 안전한 게임 퇴장 절차를 시작합니다...");
+
+        if (NetworkManager.singleton != null)
+        {
+            EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
+            if (eosLobby != null && eosLobby.ConnectedToLobby)
+            {
+                Debug.Log("[퍼즈 시스템] 에픽 온라인 서비스 로비를 나가는 중...");
+                eosLobby.LeaveLobby();
+                yield return new WaitForSecondsRealtime(0.3f);
+            }
+        }
+
         if (NetworkServer.active)
         {
+            Debug.Log("[퍼즈 시스템] 호스트(방장) 서버를 종료합니다.");
             NetworkManager.singleton.StopHost();
         }
-        // 2. 일반 클라이언트 접속만 되어 있다면 StopClient() 실행!
         else if (NetworkClient.isConnected)
         {
+            Debug.Log("[퍼즈 시스템] 클라이언트 접속을 종료합니다.");
             NetworkManager.singleton.StopClient();
         }
 
-        // 3. 서버와 클라이언트가 완전히 꺼질 때까지 대기
-        while (NetworkServer.active || NetworkClient.isConnected)
-        {
-            yield return null;
-        }
-
-        // 4. 안전하게 메인 화면으로 이동
-        SceneManager.LoadScene(mainMenuSceneName);
+        Debug.Log("[퍼즈 시스템] Mirror 엔진에 의해 메인 화면으로 자동 전환됩니다.");
+        yield return null;
     }
 }
