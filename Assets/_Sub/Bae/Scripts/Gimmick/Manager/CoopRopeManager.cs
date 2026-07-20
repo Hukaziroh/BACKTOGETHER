@@ -171,18 +171,17 @@ public class CoopRopeManager : NetworkBehaviour
                 rb.mass = movement.isGrounded ? groundedMass : airborneMass;
 
                 bool isTensionActive = false;
-
                 if (localIndex > 0 && connectedPlayers[localIndex - 1] != null)
                 {
                     Rigidbody2D prevRb = connectedPlayers[localIndex - 1].GetComponent<Rigidbody2D>();
-                    if (prevRb != null && ApplyRopeConstraint(rb, prevRb))
+                    if (prevRb != null && ApplyRopeConstraint(rb, prevRb, movement.isGrounded))
                         isTensionActive = true;
                 }
 
                 if (localIndex < connectedPlayers.Count - 1 && connectedPlayers[localIndex + 1] != null)
                 {
                     Rigidbody2D nextRb = connectedPlayers[localIndex + 1].GetComponent<Rigidbody2D>();
-                    if (nextRb != null && ApplyRopeConstraint(rb, nextRb))
+                    if (nextRb != null && ApplyRopeConstraint(rb, nextRb, movement.isGrounded))
                         isTensionActive = true;
                 }
 
@@ -190,8 +189,7 @@ public class CoopRopeManager : NetworkBehaviour
             }
         }
     }
-
-    private bool ApplyRopeConstraint(Rigidbody2D rb, Rigidbody2D targetRb)
+    private bool ApplyRopeConstraint(Rigidbody2D rb, Rigidbody2D targetRb, bool amIGrounded)
     {
         Vector2 targetPos = targetRb.position;
         Vector2 direction = targetPos - rb.position;
@@ -201,25 +199,36 @@ public class CoopRopeManager : NetworkBehaviour
         {
             Vector2 dirNorm = direction.normalized;
             float stretch = distance - maxRopeLength;
+
             float totalMass = rb.mass + targetRb.mass;
             float myRatio = targetRb.mass / totalMass;
-            rb.position += dirNorm * (stretch * myRatio);
-
+            Vector2 posCorrection = dirNorm * (stretch * myRatio);
+            if (amIGrounded && posCorrection.y < 0)
+            {
+                posCorrection.y = 0;
+            }
+            rb.position += posCorrection;
             Vector2 relativeVelocity = rb.linearVelocity - targetRb.linearVelocity;
             float relVelAlongRope = Vector2.Dot(relativeVelocity, dirNorm);
 
             if (relVelAlongRope < 0)
             {
-                rb.linearVelocity -= dirNorm * (relVelAlongRope * myRatio);
+                Vector2 velCorrection = dirNorm * (relVelAlongRope * myRatio);
+
+                if (amIGrounded && velCorrection.y < 0)
+                {
+                    velCorrection.y = 0;
+                }
+                rb.linearVelocity -= velCorrection;
             }
 
             Vector2 tangentialVelocity = rb.linearVelocity - (dirNorm * Vector2.Dot(rb.linearVelocity, dirNorm));
             rb.linearVelocity -= tangentialVelocity * (Time.fixedDeltaTime * 4f);
 
-            return true; 
+            return true;
         }
 
-        return false; 
+        return false;
     }
 
     private void OnRopeActiveChanged(bool oldVal, bool newVal)
