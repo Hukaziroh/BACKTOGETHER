@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 057cb8d569e325646aad94840a535581
+guid: 65cfe3f2f625c6a4bb856ab5d8441f79
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2725155917679352033
-    second: bg_layer3_0
+      213: 3891269495536304776
+    second: Gear_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,23 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: bg_layer3_0
+      name: Gear_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 675
-        width: 2048
-        height: 311
+        x: 26
+        y: 31
+        width: 448
+        height: 444
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f172b21a12d4e2ad0800000000000000
-      internalID: -2725155917679352033
+      spriteID: 88241c64df0900630800000000000000
+      internalID: 3891269495536304776
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 04b8f526423047c4eacb3b649ffef0cc
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      bg_layer3_0: -2725155917679352033
+      Gear_0: 3891269495536304776
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
