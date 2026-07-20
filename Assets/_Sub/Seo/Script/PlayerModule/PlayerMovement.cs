@@ -55,7 +55,6 @@ public class PlayerMovement : NetworkBehaviour
     private Transform currentPlatform;
     private Vector2 platformVelocity;
 
-    private bool isPushingPlayer = false;
 
     void Awake()
     {
@@ -151,10 +150,7 @@ public class PlayerMovement : NetworkBehaviour
 
         float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
 
-        if (isPushingPlayer)
-        {
-            targetVelocityX = 0f;
-        }
+        
 
         float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
         float currentLocalVelocityX = controller.rb.linearVelocity.x - currentPlatformVelX;
@@ -298,40 +294,6 @@ public class PlayerMovement : NetworkBehaviour
         controller.rb.AddForce(Vector2.down * 18f, ForceMode2D.Impulse);
     }
 
-    private void OnCollisionStay2D(Collision2D collision)
-    {
-        if (!isLocalPlayer) return;
-
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Player"))
-        {
-            foreach (ContactPoint2D contact in collision.contacts)
-            {
-                if (Mathf.Abs(contact.normal.x) > 0.7f)
-                {
-                    float normalX = contact.normal.x;
-                    float inputX = controller.input.HorizontalInput;
-
-                    if ((inputX > 0.1f && normalX < 0f) || (inputX < -0.1f && normalX > 0f))
-                    {
-                        isPushingPlayer = true;
-                        return;
-                    }
-                }
-            }
-        }
-
-        isPushingPlayer = false;
-    }
-
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        if (!isLocalPlayer) return;
-
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Player"))
-        {
-            isPushingPlayer = false;
-        }
-    }
 
     private void OnDrawGizmosSelected()
     {
