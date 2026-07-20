@@ -19,6 +19,9 @@ public class SpikeToggleButton : NetworkBehaviour
     public GameObject unpressedVisual;
     public GameObject pressedVisual;
 
+    [Header("에코 관리 매니저")]
+    public SpikeEchoParentManager echoManager; // 가시 에코 매니저
+
     private HashSet<GameObject> playersOnButton = new HashSet<GameObject>();
 
     [SyncVar(hook = nameof(OnButtonStateChanged))]
@@ -43,7 +46,7 @@ public class SpikeToggleButton : NetworkBehaviour
     [ServerCallback]
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && other.gameObject == other.transform.root.gameObject)
         {
             playersOnButton.Add(other.gameObject);
             UpdateButtonState();
@@ -53,7 +56,7 @@ public class SpikeToggleButton : NetworkBehaviour
     [ServerCallback]
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && other.gameObject == other.transform.root.gameObject)
         {
             playersOnButton.Remove(other.gameObject);
             UpdateButtonState();
@@ -80,8 +83,17 @@ public class SpikeToggleButton : NetworkBehaviour
 
     private void UpdateState(bool pressed, bool instant)
     {
+        // 1. 비주얼 오브젝트 켜고 끄기 (여기에 따라 버튼 윤곽선도 자동으로 켜지고 꺼짐)
         if (unpressedVisual != null) unpressedVisual.SetActive(!pressed);
         if (pressedVisual != null) pressedVisual.SetActive(pressed);
+
+        // 2. 가시 에코 제어
+        if (echoManager != null)
+        {
+            echoManager.SetEchoActive(!pressed);
+        }
+
+        // 3. 가시 이동 처리
         if (targetSpikes != null)
         {
             if (moveCoroutine != null) StopCoroutine(moveCoroutine);
@@ -89,6 +101,7 @@ public class SpikeToggleButton : NetworkBehaviour
 
             if (instant)
             {
+                targetPos.y = Mathf.Round(targetPos.y * 1000f) / 1000f;
                 targetSpikes.position = targetPos;
             }
             else
@@ -103,7 +116,7 @@ public class SpikeToggleButton : NetworkBehaviour
         while (Vector3.Distance(targetSpikes.position, targetPos) > 0.01f)
         {
             targetSpikes.position = Vector3.MoveTowards(targetSpikes.position, targetPos, moveSpeed * Time.deltaTime);
-            yield return null; 
+            yield return null;
         }
         targetSpikes.position = targetPos;
     }
