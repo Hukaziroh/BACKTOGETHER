@@ -1,7 +1,8 @@
 using UnityEngine;
 using Mirror;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement; 
+using UnityEngine.SceneManagement;
+using System.Collections; // 코루틴 사용을 위해 필수 추가
 
 public class PlayerRespawn : NetworkBehaviour
 {
@@ -34,7 +35,7 @@ public class PlayerRespawn : NetworkBehaviour
                 if (holdTimer >= HOLD_TIME_TO_RESPAWN)
                 {
                     Debug.Log("[시스템] 비상 탈출! 마지막 체크포인트로 강제 이동합니다.");
-                    Respawn(); 
+                    Respawn();
                     holdTimer = 0f;
                 }
             }
@@ -65,43 +66,50 @@ public class PlayerRespawn : NetworkBehaviour
         if (!isLocalPlayer) return;
 
         if (SceneManager.GetActiveScene().name == "RopeTest")
-        {           
+        {
             CmdTeamRespawn();
         }
         else
         {
-            DoLocalRespawn();
+            StartCoroutine(DoLocalRespawnRoutine());
         }
     }
 
     [Command]
     private void CmdTeamRespawn()
     {
-        RpcTeamRespawn();
-    }
+        PlayerRespawn[] allPlayers = FindObjectsByType<PlayerRespawn>(FindObjectsSortMode.None);
 
-    [ClientRpc]
-    private void RpcTeamRespawn()
-    {
-        if (isLocalPlayer)
+        foreach (var player in allPlayers)
         {
-            DoLocalRespawn();
+            player.TargetForceRespawn(player.connectionToClient);
         }
     }
-    private void DoLocalRespawn()
-    {
-        transform.position = currentSpawnPoint;
-        controller.rb.linearVelocity = Vector2.zero; 
 
+    [TargetRpc]
+    private void TargetForceRespawn(NetworkConnection target)
+    {
+        StartCoroutine(DoLocalRespawnRoutine());
+    }
+    private IEnumerator DoLocalRespawnRoutine()
+    {
         if (controller.knockback != null)
         {
-            controller.knockback.ResetKnockback(); 
+            controller.knockback.ResetKnockback();
+        }
+
+        for (int i = 0; i < 10; i++)
+        {
+            transform.position = currentSpawnPoint;
+            controller.rb.linearVelocity = Vector2.zero;
+            yield return new WaitForFixedUpdate();
         }
     }
+
 
     private void CheckRespawn()
     {
-        if (transform.position.y < -50f )
+        if (transform.position.y < -50f)
         {
             Respawn();
         }
