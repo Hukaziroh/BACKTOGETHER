@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using TMPro;
 using Mirror;
 using System.Collections;
 
@@ -10,9 +12,16 @@ public class PauseManager : MonoBehaviour
     [Header("UI 패널 할당")]
     public GameObject pausePanel;
 
+    [Header("방 코드 UI (모든 플레이어 공용)")]
+    public GameObject roomCodeUIContainer;     // 방 코드와 눈동자 버튼을 담고 있는 부모 오브젝트
+    public TextMeshProUGUI pauseRoomCodeText;  // 방 코드가 표시될 텍스트
+    public Button toggleVisibilityButton;      // 눈동자 버튼
+
     [Header("설정")]
     public string mainMenuSceneName = "Main";
     public bool isPaused = false; // UIManager가 상태를 읽을 수 있게 public
+
+    private bool isCodeVisible = false; // 기본값은 별표(*)로 숨겨진 상태
 
     void Awake()
     {
@@ -27,11 +36,23 @@ public class PauseManager : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        // 눈동자 버튼 클릭 이벤트 연결
+        if (toggleVisibilityButton != null)
+        {
+            toggleVisibilityButton.onClick.AddListener(ToggleRoomCodeVisibility);
+        }
+    }
+
     // --- 퍼즈/재개 로직 ---
     public void PauseGame()
     {
         if (pausePanel != null) pausePanel.SetActive(true);
         isPaused = true;
+
+        // ★ 퍼즈창이 켜질 때 방 코드 표시 상태 갱신
+        UpdateRoomCodeDisplay();
 
         // ★ [추가] 퍼즈창이 켜질 때 포커스를 퍼즈창 내부로 격리 (뒷배경 UI 차단)
         if (GlobalSceneInputManager.Instance != null && pausePanel != null)
@@ -50,6 +71,42 @@ public class PauseManager : MonoBehaviour
         {
             GlobalSceneInputManager.Instance.ClearFocusScope();
         }
+    }
+
+    // --- 방 코드 UI 업데이트 및 가리기 로직 ---
+    private void UpdateRoomCodeDisplay()
+    {
+        if (roomCodeUIContainer != null)
+        {
+            roomCodeUIContainer.SetActive(true);
+        }
+
+        string currentCode = PrivateLobbyManager.currentShortCode;
+
+        if (pauseRoomCodeText != null)
+        {
+            if (string.IsNullOrEmpty(currentCode))
+            {
+                pauseRoomCodeText.text = "CODE: ------";
+            }
+            else if (isCodeVisible)
+            {
+                // 눈을 떴을 때: 실제 코드 표시 (예: CODE: 123456)
+                pauseRoomCodeText.text = "CODE: " + currentCode;
+            }
+            else
+            {
+                // 눈을 감았을 때: 별표로 마스킹 (예: CODE: ******)
+                pauseRoomCodeText.text = "CODE: ******";
+            }
+        }
+    }
+
+    // 눈동자 버튼을 누를 때 호출되는 함수
+    public void ToggleRoomCodeVisibility()
+    {
+        isCodeVisible = !isCodeVisible; // 상태 반전 (숨김 <-> 보임)
+        UpdateRoomCodeDisplay();        // 텍스트 갱신
     }
 
     // --- 옵션창 전환 (자신은 숨기고 옵션 매니저를 호출) ---
