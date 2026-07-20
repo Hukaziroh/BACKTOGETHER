@@ -5,350 +5,81 @@ public class PlayerMovement : NetworkBehaviour
 {
     private PlayerController controller;
 
-    private int playerLayerMask;
+    [Header("이동 및 점프 (AddForce 방식)")]
+    public float moveForce = 60f; // AddForce를 위한 힘
+    public float maxSpeed = 7f;   // 최대 속도 제한
+    public float friction = 10f;  // 바닥 마찰력 (감속용)
+    public float jumpForce = 15f;
 
-    [Header("무브")]
-    public float moveSpeed = 7f;
+    [Header("동적 질량 (핵심!)")]
+    [Tooltip("땅에 있을 때의 무게 (무거워야 매달린 남을 잘 끕니다)")]
+    public float groundedMass = 5f;
+    [Tooltip("공중에 있을 때의 무게 (가벼워야 잘 끌려옵니다)")]
+    public float airborneMass = 1f;
 
-    [Header("관성 및 미끄러짐 셋팅")]
-    public float normalFriction = 20f;
-    public float iceSlideFriction = 3f;
-    public float airFriction = 3f;
-
-    [Header("점프셋팅")]
-    public float jumpHeight = 4f;
-    public float jumpSpeed = 4f;
-    public float fallSpeed = 2.5f;
-    public float maxFallSpeed = 20f;
-    public float coyoteTime = 0.15f;
-    public float coyoteTimeCounter { get; private set; }
-
-    [Range(0f, 1f)]
-    public float superJump = 0.5f;
-    private float jumpCk = 0.1f;
-    private float ckTimer;
-
-    [Header("기즈모 및 감지 범위 설정")]
-    public bool showGizmo = true;
-
-    [Header("그라운드 체크")]
-    [Range(0.01f, 5f)]
-    public float checkRadius = 0.5f;
-    public Vector2 checkOffset = Vector2.zero;
-    public Transform groundCheck;
-    public LayerMask groundLayer;
     public bool isGrounded { get; private set; }
-
-    [Header("헤드 체크 (머리 위 플레이어 감지)")]
-    public Vector2 headCheckBoxSize = new Vector2(0.8f, 0.2f);
-    public Vector2 headCheckOffset = Vector2.zero;
-    public Transform headCheck;
-    public bool hasPlayerOnHead { get; private set; }
-
-    private bool isOnIce = false;
-    private bool wasOnIceLastFrame = false;
-    private Collider2D[] groundCheckResults = new Collider2D[5];
-    private Collider2D[] headCheckResults = new Collider2D[5];
-
-    [Header("외부 환경 속도")]
-    public float windVelocity = 0f;
-    private Transform currentPlatform;
-    private Vector2 platformVelocity;
-
-    private bool isPushingPlayer = false;
+    public Transform groundCheck;
+    public float checkRadius = 0.2f;
+    public LayerMask groundLayer;
 
     void Awake()
     {
         controller = GetComponent<PlayerController>();
-        playerLayerMask = 1 << LayerMask.NameToLayer("Player");
     }
 
     void Update()
     {
         if (!isLocalPlayer) return;
-        UpdateTimers();
-        UpdateCoyoteTime();
-        HandleJumpInput();
-        UpdateGravity();
+        CheckGrounded();
+        HandleJump();
     }
 
     void FixedUpdate()
     {
         if (!isLocalPlayer) return;
-        if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
-            return;
-
-        HandleMovingPlatform();
-        CheckGroundOrPlayer();
-        CheckHeadForPlayer();
-        HandleMovementPhysics();
-        ClampVelocity();
+        HandleMovement();
     }
 
-    private void UpdateTimers() { if (ckTimer > 0f) ckTimer -= Time.deltaTime; }
-    private void UpdateCoyoteTime()
+    private void CheckGrounded()
     {
-        if (isGrounded && ckTimer <= 0f) coyoteTimeCounter = coyoteTime;
-        else coyoteTimeCounter -= Time.deltaTime;
+        isGrounded = Physics2D.OverlapCircle(groundCheck.position, checkRadius, groundLayer);
+
+        // 🌟 핵심: 땅에 있으면 무겁게(닻 역할), 공중에 있으면 가볍게!
+        controller.rb.mass = isGrounded ? groundedMass : airborneMass;
     }
 
-    private void HandleJumpInput()
+    private void HandleMovement()
     {
-        if (controller.combineHandler == null || !controller.combineHandler.isCombined)
-        {
-            if (controller.input.JumpPressedThisFrame && coyoteTimeCounter > 0f && !controller.knockback.IsStunned && !hasPlayerOnHead)
-            {
-                Jump();
-                coyoteTimeCounter = 0f;
-            }
+        float inputX = controller.input.HorizontalInput;
 
-            bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
-            bool isMovingUp = inverted ? (controller.rb.linearVelocity.y < 0f) : (controller.rb.linearVelocity.y > 0f);
-
-            if (controller.input.JumpReleasedThisFrame && isMovingUp && !controller.knockback.IsStunned)
-            {
-                if (controller.syncJumpHandler != null && controller.syncJumpHandler.isInSyncZone) controller.syncJumpHandler.CmdCutSyncJump();
-                else ApplyShortJump();
-            }
-        }
-    }
-
-    public void Jump()
-    {
-        if (controller.knockback.isKnockedBack) return;
-        float gravity = Mathf.Abs(Physics2D.gravity.y) * jumpSpeed;
-        float jumpForce = Mathf.Sqrt(2f * gravity * jumpHeight);
-        float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
-        controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, jumpForce * mult);
-        ckTimer = jumpCk;
-    }
-
-    public void ApplyShortJump()
-    {
-        bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
-        bool isMovingUpCheck = inverted ? (controller.rb.linearVelocity.y < 0f) : (controller.rb.linearVelocity.y > 0f);
-        if (isMovingUpCheck) controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, controller.rb.linearVelocity.y * superJump);
-    }
-
-    private void UpdateGravity()
-    {
-        bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
-        float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
-        bool isFalling = isInverted ? (controller.rb.linearVelocity.y > 0f) : (controller.rb.linearVelocity.y < 0f);
-        controller.rb.gravityScale = isFalling ? (jumpSpeed * fallSpeed * mult) : (jumpSpeed * mult);
-    }
-
-    private void HandleMovementPhysics()
-    {
-        if (controller.knockback.isKnockedBack) return;
-
-        if (controller.knockback.IsStunned)
-        {
-            float slideSpeed = Mathf.Lerp(controller.rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
-            controller.rb.linearVelocity = new Vector2(slideSpeed, controller.rb.linearVelocity.y);
-            return;
-        }
-
-        float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
-
-        if (isPushingPlayer)
-        {
-            targetVelocityX = 0f;
-        }
-
-        bool isSlippery = isOnIce || (!isGrounded && wasOnIceLastFrame);
-        float currentFriction = isSlippery ? (isGrounded ? iceSlideFriction : airFriction) : normalFriction;
-        float accel = currentFriction * moveSpeed;
-        float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
-
-        float currentLocalVelocityX = controller.rb.linearVelocity.x - currentPlatformVelX;
-
-        float smoothedVelocityX = Mathf.MoveTowards(
-            currentLocalVelocityX,
-            targetVelocityX,
-            accel * Time.fixedDeltaTime);
-
-        if (Mathf.Abs(controller.input.HorizontalInput) < 0.01f && Mathf.Abs(windVelocity) < 0.01f)
-        {
-            if (Mathf.Abs(smoothedVelocityX) < 0.5f) smoothedVelocityX = 0f;
-        }
-
-        float finalX = smoothedVelocityX;
+        // 🌟 핵심: 땅에 있을 때만 좌우 이동 조작 허용 (공중 이동 불가)
         if (isGrounded)
         {
-            finalX += platformVelocity.x;
-        }
-
-        controller.rb.linearVelocity = new Vector2(finalX, controller.rb.linearVelocity.y);
-    }
-
-    private void ClampVelocity()
-    {
-        float maxSpeedX = 30f;
-        Vector2 clampedVelocity = controller.rb.linearVelocity;
-        clampedVelocity.x = Mathf.Clamp(clampedVelocity.x, -maxSpeedX, maxSpeedX);
-        bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
-        if (isInverted) clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed * 1.5f, maxFallSpeed);
-        else clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed, maxFallSpeed * 1.5f);
-        controller.rb.linearVelocity = clampedVelocity;
-    }
-
-    void CheckGroundOrPlayer()
-    {
-        ContactFilter2D filter = new ContactFilter2D();
-        filter.useLayerMask = true;
-        filter.useTriggers = false;
-        filter.layerMask = groundLayer | playerLayerMask;
-
-        int hitCount = Physics2D.OverlapCircle(groundCheck.position, checkRadius, filter, groundCheckResults);
-
-        isGrounded = false;
-        bool currentOnIce = false;
-        bool foundPlatform = false;
-        Transform detectedPlatform = null;
-
-        for (int i = 0; i < hitCount; i++)
-        {
-            Collider2D col = groundCheckResults[i];
-            if (col.CompareTag("Spike")) continue;
-            if (col.gameObject == gameObject || col.isTrigger) continue;
-
-            isGrounded = true;
-            if (col.CompareTag("Ice")) currentOnIce = true;
-            if (col.CompareTag("MovingPlatform"))
+            if (Mathf.Abs(inputX) > 0.1f)
             {
-                detectedPlatform = col.transform;
-                foundPlatform = true;
+                // 질량에 비례해서 힘을 주어야 무게가 무거워져도 똑같은 가속도를 냅니다.
+                controller.rb.AddForce(new Vector2(inputX * moveForce * controller.rb.mass, 0f));
+            }
+            else
+            {
+                // 입력이 없으면 마찰력으로 즉시 정지
+                controller.rb.AddForce(new Vector2(-controller.rb.linearVelocity.x * friction * controller.rb.mass, 0f));
             }
         }
 
-        if (foundPlatform)
+        // 최대 속도 제한 (AddForce 폭주 방지)
+        if (Mathf.Abs(controller.rb.linearVelocity.x) > maxSpeed)
         {
-            if (currentPlatform != detectedPlatform)
-            {
-                currentPlatform = detectedPlatform;
-            }
-        }
-        else currentPlatform = null;
-
-        isOnIce = currentOnIce;
-        if (isGrounded) wasOnIceLastFrame = isOnIce;
-    }
-
-    void CheckHeadForPlayer()
-    {
-        if (headCheck == null) return;
-
-        hasPlayerOnHead = false;
-
-        ContactFilter2D filter = new ContactFilter2D();
-        filter.useLayerMask = true;
-        filter.useTriggers = false;
-        filter.layerMask = playerLayerMask;
-
-        Vector2 checkPosition = (Vector2)headCheck.position + headCheckOffset;
-
-        int hitCount = Physics2D.OverlapBox(checkPosition, headCheckBoxSize, 0f, filter, headCheckResults);
-
-        for (int i = 0; i < hitCount; i++)
-        {
-            Collider2D col = headCheckResults[i];
-
-            if (col.gameObject == gameObject || col.isTrigger) continue;
-
-            Vector2 dir = col.transform.position - transform.position;
-            if (dir.y <= 0.2f) continue;
-
-            if (col.attachedRigidbody != null && col.attachedRigidbody.linearVelocity.y > 0.1f)
-                continue;
-
-            hasPlayerOnHead = true;
-            break;
+            controller.rb.linearVelocity = new Vector2(Mathf.Sign(controller.rb.linearVelocity.x) * maxSpeed, controller.rb.linearVelocity.y);
         }
     }
 
-    private void HandleMovingPlatform()
+    private void HandleJump()
     {
-        platformVelocity = Vector2.zero;
-
-        if (currentPlatform == null)
-            return;
-
-        CoopRoundTripPlatform platform = currentPlatform.GetComponentInParent<CoopRoundTripPlatform>();
-
-        if (platform != null)
+        // 공중 좌우 이동은 막혔지만, 점프 입력은 정상적으로 Impulse(충격량)를 발생시킴
+        if (controller.input.JumpPressedThisFrame && isGrounded)
         {
-            platformVelocity = platform.CurrentVelocity;
-        }
-    }
-
-    public void CallCombinedJump()
-    {
-        if ((isGrounded || coyoteTimeCounter > 0f) && !hasPlayerOnHead)
-        {
-            controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
-            Jump();
-            coyoteTimeCounter = 0f;
-        }
-    }
-
-    public void CallCombinedAction()
-    {
-        controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
-        controller.rb.AddForce(Vector2.down * 18f, ForceMode2D.Impulse);
-    }
-
-    private void OnCollisionStay2D(Collision2D collision)
-    {
-        if (!isLocalPlayer) return;
-
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Player"))
-        {
-            foreach (ContactPoint2D contact in collision.contacts)
-            {
-                if (Mathf.Abs(contact.normal.x) > 0.7f)
-                {
-                    float normalX = contact.normal.x;
-                    float inputX = controller.input.HorizontalInput;
-
-                    if ((inputX > 0.1f && normalX < 0f) || (inputX < -0.1f && normalX > 0f))
-                    {
-                        isPushingPlayer = true;
-                        return;
-                    }
-                }
-            }
-        }
-
-        isPushingPlayer = false;
-    }
-
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        if (!isLocalPlayer) return;
-
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Player"))
-        {
-            isPushingPlayer = false;
-        }
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        if (!showGizmo) return;
-
-        if (groundCheck != null)
-        {
-            Gizmos.color = Color.yellow;
-            Vector2 gCheckPosition = (Vector2)groundCheck.position + checkOffset;
-            Gizmos.DrawWireSphere(gCheckPosition, checkRadius);
-        }
-
-        if (headCheck != null)
-        {
-            Gizmos.color = Color.cyan;
-            Vector2 hCheckPosition = (Vector2)headCheck.position + headCheckOffset;
-            Gizmos.DrawWireCube(hCheckPosition, headCheckBoxSize);
+            controller.rb.AddForce(Vector2.up * jumpForce * controller.rb.mass, ForceMode2D.Impulse);
         }
     }
 }
