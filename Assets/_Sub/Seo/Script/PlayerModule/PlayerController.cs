@@ -45,7 +45,7 @@ public class PlayerController : NetworkBehaviour
         if (!isLocalPlayer)
         {
             rb.bodyType = RigidbodyType2D.Kinematic;
-            rb.interpolation = RigidbodyInterpolation2D.None;
+            rb.interpolation = RigidbodyInterpolation2D.Interpolate;
         }
     }
 
