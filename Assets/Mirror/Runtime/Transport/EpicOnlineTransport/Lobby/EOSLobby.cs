@@ -288,42 +288,33 @@ public class EOSLobby : MonoBehaviour {
     /// <para>If the player was able to destroy or leave the lobby, the <see cref="LeaveLobbySucceeded"/> event will be invoked.</para>
     /// <para>This process may throw errors. You can errors by subscribing to the <see cref="LeaveLobbyFailed"/> event.</para>
     /// </summary>
-    public virtual void LeaveLobby() {
-        //if we are the owner of the lobby
-        if (isLobbyOwner) {
-            //Destroy lobby
-            EOSSDKComponent.GetLobbyInterface().DestroyLobby(new DestroyLobbyOptions { LobbyId = currentLobbyId, LocalUserId = EOSSDKComponent.LocalUserProductId }, null, (DestroyLobbyCallbackInfo callback) => {
-                //if the result was not a success, log error and return
-                if (callback.ResultCode != Result.Success) {
-                    LeaveLobbyFailed?.Invoke("There was an error while destroying the lobby. Error: " + callback.ResultCode);
-                    return;
-                }
+    public void LeaveLobby()
+    {
+        if (!ConnectedToLobby) return;
 
-                ConnectedToLobby = false;
-                LeaveLobbySucceeded?.Invoke();
-            });
-        }
-        //if we are a member of the lobby
-        else {
-            EOSSDKComponent.GetLobbyInterface().LeaveLobby(new LeaveLobbyOptions { LobbyId = currentLobbyId, LocalUserId = EOSSDKComponent.LocalUserProductId }, null, (LeaveLobbyCallbackInfo callback) => {
-                //if the result was not a success, log error and return
-                if (callback.ResultCode != Result.Success && callback.ResultCode != Result.NotFound) {
-                    LeaveLobbyFailed?.Invoke("There was an error while leaving the lobby. Error: " + callback.ResultCode);
-                    return;
-                }
+        LeaveLobbyOptions options = new LeaveLobbyOptions()
+        {
+            LobbyId = currentLobbyId,
+            LocalUserId = EOSSDKComponent.LocalUserProductId
+        };
 
-                ConnectedToLobby = false;
-                LeaveLobbySucceeded?.Invoke();
-            });
-        }
+        // 찌꺼기 데이터가 남지 않도록 세션 변수 완벽 초기화
+        currentLobbyId = string.Empty;
+        ConnectedLobbyDetails = null;
+        isLobbyOwner = false;
 
-        //when the player leaves the lobby, remove notifications
-        //will be useless when not connected to lobby
-        EOSSDKComponent.GetLobbyInterface().RemoveNotifyLobbyMemberStatusReceived(lobbyMemberStatusNotifyId);
-        EOSSDKComponent.GetLobbyInterface().RemoveNotifyLobbyUpdateReceived(lobbyAttributeUpdateNotifyId);
+        EOSSDKComponent.GetLobbyInterface().LeaveLobby(options, null, OnLeaveLobbyCompleted);
     }
 
-    
+    private void OnLeaveLobbyCompleted(LeaveLobbyCallbackInfo data)
+    {
+        if (data.ResultCode == Result.Success)
+        {
+            Debug.Log("[EOSLobby] 에픽 서버로부터 로비 퇴장 확답 수신 완료.");
+        }
+        // 콜백이 완전히 끝난 시점에 false로 돌려 퍼즈매니저의 대기를 끝냅니다.
+        ConnectedToLobby = false;
+    }
     /// <summary>
     /// Remove an attribute attached to the lobby.
     /// </summary>
