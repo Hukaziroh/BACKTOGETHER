@@ -47,7 +47,6 @@ public class CoopRopeManager : NetworkBehaviour
             return;
         }
 
-        // 플레이어 번호 순으로 정렬하여 로프를 1-2-3-4 순서로 연결
         System.Array.Sort(players, (a, b) => a.playerIndex.CompareTo(b.playerIndex));
 
         isRopeActive = true;
@@ -72,9 +71,6 @@ public class CoopRopeManager : NetworkBehaviour
     {
         connectedPlayers = new List<GameObject>(playersToLink);
 
-        // 🚨 기존의 DistanceJoint2D 생성 코드를 완전히 제거했습니다!
-        // 물리 연산은 FixedUpdate에서 스크립트로 직접 처리합니다.
-
         SetupLineRenderers(connectedPlayers.Count - 1);
     }
 
@@ -85,7 +81,6 @@ public class CoopRopeManager : NetworkBehaviour
         {
             if (player != null)
             {
-                // 로프가 끊어지면 질량을 원래대로 1로 복구
                 Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
                 if (rb != null) rb.mass = 1f;
             }
@@ -123,7 +118,6 @@ public class CoopRopeManager : NetworkBehaviour
 
     void Update()
     {
-        // 로프 선(Line Renderer) 시각적 업데이트
         if (isRopeActive && connectedPlayers.Count >= 2 && lineRenderers.Count == connectedPlayers.Count - 1)
         {
             for (int i = 0; i < lineRenderers.Count; i++)
@@ -150,8 +144,6 @@ public class CoopRopeManager : NetworkBehaviour
     {
         if (!isRopeActive || connectedPlayers.Count < 2) return;
 
-        // 🚨 클라이언트 주도(Client-Auth) 물리 연산
-        // 멀티플레이어 환경이므로 오직 '내 캐릭터'의 물리 힘만 직접 계산하여 적용합니다.
         GameObject localPlayer = null;
         int localIndex = -1;
 
@@ -176,43 +168,58 @@ public class CoopRopeManager : NetworkBehaviour
 
             if (rb != null && movement != null)
             {
-                // [핵심 1] 동적 질량 처리: 바닥에 있으면 무겁게, 공중에 뜨면 가볍게 설정
                 rb.mass = movement.isGrounded ? groundedMass : airborneMass;
 
-                // [핵심 2] 훅의 법칙 장력 계산
-                // 내 앞사람(좌측)을 향해 당기는 힘 가하기
+                bool isTensionActive = false;
+
                 if (localIndex > 0 && connectedPlayers[localIndex - 1] != null)
                 {
-                    ApplySpringForce(rb, connectedPlayers[localIndex - 1].transform.position);
+                    Rigidbody2D prevRb = connectedPlayers[localIndex - 1].GetComponent<Rigidbody2D>();
+                    if (prevRb != null && ApplyRopeConstraint(rb, prevRb))
+                        isTensionActive = true;
                 }
 
-                // 내 뒷사람(우측)을 향해 당기는 힘 가하기
                 if (localIndex < connectedPlayers.Count - 1 && connectedPlayers[localIndex + 1] != null)
                 {
-                    ApplySpringForce(rb, connectedPlayers[localIndex + 1].transform.position);
+                    Rigidbody2D nextRb = connectedPlayers[localIndex + 1].GetComponent<Rigidbody2D>();
+                    if (nextRb != null && ApplyRopeConstraint(rb, nextRb))
+                        isTensionActive = true;
                 }
+
+                movement.isRestrictedByRope = isTensionActive;
             }
         }
     }
 
-    private void ApplySpringForce(Rigidbody2D rb, Vector3 targetPos)
+    private bool ApplyRopeConstraint(Rigidbody2D rb, Rigidbody2D targetRb)
     {
-        Vector2 direction = targetPos - rb.transform.position;
+        Vector2 targetPos = targetRb.position;
+        Vector2 direction = targetPos - rb.position;
         float distance = direction.magnitude;
 
-        // 거리가 최대 길이를 벗어났을 때만 고무줄처럼 팽팽해지며 당기는 힘(Tension) 발생
         if (distance > maxRopeLength)
         {
             Vector2 dirNorm = direction.normalized;
             float stretch = distance - maxRopeLength;
+            float totalMass = rb.mass + targetRb.mass;
+            float myRatio = targetRb.mass / totalMass;
+            rb.position += dirNorm * (stretch * myRatio);
 
-            // F = kx - cv (스프링 장력 - 감쇠력)
-            // 타겟 방향으로 향하는 현재 내 속도를 구해서 너무 빠르게 당겨지는 것을 억제
-            float currentVelocityAlongSpring = Vector2.Dot(rb.linearVelocity, dirNorm);
-            float force = (stretch * springForce) - (currentVelocityAlongSpring * damper);
+            Vector2 relativeVelocity = rb.linearVelocity - targetRb.linearVelocity;
+            float relVelAlongRope = Vector2.Dot(relativeVelocity, dirNorm);
 
-            rb.AddForce(dirNorm * force);
+            if (relVelAlongRope < 0)
+            {
+                rb.linearVelocity -= dirNorm * (relVelAlongRope * myRatio);
+            }
+
+            Vector2 tangentialVelocity = rb.linearVelocity - (dirNorm * Vector2.Dot(rb.linearVelocity, dirNorm));
+            rb.linearVelocity -= tangentialVelocity * (Time.fixedDeltaTime * 4f);
+
+            return true; 
         }
+
+        return false; 
     }
 
     private void OnRopeActiveChanged(bool oldVal, bool newVal)
