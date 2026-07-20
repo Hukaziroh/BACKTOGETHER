@@ -9,12 +9,22 @@ public class CoopRopeManager : NetworkBehaviour
     [Range(2, 4)]
     public int requiredPlayers = 4;
 
-    [Header("로프 물리 설정")]
-    [Tooltip("로프가 늘어날 수 있는 최대 길이 (인스펙터 조절)")]
-    public float maxRopeLength = 4f;
+    [Header("로프 물리 설정 (스프링 장력)")]
+    [Tooltip("로프가 팽팽해지기 시작하는 최대 길이")]
+    public float maxRopeLength = 3f;
+    [Tooltip("로프가 서로를 강하게 당기는 탄성력 (Hooke's Law)")]
+    public float springForce = 800f;
+    [Tooltip("고무줄처럼 무한정 튕기는 것을 막는 감쇠력")]
+    public float damper = 50f;
+
+    [Header("동적 질량 설정 (줄다리기 밸런스)")]
+    [Tooltip("땅에 닿아 버틸 때의 질량 (무거움)")]
+    public float groundedMass = 5f;
+    [Tooltip("공중에 매달렸을 때의 질량 (가벼움)")]
+    public float airborneMass = 1f;
 
     [Header("로프 비주얼 설정")]
-    [Tooltip("로프의 두께")]
+    [Tooltip("로프 렌더러 두께")]
     public float ropeWidth = 0.3f;
     [Tooltip("로프 스프라이트가 적용된 머티리얼")]
     public Material ropeMaterial;
@@ -36,6 +46,8 @@ public class CoopRopeManager : NetworkBehaviour
             Debug.LogWarning($"[로프 기믹] {requiredPlayers}명이 모이지 않아 로프를 연결할 수 없습니다!");
             return;
         }
+
+        // 플레이어 번호 순으로 정렬하여 로프를 1-2-3-4 순서로 연결
         System.Array.Sort(players, (a, b) => a.playerIndex.CompareTo(b.playerIndex));
 
         isRopeActive = true;
@@ -44,7 +56,8 @@ public class CoopRopeManager : NetworkBehaviour
         {
             playersToLink[i] = players[i].gameObject;
         }
-        RpcLinkPlayers(playersToLink, maxRopeLength);
+
+        RpcLinkPlayers(playersToLink);
     }
 
     [Server]
@@ -55,13 +68,13 @@ public class CoopRopeManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void RpcLinkPlayers(GameObject[] playersToLink, float maxLength)
+    private void RpcLinkPlayers(GameObject[] playersToLink)
     {
         connectedPlayers = new List<GameObject>(playersToLink);
-        for (int i = 0; i < connectedPlayers.Count - 1; i++)
-        {
-            AttachJoint(connectedPlayers[i], connectedPlayers[i + 1], maxLength);
-        }
+
+        // 🚨 기존의 DistanceJoint2D 생성 코드를 완전히 제거했습니다!
+        // 물리 연산은 FixedUpdate에서 스크립트로 직접 처리합니다.
+
         SetupLineRenderers(connectedPlayers.Count - 1);
     }
 
@@ -72,10 +85,12 @@ public class CoopRopeManager : NetworkBehaviour
         {
             if (player != null)
             {
-                DistanceJoint2D[] joints = player.GetComponents<DistanceJoint2D>();
-                foreach (var j in joints) Destroy(j);
+                // 로프가 끊어지면 질량을 원래대로 1로 복구
+                Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
+                if (rb != null) rb.mass = 1f;
             }
         }
+
         foreach (var lr in lineRenderers)
         {
             if (lr != null) Destroy(lr.gameObject);
@@ -83,19 +98,6 @@ public class CoopRopeManager : NetworkBehaviour
 
         lineRenderers.Clear();
         connectedPlayers.Clear();
-    }
-
-    private void AttachJoint(GameObject bodyA, GameObject bodyB, float length)
-    {
-        if (bodyA == null || bodyB == null) return;
-
-        DistanceJoint2D joint = bodyA.AddComponent<DistanceJoint2D>();
-        joint.connectedBody = bodyB.GetComponent<Rigidbody2D>();
-        joint.autoConfigureDistance = false;
-        joint.distance = length;
-
-        joint.maxDistanceOnly = true;
-        joint.enableCollision = true;
     }
 
     private void SetupLineRenderers(int lineCount)
@@ -121,6 +123,7 @@ public class CoopRopeManager : NetworkBehaviour
 
     void Update()
     {
+        // 로프 선(Line Renderer) 시각적 업데이트
         if (isRopeActive && connectedPlayers.Count >= 2 && lineRenderers.Count == connectedPlayers.Count - 1)
         {
             for (int i = 0; i < lineRenderers.Count; i++)
@@ -140,6 +143,75 @@ public class CoopRopeManager : NetworkBehaviour
                     }
                 }
             }
+        }
+    }
+
+    void FixedUpdate()
+    {
+        if (!isRopeActive || connectedPlayers.Count < 2) return;
+
+        // 🚨 클라이언트 주도(Client-Auth) 물리 연산
+        // 멀티플레이어 환경이므로 오직 '내 캐릭터'의 물리 힘만 직접 계산하여 적용합니다.
+        GameObject localPlayer = null;
+        int localIndex = -1;
+
+        for (int i = 0; i < connectedPlayers.Count; i++)
+        {
+            if (connectedPlayers[i] != null)
+            {
+                NetworkIdentity identity = connectedPlayers[i].GetComponent<NetworkIdentity>();
+                if (identity != null && identity.isLocalPlayer)
+                {
+                    localPlayer = connectedPlayers[i];
+                    localIndex = i;
+                    break;
+                }
+            }
+        }
+
+        if (localPlayer != null)
+        {
+            Rigidbody2D rb = localPlayer.GetComponent<Rigidbody2D>();
+            PlayerMovement movement = localPlayer.GetComponent<PlayerMovement>();
+
+            if (rb != null && movement != null)
+            {
+                // [핵심 1] 동적 질량 처리: 바닥에 있으면 무겁게, 공중에 뜨면 가볍게 설정
+                rb.mass = movement.isGrounded ? groundedMass : airborneMass;
+
+                // [핵심 2] 훅의 법칙 장력 계산
+                // 내 앞사람(좌측)을 향해 당기는 힘 가하기
+                if (localIndex > 0 && connectedPlayers[localIndex - 1] != null)
+                {
+                    ApplySpringForce(rb, connectedPlayers[localIndex - 1].transform.position);
+                }
+
+                // 내 뒷사람(우측)을 향해 당기는 힘 가하기
+                if (localIndex < connectedPlayers.Count - 1 && connectedPlayers[localIndex + 1] != null)
+                {
+                    ApplySpringForce(rb, connectedPlayers[localIndex + 1].transform.position);
+                }
+            }
+        }
+    }
+
+    private void ApplySpringForce(Rigidbody2D rb, Vector3 targetPos)
+    {
+        Vector2 direction = targetPos - rb.transform.position;
+        float distance = direction.magnitude;
+
+        // 거리가 최대 길이를 벗어났을 때만 고무줄처럼 팽팽해지며 당기는 힘(Tension) 발생
+        if (distance > maxRopeLength)
+        {
+            Vector2 dirNorm = direction.normalized;
+            float stretch = distance - maxRopeLength;
+
+            // F = kx - cv (스프링 장력 - 감쇠력)
+            // 타겟 방향으로 향하는 현재 내 속도를 구해서 너무 빠르게 당겨지는 것을 억제
+            float currentVelocityAlongSpring = Vector2.Dot(rb.linearVelocity, dirNorm);
+            float force = (stretch * springForce) - (currentVelocityAlongSpring * damper);
+
+            rb.AddForce(dirNorm * force);
         }
     }
 
