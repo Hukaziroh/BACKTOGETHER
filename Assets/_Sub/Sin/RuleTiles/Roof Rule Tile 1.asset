@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9d1514134bc4fbd41bb739b1b9a49231, type: 3}
-  m_Name: Roof Rule Tile
+  m_Name: Roof Rule Tile 1
   m_EditorClassIdentifier: Unity.2D.Tilemap.Extras::UnityEngine.RuleTile
-  m_DefaultSprite: {fileID: 2572692495051366768, guid: 4e5c9dcab1547fa48877622014e2fbbb, type: 3}
+  m_DefaultSprite: {fileID: -9013601734220254931, guid: c8f72a86935657b4f859f0f4d645f5be, type: 3}
   m_DefaultGameObject: {fileID: 0}
   m_DefaultColliderType: 1
   m_TilingRules:
   - m_Id: 0
     m_Sprites:
-    - {fileID: 2572692495051366768, guid: 4e5c9dcab1547fa48877622014e2fbbb, type: 3}
+    - {fileID: 2377389806149268806, guid: 57ab752da10b5be45baecb99eeb2594e, type: 3}
     m_GameObject: {fileID: 0}
     m_MinAnimationSpeed: 1
     m_MaxAnimationSpeed: 1
@@ -33,7 +33,7 @@ MonoBehaviour:
     m_RuleTransform: 0
   - m_Id: 1
     m_Sprites:
-    - {fileID: 7059240603702598600, guid: 8d285f1fcf7060647a87a41eb684c6c6, type: 3}
+    - {fileID: -9013601734220254931, guid: c8f72a86935657b4f859f0f4d645f5be, type: 3}
     m_GameObject: {fileID: 0}
     m_MinAnimationSpeed: 1
     m_MaxAnimationSpeed: 1
