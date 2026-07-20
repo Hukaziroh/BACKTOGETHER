@@ -197,15 +197,20 @@ public class CoopRopeManager : NetworkBehaviour
         if (distance > maxRopeLength)
         {
             Vector2 dirNorm = direction.normalized;
-            float stretch = distance - maxRopeLength;
-            float currentVelocityAlongSpring = Vector2.Dot(rb.linearVelocity, dirNorm);
-            Vector2 tangentialVelocity = rb.linearVelocity - (dirNorm * currentVelocityAlongSpring);
-            float pullForce = (stretch * springForce) - (currentVelocityAlongSpring * damper);
-            pullForce = Mathf.Clamp(pullForce, -1500f, 1500f);
+            float currentVelocityAlongRope = Vector2.Dot(rb.linearVelocity, dirNorm);
+            if (currentVelocityAlongRope < 0)
+            {
+                rb.linearVelocity -= dirNorm * currentVelocityAlongRope;
+            }
 
+ 
+            float stretch = distance - maxRopeLength;
+            float pullForce = stretch * 300f; 
             rb.AddForce(dirNorm * pullForce);
-            float swingDamper = damper * 3f;
-            rb.AddForce(-tangentialVelocity * swingDamper);
+
+
+            Vector2 tangentialVelocity = rb.linearVelocity - (dirNorm * Vector2.Dot(rb.linearVelocity, dirNorm));
+            rb.linearVelocity -= tangentialVelocity * (Time.fixedDeltaTime * 2f);
 
             return true; 
         }
