@@ -199,12 +199,18 @@ public class CoopRopeManager : NetworkBehaviour
             Vector2 dirNorm = direction.normalized;
             float stretch = distance - maxRopeLength;
             float currentVelocityAlongSpring = Vector2.Dot(rb.linearVelocity, dirNorm);
-            float force = (stretch * springForce) - (currentVelocityAlongSpring * damper);
+            Vector2 tangentialVelocity = rb.linearVelocity - (dirNorm * currentVelocityAlongSpring);
+            float pullForce = (stretch * springForce) - (currentVelocityAlongSpring * damper);
+            pullForce = Mathf.Clamp(pullForce, -1500f, 1500f);
 
-            rb.AddForce(dirNorm * force);
-            return true;
+            rb.AddForce(dirNorm * pullForce);
+            float swingDamper = damper * 3f;
+            rb.AddForce(-tangentialVelocity * swingDamper);
+
+            return true; 
         }
-        return false;
+
+        return false; 
     }
 
     private void OnRopeActiveChanged(bool oldVal, bool newVal)
