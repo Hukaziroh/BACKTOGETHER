@@ -298,11 +298,26 @@ public class PlayerMovement : NetworkBehaviour
         if (currentPlatform == null)
             return;
 
-        CoopRoundTripPlatform platform = currentPlatform.GetComponentInParent<CoopRoundTripPlatform>();
+        var roundTrip = currentPlatform.GetComponentInParent<CoopRoundTripPlatform>();
+        if (roundTrip != null) { platformVelocity = roundTrip.CurrentVelocity; return; }
 
-        if (platform != null)
+        var patrol = currentPlatform.GetComponentInParent<CoopPatrolPlatform>();
+        if (patrol != null) { platformVelocity = patrol.CurrentVelocity; return; }
+
+        var log = currentPlatform.GetComponentInParent<CoopMovingLog>();
+        if (log != null) { platformVelocity = log.CurrentVelocity; return; }
+
+        var parallel = currentPlatform.GetComponentInParent<CoopParallelPlatform>();
+        if (parallel != null) { platformVelocity = parallel.CurrentVelocity; return; }
+
+        var mirror = currentPlatform.GetComponentInParent<CoopMirrorPlatforms>();
+        if (mirror != null)
         {
-            platformVelocity = platform.CurrentVelocity;
+            if (currentPlatform.gameObject == mirror.leftPlatform.gameObject || currentPlatform.IsChildOf(mirror.leftPlatform.transform))
+                platformVelocity = mirror.LeftVelocity;
+            else
+                platformVelocity = mirror.RightVelocity;
+            return;
         }
     }
 

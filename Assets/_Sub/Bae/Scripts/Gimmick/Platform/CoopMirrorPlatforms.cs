@@ -27,8 +27,13 @@ public class CoopMirrorPlatforms : NetworkBehaviour
     private HashSet<GameObject> playersOnRight = new HashSet<GameObject>();
 
     private bool isWaitingToReturn = false;
-    public Vector2 LeftVelocity { get; private set; }
-    public Vector2 RightVelocity { get; private set; }
+
+    // 💡 각각의 발판에 대해 동기화 변수 추가
+    [SyncVar] private Vector2 syncLeftVelocity;
+    [SyncVar] private Vector2 syncRightVelocity;
+
+    public Vector2 LeftVelocity { get { return syncLeftVelocity; } }
+    public Vector2 RightVelocity { get { return syncRightVelocity; } }
 
     private enum PlatformState { Idle, Meeting, Returning }
     [SyncVar]
@@ -52,6 +57,9 @@ public class CoopMirrorPlatforms : NetworkBehaviour
         switch (currentState)
         {
             case PlatformState.Idle:
+                // 💡 대기 중일 때 속도 0 동기화
+                syncLeftVelocity = Vector2.zero;
+                syncRightVelocity = Vector2.zero;
                 if (playersOnLeft.Count >= requiredPlayers)
                 {
                     currentState = PlatformState.Meeting;
@@ -62,13 +70,16 @@ public class CoopMirrorPlatforms : NetworkBehaviour
             case PlatformState.Meeting:
                 MovePlatform(leftPlatform, meetingPoint.position - le);
                 MovePlatform(rightPlatform, meetingPoint.position + ri);
+
                 if (!isWaitingToReturn &&
                      Vector2.Distance(leftPlatform.position, (Vector2)(meetingPoint.position - le)) < 0.05f &&
                      Vector2.Distance(rightPlatform.position, (Vector2)(meetingPoint.position + ri)) < 0.05f)
                 {
+                    // 💡 만났을 때 멈춤 동기화
+                    syncLeftVelocity = Vector2.zero;
+                    syncRightVelocity = Vector2.zero;
                     StartCoroutine(WaitAndReturn());
                 }
-
                 break;
 
             case PlatformState.Returning:
@@ -93,9 +104,10 @@ public class CoopMirrorPlatforms : NetworkBehaviour
         Vector2 nextPos = Vector2.MoveTowards(currentPos, targetPos, moveSpeed * Time.fixedDeltaTime);
         rb.MovePosition(nextPos);
 
+        // 💡 계산된 속도를 서버에서 클라이언트로 동기화
         Vector2 velocity = (nextPos - currentPos) / Time.fixedDeltaTime;
-        if (rb == leftPlatform) LeftVelocity = velocity;
-        else RightVelocity = velocity;
+        if (rb == leftPlatform) syncLeftVelocity = velocity;
+        else syncRightVelocity = velocity;
     }
 
     private System.Collections.IEnumerator WaitAndReturn()
@@ -118,6 +130,4 @@ public class CoopMirrorPlatforms : NetworkBehaviour
     public void PlayerEnteredRight(GameObject player) { playersOnRight.Add(player); }
     [Server]
     public void PlayerExitedRight(GameObject player) { playersOnRight.Remove(player); }
-
-   
 }

@@ -13,7 +13,9 @@ public class CoopPatrolPlatform : NetworkBehaviour
     [Header("물리 설정")]
     public Rigidbody2D platformRigidbody;
 
-    public Vector2 CurrentVelocity { get; private set; }
+    // 💡 동기화 변수 추가
+    [SyncVar] private Vector2 syncVelocity;
+    public Vector2 CurrentVelocity { get { return syncVelocity; } }
 
     private HashSet<GameObject> playersOnPlatform = new HashSet<GameObject>();
     private Transform currentTarget;
@@ -52,14 +54,15 @@ public class CoopPatrolPlatform : NetworkBehaviour
 
                 platformRigidbody.MovePosition(nextPos);
 
-                CurrentVelocity = (nextPos - currentPos) / Time.fixedDeltaTime;
+                // 💡 계산된 속도를 서버에서 클라이언트로 동기화
+                syncVelocity = (nextPos - currentPos) / Time.fixedDeltaTime;
 
                 if (Vector2.Distance(currentPos, currentTarget.position) < 0.05f)
                     currentTarget = (currentTarget == endPoint) ? startPoint : endPoint;
             }
             else
             {
-                CurrentVelocity = Vector2.zero;
+                syncVelocity = Vector2.zero; // 💡 멈췄을 때 속도 0 동기화
             }
         }
     }

@@ -1,5 +1,4 @@
 using Mirror;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,7 +25,10 @@ public class CoopParallelPlatform : NetworkBehaviour
     public HashSet<GameObject> topPlayers = new HashSet<GameObject>();
     [System.NonSerialized]
     public HashSet<GameObject> bottomPlayers = new HashSet<GameObject>();
-    public Vector2 CurrentVelocity { get; private set; }
+
+    // 💡 동기화 변수 추가
+    [SyncVar] private Vector2 syncVelocity;
+    public Vector2 CurrentVelocity { get { return syncVelocity; } }
 
     private enum State { Idle, MovingForward, WaitingAtEnd, Returning }
 
@@ -45,6 +47,7 @@ public class CoopParallelPlatform : NetworkBehaviour
         switch (currentState)
         {
             case State.Idle:
+                syncVelocity = Vector2.zero; // 💡 대기 중일 때 속도 0 동기화
                 if (isReady) currentState = State.MovingForward;
                 break;
 
@@ -65,6 +68,7 @@ public class CoopParallelPlatform : NetworkBehaviour
                 break;
 
             case State.WaitingAtEnd:
+                syncVelocity = Vector2.zero; // 💡 도착해서 기다릴 때 속도 0 동기화
                 if (!isReady)
                 {
                     if (waitCoroutine != null) StopCoroutine(waitCoroutine);
@@ -98,7 +102,8 @@ public class CoopParallelPlatform : NetworkBehaviour
         Vector2 nextPos = Vector2.MoveTowards(currentPos, target, speed * Time.fixedDeltaTime);
 
         platformRb.MovePosition(nextPos);
-        CurrentVelocity = (nextPos - currentPos) / Time.fixedDeltaTime;
+        // 💡 계산된 속도를 서버에서 클라이언트로 동기화
+        syncVelocity = (nextPos - currentPos) / Time.fixedDeltaTime;
     }
 
     private IEnumerator WaitRoutine()
@@ -106,6 +111,7 @@ public class CoopParallelPlatform : NetworkBehaviour
         yield return new WaitForSeconds(waitTimeAtEnd);
         currentState = State.Returning;
     }
+
     [Server]
     public void AddPlayer(GameObject player, bool isTop)
     {

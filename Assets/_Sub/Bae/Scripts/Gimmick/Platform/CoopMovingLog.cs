@@ -12,9 +12,12 @@ public class CoopMovingLog : NetworkBehaviour
     [Header("물리 설정")]
     public Rigidbody2D logRigidbody;
 
+    // 💡 동기화 변수 추가
+    [SyncVar] private Vector2 syncVelocity;
+    public Vector2 CurrentVelocity { get { return syncVelocity; } }
+
     private Vector2 startPos;
     private HashSet<GameObject> playersOnLog = new HashSet<GameObject>();
-    public Vector2 CurrentVelocity { get; private set; }
 
     void Start()
     {
@@ -47,12 +50,9 @@ public class CoopMovingLog : NetworkBehaviour
             Vector2 nextPos = Vector2.MoveTowards(currentPos, targetPos, moveSpeed * Time.fixedDeltaTime);
 
             logRigidbody.MovePosition(nextPos);
-            
-            CurrentVelocity = (nextPos - currentPos) / Time.fixedDeltaTime;
-        }
-        else
-        {
-            CurrentVelocity = Vector2.zero;
+
+            // 💡 계산된 속도를 서버에서 클라이언트로 동기화
+            syncVelocity = (nextPos - currentPos) / Time.fixedDeltaTime;
         }
     }
 }
