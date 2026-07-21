@@ -48,7 +48,6 @@ public class PlayerMovement : NetworkBehaviour
     private bool isOnIce = false;
     private bool wasOnIceLastFrame = false;
 
-    // 메모리 재활용 캐싱 배열
     private Collider2D[] groundCheckResults = new Collider2D[5];
     private Collider2D[] playerCheckResults = new Collider2D[5];
     private Collider2D[] headCheckResults = new Collider2D[5];
@@ -185,15 +184,28 @@ public class PlayerMovement : NetworkBehaviour
         float maxSpeedX = 30f;
         Vector2 clampedVelocity = controller.rb.linearVelocity;
         clampedVelocity.x = Mathf.Clamp(clampedVelocity.x, -maxSpeedX, maxSpeedX);
+
         bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
+
+        if (!isInverted && clampedVelocity.y > 0f && ckTimer <= 0f)
+        {
+            float maxAllowedY = (currentPlatform != null && platformVelocity.y > 0f) ? platformVelocity.y : 0f;
+            clampedVelocity.y = Mathf.Min(clampedVelocity.y, maxAllowedY);
+        }
+        else if (isInverted && clampedVelocity.y < 0f && ckTimer <= 0f)
+        {
+            float minAllowedY = (currentPlatform != null && platformVelocity.y < 0f) ? platformVelocity.y : 0f;
+            clampedVelocity.y = Mathf.Max(clampedVelocity.y, minAllowedY);
+        }
+
         if (isInverted) clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed * 1.5f, maxFallSpeed);
         else clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed, maxFallSpeed * 1.5f);
+
         controller.rb.linearVelocity = clampedVelocity;
     }
 
     void CheckGroundOrPlayer()
     {
-        // 1. 순수 바닥(Ground) 체크
         ContactFilter2D groundFilter = new ContactFilter2D();
         groundFilter.useLayerMask = true;
         groundFilter.useTriggers = false;
@@ -221,7 +233,6 @@ public class PlayerMovement : NetworkBehaviour
             }
         }
 
-        // 2. 바닥에 닿지 않았을 때만 플레이어 머리 위인지 추가 체크
         if (!isGrounded)
         {
             ContactFilter2D playerFilter = new ContactFilter2D();
@@ -238,7 +249,6 @@ public class PlayerMovement : NetworkBehaviour
                 if (col.gameObject == gameObject) continue;
                 if (!col.CompareTag("Player")) continue;
 
-                // 내 발바닥이 상대방 콜라이더 최상단(max.y)보다 위에 있을 때만 바닥으로 인정!
                 if (groundCheck.position.y > col.bounds.max.y - 0.05f)
                 {
                     isGrounded = true;
@@ -247,7 +257,6 @@ public class PlayerMovement : NetworkBehaviour
             }
         }
 
-        // 플랫폼 상태 갱신
         if (foundPlatform)
         {
             if (currentPlatform != detectedPlatform)
@@ -340,6 +349,21 @@ public class PlayerMovement : NetworkBehaviour
             Gizmos.color = Color.cyan;
             Vector2 hCheckPosition = (Vector2)headCheck.position + headCheckOffset;
             Gizmos.DrawWireCube(hCheckPosition, headCheckBoxSize);
+        }
+    }
+    private void OnCollisionStay2D(Collision2D col)
+    {
+        if (!isLocalPlayer) return;
+
+        if (!isGrounded && col.gameObject.CompareTag("Player"))
+        {
+            Vector2 dir = transform.position - col.transform.position;
+
+            if (Mathf.Abs(dir.x) > 0.1f && Mathf.Abs(dir.y) < 0.8f)
+            {
+                float pushForce = 3f * controller.rb.mass;
+                controller.rb.AddForce(new Vector2(Mathf.Sign(dir.x) * pushForce, 0f));
+            }
         }
     }
 }
