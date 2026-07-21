@@ -315,7 +315,20 @@ public class EOSLobby : MonoBehaviour
     /// </summary>
     public void LeaveLobby()
     {
-        if (!ConnectedToLobby) return;
+        Debug.Log(
+            $"[EOSLobby] ① LeaveLobby() 호출 | " +
+            $"ConnectedToLobby = {ConnectedToLobby} | " +
+            $"LobbyID = {currentLobbyId}"
+        );
+
+        if (!ConnectedToLobby)
+        {
+            Debug.LogWarning(
+                "[EOSLobby] ② 이미 Lobby에 연결되어 있지 않습니다."
+            );
+
+            return;
+        }
 
         LeaveLobbyOptions options = new LeaveLobbyOptions()
         {
@@ -323,22 +336,50 @@ public class EOSLobby : MonoBehaviour
             LocalUserId = EOSSDKComponent.LocalUserProductId
         };
 
-        // 찌꺼기 데이터가 남지 않도록 세션 변수 완벽 초기화
+        Debug.Log("[EOSLobby] ③ EOS LeaveLobby API 호출 직전");
+
+        // 현재 로비 정보 초기화
         currentLobbyId = string.Empty;
         ConnectedLobbyDetails = null;
         isLobbyOwner = false;
 
-        EOSSDKComponent.GetLobbyInterface().LeaveLobby(options, null, OnLeaveLobbyCompleted);
+        Debug.Log("[EOSLobby] ④ 로비 정보 초기화 완료");
+
+        EOSSDKComponent.GetLobbyInterface().LeaveLobby(
+            options,
+            null,
+            OnLeaveLobbyCompleted
+        );
+
+        Debug.Log("[EOSLobby] ⑤ EOS LeaveLobby API 호출 완료");
     }
 
     private void OnLeaveLobbyCompleted(LeaveLobbyCallbackInfo data)
     {
+        Debug.Log(
+            $"[EOSLobby] ⑥ LeaveLobby 콜백 도착 | " +
+            $"ResultCode = {data.ResultCode}"
+        );
+
         if (data.ResultCode == Result.Success)
         {
-            Debug.Log("[EOSLobby] 에픽 서버로부터 로비 퇴장 확답 수신 완료.");
+            Debug.Log(
+                "[EOSLobby] ⑦ 에픽 서버로부터 로비 퇴장 확답 수신 완료."
+            );
         }
-        // 콜백이 완전히 끝난 시점에 false로 돌려 퍼즈매니저의 대기를 끝냅니다.
+        else
+        {
+            Debug.LogError(
+                $"[EOSLobby] ⑦ 로비 퇴장 실패 | " +
+                $"ResultCode = {data.ResultCode}"
+            );
+        }
+
         ConnectedToLobby = false;
+
+        Debug.Log(
+            $"[EOSLobby] ⑧ ConnectedToLobby = {ConnectedToLobby}"
+        );
     }
     /// <summary>
     /// Remove an attribute attached to the lobby.
