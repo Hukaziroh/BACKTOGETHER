@@ -187,17 +187,6 @@ public class PlayerMovement : NetworkBehaviour
 
         bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
 
-        if (!isInverted && clampedVelocity.y > 0f && ckTimer <= 0f)
-        {
-            float maxAllowedY = (currentPlatform != null && platformVelocity.y > 0f) ? platformVelocity.y : 0f;
-            clampedVelocity.y = Mathf.Min(clampedVelocity.y, maxAllowedY);
-        }
-        else if (isInverted && clampedVelocity.y < 0f && ckTimer <= 0f)
-        {
-            float minAllowedY = (currentPlatform != null && platformVelocity.y < 0f) ? platformVelocity.y : 0f;
-            clampedVelocity.y = Mathf.Max(clampedVelocity.y, minAllowedY);
-        }
-
         if (isInverted) clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed * 1.5f, maxFallSpeed);
         else clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed, maxFallSpeed * 1.5f);
 
