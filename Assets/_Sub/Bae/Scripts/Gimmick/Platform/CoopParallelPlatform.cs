@@ -11,18 +11,20 @@ public class CoopParallelPlatform : NetworkBehaviour
     public Transform endPoint;
 
     [Header("속도 및 시간 설정")]
-    public float forwardSpeed = 3f;  
-    public float returnSpeed = 5f;   
+    public float forwardSpeed = 3f;
+    public float returnSpeed = 5f;
     public float waitTimeAtEnd = 5f;
 
     [Header("필요 인원 설정")]
-    public int requiredTop = 1;     
+    public int requiredTop = 1;
     public int requiredBottom = 0;
 
     [Header("물리 설정")]
     public Rigidbody2D platformRb;
 
+    [System.NonSerialized]
     public HashSet<GameObject> topPlayers = new HashSet<GameObject>();
+    [System.NonSerialized]
     public HashSet<GameObject> bottomPlayers = new HashSet<GameObject>();
     public Vector2 CurrentVelocity { get; private set; }
 

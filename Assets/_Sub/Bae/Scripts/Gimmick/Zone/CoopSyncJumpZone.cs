@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class CoopSyncJumpZone : NetworkBehaviour
 {
-    [Header("동기화 점프 구역 관리")]
+    [System.NonSerialized]
     public HashSet<GameObject> playersInZone = new HashSet<GameObject>();
 
     [ServerCallback]
@@ -57,7 +57,7 @@ public class CoopSyncJumpZone : NetworkBehaviour
         }
     }
     [Server]
-    
+
     public void BroadcastCutJump(GameObject initiator)
     {
         // 존 안에 있는 나를 제외한 나머지 인원에게 점프 끊기 명령 하달

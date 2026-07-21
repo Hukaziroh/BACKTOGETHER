@@ -17,7 +17,7 @@ public class CoopSeparateZone : NetworkBehaviour
 
                 Vector3 basePos = body.transform.position;
 
-                PlayerCombineHandler[] allPlayers = FindObjectsByType<PlayerCombineHandler>(FindObjectsSortMode.None);
+                PlayerCombineHandler[] allPlayers = FindObjectsByType<PlayerCombineHandler>(FindObjectsInactive.Exclude);
 
                 int spreadIndex = 0;
                 float[] spreadOffsets = { 0f, -1.2f, 1.2f, -2.4f, 2.4f };
