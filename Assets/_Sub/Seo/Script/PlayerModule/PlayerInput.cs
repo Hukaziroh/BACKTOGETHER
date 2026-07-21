@@ -55,7 +55,6 @@ public class PlayerInput : NetworkBehaviour
         {
             actionAction = new InputAction("Action", InputActionType.Button);
             actionAction.AddBinding("<Keyboard>/v");
-            actionAction.AddBinding("<Keyboard>/downArrow");
             actionAction.AddBinding("<Gamepad>/buttonEast");
         }
     }
