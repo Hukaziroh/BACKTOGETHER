@@ -1,19 +1,41 @@
 using UnityEngine;
 using Mirror;
+using System.Collections;
 
 public class LandNetworkSync : NetworkBehaviour
 {
-    // 누구나 서버로 비활성화를 요청할 수 있음 ([Command(requiresAuthority = false)])
+    private Renderer landRenderer;
+    private Collider2D landCollider;
+
+    private void Awake()
+    {
+        // SpriteRenderer, TilemapRenderer 등 종류와 관계없이 렌더러 컴포넌트를 자동으로 가져옵니다.
+        landRenderer = GetComponent<Renderer>();
+        landCollider = GetComponent<Collider2D>();
+    }
+
     [Command(requiresAuthority = false)]
     public void CmdDisableLand()
     {
-        RpcDisableLand();
+        StartCoroutine(LandRespawnRoutine());
+    }
+
+    private IEnumerator LandRespawnRoutine()
+    {
+        // 1. 땅 숨기기 및 충돌 해제
+        RpcSetLandActive(false);
+
+        // 2. 3초 대기
+        yield return new WaitForSeconds(3.0f);
+
+        // 3. 땅 다시 보이기 및 충돌 복구
+        RpcSetLandActive(true);
     }
 
     [ClientRpc]
-    private void RpcDisableLand()
+    private void RpcSetLandActive(bool isActive)
     {
-        gameObject.SetActive(false);
-        Debug.Log("[땅 시스템] 땅이 비활성화되었습니다: " + gameObject.name);
+        if (landRenderer != null) landRenderer.enabled = isActive;
+        if (landCollider != null) landCollider.enabled = isActive;
     }
 }

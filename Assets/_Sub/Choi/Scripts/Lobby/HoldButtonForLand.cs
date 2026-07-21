@@ -10,6 +10,10 @@ public class HoldButtonForLand : NetworkBehaviour
     [Tooltip("버튼을 계속 밟고 있어야 하는 시간 (5초)")]
     public float requiredHoldTime = 5.0f;
 
+    [Header("조건 연동")]
+    [Tooltip("인원수 판정을 담당하는 TriggerPlayerCounter 연결 (이 조건이 충족되어야 타이머가 작동함)")]
+    public TriggerPlayerCounter playerCounter;
+
     [Header("연결 설정")]
     [Tooltip("이 버튼을 누르면 사라질 특정 땅 오브젝트의 LandNetworkSync")]
     public LandNetworkSync targetLand;
@@ -63,7 +67,10 @@ public class HoldButtonForLand : NetworkBehaviour
     private void EvaluateButtonState()
     {
         playersOnButton.RemoveWhere(go => go == null || !go.activeInHierarchy);
-        bool currentlyPressed = (playersOnButton.Count > 0);
+
+        // 플레이어가 올라와 있으면서, TriggerPlayerCounter의 조건이 충족된 경우에만 누른 것으로 인정
+        bool conditionMet = (playerCounter != null && playerCounter.IsConditionMet);
+        bool currentlyPressed = (playersOnButton.Count > 0 && conditionMet);
 
         if (isPressed != currentlyPressed)
         {
@@ -77,7 +84,19 @@ public class HoldButtonForLand : NetworkBehaviour
 
     private void Update()
     {
-        // 1. 클라이언트 측: 밟고 있는 동안 게이지바 부드럽게 채우기
+        // 도중에 인원이 부족해져서 조건이 깨지면 즉시 게이지 및 상태 초기화
+        if (playerCounter != null && !playerCounter.IsConditionMet)
+        {
+            if (isServer)
+            {
+                isPressed = false;
+                serverHoldTimer = 0f;
+            }
+            clientHoldTimer = 0f;
+            if (progressBarImage != null) progressBarImage.fillAmount = 0f;
+        }
+
+        // 1. 클라이언트 측: 조건이 맞고 밟고 있는 동안 게이지바 부드럽게 채우기
         if (isPressed && !actionTriggered)
         {
             clientHoldTimer += Time.deltaTime;
@@ -101,7 +120,7 @@ public class HoldButtonForLand : NetworkBehaviour
         if (isPressed)
         {
             playersOnButton.RemoveWhere(go => go == null || !go.activeInHierarchy);
-            if (playersOnButton.Count == 0)
+            if (playersOnButton.Count == 0 || (playerCounter != null && !playerCounter.IsConditionMet))
             {
                 isPressed = false;
                 serverHoldTimer = 0f;
