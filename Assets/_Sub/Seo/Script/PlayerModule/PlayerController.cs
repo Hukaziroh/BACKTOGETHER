@@ -52,6 +52,8 @@ public class PlayerController : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
+        rb.mass = 5f;
+
         Camera mainCam = Camera.main;
         if (mainCam != null)
         {
