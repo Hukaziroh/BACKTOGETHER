@@ -74,6 +74,20 @@ public class EyeGimmick : NetworkBehaviour
 
             RaycastHit2D hit = Physics2D.Raycast(transform.position, directionToPlayer.normalized, distanceToPlayer, obstacleLayer);
 
+            Debug.DrawRay(
+           transform.position,
+           directionToPlayer.normalized * distanceToPlayer,
+           hit.collider == null ? Color.green : Color.red
+       );
+
+            Debug.Log(
+            $"[EyeGimmick] 플레이어: {other.name} | " +
+            $"눈 위치: {transform.position} | " +
+            $"플레이어 위치: {other.transform.position} | " +
+            $"Raycast 결과: {(hit.collider != null ? hit.collider.name : "없음")} | " +
+            $"Layer: {(hit.collider != null ? LayerMask.LayerToName(hit.collider.gameObject.layer) : "없음")}"
+        );
+
             if (hit.collider == null) 
             {
                 NetworkIdentity identity = other.GetComponent<NetworkIdentity>();

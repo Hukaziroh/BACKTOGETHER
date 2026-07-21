@@ -1,6 +1,7 @@
 using UnityEngine;
 using Mirror;
 using System.Collections.Generic;
+using System;
 
 public class CoopButton : NetworkBehaviour
 {
@@ -14,6 +15,7 @@ public class CoopButton : NetworkBehaviour
     public bool isPressed = false;
 
     private HashSet<GameObject> playersOnButton = new HashSet<GameObject>();
+    public Action<CoopButton> OnButtonStateChangedEvent;
 
     public override void OnStartClient()
     {
@@ -50,6 +52,8 @@ public class CoopButton : NetworkBehaviour
         if (isPressed != currentlyPressed)
         {
             isPressed = currentlyPressed;
+
+            OnButtonStateChangedEvent?.Invoke(this);
         }
     }
 
