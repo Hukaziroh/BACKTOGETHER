@@ -39,7 +39,7 @@ public class CoopRopeManager : NetworkBehaviour
     public void StartRopeGimmick()
     {
         if (isRopeActive) return;
-        CoopPlayerIdentity[] players = FindObjectsByType<CoopPlayerIdentity>(FindObjectsSortMode.None);
+        CoopPlayerIdentity[] players = FindObjectsByType<CoopPlayerIdentity>(FindObjectsInactive.Exclude);
 
         if (players.Length < requiredPlayers)
         {

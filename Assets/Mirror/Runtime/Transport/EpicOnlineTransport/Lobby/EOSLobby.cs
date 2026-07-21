@@ -3,8 +3,9 @@ using Epic.OnlineServices.Lobby;
 using UnityEngine;
 using Epic.OnlineServices;
 using System.Collections.Generic;
-
-public class EOSLobby : MonoBehaviour {
+#pragma warning disable 0067, 0414
+public class EOSLobby : MonoBehaviour
+{
     ///<returns>True if the user is connected to a lobby.</returns>
     [HideInInspector] public bool ConnectedToLobby { get; private set; }
     ///<returns>The details of the lobby that the user is currently connected to.</returns>
@@ -78,12 +79,14 @@ public class EOSLobby : MonoBehaviour {
     /// <summary>When invoked, a message is sent to all subscribers with information on the lobby that was updated.</summary>
     public event LobbyAttributeUpdate LobbyAttributeUpdated;
 
-    public virtual void Start() {
+    public virtual void Start()
+    {
         lobbyMemberStatusNotifyId = EOSSDKComponent.GetLobbyInterface().AddNotifyLobbyMemberStatusReceived(new AddNotifyLobbyMemberStatusReceivedOptions { }, null,
         (LobbyMemberStatusReceivedCallbackInfo callback) => {
             LobbyMemberStatusUpdated?.Invoke(callback);
 
-            if (callback.CurrentStatus == LobbyMemberStatus.Closed) {
+            if (callback.CurrentStatus == LobbyMemberStatus.Closed)
+            {
                 LeaveLobby();
             }
         });
@@ -103,9 +106,11 @@ public class EOSLobby : MonoBehaviour {
     /// <param name="permissionLevel">The restriction on the lobby to prevent unwanted people from joining.</param>
     /// <param name="presenceEnabled">Use Epic's overlay to display information to others.</param>
     /// <param name="lobbyData">Optional data that you can to the lobby. By default, there is an empty attribute for searching and an attribute which holds the host's network address.</param>
-    public virtual void CreateLobby(uint maxConnections, LobbyPermissionLevel permissionLevel, bool presenceEnabled, AttributeData[] lobbyData = null) {
+    public virtual void CreateLobby(uint maxConnections, LobbyPermissionLevel permissionLevel, bool presenceEnabled, AttributeData[] lobbyData = null)
+    {
 
-        EOSSDKComponent.GetLobbyInterface().CreateLobby(new CreateLobbyOptions {
+        EOSSDKComponent.GetLobbyInterface().CreateLobby(new CreateLobbyOptions
+        {
             //lobby options
             LocalUserId = EOSSDKComponent.LocalUserProductId,
             MaxLobbyMembers = maxConnections,
@@ -116,7 +121,8 @@ public class EOSLobby : MonoBehaviour {
             List<Attribute> lobbyReturnData = new List<Attribute>();
 
             //if the result of CreateLobby is not successful, invoke an error event and return
-            if (callback.ResultCode != Result.Success) {
+            if (callback.ResultCode != Result.Success)
+            {
                 CreateLobbyFailed?.Invoke("There was an error while creating a lobby. Error: " + callback.ResultCode);
                 return;
             }
@@ -134,8 +140,10 @@ public class EOSLobby : MonoBehaviour {
             modHandle.AddAttribute(new LobbyModificationAddAttributeOptions { Attribute = hostAddressData, Visibility = LobbyAttributeVisibility.Public });
 
             //add user attributes
-            if (lobbyData != null) {
-                foreach (AttributeData data in lobbyData) {
+            if (lobbyData != null)
+            {
+                foreach (AttributeData data in lobbyData)
+                {
                     modHandle.AddAttribute(new LobbyModificationAddAttributeOptions { Attribute = data, Visibility = LobbyAttributeVisibility.Public });
                     lobbyReturnData.Add(new Attribute { Data = data, Visibility = LobbyAttributeVisibility.Public });
                 }
@@ -145,7 +153,8 @@ public class EOSLobby : MonoBehaviour {
             EOSSDKComponent.GetLobbyInterface().UpdateLobby(new UpdateLobbyOptions { LobbyModificationHandle = modHandle }, null, (UpdateLobbyCallbackInfo updateCallback) => {
 
                 //if there was an error while updating the lobby, invoke an error event and return
-                if (updateCallback.ResultCode != Result.Success) {
+                if (updateCallback.ResultCode != Result.Success)
+                {
                     CreateLobbyFailed?.Invoke("There was an error while updating the lobby. Error: " + updateCallback.ResultCode);
                     return;
                 }
@@ -171,7 +180,8 @@ public class EOSLobby : MonoBehaviour {
     /// </summary>
     /// <param name="maxResults">The maximum amount of results to return.</param>
     /// <param name="lobbySearchSetParameterOptions">The parameters to search by. If left empty, then the search will use the default attribute attached to all the lobbies.</param>
-    public virtual void FindLobbies(uint maxResults = 100, LobbySearchSetParameterOptions[] lobbySearchSetParameterOptions = null) {
+    public virtual void FindLobbies(uint maxResults = 100, LobbySearchSetParameterOptions[] lobbySearchSetParameterOptions = null)
+    {
         //create search handle and list of lobby details
         LobbySearch search = new LobbySearch();
 
@@ -179,12 +189,17 @@ public class EOSLobby : MonoBehaviour {
         EOSSDKComponent.GetLobbyInterface().CreateLobbySearch(new CreateLobbySearchOptions { MaxResults = maxResults }, out search);
 
         //set search parameters
-        if (lobbySearchSetParameterOptions != null) {
-            foreach (LobbySearchSetParameterOptions searchOption in lobbySearchSetParameterOptions) {
+        if (lobbySearchSetParameterOptions != null)
+        {
+            foreach (LobbySearchSetParameterOptions searchOption in lobbySearchSetParameterOptions)
+            {
                 search.SetParameter(searchOption);
             }
-        } else {
-            search.SetParameter(new LobbySearchSetParameterOptions {
+        }
+        else
+        {
+            search.SetParameter(new LobbySearchSetParameterOptions
+            {
                 ComparisonOp = ComparisonOp.Equal,
                 Parameter = new AttributeData { Key = DefaultAttributeKey, Value = DefaultAttributeKey }
             });
@@ -193,7 +208,8 @@ public class EOSLobby : MonoBehaviour {
         //find lobbies
         search.Find(new LobbySearchFindOptions { LocalUserId = EOSSDKComponent.LocalUserProductId }, null, (LobbySearchFindCallbackInfo callback) => {
             //if the search was unsuccessful, invoke an error event and return
-            if (callback.ResultCode != Result.Success) {
+            if (callback.ResultCode != Result.Success)
+            {
                 FindLobbiesFailed?.Invoke("There was an error while finding lobbies. Error: " + callback.ResultCode);
                 return;
             }
@@ -201,9 +217,10 @@ public class EOSLobby : MonoBehaviour {
             foundLobbies.Clear();
 
             //for each lobby found, add data to details
-            for (int i = 0; i < search.GetSearchResultCount(new LobbySearchGetSearchResultCountOptions { }); i++) {
+            for (int i = 0; i < search.GetSearchResultCount(new LobbySearchGetSearchResultCountOptions { }); i++)
+            {
                 LobbyDetails lobbyInformation;
-                search.CopySearchResultByIndex(new LobbySearchCopySearchResultByIndexOptions { LobbyIndex = (uint) i }, out lobbyInformation);
+                search.CopySearchResultByIndex(new LobbySearchCopySearchResultByIndexOptions { LobbyIndex = (uint)i }, out lobbyInformation);
                 foundLobbies.Add(lobbyInformation);
             }
 
@@ -220,11 +237,13 @@ public class EOSLobby : MonoBehaviour {
     /// <param name="lobbyToJoin"><see cref="LobbyDetails"/> of the lobby to join that is retrieved from the <see cref="FindLobbiesSucceeded"/> event.</param>
     /// <param name="attributeKeys">The keys to use to retrieve the data attached to the lobby. If you leave this empty, the host address attribute will still be read.</param>
     /// <param name="presenceEnabled">Use Epic's overlay to display information to others.</param>
-    public virtual void JoinLobby(LobbyDetails lobbyToJoin, string[] attributeKeys = null, bool presenceEnabled = false) {
+    public virtual void JoinLobby(LobbyDetails lobbyToJoin, string[] attributeKeys = null, bool presenceEnabled = false)
+    {
         //join lobby
         EOSSDKComponent.GetLobbyInterface().JoinLobby(new JoinLobbyOptions { LobbyDetailsHandle = lobbyToJoin, LocalUserId = EOSSDKComponent.LocalUserProductId, PresenceEnabled = presenceEnabled }, null, (JoinLobbyCallbackInfo callback) => {
             //if the result was not a success, invoke an error event and return
-            if (callback.ResultCode != Result.Success) {
+            if (callback.ResultCode != Result.Success)
+            {
                 JoinLobbyFailed?.Invoke("There was an error while joining a lobby. Error: " + callback.ResultCode);
                 return;
             }
@@ -235,8 +254,10 @@ public class EOSLobby : MonoBehaviour {
             lobbyToJoin.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = hostAddressKey }, out hostAddress);
             lobbyData.Add(hostAddress);
 
-            if (attributeKeys != null) {
-                foreach (string key in attributeKeys) {
+            if (attributeKeys != null)
+            {
+                foreach (string key in attributeKeys)
+                {
                     Attribute attribute = new Attribute();
                     lobbyToJoin.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = key }, out attribute);
                     lobbyData.Add(attribute);
@@ -256,14 +277,16 @@ public class EOSLobby : MonoBehaviour {
         });
     }
 
-    public virtual void JoinLobbyByID(string lobbyID){
+    public virtual void JoinLobbyByID(string lobbyID)
+    {
         LobbySearch search = new LobbySearch();
         EOSSDKComponent.GetLobbyInterface().CreateLobbySearch(new CreateLobbySearchOptions { MaxResults = 1 }, out search);
-        search.SetLobbyId(new LobbySearchSetLobbyIdOptions {LobbyId = lobbyID});
+        search.SetLobbyId(new LobbySearchSetLobbyIdOptions { LobbyId = lobbyID });
 
         search.Find(new LobbySearchFindOptions { LocalUserId = EOSSDKComponent.LocalUserProductId }, null, (LobbySearchFindCallbackInfo callback) => {
             //if the search was unsuccessful, invoke an error event and return
-            if (callback.ResultCode != Result.Success) {
+            if (callback.ResultCode != Result.Success)
+            {
                 FindLobbiesFailed?.Invoke("There was an error while finding lobbies. Error: " + callback.ResultCode);
                 return;
             }
@@ -271,16 +294,18 @@ public class EOSLobby : MonoBehaviour {
             foundLobbies.Clear();
 
             //for each lobby found, add data to details
-            for (int i = 0; i < search.GetSearchResultCount(new LobbySearchGetSearchResultCountOptions { }); i++) {
+            for (int i = 0; i < search.GetSearchResultCount(new LobbySearchGetSearchResultCountOptions { }); i++)
+            {
                 LobbyDetails lobbyInformation;
-                search.CopySearchResultByIndex(new LobbySearchCopySearchResultByIndexOptions { LobbyIndex = (uint) i }, out lobbyInformation);
+                search.CopySearchResultByIndex(new LobbySearchCopySearchResultByIndexOptions { LobbyIndex = (uint)i }, out lobbyInformation);
                 foundLobbies.Add(lobbyInformation);
             }
 
-            if (foundLobbies.Count > 0) {
+            if (foundLobbies.Count > 0)
+            {
                 JoinLobby(foundLobbies[0]);
             }
-        });     
+        });
     }
 
     /// <summary>
@@ -319,7 +344,8 @@ public class EOSLobby : MonoBehaviour {
     /// Remove an attribute attached to the lobby.
     /// </summary>
     /// <param name="key">The key of the attribute that will be removed.</param>
-    public virtual void RemoveAttribute(string key) {
+    public virtual void RemoveAttribute(string key)
+    {
         LobbyModification modHandle = new LobbyModification();
 
         EOSSDKComponent.GetLobbyInterface().UpdateLobbyModification(new UpdateLobbyModificationOptions { LobbyId = currentLobbyId, LocalUserId = EOSSDKComponent.LocalUserProductId }, out modHandle);
@@ -327,8 +353,9 @@ public class EOSLobby : MonoBehaviour {
         modHandle.RemoveAttribute(new LobbyModificationRemoveAttributeOptions { Key = key });
 
         EOSSDKComponent.GetLobbyInterface().UpdateLobby(new UpdateLobbyOptions { LobbyModificationHandle = modHandle }, null, (UpdateLobbyCallbackInfo callback) => {
-            if (callback.ResultCode != Result.Success) {
-                AttributeUpdateFailed?.Invoke(key, $"There was an error while removing attribute \"{ key }\". Error: " + callback.ResultCode);
+            if (callback.ResultCode != Result.Success)
+            {
+                AttributeUpdateFailed?.Invoke(key, $"There was an error while removing attribute \"{key}\". Error: " + callback.ResultCode);
                 return;
             }
 
@@ -340,7 +367,8 @@ public class EOSLobby : MonoBehaviour {
     /// Update an attribute that is attached to the lobby.
     /// </summary>
     /// <param name="attribute">The new data to apply.</param>
-    private void UpdateAttribute(AttributeData attribute) {
+    private void UpdateAttribute(AttributeData attribute)
+    {
         LobbyModification modHandle = new LobbyModification();
 
         EOSSDKComponent.GetLobbyInterface().UpdateLobbyModification(new UpdateLobbyModificationOptions { LobbyId = currentLobbyId, LocalUserId = EOSSDKComponent.LocalUserProductId }, out modHandle);
@@ -348,8 +376,9 @@ public class EOSLobby : MonoBehaviour {
         modHandle.AddAttribute(new LobbyModificationAddAttributeOptions { Attribute = attribute, Visibility = LobbyAttributeVisibility.Public });
 
         EOSSDKComponent.GetLobbyInterface().UpdateLobby(new UpdateLobbyOptions { LobbyModificationHandle = modHandle }, null, (UpdateLobbyCallbackInfo callback) => {
-            if (callback.ResultCode != Result.Success) {
-                AttributeUpdateFailed?.Invoke(attribute.Key, $"There was an error while updating attribute \"{ attribute.Key }\". Error: " + callback.ResultCode);
+            if (callback.ResultCode != Result.Success)
+            {
+                AttributeUpdateFailed?.Invoke(attribute.Key, $"There was an error while updating attribute \"{attribute.Key}\". Error: " + callback.ResultCode);
                 return;
             }
 
@@ -362,7 +391,8 @@ public class EOSLobby : MonoBehaviour {
     /// </summary>
     /// <param name="key">The key of the attribute.</param>
     /// <param name="newValue">The new boolean value.</param>
-    public void UpdateLobbyAttribute(string key, bool newValue) {
+    public void UpdateLobbyAttribute(string key, bool newValue)
+    {
         AttributeData data = new AttributeData { Key = key, Value = newValue };
         UpdateAttribute(data);
     }
@@ -372,7 +402,8 @@ public class EOSLobby : MonoBehaviour {
     /// </summary>
     /// <param name="key">The key of the attribute.</param>
     /// <param name="newValue">The new integer value.</param>
-    public void UpdateLobbyAttribute(string key, int newValue) {
+    public void UpdateLobbyAttribute(string key, int newValue)
+    {
         AttributeData data = new AttributeData { Key = key, Value = newValue };
         UpdateAttribute(data);
     }
@@ -382,7 +413,8 @@ public class EOSLobby : MonoBehaviour {
     /// </summary>
     /// <param name="key">The key of the attribute.</param>
     /// <param name="newValue">The new double value.</param>
-    public void UpdateLobbyAttribute(string key, double newValue) {
+    public void UpdateLobbyAttribute(string key, double newValue)
+    {
         AttributeData data = new AttributeData { Key = key, Value = newValue };
         UpdateAttribute(data);
     }
@@ -392,7 +424,8 @@ public class EOSLobby : MonoBehaviour {
     /// </summary>
     /// <param name="key">The key of the attribute.</param>
     /// <param name="newValue">The new string value.</param>
-    public void UpdateLobbyAttribute(string key, string newValue) {
+    public void UpdateLobbyAttribute(string key, string newValue)
+    {
         AttributeData data = new AttributeData { Key = key, Value = newValue };
         UpdateAttribute(data);
     }
@@ -401,7 +434,8 @@ public class EOSLobby : MonoBehaviour {
     /// Returns the current lobby id
     /// </summary>
     /// <returns>current lobby id</returns>
-    public string GetCurrentLobbyId() {
+    public string GetCurrentLobbyId()
+    {
         return currentLobbyId;
     }
 }
