@@ -1983,6 +1983,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScreenFader
   fadeCanvasGroup: {fileID: 1431598095}
+  mainSceneName: Main
+  lobbySceneName: Lobby
 --- !u!1001 &552944003
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8576,8 +8578,16 @@ PrefabInstance:
       value: 35
       objectReference: {fileID: 0}
     - target: {fileID: 6452305335055179395, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 2627e9ca796b22d4fb592f60230c2fec, type: 2}
+    - target: {fileID: 6452305335055179395, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_fontSizeBase
       value: 35
+      objectReference: {fileID: 0}
+    - target: {fileID: 6452305335055179395, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8201338402652709385, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_fontSize
