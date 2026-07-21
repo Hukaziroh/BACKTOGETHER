@@ -20,8 +20,15 @@ public class CoopRoundTripPlatform : NetworkBehaviour
     [Header("물리 설정")]
     public Rigidbody2D platformRigidbody;
 
-    // 🌟 추가: 플레이어가 관성을 계산할 수 있도록 속도 정보 노출
-    public Vector2 CurrentVelocity { get; private set; }
+    // 💡 [수정 1] 서버에서 계산한 진짜 속도를 클라이언트에게 쏴주는 SyncVar 변수 생성!
+    [SyncVar]
+    private Vector2 syncVelocity;
+
+    // 💡 [수정 2] 플레이어(PlayerMovement)가 발판 속도를 물어보면, 동기화된 syncVelocity를 대답해줌!
+    public Vector2 CurrentVelocity
+    {
+        get { return syncVelocity; }
+    }
 
     private HashSet<GameObject> playersOnPlatform = new HashSet<GameObject>();
 
@@ -87,8 +94,8 @@ public class CoopRoundTripPlatform : NetworkBehaviour
                 // 3. 물리 이동 수행
                 platformRigidbody.MovePosition(nextPos);
 
-                // 4. 속도 계산 (핵심: 플레이어 점프 시 관성 반영을 위해)
-                CurrentVelocity = (nextPos - currentPos) / Time.fixedDeltaTime;
+                // 💡 [수정 3] 계산된 발판 속도를 syncVelocity에 넣어서 클라이언트들에게 전송!
+                syncVelocity = (nextPos - currentPos) / Time.fixedDeltaTime;
 
                 // 5. 도착 체크
                 if (Vector2.Distance(currentPos, targetPos) < 0.05f)
@@ -101,15 +108,15 @@ public class CoopRoundTripPlatform : NetworkBehaviour
                     {
                         isTriggered = false;
                         isReturning = false;
-                        CurrentVelocity = Vector2.zero; // 정지 시 속도 초기화
+                        syncVelocity = Vector2.zero; // 💡 멈췄을 때 속도 0으로 동기화
                         Debug.Log($"[{gameObject.name}] 1회 왕복 완료! 대기 상태로 돌아갑니다.");
                     }
                 }
             }
             else
             {
-                // 대기 중일 때는 속도 0
-                CurrentVelocity = Vector2.zero;
+                // 💡 대기 중일 때 속도 0으로 동기화
+                syncVelocity = Vector2.zero;
             }
         }
     }
