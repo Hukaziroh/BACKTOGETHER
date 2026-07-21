@@ -96836,7 +96836,7 @@ PrefabInstance:
     - target: {fileID: 6052153817721097110, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1972353631}
+      objectReference: {fileID: 0}
     - target: {fileID: 7549401996362473519, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_SizeDelta.x
       value: 600
@@ -112397,53 +112397,6 @@ Transform:
   - {fileID: 122531736}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1972353630
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1972353632}
-  - component: {fileID: 1972353631}
-  m_Layer: 0
-  m_Name: RobbyReadyManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1972353631
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1972353630}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 788838daf8c96eb47af49c94a5dc703e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LobbyReadyManager
-  startGameButton: {fileID: 0}
-  readyButton: {fileID: 0}
-  readySummaryText: {fileID: 0}
---- !u!4 &1972353632
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1972353630}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2000601925
 GameObject:
   m_ObjectHideFlags: 0
@@ -114645,7 +114598,6 @@ SceneRoots:
   - {fileID: 1215221574}
   - {fileID: 1414661588}
   - {fileID: 479596965}
-  - {fileID: 1972353632}
   - {fileID: 1174597748}
   - {fileID: 1890130158}
   - {fileID: 1042509547}
