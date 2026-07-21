@@ -28,26 +28,38 @@ public class PermanentSpikeButton : NetworkBehaviour
             hiddenSpikePos = originalSpikePos + Vector3.down * moveDistance;
         }
     }
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        foreach (var btn in requiredButtons)
+        {
+            if (btn != null)
+            {
+                btn.OnButtonStateChangedEvent += CheckAllButtons;
+            }
+        }
+    }
 
     public override void OnStartClient()
     {
         base.OnStartClient();
         UpdateSpikesVisual(isSpikesHidden, true);
     }
-
-    [ServerCallback]
-    void Update()
+    [Server]
+    private void CheckAllButtons(CoopButton changedButton)
     {
         if (isSpikesHidden) return;
+
         bool isAnyButtonPressed = false;
         foreach (var btn in requiredButtons)
         {
             if (btn != null && btn.isPressed)
             {
                 isAnyButtonPressed = true;
-                break; 
+                break;
             }
         }
+
         if (isAnyButtonPressed)
         {
             isSpikesHidden = true;
