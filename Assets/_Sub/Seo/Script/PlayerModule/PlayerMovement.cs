@@ -145,40 +145,33 @@ public class PlayerMovement : NetworkBehaviour
 
         if (controller.knockback.IsStunned)
         {
-            float stunDecel = -controller.rb.linearVelocity.x * 10f * controller.rb.mass;
-            controller.rb.AddForce(stunDecel * Vector2.right);
+            float slideSpeed = Mathf.Lerp(controller.rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
+            controller.rb.linearVelocity = new Vector2(slideSpeed, controller.rb.linearVelocity.y);
             return;
         }
 
         float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
 
         float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
-        float currentLocalVelocityX = controller.rb.linearVelocity.x - currentPlatformVelX;
 
-        float velocityDiff = targetVelocityX - currentLocalVelocityX;
-
-        float accelRate;
-        if (isGrounded)
+        if (isGrounded && isOnIce)
         {
-            accelRate = isOnIce ? iceSlideFriction : normalFriction;
+            float newX = Mathf.MoveTowards(
+                controller.rb.linearVelocity.x,
+                targetVelocityX + currentPlatformVelX,
+                iceSlideFriction * moveSpeed * Time.fixedDeltaTime
+            );
+
+            controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
         }
         else
         {
-            accelRate = isRestrictedByRope ? 0f : airFriction;
+            controller.rb.linearVelocity = new Vector2(
+                targetVelocityX + currentPlatformVelX,
+                controller.rb.linearVelocity.y
+            );
         }
-        float movementForce = velocityDiff * accelRate * controller.rb.mass;
-
-        if (Mathf.Abs(controller.input.HorizontalInput) < 0.01f && Mathf.Abs(windVelocity) < 0.01f && isGrounded && isOnIce)
-        {
-            if (Mathf.Abs(currentLocalVelocityX) < 0.5f)
-            {
-                movementForce = -currentLocalVelocityX * normalFriction * controller.rb.mass;
-            }
-        }
-
-        controller.rb.AddForce(movementForce * Vector2.right);
     }
-
     private void ClampVelocity()
     {
         float maxSpeedX = 30f;
