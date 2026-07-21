@@ -18,7 +18,7 @@ public class LobbyPlayerTracker : NetworkBehaviour
     [Server]
     private void UpdateLobbyCount()
     {
-        LobbySyncManager syncManager = FindFirstObjectByType<LobbySyncManager>();
+        LobbySyncManager syncManager = FindAnyObjectByType<LobbySyncManager>();
 
         if (syncManager != null)
         {

@@ -8,8 +8,7 @@ using Epic.OnlineServices.Lobby;
 
 public class ClientJoinUI : MonoBehaviour
 {
-    // [수정] 6자리 숫자 입력 UI 컨트롤러 연결
-    public SixDigitCodeInputUI sixDigitUI;
+    public SixDigitCodeInputUI? sixDigitUI;
 
     private LobbySearch? currentSearchHandle;
     private string foundHostAddress = "";
@@ -22,8 +21,6 @@ public class ClientJoinUI : MonoBehaviour
             Debug.LogError("SixDigitCodeInputUI가 연결되지 않았습니다!");
             return;
         }
-
-        // [수정] 6자리 코드를 가져옵니다.
         string roomCode = sixDigitUI.GetCode();
 
         if (string.IsNullOrEmpty(roomCode) || roomCode.Length != 6)
