@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 2883093114116189508}
   - component: {fileID: 1986842635265015567}
   - component: {fileID: -5026450630409278675}
+  - component: {fileID: 6381515804576719630}
+  - component: {fileID: 623624442762948902}
   m_Layer: 3
   m_Name: boxExplosive_0
   m_TagString: Untagged
@@ -139,3 +141,43 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &6381515804576719630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 936142945803039334}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff9ac1e0544a5fe4aa61abf7a155d238, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoopTogglePlatform
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  toggleInterval: 2
+  startActive: 1
+  platformVisual: {fileID: 936142945803039334}
+  platformCollider: {fileID: -5026450630409278675}
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  scanScale: 0.8
+--- !u!114 &623624442762948902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 936142945803039334}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 0
+  _assetId: 1313042958
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
