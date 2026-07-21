@@ -35,5 +35,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Sub/Sin/Scene/RopeTest.unity
     guid: 2cb7f8b40439ef846ab8b0de41c5806b
+  - enabled: 1
+    path: Assets/_Sub/Bae/Scene/chapter4.unity
+    guid: c73086132291c0145a50d0f87d24056d
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
