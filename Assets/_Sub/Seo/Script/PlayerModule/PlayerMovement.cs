@@ -150,33 +150,11 @@ public class PlayerMovement : NetworkBehaviour
 
         float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
 
-        
-
         float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
-        float currentLocalVelocityX = controller.rb.linearVelocity.x - currentPlatformVelX;
 
-        float velocityDiff = targetVelocityX - currentLocalVelocityX;
+        float finalX = targetVelocityX + currentPlatformVelX;
 
-        float accelRate;
-        if (isGrounded)
-        {
-            accelRate = isOnIce ? iceSlideFriction : normalFriction;
-        }
-        else
-        {
-            accelRate = isRestrictedByRope ? 0f : airFriction;
-        }
-        float movementForce = velocityDiff * accelRate * controller.rb.mass;
-
-        if (Mathf.Abs(controller.input.HorizontalInput) < 0.01f && Mathf.Abs(windVelocity) < 0.01f && isGrounded && isOnIce)
-        {
-            if (Mathf.Abs(currentLocalVelocityX) < 0.5f)
-            {
-                movementForce = -currentLocalVelocityX * normalFriction * controller.rb.mass;
-            }
-        }
-
-        controller.rb.AddForce(movementForce * Vector2.right);
+        controller.rb.linearVelocity = new Vector2(finalX, controller.rb.linearVelocity.y);
     }
     private void ClampVelocity()
     {
