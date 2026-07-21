@@ -47,14 +47,16 @@ public class PlayerMovement : NetworkBehaviour
 
     private bool isOnIce = false;
     private bool wasOnIceLastFrame = false;
+
+    // 메모리 재활용 캐싱 배열
     private Collider2D[] groundCheckResults = new Collider2D[5];
+    private Collider2D[] playerCheckResults = new Collider2D[5];
     private Collider2D[] headCheckResults = new Collider2D[5];
 
     [Header("외부 환경 속도")]
     public float windVelocity = 0f;
     private Transform currentPlatform;
     private Vector2 platformVelocity;
-
 
     void Awake()
     {
@@ -85,6 +87,7 @@ public class PlayerMovement : NetworkBehaviour
     }
 
     private void UpdateTimers() { if (ckTimer > 0f) ckTimer -= Time.deltaTime; }
+
     private void UpdateCoyoteTime()
     {
         if (isGrounded && ckTimer <= 0f) coyoteTimeCounter = coyoteTime;
@@ -151,11 +154,32 @@ public class PlayerMovement : NetworkBehaviour
         float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
 
         float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
+        float currentLocalVelocityX = controller.rb.linearVelocity.x - currentPlatformVelX;
 
-        float finalX = targetVelocityX + currentPlatformVelX;
+        float velocityDiff = targetVelocityX - currentLocalVelocityX;
 
-        controller.rb.linearVelocity = new Vector2(finalX, controller.rb.linearVelocity.y);
+        float accelRate;
+        if (isGrounded)
+        {
+            accelRate = isOnIce ? iceSlideFriction : normalFriction;
+        }
+        else
+        {
+            accelRate = isRestrictedByRope ? 0f : airFriction;
+        }
+        float movementForce = velocityDiff * accelRate * controller.rb.mass;
+
+        if (Mathf.Abs(controller.input.HorizontalInput) < 0.01f && Mathf.Abs(windVelocity) < 0.01f && isGrounded && isOnIce)
+        {
+            if (Mathf.Abs(currentLocalVelocityX) < 0.5f)
+            {
+                movementForce = -currentLocalVelocityX * normalFriction * controller.rb.mass;
+            }
+        }
+
+        controller.rb.AddForce(movementForce * Vector2.right);
     }
+
     private void ClampVelocity()
     {
         float maxSpeedX = 30f;
@@ -169,12 +193,13 @@ public class PlayerMovement : NetworkBehaviour
 
     void CheckGroundOrPlayer()
     {
-        ContactFilter2D filter = new ContactFilter2D();
-        filter.useLayerMask = true;
-        filter.useTriggers = false;
-        filter.layerMask = groundLayer;
+        // 1. 순수 바닥(Ground) 체크
+        ContactFilter2D groundFilter = new ContactFilter2D();
+        groundFilter.useLayerMask = true;
+        groundFilter.useTriggers = false;
+        groundFilter.layerMask = groundLayer;
 
-        int hitCount = Physics2D.OverlapCircle(groundCheck.position, checkRadius, filter, groundCheckResults);
+        int hitCount = Physics2D.OverlapCircle(groundCheck.position, checkRadius, groundFilter, groundCheckResults);
 
         isGrounded = false;
         bool currentOnIce = false;
@@ -196,6 +221,33 @@ public class PlayerMovement : NetworkBehaviour
             }
         }
 
+        // 2. 바닥에 닿지 않았을 때만 플레이어 머리 위인지 추가 체크
+        if (!isGrounded)
+        {
+            ContactFilter2D playerFilter = new ContactFilter2D();
+            playerFilter.useLayerMask = true;
+            playerFilter.useTriggers = false;
+            playerFilter.layerMask = playerLayerMask;
+
+            int playerHitCount = Physics2D.OverlapCircle(groundCheck.position, checkRadius, playerFilter, playerCheckResults);
+
+            for (int i = 0; i < playerHitCount; i++)
+            {
+                Collider2D col = playerCheckResults[i];
+
+                if (col.gameObject == gameObject) continue;
+                if (!col.CompareTag("Player")) continue;
+
+                // 내 발바닥이 상대방 콜라이더 최상단(max.y)보다 위에 있을 때만 바닥으로 인정!
+                if (groundCheck.position.y > col.bounds.max.y - 0.05f)
+                {
+                    isGrounded = true;
+                    break;
+                }
+            }
+        }
+
+        // 플랫폼 상태 갱신
         if (foundPlatform)
         {
             if (currentPlatform != detectedPlatform)
@@ -271,7 +323,6 @@ public class PlayerMovement : NetworkBehaviour
         controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
         controller.rb.AddForce(Vector2.down * 18f, ForceMode2D.Impulse);
     }
-
 
     private void OnDrawGizmosSelected()
     {
