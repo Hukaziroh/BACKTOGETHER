@@ -13,6 +13,17 @@ public class CoopWallManager : NetworkBehaviour
 
     [SyncVar(hook = nameof(OnWallOpenChanged))]
     public bool isOpen = false;
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        foreach (var btn in requiredButtons)
+        {
+            if (btn != null)
+            {
+                btn.OnButtonStateChangedEvent += CheckAllButtons;
+            }
+        }
+    }
 
     public override void OnStartClient()
     {
@@ -23,9 +34,8 @@ public class CoopWallManager : NetworkBehaviour
             if (wallCollider != null) wallCollider.enabled = false;
         }
     }
-
-    [ServerCallback]
-    void Update()
+    [Server]
+    private void CheckAllButtons(CoopButton changedButton)
     {
         if (isOpen) return;
 
@@ -42,7 +52,7 @@ public class CoopWallManager : NetworkBehaviour
 
         if (allPressed)
         {
-            isOpen = true; 
+            isOpen = true;
         }
     }
 
