@@ -1,114 +1,66 @@
 using UnityEngine;
 using Mirror;
 using System.Collections;
-using System.Collections.Generic;
-using TMPro;
 
 public class ChapterDoor : NetworkBehaviour
 {
-    [Header("설정")]
+    [Header("씬 설정")]
+    [Tooltip("이동할 다음 씬의 이름")]
+    public string chapterSceneName = "Lobby";
+
+    [Header("페이드 딜레이 설정")]
+    [Tooltip("페이드 아웃이 진행되는 시간 (초)")]
+    public float fadeDuration = 1.5f;
+
+    [Header("효과 (선택 사항)")]
+    [Tooltip("문 통과 시 생성될 파티클 이펙트")]
     public GameObject fanfarePrefab;
-    public string ChapterSceneName = "Lobby"; // 다음으로 넘어갈 씬 이름 (인스펙터에서 수정)
-    public float floatSpeed = 2f;
 
-    // ★ [추가] 이 문이 몇 번째 챕터 문인지 설정 (인스펙터에서 1, 2, 3 등 입력)
-    public int chapterNumber = 1;
-
-    [Header("UI 요소")]
-    public GameObject ChapterTextUI;  // 클리어 시 나타날 텍스트 오브젝트
-    public TMP_Text countText;      // 현재 도착 인원 표시용 TMP 텍스트
-
-    // 도착한 플레이어들을 저장할 서버 전용 리스트
-    private HashSet<uint> arrivedPlayers = new HashSet<uint>();
-
-    void Start()
-    {
-        // 처음에는 카운트 텍스트를 숨김
-        if (countText != null) countText.gameObject.SetActive(false);
-        if (ChapterTextUI != null) ChapterTextUI.SetActive(false);
-    }
+    private bool isWarping = false;
 
     [ServerCallback]
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        NetworkIdentity identity = collision.GetComponent<NetworkIdentity>();
-        if (identity != null && collision.CompareTag("Player"))
+        if (isWarping) return; // 중복 트리거 방지
+
+        if (collision.CompareTag("Player"))
         {
-            if (!arrivedPlayers.Contains(identity.netId))
-            {
-                arrivedPlayers.Add(identity.netId);
+            isWarping = true;
 
-                // 모든 클라이언트에게 숫자 업데이트 명령
-                RpcUpdateCount(arrivedPlayers.Count, NetworkServer.connections.Count);
+            // 모든 클라이언트에게 페이드 아웃 및 이펙트 재생 명령
+            RpcStartFadeOut();
 
-                // 모든 플레이어가 도착했는지 확인
-                if (arrivedPlayers.Count >= CoopPlayerIdentity.players.Count)
-                {
-                    RpcTriggerClearEffect();
-                    StartCoroutine(WaitAndLoadScene());
-                }
-            }
+            // 서버에서 페이드 시간 동안 대기 후 씬 전환
+            StartCoroutine(ServerWarpRoutine());
         }
     }
 
     [ClientRpc]
-    private void RpcUpdateCount(int current, int total)
+    private void RpcStartFadeOut()
     {
-        if (countText != null)
-        {
-            countText.gameObject.SetActive(true);
-            countText.text = $"{current} / {total}";
-        }
-    }
-
-    [ClientRpc]
-    private void RpcTriggerClearEffect()
-    {
-        // 카운트 텍스트 숨기기
-        if (countText != null) countText.gameObject.SetActive(false);
-
-        // 파티클 생성
         if (fanfarePrefab != null)
+        {
             Instantiate(fanfarePrefab, transform.position, Quaternion.identity);
+        }
 
-        // 클리어 텍스트 띄우기
-        if (ChapterTextUI != null)
+        // 싱글톤 ScreenFader를 통해 확실하게 페이드 아웃 실행
+        if (ScreenFader.Instance != null)
         {
-            // ★ [핵심 추가] clearTextUI 오브젝트나 그 자식들 중에서 TMP_Text 컴포넌트를 찾아 텍스트를 동적으로 변경합니다.
-            // (비활성화 상태여도 찾을 수 있도록 true 매개변수 사용)
-            TMP_Text textComponent = ChapterTextUI.GetComponentInChildren<TMP_Text>(true);
-            if (textComponent != null)
-            {
-                textComponent.text = $"WARP CHAPTER {chapterNumber}";
-            }
-
-            ChapterTextUI.SetActive(true);
-            StartCoroutine(FloatTextRoutine());
+            ScreenFader.Instance.FadeOut(fadeDuration);
+        }
+        else
+        {
+            Debug.LogWarning("ScreenFader 인스턴스를 씬에서 찾을 수 없습니다!");
         }
     }
 
-    private IEnumerator FloatTextRoutine()
+    private IEnumerator ServerWarpRoutine()
     {
-        float timer = 0f;
-        Vector3 startPos = ChapterTextUI.transform.localPosition;
+        yield return new WaitForSeconds(fadeDuration);
 
-        while (timer < 1.5f)
+        if (isServer && NetworkManager.singleton != null)
         {
-            timer += Time.deltaTime;
-            ChapterTextUI.transform.Translate(Vector3.up * floatSpeed * Time.deltaTime);
-            yield return null;
-        }
-
-        ChapterTextUI.SetActive(false);
-        ChapterTextUI.transform.localPosition = startPos; // 위치 초기화
-    }
-
-    private IEnumerator WaitAndLoadScene()
-    {
-        yield return new WaitForSeconds(2.0f);
-        if (isServer)
-        {
-            NetworkManager.singleton.ServerChangeScene(ChapterSceneName);
+            NetworkManager.singleton.ServerChangeScene(chapterSceneName);
         }
     }
 }
