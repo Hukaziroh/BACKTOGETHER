@@ -165,17 +165,11 @@ public class PauseManager : MonoBehaviour
                 {
                     timeout -= Time.unscaledDeltaTime;
 
-                    Debug.Log(
-                        $"[퍼즈 시스템] ⑦ Lobby 퇴장 대기 중 | " +
-                        $"ConnectedToLobby = {eosLobby.ConnectedToLobby} | " +
-                        $"남은 시간 = {timeout:F2}"
-                    );
-
                     yield return null;
                 }
 
                 Debug.Log(
-                    $"[퍼즈 시스템] ⑧ Lobby 퇴장 대기 종료 | " +
+                    $"[퍼즈 시스템] ⑦ Lobby 퇴장 대기 종료 | " +
                     $"ConnectedToLobby = {eosLobby.ConnectedToLobby} | " +
                     $"남은 시간 = {timeout:F2}"
                 );
@@ -187,7 +181,7 @@ public class PauseManager : MonoBehaviour
         }
 
         Debug.Log(
-            $"[퍼즈 시스템] ⑨ Mirror 종료 처리 시작 | " +
+            $"[퍼즈 시스템] ⑧ Mirror 종료 처리 시작 | " +
             $"ServerActive = {NetworkServer.active} | " +
             $"ClientActive = {NetworkClient.active} | " +
             $"ClientConnected = {NetworkClient.isConnected}"
@@ -195,25 +189,41 @@ public class PauseManager : MonoBehaviour
 
         if (NetworkServer.active)
         {
-            Debug.Log("[퍼즈 시스템] ⑩ 호스트이므로 StopHost() 실행");
+            Debug.Log("[퍼즈 시스템] ⑨ 호스트이므로 StopHost() 실행");
 
             NetworkManager.singleton.StopHost();
         }
         else if (NetworkClient.active)
         {
-            Debug.Log("[퍼즈 시스템] ⑩ 클라이언트이므로 StopClient() 실행");
+            Debug.Log("[퍼즈 시스템] ⑨ 클라이언트이므로 StopClient() 실행");
 
             NetworkManager.singleton.StopClient();
         }
         else
         {
             Debug.LogWarning(
-                "[퍼즈 시스템] ⑩ Mirror 연결이 이미 종료된 상태입니다."
+                "[퍼즈 시스템] ⑨ Mirror 연결이 이미 종료된 상태입니다."
+            );
+        }
+        yield return null;
+
+        Debug.Log(
+            $"[퍼즈 시스템] ⑩ {mainMenuSceneName} 씬으로 이동 시작"
+        );
+
+        if (!string.IsNullOrEmpty(mainMenuSceneName))
+        {
+            SceneManager.LoadScene(mainMenuSceneName);
+        }
+        else
+        {
+            Debug.LogError(
+                "[퍼즈 시스템] mainMenuSceneName이 비어있습니다."
             );
         }
 
-        Debug.Log("[퍼즈 시스템] ⑪ 퇴장 시퀀스 종료");
-
         isLeaving = false;
+
+        Debug.Log("[퍼즈 시스템] ⑪ 퇴장 시퀀스 종료");
     }
 }
