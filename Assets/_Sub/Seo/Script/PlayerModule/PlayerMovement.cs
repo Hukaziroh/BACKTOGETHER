@@ -172,7 +172,7 @@ public class PlayerMovement : NetworkBehaviour
         ContactFilter2D filter = new ContactFilter2D();
         filter.useLayerMask = true;
         filter.useTriggers = false;
-        filter.layerMask = groundLayer | playerLayerMask;
+        filter.layerMask = groundLayer;
 
         int hitCount = Physics2D.OverlapCircle(groundCheck.position, checkRadius, filter, groundCheckResults);
 
