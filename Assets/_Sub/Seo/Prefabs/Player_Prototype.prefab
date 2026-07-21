@@ -1176,7 +1176,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  currentSpawnPoint: {x: 0, y: 0, z: 0}
+  currentSpawnPoint: {x: 0, y: 30, z: 0}
 --- !u!61 &1312891903968155803
 BoxCollider2D:
   m_ObjectHideFlags: 0

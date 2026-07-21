@@ -27,6 +27,9 @@ public class PlayerRespawn : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
+        string sceneName = SceneManager.GetActiveScene().name;
+        if (sceneName == "Lobby" || sceneName == "Main") return;
+
         if (Keyboard.current != null)
         {
             if (Keyboard.current.rKey.isPressed)
@@ -109,6 +112,11 @@ public class PlayerRespawn : NetworkBehaviour
 
     private void CheckRespawn()
     {
+        string sceneName = SceneManager.GetActiveScene().name;
+        if (sceneName == "Lobby" || sceneName == "Main")
+        {
+            return;
+        }
         if (transform.position.y < -50f)
         {
             Respawn();
