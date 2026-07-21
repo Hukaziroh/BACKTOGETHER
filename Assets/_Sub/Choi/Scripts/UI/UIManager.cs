@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class UIManager : MonoBehaviour
 {
@@ -17,7 +18,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private SpectatorSystem spectatorSystem;
 
     [Header("씬 이름 설정")]
-    // 인펙터에서 자유롭게 수정할 수 있도록 변수로 분리했습니다.
     [SerializeField] private string mainSceneName = "Main";
     [SerializeField] private string lobbySceneName = "Lobby";
 
@@ -54,25 +54,43 @@ public class UIManager : MonoBehaviour
             if (Keyboard.current.digit2Key.wasPressedThisFrame) spectatorSystem.SelectTarget(1);
             if (Keyboard.current.digit3Key.wasPressedThisFrame) spectatorSystem.SelectTarget(2);
             if (Keyboard.current.digit4Key.wasPressedThisFrame) spectatorSystem.SelectTarget(3);
+        }
 
-            if (Keyboard.current.tabKey.wasPressedThisFrame) spectatorSystem.CycleTarget();
+        // 3. [관제탑 역할] 탭(Tab) 키 입력 감지 후 이모티콘 패널(EmojiRadialMenu)에 신호 전달
+        string currentScene = SceneManager.GetActiveScene().name;
+
+        // 메인 씬이 아닐 때만 탭 키 이모지 메뉴 작동
+        if (currentScene != mainSceneName && Keyboard.current != null && EmojiRadialMenu.Instance != null)
+        {
+            // 누르기 시작할 때 (오픈 신호)
+            if (Keyboard.current.tabKey.wasPressedThisFrame)
+            {
+                EmojiRadialMenu.Instance.OpenMenu();
+            }
+            // 꾹 누르고 있는 동안 (마우스 방향 계산 신호)
+            if (Keyboard.current.tabKey.isPressed)
+            {
+                EmojiRadialMenu.Instance.OnMenuStay();
+            }
+            // 뗄 때 (선택 및 닫기 신호)
+            if (Keyboard.current.tabKey.wasReleasedThisFrame)
+            {
+                EmojiRadialMenu.Instance.CloseMenu();
+            }
         }
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // ★ [핵심] 메인 씬도 아니고 "로비 씬도 아닐 때" (즉, 인게임 챕터 씬일 때만) 프로그레스 바를 활성화합니다.
         bool isChapter = (scene.name != mainSceneName && scene.name != lobbySceneName);
         progressTrackerUI?.SetActive(isChapter);
 
-        // 관전 카메라 자동 연결 로직
         GameObject mainCam = GameObject.FindGameObjectWithTag("MainCamera");
         if (mainCam != null)
         {
             if (mainCam.GetComponent<SpectatorCamera>() == null)
             {
                 mainCam.AddComponent<SpectatorCamera>();
-                Debug.Log("[UIManager] 메인 카메라에 관전 기능을 자동으로 부착했습니다.");
             }
         }
     }
@@ -81,27 +99,22 @@ public class UIManager : MonoBehaviour
     {
         string currentScene = SceneManager.GetActiveScene().name;
 
-        // ★ [핵심] 오직 메인 씬("Main")에서만 ESC 입력을 무시합니다. (로비 씬은 무사히 통과하여 퍼즈 작동!)
         if (currentScene == mainSceneName) return;
 
-        // 옵션창이 켜져 있으면 -> 옵션 닫고 퍼즈창으로 복귀
         if (optionsManager?.optionsPanel != null && optionsManager.optionsPanel.activeSelf)
         {
             pauseManager.CloseOptions();
         }
-        // 퍼즈 상태면 -> 게임 재개
         else if (pauseManager != null && pauseManager.isPaused)
         {
             pauseManager.ResumeGame();
         }
-        // 기본 상태면 -> 퍼즈 실행
         else if (pauseManager != null)
         {
             pauseManager.PauseGame();
         }
     }
 
-    // --- 외부 호출용 API ---
     public void RequestPause() => pauseManager.PauseGame();
     public void RequestOptions() => optionsManager.Open();
 }

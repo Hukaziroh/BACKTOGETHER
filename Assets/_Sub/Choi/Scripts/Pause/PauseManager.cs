@@ -81,13 +81,13 @@ public class PauseManager : MonoBehaviour
         {
             if (string.IsNullOrEmpty(PrivateLobbyManager.currentShortCode))
             {
-                pauseRoomCodeText.text = "CODE: Empty";
+                pauseRoomCodeText.text = "CODE:\nEmpty";
             }
             else
             {
                 pauseRoomCodeText.text = isCodeVisible ?
-                    $"CODE: {PrivateLobbyManager.currentShortCode}" :
-                    "CODE: ******";
+                    $"CODE:\n{PrivateLobbyManager.currentShortCode}" :
+                    "CODE:\n******";
             }
         }
     }
