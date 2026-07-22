@@ -17,27 +17,25 @@ public class GameQuitHandler : MonoBehaviour
             disconnectHandler.SetIntentionalExit();
         }
 
-        // 즉시 끄지 않고, 안전 종료 코루틴 실행
         StartCoroutine(GracefulQuitRoutine());
     }
 
     private IEnumerator GracefulQuitRoutine()
     {
-        Debug.Log("[GameQuitHandler] 네트워크 정지 요청...");
+        Debug.Log("[GameQuitHandler] 게임 종료 프로세스 시작...");
 
         if (NetworkManager.singleton != null)
         {
-            if (NetworkServer.active || NetworkClient.active)
-            {
-                NetworkManager.singleton.StopHost();
-            }
+            if (NetworkServer.active) NetworkManager.singleton.StopHost();
+            else if (NetworkClient.active || NetworkClient.isConnected) NetworkManager.singleton.StopClient();
         }
+        if (EpicTransport.EOSSDKComponent.instance != null)
+        {
+            EpicTransport.EOSSDKComponent.instance.SafeReleaseEOS();
+        }
+        yield return new WaitForSecondsRealtime(0.5f);
 
-        // ★ 핵심: EOS 백그라운드 스레드가 소켓을 닫고 정리할 수 있는 '현실 시간' 보장
-        // 1프레임으로는 가끔 부족하기 때문에 0.3초 대기합니다.
-        yield return new WaitForSecondsRealtime(0.3f);
-
-        Debug.Log("[GameQuitHandler] 네트워크 정리 완료, 에디터 종료");
+        Debug.Log("[GameQuitHandler] EOS 및 네트워크 정리 완료, 에디터 종료");
 
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
