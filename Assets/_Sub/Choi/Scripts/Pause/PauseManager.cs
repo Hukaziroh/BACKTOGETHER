@@ -257,28 +257,13 @@ public class PauseManager : MonoBehaviour
 
         if (NetworkServer.active)
         {
-            Debug.Log(
-                "[퍼즈 시스템] ⑤ 호스트 종료"
-            );
-
+            Debug.Log("[퍼즈 시스템] ⑤ 호스트 종료");
             NetworkManager.singleton.StopHost();
-        }
-        else if (
-            NetworkClient.active ||
-            NetworkClient.isConnected
-        )
-        {
-            Debug.Log(
-                "[퍼즈 시스템] ⑤ 클라이언트 종료"
-            );
-
-            NetworkManager.singleton.StopClient();
         }
         else
         {
-            Debug.Log(
-                "[퍼즈 시스템] ⑤ 이미 Mirror 네트워크가 종료된 상태입니다."
-            );
+            Debug.Log("[퍼즈 시스템] ⑤ 클라이언트 종료");
+            NetworkManager.singleton.StopClient();
         }
 
 

@@ -1,7 +1,6 @@
 using UnityEngine;
 using Mirror;
 using UnityEngine.SceneManagement;
-using EpicTransport; // 추가
 
 public class HostDisconnectHandler : MonoBehaviour
 {
@@ -16,58 +15,60 @@ public class HostDisconnectHandler : MonoBehaviour
 
     void Update()
     {
-        if (NetworkServer.active) return;
+        if (NetworkServer.active)
+            return;
 
         if (NetworkClient.isConnected && !wasConnected)
         {
             wasConnected = true;
             isIntentionalExit = false;
         }
+
         if (wasConnected && !NetworkClient.isConnected)
         {
             wasConnected = false;
-            if (!isIntentionalExit)
+
+            if (isIntentionalExit)
             {
+                Debug.Log("[HostDisconnectHandler] 의도적인 종료 - 메인으로 이동");
+
+                isIntentionalExit = false;
+
+                if (disconnectPanel != null)
+                    disconnectPanel.SetActive(false);
+
+                SceneManager.LoadScene(lobbySceneName);
+            }
+            else
+            {
+                Debug.Log("[HostDisconnectHandler] 호스트 연결 끊김");
+
                 ShowDisconnectUI();
             }
-
-            isIntentionalExit = false;
         }
     }
 
     private void ShowDisconnectUI()
     {
         if (disconnectPanel != null)
-        {
             disconnectPanel.SetActive(true);
-        }
-
-        ClearNetworkSession();
     }
 
     public void GoBackToLobby()
     {
-        ClearNetworkSession(); 
+        if (NetworkManager.singleton != null)
+        {
+            NetworkManager.singleton.StopClient();
+        }
+
+        if (disconnectPanel != null)
+            disconnectPanel.SetActive(false);
+
         SceneManager.LoadScene(lobbySceneName);
-        if (disconnectPanel != null) disconnectPanel.SetActive(false);
     }
 
     public void SetIntentionalExit()
     {
         isIntentionalExit = true;
-  
-    }
-
-    private void ClearNetworkSession()
-    {
-        if (NetworkManager.singleton != null)
-        {
-            NetworkManager.singleton.StopClient(); 
-            EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
-            if (eosLobby != null)
-            {
-                eosLobby.LeaveLobby();
-            }
-        }
     }
 }
