@@ -67,8 +67,11 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
-        // ★ [유니티 6.5 퍼즈 체크] 일시정지 상태면 입력 및 타이머 갱신 차단
+        // ★ [퍼즈 체크] 일시정지 상태면 입력 및 타이머 갱신 차단
         if (PauseManager.instance != null && PauseManager.instance.isPaused) return;
+
+        // ★ [이모지 메뉴 체크] 이모지 창이 열려있으면 이동/점프 입력 차단
+        if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen()) return;
 
         UpdateTimers();
         UpdateCoyoteTime();
@@ -80,9 +83,27 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
-        // ★ [유니티 6.5 퍼즈 체크] 일시정지 상태면 물리 이동 계산 차단
-        if (PauseManager.instance != null && PauseManager.instance.isPaused) return;
+        // ★ [퍼즈 체크] 일시정지 상태면 물리 이동 계산 차단 (미끄러짐 방지)
+        if (PauseManager.instance != null && PauseManager.instance.isPaused)
+        {
+            if (TryGetComponent<Rigidbody2D>(out Rigidbody2D rb2d))
+            {
+                rb2d.linearVelocity = new Vector2(0f, rb2d.linearVelocity.y);
+            }
+            return;
+        }
 
+        // ★ [이모지 메뉴 체크] 이모지 창이 열려있으면 물리 이동 계산 차단
+        if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())
+        {
+            if (TryGetComponent<Rigidbody2D>(out Rigidbody2D rb2d))
+            {
+                rb2d.linearVelocity = new Vector2(0f, rb2d.linearVelocity.y);
+            }
+            return;
+        }
+
+        // 결합 상태이면서 몸체 타겟이 아닐 경우 이동 연산 스킵
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
 
@@ -161,44 +182,22 @@ public class PlayerMovement : NetworkBehaviour
         float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
         float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
 
-        if (isGrounded)
+        if (isGrounded && isOnIce)
         {
-            if (isOnIce)
-            {
-                float newX = Mathf.MoveTowards(
-                    controller.rb.linearVelocity.x,
-                    targetVelocityX + currentPlatformVelX,
-                    iceSlideFriction * moveSpeed * Time.fixedDeltaTime
-                );
-                controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
-            }
-            else
-            {
-                controller.rb.linearVelocity = new Vector2(
-                    targetVelocityX + currentPlatformVelX,
-                    controller.rb.linearVelocity.y
-                );
-            }
+            float newX = Mathf.MoveTowards(
+                controller.rb.linearVelocity.x,
+                targetVelocityX + currentPlatformVelX,
+                iceSlideFriction * moveSpeed * Time.fixedDeltaTime
+            );
+
+            controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
         }
         else
         {
-            if (wasOnIceLastFrame)
-            {
-                float currentAirFriction = isRestrictedByRope ? 0f : airFriction;
-                float newX = Mathf.MoveTowards(
-                    controller.rb.linearVelocity.x,
-                    targetVelocityX,
-                    currentAirFriction * moveSpeed * Time.fixedDeltaTime
-                );
-                controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
-            }
-            else
-            {
-                controller.rb.linearVelocity = new Vector2(
-                    targetVelocityX,
-                    controller.rb.linearVelocity.y
-                );
-            }
+            controller.rb.linearVelocity = new Vector2(
+                targetVelocityX + currentPlatformVelX,
+                controller.rb.linearVelocity.y
+            );
         }
     }
 
@@ -379,5 +378,19 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
-   
+    private void OnCollisionStay2D(Collision2D col)
+    {
+        if (!isLocalPlayer) return;
+
+        if (!isGrounded && col.gameObject.CompareTag("Player"))
+        {
+            Vector2 dir = transform.position - col.transform.position;
+
+            if (Mathf.Abs(dir.x) > 0.1f && Mathf.Abs(dir.y) < 0.8f)
+            {
+                float pushForce = 3f * controller.rb.mass;
+                controller.rb.AddForce(new Vector2(Mathf.Sign(dir.x) * pushForce, 0f));
+            }
+        }
+    }
 }

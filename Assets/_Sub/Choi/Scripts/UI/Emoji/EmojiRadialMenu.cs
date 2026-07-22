@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
-using UnityEngine.EventSystems;
 using System.Collections.Generic;
 
 // System.Drawing과의 충돌(모호한 참조)을 방지합니다.
@@ -11,29 +10,25 @@ public class EmojiRadialMenu : MonoBehaviour
 {
     public static EmojiRadialMenu Instance;
 
-    // --- 이벤트 정의 (선택된 이모지 스프라이트를 전달) ---
+    // --- 이벤트 정의 ---
     public static event System.Action<Sprite> OnEmojiSelected;
+    public static event System.Action<int> OnEmojiIndexSelected; // PlayerMovement 네트워크 동기화 호환용
 
-    [Header("UI 연결 - 배경 조각 (하이라이트용)")]
+    [Header("UI 연결 - 메뉴 패널 및 조각")]
     [Tooltip("이모티콘 선택 패널 UI 오브젝트")]
     public GameObject radialPanel;
     [Tooltip("방사형 메뉴에 들어갈 바깥쪽 조각(배경) 이미지 리스트 (시계방향)")]
     public List<Image> menuItemImages;
-    [Tooltip("가장 중앙에 있는 배경/테두리 이미지")]
-    [SerializeField] private Image centerItemImage;
 
     [Header("UI 연결 - 실제 이모지 아이콘 이미지 컴포넌트들")]
-    [Tooltip("12시 방향부터 시계 방향 순서대로 배치된 이모지들의 UI Image 컴포넌트")]
+    [Tooltip("시계 방향 순서대로 배치된 이모지들의 UI Image 컴포넌트")]
     public List<Image> emojiIconImages;
-    [Tooltip("가장 중앙 아이콘의 UI Image 컴포넌트")]
-    [SerializeField] private Image centerEmojiIconImage;
 
     [Header("색상 설정")]
     public Color normalColor = Color.white;
     public Color highlightColor = Color.yellow;
 
-    private int currentIndex = -1;
-    private bool isCenterSelected = false;
+    private int currentIndex = 0;
     private bool isOpen = false;
 
     private void Awake()
@@ -48,7 +43,23 @@ public class EmojiRadialMenu : MonoBehaviour
             radialPanel.SetActive(false);
     }
 
-    // --- UIManager(관제탑)로부터 받는 신호 메서드들 ---
+    // --- UIManager 호환용 메서드들 ---
+    public bool IsOpen()
+    {
+        return isOpen;
+    }
+
+    public void ToggleMenu()
+    {
+        if (isOpen)
+        {
+            CloseMenu();
+        }
+        else
+        {
+            OpenMenu();
+        }
+    }
 
     public void OpenMenu()
     {
@@ -57,137 +68,76 @@ public class EmojiRadialMenu : MonoBehaviour
         {
             radialPanel.SetActive(true);
         }
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
 
-        // 메뉴가 열릴 때는 기본적으로 아무것도 선택되지 않은 깨끗한 상태로 시작합니다.
-        currentIndex = -1;
-        isCenterSelected = false;
-        ResetHighlights();
-    }
-
-    public void OnMenuStay()
-    {
-        if (!isOpen) return;
-
-        CalculateSelectedSectorByRaycast();
-
-        // New Input System을 이용한 마우스 좌클릭 감지
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            SelectCurrentItem();
-            CloseMenu();
-        }
+        // 메뉴가 열릴 때 첫 번째 항목부터 하이라이트 상태로 시작
+        currentIndex = 0;
+        UpdateHighlight(currentIndex);
     }
 
     public void CloseMenu()
     {
         if (!isOpen) return;
-
-        SelectCurrentItem(); // 키를 뗄 때 선택 실행
         isOpen = false;
 
         if (radialPanel != null)
         {
             radialPanel.SetActive(false);
         }
-        currentIndex = -1;
-        isCenterSelected = false;
         ResetHighlights();
     }
 
-    // --- 내부 연산 로직 (UI Raycast 방식) ---
-
-    private void CalculateSelectedSectorByRaycast()
+    // --- UIManager(관제탑)로부터 매 프레임 호출되는 키보드 입력 처리 메서드 ---
+    public void OnMenuUpdate()
     {
-        if (EventSystem.current == null) return;
+        if (!isOpen || Keyboard.current == null) return;
 
-        PointerEventData pointerData = new PointerEventData(EventSystem.current)
+        int totalCount = emojiIconImages != null && emojiIconImages.Count > 0
+            ? emojiIconImages.Count
+            : (menuItemImages != null ? menuItemImages.Count : 0);
+
+        if (totalCount == 0) return;
+
+        // 1. ESC 키 -> 메뉴 닫기 (취소)
+        if (Keyboard.current.escapeKey.wasPressedThisFrame)
         {
-            position = Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero
-        };
-
-        List<RaycastResult> results = new List<RaycastResult>();
-        EventSystem.current.RaycastAll(pointerData, results);
-
-        bool hitCenter = false;
-        int hitIndex = -1;
-        bool hitAnyPanelItem = false;
-
-        foreach (var result in results)
-        {
-            Image hitImage = result.gameObject.GetComponent<Image>();
-            if (hitImage == null) continue;
-
-            // 1. 중앙 선택 확인 (배경 또는 아이콘)
-            if ((centerItemImage != null && hitImage == centerItemImage) ||
-                (centerEmojiIconImage != null && hitImage == centerEmojiIconImage))
-            {
-                hitCenter = true;
-                hitAnyPanelItem = true;
-                break;
-            }
-
-            // 2. 바깥쪽 배경 조각 확인
-            int bgIndex = menuItemImages.IndexOf(hitImage);
-            if (bgIndex != -1)
-            {
-                hitIndex = bgIndex;
-                hitAnyPanelItem = true;
-                break;
-            }
-
-            // 3. 바깥쪽 아이콘 이미지 확인
-            int iconIndex = emojiIconImages.IndexOf(hitImage);
-            if (iconIndex != -1)
-            {
-                hitIndex = iconIndex;
-                hitAnyPanelItem = true;
-                break;
-            }
+            CloseMenu();
+            return;
         }
 
-        // 마우스가 패널 안쪽(조각이나 중앙)에 있을 때만 실시간으로 선택을 변경합니다.
-        if (hitAnyPanelItem)
+        // 2. A 키 또는 왼쪽 방향키 -> 이전 항목으로 이동 (반시계/왼쪽)
+        if (Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame)
         {
-            if (hitCenter)
-            {
-                isCenterSelected = true;
-                currentIndex = -1;
-                UpdateHighlight(-1);
-            }
-            else if (hitIndex != -1)
-            {
-                isCenterSelected = false;
-                currentIndex = hitIndex;
-                UpdateHighlight(hitIndex);
-            }
+            currentIndex = (currentIndex - 1 + totalCount) % totalCount;
+            UpdateHighlight(currentIndex);
         }
-        // 마우스가 패널 바깥으로 나가면(hitAnyPanelItem == false), 
-        // 코드가 이 블록을 타지 않으므로 직전에 선택되어 있던 조각의 하이라이트 상태가 그대로 유지됩니다!
+
+        // 3. D 키 또는 오른쪽 방향키 -> 다음 항목으로 이동 (시계/오른쪽)
+        if (Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame)
+        {
+            currentIndex = (currentIndex + 1) % totalCount;
+            UpdateHighlight(currentIndex);
+        }
+
+        // 4. Enter 키 -> 현재 선택한 항목 확정
+        if (Keyboard.current.enterKey.wasPressedThisFrame)
+        {
+            SelectCurrentItem();
+            CloseMenu();
+        }
     }
 
+    // --- 하이라이트 시각 효과 업데이트 ---
     private void UpdateHighlight(int selectedIndex)
     {
-        // 1. 바깥쪽 조각들 하이라이트 처리
         for (int i = 0; i < menuItemImages.Count; i++)
         {
             if (menuItemImages[i] != null)
             {
-                if (!isCenterSelected && i == selectedIndex)
+                if (i == selectedIndex)
                     menuItemImages[i].color = highlightColor;
                 else
                     menuItemImages[i].color = normalColor;
             }
-        }
-
-        // 2. 중앙 아이콘 하이라이트 처리
-        if (centerItemImage != null)
-        {
-            if (isCenterSelected)
-                centerItemImage.color = highlightColor;
-            else
-                centerItemImage.color = normalColor;
         }
     }
 
@@ -197,29 +147,23 @@ public class EmojiRadialMenu : MonoBehaviour
         {
             if (img != null) img.color = normalColor;
         }
-        if (centerItemImage != null)
-        {
-            centerItemImage.color = normalColor;
-        }
     }
 
+    // --- 선택 확정 및 이벤트 발송 ---
     private void SelectCurrentItem()
     {
-        if (isCenterSelected)
-        {
-            Debug.Log("중앙 아이콘 선택됨!");
-            if (centerEmojiIconImage != null && centerEmojiIconImage.sprite != null)
-            {
-                OnEmojiSelected?.Invoke(centerEmojiIconImage.sprite);
-            }
-        }
-        else if (currentIndex != -1 && currentIndex < emojiIconImages.Count)
+        if (currentIndex >= 0 && currentIndex < emojiIconImages.Count)
         {
             Debug.Log($"선택된 이모티콘 번호: {currentIndex}");
             if (emojiIconImages[currentIndex] != null && emojiIconImages[currentIndex].sprite != null)
             {
                 Sprite selectedSprite = emojiIconImages[currentIndex].sprite;
+
+                // 1. 스프라이트 기반 이벤트 호출
                 OnEmojiSelected?.Invoke(selectedSprite);
+
+                // 2. 정수형 인덱스 기반 이벤트 호출 (PlayerMovement 네트워크 동기화 연동)
+                OnEmojiIndexSelected?.Invoke(currentIndex);
             }
         }
     }

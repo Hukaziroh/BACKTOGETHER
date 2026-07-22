@@ -39,43 +39,51 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
+        if (Keyboard.current == null) return;
+
         // 1. ESC 입력 처리
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             HandleEscapeInput();
         }
 
-        // 2. 관전 키 입력 처리
-        if (spectatorSystem != null && Keyboard.current != null)
+        // 2. 관전 키 입력 처리 (Q: 관전 종료 / Tab: 다음 타겟 순환 관전)
+        if (spectatorSystem != null)
         {
-            if (Keyboard.current.qKey.wasPressedThisFrame) spectatorSystem.StopSpectating();
+            if (Keyboard.current.qKey.wasPressedThisFrame)
+            {
+                spectatorSystem.StopSpectating();
+            }
 
-            if (Keyboard.current.digit1Key.wasPressedThisFrame) spectatorSystem.SelectTarget(0);
-            if (Keyboard.current.digit2Key.wasPressedThisFrame) spectatorSystem.SelectTarget(1);
-            if (Keyboard.current.digit3Key.wasPressedThisFrame) spectatorSystem.SelectTarget(2);
-            if (Keyboard.current.digit4Key.wasPressedThisFrame) spectatorSystem.SelectTarget(3);
+            // ★ 1, 2, 3, 4 키를 제거하고 Tab 키를 누를 때마다 다음 타겟으로 순환 관전
+            // (주의: 이모지 메뉴가 열려있지 않을 때만 관전 순환이 작동하도록 예외 처리를 추가했습니다)
+            bool isEmojiMenuOpen = EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen();
+
+            if (!isEmojiMenuOpen && Keyboard.current.tabKey.wasPressedThisFrame)
+            {
+                spectatorSystem.CycleNextTarget(); // SpectatorSystem에 이 이름의 함수가 있다고 가정합니다. (없다면 아래 참고)
+            }
         }
 
-        // 3. [관제탑 역할] 탭(Tab) 키 입력 감지 후 이모티콘 패널(EmojiRadialMenu)에 신호 전달
+        // 3. [관제탑 역할] T 키 입력 감지 후 이모티콘 패널(EmojiRadialMenu)에 신호 전달
         string currentScene = SceneManager.GetActiveScene().name;
 
-        // 메인 씬이 아닐 때만 탭 키 이모지 메뉴 작동
-        if (currentScene != mainSceneName && Keyboard.current != null && EmojiRadialMenu.Instance != null)
+        // 퍼즈 상태인지 확인
+        bool isPaused = pauseManager != null && pauseManager.isPaused;
+
+        // 메인 씬이 아니고, 퍼즈 상태가 아닐 때만 T 키 이모지 메뉴 작동
+        if (currentScene != mainSceneName && !isPaused && EmojiRadialMenu.Instance != null)
         {
-            // 누르기 시작할 때 (오픈 신호)
-            if (Keyboard.current.tabKey.wasPressedThisFrame)
+            // ★ Tab 키 대신 T 키를 누를 때 메뉴 토글 (열기/닫기)
+            if (Keyboard.current.tKey.wasPressedThisFrame)
             {
-                EmojiRadialMenu.Instance.OpenMenu();
+                EmojiRadialMenu.Instance.ToggleMenu();
             }
-            // 꾹 누르고 있는 동안 (마우스 방향 계산 신호)
-            if (Keyboard.current.tabKey.isPressed)
+
+            // 메뉴가 열려있는 동안 키보드 조작(A/D, 좌우 화살표, Enter 등) 업데이트 처리
+            if (EmojiRadialMenu.Instance.IsOpen())
             {
-                EmojiRadialMenu.Instance.OnMenuStay();
-            }
-            // 뗄 때 (선택 및 닫기 신호)
-            if (Keyboard.current.tabKey.wasReleasedThisFrame)
-            {
-                EmojiRadialMenu.Instance.CloseMenu();
+                EmojiRadialMenu.Instance.OnMenuUpdate();
             }
         }
     }
