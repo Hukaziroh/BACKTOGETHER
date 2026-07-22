@@ -45,6 +45,9 @@ public class PlayerMovement : NetworkBehaviour
     public Transform headCheck;
     public bool hasPlayerOnHead { get; private set; }
 
+    [Header("이모지 연동")]
+    [SerializeField] private PlayerEmojiController emojiController;
+
     private bool isOnIce = false;
     private bool wasOnIceLastFrame = false;
 
@@ -61,14 +64,67 @@ public class PlayerMovement : NetworkBehaviour
     {
         controller = GetComponent<PlayerController>();
         playerLayerMask = 1 << LayerMask.NameToLayer("Player");
+        if (emojiController == null) emojiController = GetComponent<PlayerEmojiController>();
+    }
+
+    public override void OnStartLocalPlayer()
+    {
+        base.OnStartLocalPlayer();
+        // 로컬 플레이어일 때만 이모지 선택 이벤트 구독 (Mirror 네트워크 호환을 위해 int 인덱스 방식 사용)
+        EmojiRadialMenu.OnEmojiIndexSelected += HandleLocalEmojiSelected;
+    }
+
+    private void OnDestroy()
+    {
+        if (isLocalPlayer)
+        {
+            EmojiRadialMenu.OnEmojiIndexSelected -= HandleLocalEmojiSelected;
+        }
+    }
+
+    // 내가 이모지를 골랐을 때 서버로 인덱스 전송
+    private void HandleLocalEmojiSelected(int index)
+    {
+        if (!isLocalPlayer) return;
+
+        if (!NetworkClient.active)
+        {
+            // 싱글(솔로) 테스트 시 서버 없이 바로 실행
+            if (emojiController != null) emojiController.ShowEmoji(index);
+        }
+        else
+        {
+            CmdSendEmojiIndex(index);
+        }
+    }
+
+    [Command]
+    private void CmdSendEmojiIndex(int index)
+    {
+        RpcShowEmojiAll(index);
+    }
+
+    [ClientRpc]
+    private void RpcShowEmojiAll(int index)
+    {
+        if (emojiController != null)
+        {
+            emojiController.ShowEmoji(index);
+        }
     }
 
     void Update()
     {
         if (!isLocalPlayer) return;
 
-        // ★ [유니티 6.5 퍼즈 체크] 일시정지 상태면 입력 및 타이머 갱신 차단
+        // ★ [유니티 퍼즈 체크] 일시정지 상태면 입력 및 타이머 갱신 차단
         if (PauseManager.instance != null && PauseManager.instance.isPaused) return;
+
+        // 이모지 메뉴가 열려있을 때는 이동 입력을 차단하고 메뉴 조작만 허용
+        if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())
+        {
+            return;
+        }
 
         UpdateTimers();
         UpdateCoyoteTime();
@@ -80,11 +136,24 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
-        // ★ [유니티 6.5 퍼즈 체크] 일시정지 상태면 물리 이동 계산 차단
-        if (PauseManager.instance != null && PauseManager.instance.isPaused) return;
-
-        if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
+        // ★ [유니티 퍼즈 체크] 일시정지 상태면 물리 이동 계산 차단
+        if (PauseManager.instance != null && PauseManager.instance.isPaused)
+        {
+            if (TryGetComponent<Rigidbody2D>(out Rigidbody2D rb2d))
+            {
+                rb2d.linearVelocity = new Vector2(0f, rb2d.linearVelocity.y);
+            }
             return;
+        }
+
+        if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())
+        {
+            if (TryGetComponent<Rigidbody2D>(out Rigidbody2D rb2d))
+            {
+                rb2d.linearVelocity = new Vector2(0f, rb2d.linearVelocity.y);
+            }
+            return;
+        }
 
         HandleMovingPlatform();
         CheckGroundOrPlayer();
@@ -378,6 +447,4 @@ public class PlayerMovement : NetworkBehaviour
             Gizmos.DrawWireCube(hCheckPosition, headCheckBoxSize);
         }
     }
-
-   
 }

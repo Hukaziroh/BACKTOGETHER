@@ -1,8 +1,6 @@
 using UnityEngine;
 using TMPro;
 using Mirror;
-using Epic.OnlineServices.Lobby;
-using Epic.OnlineServices;
 
 public class LobbySyncManager : NetworkBehaviour
 {
@@ -14,10 +12,12 @@ public class LobbySyncManager : NetworkBehaviour
     [SyncVar(hook = nameof(OnPlayerCountUpdated))]
     public int playerCount = 0;
 
-    [Header("오른쪽 UI: 룸코드 (6자리 숏코드)")]
+    [Header("오른쪽 UI: 룸코드")]
     public TextMeshProUGUI roomCodeText;
 
-    private EOSLobby eosLobby;
+    // ★ Mirror SyncVar: 호스트(서버)가 이 값을 바꾸면 클라이언트들에게 자동으로 동기화됨!
+    [SyncVar(hook = nameof(OnRoomCodeUpdated))]
+    public string roomCode = "";
 
     void Awake()
     {
@@ -25,61 +25,23 @@ public class LobbySyncManager : NetworkBehaviour
         else Destroy(gameObject);
     }
 
-    void Start()
-    {
-        eosLobby = FindAnyObjectByType<EOSLobby>();
-    }
-
     void Update()
     {
-        if (eosLobby == null)
-        {
-            eosLobby = FindAnyObjectByType<EOSLobby>();
-        }
-
-        // 1. 서버(호스트)에서 실시간 접속 인원 동기화
+        // 서버(호스트) 전용 로직
         if (isServer)
         {
+            // 1. 실시간 인원수 체크
             int currentCount = NetworkServer.connections.Count;
             if (playerCount != currentCount)
             {
                 playerCount = currentCount;
             }
-        }
 
-        // 2. 오른쪽에 룸코드(숏코드) 표시
-        if (roomCodeText != null)
-        {
-            string displayCode = "";
-
-            // 호스트인 경우 PrivateLobbyManager의 숏코드 우선 확인
-            if (!string.IsNullOrEmpty(PrivateLobbyManager.currentShortCode))
+            // 2. 호스트가 발급받은 숏코드가 생성되었다면 SyncVar에 등록하여 클라이언트들에게 전송
+            if (string.IsNullOrEmpty(roomCode) && !string.IsNullOrEmpty(PrivateLobbyManager.currentShortCode))
             {
-                displayCode = PrivateLobbyManager.currentShortCode;
+                roomCode = PrivateLobbyManager.currentShortCode;
             }
-            // 클라이언트이거나 호스트인데 변수가 비어있는 경우 EOSLobby 어트리뷰트에서 가져오기
-            else if (eosLobby != null && eosLobby.ConnectedToLobby && eosLobby.ConnectedLobbyDetails != null)
-            {
-                try
-                {
-                    Attribute shortCodeAttribute = new Attribute();
-                    Result result = eosLobby.ConnectedLobbyDetails.CopyAttributeByKey(
-                        new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "SHORTCODE" },
-                        out shortCodeAttribute
-                    );
-
-                    if (result == Result.Success)
-                    {
-                        displayCode = shortCodeAttribute.Data.Value.AsUtf8;
-                    }
-                }
-                catch
-                {
-                    // 예외 처리 무시
-                }
-            }
-
-            roomCodeText.text = $"Room Code: {(string.IsNullOrEmpty(displayCode) ? "-" : displayCode)}";
         }
     }
 
@@ -87,6 +49,7 @@ public class LobbySyncManager : NetworkBehaviour
     {
         base.OnStartClient();
         UpdatePlayerCountUI(playerCount);
+        UpdateRoomCodeUI(roomCode); // 클라이언트 접속 시 초기화
     }
 
     [Server]
@@ -100,11 +63,24 @@ public class LobbySyncManager : NetworkBehaviour
         UpdatePlayerCountUI(newValue);
     }
 
+    void OnRoomCodeUpdated(string oldValue, string newValue)
+    {
+        UpdateRoomCodeUI(newValue);
+    }
+
     private void UpdatePlayerCountUI(int count)
     {
         if (playerCountText != null)
         {
             playerCountText.text = $"Player: {count} / 4";
+        }
+    }
+
+    private void UpdateRoomCodeUI(string code)
+    {
+        if (roomCodeText != null)
+        {
+            roomCodeText.text = $"Room Code: {(string.IsNullOrEmpty(code) ? "-" : code)}";
         }
     }
 }

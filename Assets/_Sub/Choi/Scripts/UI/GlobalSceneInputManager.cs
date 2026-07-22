@@ -15,7 +15,7 @@ public class GlobalSceneInputManager : MonoBehaviour
     private bool _isLocked = false;
     private GameObject _lockedObject = null;
 
-    // ★ [추가] 특정 팝업창 내부로만 포커스를 격리하기 위한 변수들
+    // 특정 팝업창 내부로만 포커스를 격리하기 위한 변수들
     private GameObject _currentFocusScope = null;
     private List<Selectable> _temporarilyDisabled = new List<Selectable>();
 
@@ -54,6 +54,12 @@ public class GlobalSceneInputManager : MonoBehaviour
     {
         if (EventSystem.current == null) return;
 
+        // ★ [추가] 이모지 메뉴가 열려있는 동안에는 전역 포커스 리셋 로직이 간섭하지 않도록 차단
+        if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())
+        {
+            return;
+        }
+
         if (_isLocked)
         {
             if (_lockedObject == null)
@@ -87,6 +93,13 @@ public class GlobalSceneInputManager : MonoBehaviour
 
         if (EventSystem.current != null)
         {
+            // 리셋 대기 중에도 이모지 메뉴가 열렸다면 취소
+            if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())
+            {
+                _isResettingFocus = false;
+                yield break;
+            }
+
             GameObject selected = EventSystem.current.currentSelectedGameObject;
             if (selected == null || !selected.activeInHierarchy)
             {
@@ -110,6 +123,12 @@ public class GlobalSceneInputManager : MonoBehaviour
         {
             if (sel != null && sel.interactable)
             {
+                // 포커스 범위가 지정되어 있다면 해당 범위 내의 버튼만 유효 목록에 포함
+                if (_currentFocusScope != null && !sel.transform.IsChildOf(_currentFocusScope.transform))
+                {
+                    continue;
+                }
+
                 validList.Add(sel);
                 ConfigureTrigger(sel.gameObject);
             }
@@ -202,7 +221,7 @@ public class GlobalSceneInputManager : MonoBehaviour
         }
     }
 
-    // ★ [추가] 특정 패널(창) 내부로 포커스를 격리하고 배경을 얼리는 함수
+    // 특정 패널(창) 내부로 포커스를 격리하고 배경을 얼리는 함수
     public void SetFocusScope(GameObject scopeRoot)
     {
         if (scopeRoot == null) return;
@@ -226,7 +245,7 @@ public class GlobalSceneInputManager : MonoBehaviour
         RefreshAllSelectables();
     }
 
-    // ★ [추가] 격리를 해제하고 배경 버튼들을 원래대로 복구하는 함수
+    // 격리를 해제하고 배경 버튼들을 원래대로 복구하는 함수
     public void ClearFocusScope()
     {
         _currentFocusScope = null;

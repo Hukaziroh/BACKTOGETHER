@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class SpectatorSystem : MonoBehaviour
 {
@@ -27,6 +28,39 @@ public class SpectatorSystem : MonoBehaviour
             currentSpectateIndex = index;
             Debug.Log($"[관전] {index + 1}P를 관전합니다.");
         }
+    }
+
+    // ★ Tab 키를 눌렀을 때 다음 플레이어로 순환 관전하는 메서드
+    public void CycleNextTarget()
+    {
+        if (CoopPlayerIdentity.players == null || CoopPlayerIdentity.players.Count == 0)
+        {
+            Debug.Log("[관전] 관전할 수 있는 플레이어가 없습니다.");
+            return;
+        }
+
+        // 본인을 제외한 유효한 플레이어 인덱스 목록 수집
+        List<int> validIndices = new List<int>();
+        foreach (var kvp in CoopPlayerIdentity.players)
+        {
+            if (kvp.Value != null && !kvp.Value.isLocalPlayer)
+            {
+                validIndices.Add(kvp.Key);
+            }
+        }
+
+        if (validIndices.Count == 0)
+        {
+            Debug.Log("[관전] 관전 가능한 다른 플레이어가 없습니다.");
+            StopSpectating();
+            return;
+        }
+
+        // 현재 관전 중인 인덱스의 위치를 찾고 다음 인덱스로 순환 (마지막이면 처음으로 돌아감)
+        int currentIndexInList = validIndices.IndexOf(currentSpectateIndex);
+        int nextIndexInList = (currentIndexInList + 1) % validIndices.Count;
+
+        SelectTarget(validIndices[nextIndexInList]);
     }
 
     public void StopSpectating()
