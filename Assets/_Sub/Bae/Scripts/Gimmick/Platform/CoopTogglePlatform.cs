@@ -4,9 +4,13 @@ using Mirror;
 public class CoopTogglePlatform : NetworkBehaviour
 {
     [Header("점멸 타이밍 설정")]
-    [Tooltip("발판이 유지되는 시간 (초)")]
+    [Tooltip("발판이 유지되는 기준 주기 시간 (초)")]
     public float toggleInterval = 2.0f;
-    [Tooltip("체크 시 켜진 상태로 시작, 해제 시 꺼진 상태로 시작")]
+
+    [Tooltip("새 발판이 켜진 후 기존 발판이 유지될 추가 여유 시간 (초)")]
+    public float overlapDuration = 0.5f;
+
+    [Tooltip("체크 시 A타입(켜지며 시작), 해제 시 B타입(꺼지며 시작)")]
     public bool startActive = true;
 
     [Header("연결할 컴포넌트")]
@@ -15,7 +19,7 @@ public class CoopTogglePlatform : NetworkBehaviour
 
     [Header("끼임 방지 설정")]
     public LayerMask playerLayer;
-    [Tooltip("물리 콜라이더 대비 내부 스캔 영역의 비율 (0.9 권장)")]
+    [Tooltip("물리 콜라이더 대비 내부 스캔 영역의 비율 (0.8 ~ 0.9 권장)")]
     [Range(0.5f, 0.99f)]
     public float scanScale = 0.8f;
 
@@ -25,15 +29,12 @@ public class CoopTogglePlatform : NetworkBehaviour
     [SyncVar(hook = nameof(OnColliderStateChanged))]
     private bool isColliderOn;
 
-    private float timer = 0f;
     private bool shouldBeActive;
 
     public override void OnStartServer()
     {
         base.OnStartServer();
-        shouldBeActive = startActive;
-        timer = 0f;
-        ApplyState();
+        ApplyStateCalculation();
     }
 
     public override void OnStartClient()
@@ -46,14 +47,7 @@ public class CoopTogglePlatform : NetworkBehaviour
     [ServerCallback]
     void Update()
     {
-        timer += Time.deltaTime;
-
-        if (timer >= toggleInterval)
-        {
-            timer = 0f;
-            shouldBeActive = !shouldBeActive;
-            ApplyState();
-        }
+        ApplyStateCalculation();
 
         if (shouldBeActive && !isColliderOn)
         {
@@ -65,18 +59,36 @@ public class CoopTogglePlatform : NetworkBehaviour
     }
 
     [Server]
-    private void ApplyState()
+    private void ApplyStateCalculation()
     {
-        if (shouldBeActive)
+        float totalCycle = toggleInterval * 2f;
+        float currentTime = Time.time % totalCycle;
+
+        bool nextState = false;
+
+        if (startActive)
         {
-            isVisualOn = true;
-            if (IsPlayerInside()) isColliderOn = false;
-            else isColliderOn = true;
+            nextState = (currentTime >= 0f && currentTime < (toggleInterval + overlapDuration));
         }
         else
         {
-            isVisualOn = false;
-            isColliderOn = false;
+            nextState = (currentTime >= toggleInterval && currentTime < totalCycle) || (currentTime >= 0f && currentTime < overlapDuration);
+        }
+
+        if (shouldBeActive != nextState)
+        {
+            shouldBeActive = nextState;
+
+            if (shouldBeActive)
+            {
+                isVisualOn = true;
+                isColliderOn = !IsPlayerInside();
+            }
+            else
+            {
+                isVisualOn = false;
+                isColliderOn = false;
+            }
         }
     }
 
@@ -106,10 +118,7 @@ public class CoopTogglePlatform : NetworkBehaviour
             if (platformVisual == this.gameObject)
             {
                 SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>();
-                foreach (var sr in renderers)
-                {
-                    sr.enabled = state;
-                }
+                foreach (var sr in renderers) sr.enabled = state;
             }
             else
             {
@@ -129,12 +138,9 @@ public class CoopTogglePlatform : NetworkBehaviour
         {
             Gizmos.color = Color.red;
             Matrix4x4 oldMatrix = Gizmos.matrix;
-
             Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.lossyScale);
-
             Vector2 scaledSize = platformCollider.size * scanScale;
             Gizmos.DrawWireCube(platformCollider.offset, scaledSize);
-
             Gizmos.matrix = oldMatrix;
         }
     }
