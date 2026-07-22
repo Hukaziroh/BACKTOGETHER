@@ -113,9 +113,9 @@ namespace EpicTransport
         // Static Instance
         // =========================================================
 
-        protected static EOSSDKComponent instance;
+        public static EOSSDKComponent instance;
 
-        protected static EOSSDKComponent Instance
+        public static EOSSDKComponent Instance
         {
             get
             {
@@ -1197,6 +1197,24 @@ namespace EpicTransport
         // OnApplicationQuit
         // =========================================================
 
+        public void SafeReleaseEOS()
+        {
+            if (EOS != null)
+            {
+                EOS.Release();
+                EOS = null;
+                PlatformInterface.Shutdown();
+
+                initialized = false;
+                isConnecting = false;
+
+                Debug.LogError("[EOS SDK] EOS Release 및 Shutdown 사전 완료 (SafeReleaseEOS)");
+            }
+        }
+
+        // =========================================================
+        // OnApplicationQuit
+        // =========================================================
         private void OnApplicationQuit()
         {
             Debug.LogError(
@@ -1204,51 +1222,22 @@ namespace EpicTransport
                 $"EOS={(EOS != null ? "NOT NULL" : "NULL")}"
             );
 
-
-            // 게임 종료 시에만 EOS SDK 종료
-            if (EOS != null)
-            {
-                EOS.Release();
-
-                EOS = null;
-
-                PlatformInterface.Shutdown();
-
-
-                initialized = false;
-
-                isConnecting = false;
-
-
-                Debug.LogError(
-                    "[EOS SDK] EOS Release 및 Shutdown 완료"
-                );
-            }
-
+            SafeReleaseEOS();
 
 #if UNITY_EDITOR
-
-            if (libraryPointer !=
-                IntPtr.Zero)
+            if (libraryPointer != IntPtr.Zero)
             {
                 Bindings.Unhook();
 
-
-                while (
-                    FreeLibrary(
-                        libraryPointer
-                    ) != 0)
+                while (FreeLibrary(libraryPointer) != 0)
                 {
                 }
 
-
-                libraryPointer =
-                    IntPtr.Zero;
+                libraryPointer = IntPtr.Zero;
             }
-
 #endif
         }
     }
-
-   
 }
+
+  
