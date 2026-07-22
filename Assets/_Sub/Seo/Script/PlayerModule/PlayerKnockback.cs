@@ -20,6 +20,9 @@ public class PlayerKnockback : NetworkBehaviour
 
     public bool isKnockedBack { get; private set; }
     private float knockbackGraceTimer = 0f;
+
+    private float knockbackTimeoutTimer = 0f;
+
     private float activeKnockbackX;
 
     public bool IsStunned => isKnockedBack || stunTimer > 0f;
@@ -59,12 +62,19 @@ public class PlayerKnockback : NetworkBehaviour
         {
             if (knockbackGraceTimer > 0f) knockbackGraceTimer -= Time.fixedDeltaTime;
 
+            if (knockbackTimeoutTimer > 0f) knockbackTimeoutTimer -= Time.fixedDeltaTime;
+
             controller.rb.linearVelocity = new Vector2(activeKnockbackX, controller.rb.linearVelocity.y);
 
-            if (knockbackGraceTimer <= 0f && controller.movement.isGrounded && Mathf.Abs(controller.rb.linearVelocity.y) <= 0.1f)
+            bool hitGround = knockbackGraceTimer <= 0f && controller.movement.isGrounded && Mathf.Abs(controller.rb.linearVelocity.y) <= 0.1f;
+
+            bool airTimeout = knockbackTimeoutTimer <= 0f;
+
+            if (hitGround || airTimeout)
             {
-                isKnockedBack = false; 
-                stunTimer = stunTime;
+                isKnockedBack = false;
+
+                stunTimer = hitGround ? stunTime : 0f;
             }
         }
         else if (stunTimer > 0f)
@@ -122,9 +132,10 @@ public class PlayerKnockback : NetworkBehaviour
         controller.rb.linearVelocity = new Vector2(activeKnockbackX, knockDir.y * knockPowerY * mult);
 
         isKnockedBack = true;
-        stunTimer = 0f; 
+        stunTimer = 0f;
+        knockbackGraceTimer = 0.2f;
 
-        knockbackGraceTimer = 0.2f; 
+        knockbackTimeoutTimer = 3.0f;
 
         CmdPlayHitAnimation();
     }
@@ -140,6 +151,8 @@ public class PlayerKnockback : NetworkBehaviour
         isKnockedBack = true;
         stunTimer = 0f;
         knockbackGraceTimer = 0.5f;
+
+        knockbackTimeoutTimer = 3.0f;
 
         CmdPlayHitAnimation();
 
@@ -162,6 +175,7 @@ public class PlayerKnockback : NetworkBehaviour
     {
         isKnockedBack = false;
         stunTimer = 0f;
+        knockbackTimeoutTimer = 0f; 
     }
 
     public void ApplyKnockbackFromEye(Vector3 eyePosition)

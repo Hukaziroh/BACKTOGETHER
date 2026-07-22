@@ -18,6 +18,9 @@ public class PlayerCombineHandler : NetworkBehaviour
     [HideInInspector] public float ghostRightInput = 0f;
     [HideInInspector] public float ghostDuoInput = 0f;
 
+    // 💡 4인 기믹 전용: 특정 발판(트리거)에 올라가 있는지 체크하는 변수 추가!
+    [SyncVar] public bool canUseAction = false;
+
     private float lastSentMove = 0f;
 
     private SpriteRenderer spriteRenderer;
@@ -35,7 +38,6 @@ public class PlayerCombineHandler : NetworkBehaviour
         col = GetComponent<Collider2D>();
         rb = GetComponent<Rigidbody2D>();
 
-        // 입력 바인딩 초기화
         if (moveAction == null || moveAction.bindings.Count == 0)
         {
             moveAction = new InputAction("CombineMove", InputActionType.Value);
@@ -55,7 +57,7 @@ public class PlayerCombineHandler : NetworkBehaviour
         if (actionAction == null || actionAction.bindings.Count == 0)
         {
             actionAction = new InputAction("CombineAction", InputActionType.Button);
-            actionAction.AddBinding("<Keyboard>/v");
+            actionAction.AddBinding("<Keyboard>/v"); // 💡 V키로 완벽 고정
         }
     }
 
@@ -114,18 +116,9 @@ public class PlayerCombineHandler : NetworkBehaviour
             float currentMove = 0f;
             float inputVal = moveAction.ReadValue<float>(); // -1 ~ 1
 
-            if (myRole == CombineRole.Move_Left)
-            {
-                currentMove = Mathf.Clamp(inputVal, -1f, 0f);
-            }
-            else if (myRole == CombineRole.Move_Right)
-            {
-                currentMove = Mathf.Clamp(inputVal, 0f, 1f);
-            }
-            else if (myRole == CombineRole.Move)
-            {
-                currentMove = inputVal;
-            }
+            if (myRole == CombineRole.Move_Left) currentMove = Mathf.Clamp(inputVal, -1f, 0f);
+            else if (myRole == CombineRole.Move_Right) currentMove = Mathf.Clamp(inputVal, 0f, 1f);
+            else if (myRole == CombineRole.Move) currentMove = inputVal;
 
             if (currentMove != lastSentMove)
             {
@@ -139,24 +132,32 @@ public class PlayerCombineHandler : NetworkBehaviour
                 if (jumpAction.WasReleasedThisFrame()) CmdSendShortJumpToBody(bodyTarget);
             }
 
+            // 💡 유령 플레이어(4번 유저)의 액션 통제: 
+            // 역할이 Action이면서, 현재 본체가 특정 트리거(canUseAction) 위에 있을 때만 발동!
             if (myRole == CombineRole.Action && actionAction.WasPressedThisFrame())
             {
-                CmdSendActionToBody(bodyTarget);
+                if (bodyTarget.GetComponent<PlayerCombineHandler>().canUseAction)
+                {
+                    CmdSendActionToBody(bodyTarget);
+                }
             }
         }
         else
         {
             if (myRole == CombineRole.Jump)
             {
-                if (jumpAction.WasPressedThisFrame())
-                    GetComponent<PlayerController>().CallCombinedJump(); 
-
-                if (jumpAction.WasReleasedThisFrame())
-                    GetComponent<PlayerController>().ApplyShortJump(); 
+                if (jumpAction.WasPressedThisFrame()) GetComponent<PlayerController>().CallCombinedJump();
+                if (jumpAction.WasReleasedThisFrame()) GetComponent<PlayerController>().ApplyShortJump();
             }
 
+            // 💡 본체 플레이어의 액션 통제 (혹시나 본체가 Action 역할을 받았을 때를 대비한 안전장치)
             if (myRole == CombineRole.Action && actionAction.WasPressedThisFrame())
-                GetComponent<PlayerController>().CallCombinedAction();
+            {
+                if (canUseAction)
+                {
+                    GetComponent<PlayerController>().CallCombinedAction();
+                }
+            }
         }
     }
 
@@ -173,10 +174,12 @@ public class PlayerCombineHandler : NetworkBehaviour
         float totalInput = 0f;
         float inputVal = moveAction.ReadValue<float>();
 
+        // 본체의 역할에 맞는 입력만 더하기
         if (myRole == CombineRole.Move_Left && inputVal < 0) totalInput += -1f;
         if (myRole == CombineRole.Move_Right && inputVal > 0) totalInput += 1f;
         if (myRole == CombineRole.Move) totalInput += inputVal;
 
+        // 유령들의 통제된 입력 더하기
         totalInput += ghostLeftInput;
         totalInput += ghostRightInput;
         totalInput += ghostDuoInput;
@@ -238,6 +241,7 @@ public class PlayerCombineHandler : NetworkBehaviour
         isCombined = false;
         myRole = CombineRole.None;
         bodyTarget = null;
+        canUseAction = false; 
 
         ghostLeftInput = 0f;
         ghostRightInput = 0f;
