@@ -80,4 +80,14 @@ public class PlayerFlashlight : NetworkBehaviour
             CmdSetFlashlight(false);
         }
     }
+
+    public void TurnOnFlashlight()
+    {
+        if (!isLocalPlayer) return;
+
+        if (canUseFlashlight && !isFlashlightOn)
+        {
+            CmdSetFlashlight(true);
+        }
+    }
 }

@@ -928,7 +928,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  requiredPlayers: 1
+  requiredPlayers: 4
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
@@ -1262,7 +1262,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  requiredPlayers: 1
+  requiredPlayers: 4
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
@@ -2333,7 +2333,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  requiredPlayers: 1
+  requiredPlayers: 4
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
@@ -4835,7 +4835,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  requiredPlayers: 1
+  requiredPlayers: 4
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
@@ -5801,6 +5801,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0d0339b230d7cb41a1e1d19bca287a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlashlightBlockZone
+  overrideButton: {fileID: 1858314998}
 --- !u!61 &583684870
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -6160,7 +6161,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  requiredPlayers: 1
+  requiredPlayers: 4
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
@@ -11886,7 +11887,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  requiredPlayers: 1
+  requiredPlayers: 4
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
@@ -14778,6 +14779,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0d0339b230d7cb41a1e1d19bca287a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlashlightBlockZone
+  overrideButton: {fileID: 0}
 --- !u!1001 &1175974714
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -224153,7 +224155,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  requiredPlayers: 1
+  requiredPlayers: 4
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
