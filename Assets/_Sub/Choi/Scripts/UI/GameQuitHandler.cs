@@ -1,10 +1,11 @@
 using UnityEngine;
+using Mirror;
+using System.Collections;
 
 public class GameQuitHandler : MonoBehaviour
 {
     private bool isQuitting = false;
 
-    // UI의 EXIT (게임 종료) 버튼 OnClick에 연결하세요.
     public void QuitGame()
     {
         if (isQuitting) return;
@@ -16,11 +17,29 @@ public class GameQuitHandler : MonoBehaviour
             disconnectHandler.SetIntentionalExit();
         }
 
-        Debug.Log("[GameQuitHandler] 게임 종료 요청 - SafeNetworkShutdown이 안전 정리를 담당합니다.");
+        // 즉시 끄지 않고, 안전 종료 코루틴 실행
+        StartCoroutine(GracefulQuitRoutine());
+    }
+
+    private IEnumerator GracefulQuitRoutine()
+    {
+        Debug.Log("[GameQuitHandler] 네트워크 정지 요청...");
+
+        if (NetworkManager.singleton != null)
+        {
+            if (NetworkServer.active || NetworkClient.active)
+            {
+                NetworkManager.singleton.StopHost();
+            }
+        }
+
+        // ★ 핵심: EOS 백그라운드 스레드가 소켓을 닫고 정리할 수 있는 '현실 시간' 보장
+        // 1프레임으로는 가끔 부족하기 때문에 0.3초 대기합니다.
+        yield return new WaitForSecondsRealtime(0.3f);
+
+        Debug.Log("[GameQuitHandler] 네트워크 정리 완료, 에디터 종료");
 
 #if UNITY_EDITOR
-        // 플레이 모드를 끄는 순간 SafeNetworkShutdown이 ExitingPlayMode를 감지하여
-        // NetworkManager를 즉시 파괴(DestroyImmediate)하므로 멈춤 현상이 해결됩니다.
         UnityEditor.EditorApplication.isPlaying = false;
 #else
         Application.Quit();
