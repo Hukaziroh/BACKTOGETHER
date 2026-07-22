@@ -292403,6 +292403,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: CoopRopeManager
       objectReference: {fileID: 0}
+    - target: {fileID: 4690054193533974446, guid: 6d28c6f2ad534c849aaa516595f6f247, type: 3}
+      propertyPath: ropeWidth
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4690054193533974446, guid: 6d28c6f2ad534c849aaa516595f6f247, type: 3}
+      propertyPath: requiredPlayers
+      value: 4
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
