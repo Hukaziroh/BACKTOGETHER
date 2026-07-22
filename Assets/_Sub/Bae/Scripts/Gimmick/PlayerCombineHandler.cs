@@ -55,8 +55,7 @@ public class PlayerCombineHandler : NetworkBehaviour
         if (actionAction == null || actionAction.bindings.Count == 0)
         {
             actionAction = new InputAction("CombineAction", InputActionType.Button);
-            actionAction.AddBinding("<Keyboard>/s");
-            actionAction.AddBinding("<Keyboard>/downArrow");
+            actionAction.AddBinding("<Keyboard>/v");
         }
     }
 
