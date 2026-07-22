@@ -1254,7 +1254,7 @@ MonoBehaviour:
   headCheckBoxSize: {x: 0.66, y: -0.04}
   headCheckOffset: {x: 0, y: 0.444}
   headCheck: {fileID: 234135565813763668}
-  emojiController: {fileID: 0}
+  emojiController: {fileID: 6800475550925425856}
   windVelocity: 0
 --- !u!114 &106991141419042085
 MonoBehaviour:
