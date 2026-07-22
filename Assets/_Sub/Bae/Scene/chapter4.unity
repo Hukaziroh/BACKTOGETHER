@@ -3369,6 +3369,10 @@ PrefabInstance:
       value: -0.11354017
       objectReference: {fileID: 0}
     - target: {fileID: 4303600409352984433, guid: af18edf77f13ee242b17cf09eaeb6cb3, type: 3}
+      propertyPath: requiredPlayers
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4303600409352984433, guid: af18edf77f13ee242b17cf09eaeb6cb3, type: 3}
       propertyPath: OnAllPlayersEntered.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1518204380}
