@@ -358,20 +358,5 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
-    private void OnCollisionStay2D(Collision2D col)
-    {
-        if (!isLocalPlayer) return;
-        if (PauseManager.instance != null && PauseManager.instance.isPaused) return;
-
-        if (!isGrounded && col.gameObject.CompareTag("Player"))
-        {
-            Vector2 dir = transform.position - col.transform.position;
-
-            if (Mathf.Abs(dir.x) > 0.1f && Mathf.Abs(dir.y) < 0.8f)
-            {
-                float pushForce = 3f * controller.rb.mass;
-                controller.rb.AddForce(new Vector2(Mathf.Sign(dir.x) * pushForce, 0f));
-            }
-        }
-    }
+   
 }
