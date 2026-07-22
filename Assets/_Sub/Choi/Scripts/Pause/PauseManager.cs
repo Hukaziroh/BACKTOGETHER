@@ -1,9 +1,11 @@
+using System.Collections;
+using Epic.OnlineServices.Lobby;
+using Mirror;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using TMPro;
-using Mirror;
-using System.Collections;
+using Epic.OnlineServices;
 
 public class PauseManager : MonoBehaviour
 {
@@ -77,18 +79,47 @@ public class PauseManager : MonoBehaviour
 
     private void UpdateRoomCodeUI()
     {
-        if (pauseRoomCodeText != null)
+        if (pauseRoomCodeText == null) return;
+
+        // 1. 우선 PrivateLobbyManager에 코드가 있다면 가져옵니다.
+        string displayCode = PrivateLobbyManager.currentShortCode;
+
+        // 2. 만약 비어있다면(클라이언트 등) 에픽 로비(EOSLobby) 어트리뷰트에서 코드를 가져옵니다.
+        if (string.IsNullOrEmpty(displayCode) && NetworkManager.singleton != null)
         {
-            if (string.IsNullOrEmpty(PrivateLobbyManager.currentShortCode))
+            EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
+            if (eosLobby != null && eosLobby.ConnectedToLobby && eosLobby.ConnectedLobbyDetails != null)
             {
-                pauseRoomCodeText.text = "CODE:\nEmpty";
+                try
+                {
+                    Attribute shortCodeAttribute = new Attribute();
+                    Result result = eosLobby.ConnectedLobbyDetails.CopyAttributeByKey(
+                        new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "SHORTCODE" },
+                        out shortCodeAttribute
+                    );
+
+                    if (result == Result.Success)
+                    {
+                        displayCode = shortCodeAttribute.Data.Value.AsUtf8;
+                    }
+                }
+                catch
+                {
+                    // 예외 무시
+                }
             }
-            else
-            {
-                pauseRoomCodeText.text = isCodeVisible ?
-                    $"CODE:\n{PrivateLobbyManager.currentShortCode}" :
-                    "CODE:\n******";
-            }
+        }
+
+        // 3. 최종적으로 UI에 표시
+        if (string.IsNullOrEmpty(displayCode))
+        {
+            pauseRoomCodeText.text = "CODE:\nEmpty";
+        }
+        else
+        {
+            pauseRoomCodeText.text = isCodeVisible ?
+                $"CODE:\n{displayCode}" :
+                "CODE:\n******";
         }
     }
 
