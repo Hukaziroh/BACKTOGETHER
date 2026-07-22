@@ -1,11 +1,12 @@
 using UnityEngine;
-
 using Mirror;
 
 public class EnemyMove : NetworkBehaviour
 {
     public float moveSpeed = 3f;
-    private int moveDirection = -1; // 1이면 오른쪽, -1이면 왼쪽
+
+    [SyncVar(hook = nameof(OnDirectionChanged))]
+    private int moveDirection = -1;
 
     private Rigidbody2D rb;
 
@@ -16,23 +17,23 @@ public class EnemyMove : NetworkBehaviour
 
     void FixedUpdate()
     {
-        // 이동: 현재 방향대로 속도를 줍니다
+        if (!isServer) return;
+
         rb.linearVelocity = new Vector2(moveDirection * moveSpeed, rb.linearVelocity.y);
     }
 
+    [ServerCallback] 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        // 'Wall'이라는 태그가 붙은 오브젝트에 닿으면?
         if (collision.gameObject.CompareTag("Wall"))
         {
-            Flip(); // 방향 뒤집기!
+            moveDirection *= -1;
         }
     }
 
-    void Flip()
+    private void OnDirectionChanged(int oldDir, int newDir)
     {
-        moveDirection *= -1;
-
-        transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
+        float sign = newDir == -1 ? 1f : -1f;
+        transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x) * sign, transform.localScale.y, transform.localScale.z);
     }
 }

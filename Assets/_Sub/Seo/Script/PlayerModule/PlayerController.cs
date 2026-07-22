@@ -65,7 +65,6 @@ public class PlayerController : NetworkBehaviour
         get => respawn.currentSpawnPoint;
         set => respawn.currentSpawnPoint = value;
     }
-    public void SetSpawnPoint(Vector3 newPoint) => respawn.SetSpawnPoint(newPoint);
 
     public UnityEngine.InputSystem.InputAction jumpAction => input.jumpAction;
 
