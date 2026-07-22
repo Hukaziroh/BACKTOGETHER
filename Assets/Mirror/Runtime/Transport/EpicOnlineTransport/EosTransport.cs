@@ -324,24 +324,28 @@ namespace EpicTransport
         {
             if (EOSSDKComponent.CollectPlayerMetrics)
             {
-                // Stop Metrics collection session
                 EndPlayerSessionOptions endSessionOptions = new EndPlayerSessionOptions();
                 endSessionOptions.AccountId = EOSSDKComponent.LocalUserAccountId;
-                Result result = EOSSDKComponent.GetMetricsInterface().EndPlayerSession(endSessionOptions);
+
+                Result result = EOSSDKComponent.GetMetricsInterface()
+                    .EndPlayerSession(endSessionOptions);
 
                 if (result == Result.Success)
                 {
-                    Debug.LogError("Stopped Metric Session");
+                    Debug.Log("Stopped Metric Session");
                 }
             }
-
             server?.Shutdown();
             client?.Disconnect();
-
             server = null;
             client = null;
             activeNode = null;
-            Debug.Log("Transport shut down.");
+
+            ignoreCachedMessagesTimer = 0f;
+
+            packetId = 0;
+
+            Debug.Log("[EosTransport] Transport 완전 종료 및 상태 초기화 완료");
         }
 
         public int GetMaxSinglePacketSize(int channelId) => P2PInterface.MaxPacketSize - 10; // 1159 bytes, we need to remove 10 bytes for the packet header (id (4 bytes) + fragment (4 bytes) + more fragments (1 byte)) 

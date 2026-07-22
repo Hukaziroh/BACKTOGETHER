@@ -105,12 +105,11 @@ public class PauseManager : MonoBehaviour
                 }
                 catch
                 {
-                    // 예외 무시
+
                 }
             }
         }
 
-        // 3. 최종적으로 UI에 표시
         if (string.IsNullOrEmpty(displayCode))
         {
             pauseRoomCodeText.text = "CODE:\nEmpty";
@@ -156,7 +155,9 @@ public class PauseManager : MonoBehaviour
         UnityEditor.Selection.activeGameObject = null;
 #endif
 
-        Debug.Log("[퍼즈 시스템] ① 에픽 로비 비동기 퇴장 시퀀스 시작...");
+        Debug.Log(
+            "[퍼즈 시스템] ① 에픽 로비 비동기 퇴장 시퀀스 시작..."
+        );
 
         Time.timeScale = 1f;
 
@@ -164,40 +165,132 @@ public class PauseManager : MonoBehaviour
 
         if (NetworkManager.singleton == null)
         {
-            Debug.LogError("[퍼즈 시스템] NetworkManager.singleton이 NULL입니다.");
+            Debug.LogError(
+                "[퍼즈 시스템] NetworkManager.singleton이 NULL입니다."
+            );
+
             isLeaving = false;
             yield break;
         }
 
-        EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
+        EOSLobby eosLobby =
+            NetworkManager.singleton.GetComponent<EOSLobby>();
 
-        if (eosLobby != null && eosLobby.ConnectedToLobby)
+
+        // =========================================================
+        // 1. EOS Lobby 퇴장
+        // =========================================================
+
+        if (eosLobby != null)
         {
-            eosLobby.LeaveLobby();
+            Debug.Log(
+                $"[퍼즈 시스템] ② EOSLobby 발견 | " +
+                $"ConnectedToLobby = {eosLobby.ConnectedToLobby} | " +
+                $"IsLeavingLobby = {eosLobby.IsLeavingLobby}"
+            );
 
-            float timeout = 5f;
-            while (eosLobby.ConnectedToLobby && timeout > 0f)
+            if (eosLobby.ConnectedToLobby)
             {
-                timeout -= Time.unscaledDeltaTime;
-                yield return null;
+                Debug.Log(
+                    "[퍼즈 시스템] ③ EOS Lobby 퇴장 요청"
+                );
+
+                eosLobby.LeaveLobby();
+
+                // 최대 5초 동안 Lobby 퇴장 완료 대기
+                float timeout = 5f;
+
+                while (
+                    eosLobby.IsLeavingLobby &&
+                    timeout > 0f
+                )
+                {
+                    timeout -= Time.unscaledDeltaTime;
+
+                    yield return null;
+                }
+
+
+                // =================================================
+                // 2. 퇴장 결과 확인
+                // =================================================
+
+                if (eosLobby.IsLeavingLobby)
+                {
+                    Debug.LogWarning(
+                        "[퍼즈 시스템] ④ EOS Lobby 퇴장 콜백이 " +
+                        "5초 안에 도착하지 않았습니다."
+                    );
+                }
+                else if (eosLobby.ConnectedToLobby)
+                {
+                    Debug.LogWarning(
+                        "[퍼즈 시스템] ④ EOS Lobby 퇴장 실패 또는 " +
+                        "아직 Lobby에 연결된 상태입니다."
+                    );
+                }
+                else
+                {
+                    Debug.Log(
+                        "[퍼즈 시스템] ④ EOS Lobby 정상 퇴장 완료"
+                    );
+                }
+            }
+            else
+            {
+                Debug.Log(
+                    "[퍼즈 시스템] ③ 현재 EOS Lobby에 연결되어 있지 않습니다."
+                );
             }
         }
+        else
+        {
+            Debug.LogWarning(
+                "[퍼즈 시스템] EOSLobby 컴포넌트를 찾을 수 없습니다."
+            );
+        }
+
+
+        // =========================================================
+        // 3. Mirror 네트워크 종료
+        // =========================================================
 
         if (NetworkServer.active)
         {
+            Debug.Log(
+                "[퍼즈 시스템] ⑤ 호스트 종료"
+            );
+
             NetworkManager.singleton.StopHost();
         }
-        else if (NetworkClient.active)
+        else if (
+            NetworkClient.active ||
+            NetworkClient.isConnected
+        )
         {
+            Debug.Log(
+                "[퍼즈 시스템] ⑤ 클라이언트 종료"
+            );
+
             NetworkManager.singleton.StopClient();
         }
-
-        yield return null;
-
-        if (!string.IsNullOrEmpty(mainMenuSceneName))
+        else
         {
-            SceneManager.LoadScene(mainMenuSceneName);
+            Debug.Log(
+                "[퍼즈 시스템] ⑤ 이미 Mirror 네트워크가 종료된 상태입니다."
+            );
         }
+
+
+        // =========================================================
+        // 4. 종료 처리
+        // =========================================================
+
+        yield return new WaitForSecondsRealtime(0.5f);
+
+        Debug.Log(
+            "[퍼즈 시스템] ⑥ 게임 종료 시퀀스 완료"
+        );
 
         isLeaving = false;
     }
