@@ -66,6 +66,10 @@ public class PlayerMovement : NetworkBehaviour
     void Update()
     {
         if (!isLocalPlayer) return;
+
+        // ★ [유니티 6.5 퍼즈 체크] 일시정지 상태면 입력 및 타이머 갱신 차단
+        if (PauseManager.instance != null && PauseManager.instance.isPaused) return;
+
         UpdateTimers();
         UpdateCoyoteTime();
         HandleJumpInput();
@@ -75,6 +79,10 @@ public class PlayerMovement : NetworkBehaviour
     void FixedUpdate()
     {
         if (!isLocalPlayer) return;
+
+        // ★ [유니티 6.5 퍼즈 체크] 일시정지 상태면 물리 이동 계산 차단
+        if (PauseManager.instance != null && PauseManager.instance.isPaused) return;
+
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
 
@@ -172,6 +180,7 @@ public class PlayerMovement : NetworkBehaviour
             );
         }
     }
+
     private void ClampVelocity()
     {
         float maxSpeedX = 30f;
@@ -348,9 +357,11 @@ public class PlayerMovement : NetworkBehaviour
             Gizmos.DrawWireCube(hCheckPosition, headCheckBoxSize);
         }
     }
+
     private void OnCollisionStay2D(Collision2D col)
     {
         if (!isLocalPlayer) return;
+        if (PauseManager.instance != null && PauseManager.instance.isPaused) return;
 
         if (!isGrounded && col.gameObject.CompareTag("Player"))
         {

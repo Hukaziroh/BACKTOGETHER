@@ -581,6 +581,18 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 5802297257029448514, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
   m_PrefabInstance: {fileID: 552944003}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &112237224
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 112237220}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f6a0388476710346b05e5acc69544b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameQuitHandler
 --- !u!1 &129736075
 GameObject:
   m_ObjectHideFlags: 0
@@ -1668,54 +1680,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 328702004}
   m_CullTransparentMesh: 1
---- !u!1 &426090128
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 426090130}
-  - component: {fileID: 426090129}
-  m_Layer: 0
-  m_Name: OnlyOptionExit
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &426090129
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 426090128}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9fbdb214024a8024084e39c41613de72, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::OnlyOptionExit
-  optionPanel: {fileID: 0}
-  audioMixer: {fileID: 24100000, guid: 95799436be0aef347a09df451fe579be, type: 2}
-  volumeSlider: {fileID: 0}
-  fullscreenToggle: {fileID: 0}
---- !u!4 &426090130
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 426090128}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1218.3839, y: 554.25555, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &427278111
 GameObject:
   m_ObjectHideFlags: 0
@@ -2663,13 +2627,25 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3552379308435807786, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3552379308435807786, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 426090129}
+      objectReference: {fileID: 1506203213}
     - target: {fileID: 3552379308435807786, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
       objectReference: {fileID: 1506203213}
+    - target: {fileID: 3552379308435807786, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OpenOptionPanel
+      objectReference: {fileID: 0}
+    - target: {fileID: 3552379308435807786, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: ClientMenu, Assembly-CSharp
+      objectReference: {fileID: 0}
     - target: {fileID: 4001352306162782268, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_Color.g
       value: 0
@@ -2905,7 +2881,15 @@ PrefabInstance:
     - target: {fileID: 8076807666703242262, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 426090129}
+      objectReference: {fileID: 112237224}
+    - target: {fileID: 8076807666703242262, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: QuitGame
+      objectReference: {fileID: 0}
+    - target: {fileID: 8076807666703242262, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: GameQuitHandler, Assembly-CSharp
+      objectReference: {fileID: 0}
     - target: {fileID: 8245278758810434696, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_SizeDelta.x
       value: 0
@@ -2944,6 +2928,9 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1965703119}
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5802297257029448514, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 112237224}
     - targetCorrespondingSourceObject: {fileID: 6732959556741946089, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 552944008}
@@ -11198,7 +11185,6 @@ SceneRoots:
   - {fileID: 156600390}
   - {fileID: 552944003}
   - {fileID: 6870475135527063537}
-  - {fileID: 426090130}
   - {fileID: 1361930117}
   - {fileID: 1918939461}
   - {fileID: 2132180814}

@@ -8,22 +8,30 @@ public class SafeNetworkShutdown
 {
     static SafeNetworkShutdown()
     {
+        // 컴파일 시 중복 등록 방지를 위해 먼저 제거 후 등록
+        EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
         EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
     }
 
     private static void OnPlayModeStateChanged(PlayModeStateChange state)
     {
-        // 유니티 플레이 모드가 꺼지기 '직전(ExitingPlayMode)'에 단 한 번 실행됩니다.
         if (state == PlayModeStateChange.ExitingPlayMode)
         {
-            if (NetworkManager.singleton != null && NetworkManager.singleton.gameObject != null)
+            if (NetworkManager.singleton != null)
             {
-                Debug.Log("[Editor 셧다운] 에디터 크래시 방지: 네트워크 매니저 우선 파괴");
+                Debug.Log("[Editor 셧다운] 네트워크 안전 종료 프로세스 시작");
 
-                // 💡 핵심: 어설픈 명령어들을 모두 빼고, 유니티 에디터가 메모리를 무작위로 부수기 전에
-                // 네트워크 매니저 오브젝트를 '제일 먼저, 그리고 온전하게' 소멸시켜버립니다.
-                // 이 한 줄이 Mirror와 에픽 트랜스포트의 자체 안전 종료 로직을 정상적으로 발동시킵니다.
-                Object.DestroyImmediate(NetworkManager.singleton.gameObject);
+                // 1. 강제 파괴 전, Mirror 네트워크 세션을 먼저 안전하게 정지 시도
+                if (NetworkServer.active || NetworkClient.active)
+                {
+                    NetworkManager.singleton.StopHost();
+                }
+
+                // 2. 만약 오브젝트 참조가 남아있다면 안전하게 파괴
+                if (NetworkManager.singleton != null && NetworkManager.singleton.gameObject != null)
+                {
+                    Object.DestroyImmediate(NetworkManager.singleton.gameObject);
+                }
             }
         }
     }
