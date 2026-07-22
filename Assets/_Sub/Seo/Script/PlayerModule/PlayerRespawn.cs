@@ -2,7 +2,8 @@ using UnityEngine;
 using Mirror;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-using System.Collections; // 코루틴 사용을 위해 필수 추가
+using System.Collections;
+using System.Collections.Generic;
 
 public class PlayerRespawn : NetworkBehaviour
 {
@@ -12,6 +13,10 @@ public class PlayerRespawn : NetworkBehaviour
     public Vector3 currentSpawnPoint;
     private float holdTimer = 0f;
     private const float HOLD_TIME_TO_RESPAWN = 2f;
+
+    [Header("팀 리스폰 씬 설정")]
+    [Tooltip("여기에 적힌 씬에서는 1명만 죽어도 4명이 다 같이 부활합니다. (로프 맵 등)")]
+    public List<string> teamRespawnScenes = new List<string> { "Chapter4" };
 
     void Awake()
     {
@@ -44,23 +49,18 @@ public class PlayerRespawn : NetworkBehaviour
             }
             else
             {
-                if (holdTimer > 0f)
-                {
-                    holdTimer = 0f;
-                }
+                if (holdTimer > 0f) holdTimer = 0f;
             }
         }
     }
-
-    void FixedUpdate()
+    [ClientRpc]
+    public void RpcUpdateSpawnPoint(Vector3 newPoint)
     {
-        if (!isLocalPlayer) return;
-        CheckRespawn();
+        currentSpawnPoint = newPoint;
     }
-
-    public void SetSpawnPoint(Vector3 newPoint)
+    [TargetRpc]
+    public void TargetUpdateSpawnPoint(NetworkConnection target, Vector3 newPoint)
     {
-        if (!isLocalPlayer) return;
         currentSpawnPoint = newPoint;
     }
 
@@ -68,7 +68,8 @@ public class PlayerRespawn : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
-        if (SceneManager.GetActiveScene().name == "RopeTest")
+        string currentScene = SceneManager.GetActiveScene().name;
+        if (teamRespawnScenes.Contains(currentScene))
         {
             CmdTeamRespawn();
         }
@@ -81,11 +82,14 @@ public class PlayerRespawn : NetworkBehaviour
     [Command]
     private void CmdTeamRespawn()
     {
-        PlayerRespawn[] allPlayers = FindObjectsByType<PlayerRespawn>(FindObjectsSortMode.None);
+        PlayerRespawn[] allPlayers = FindObjectsByType<PlayerRespawn>(FindObjectsInactive.Exclude);
 
         foreach (var player in allPlayers)
         {
-            player.TargetForceRespawn(player.connectionToClient);
+            if (player != null && player.connectionToClient != null)
+            {
+                player.TargetForceRespawn(player.connectionToClient);
+            }
         }
     }
 
@@ -94,32 +98,22 @@ public class PlayerRespawn : NetworkBehaviour
     {
         StartCoroutine(DoLocalRespawnRoutine());
     }
+
     private IEnumerator DoLocalRespawnRoutine()
     {
-        if (controller.knockback != null)
+        if (controller.knockback != null) controller.knockback.ResetKnockback();
+        if (controller.rb != null)
         {
-            controller.knockback.ResetKnockback();
+            controller.rb.linearVelocity = Vector2.zero;
+            controller.rb.angularVelocity = 0f;
         }
-
         for (int i = 0; i < 10; i++)
         {
             transform.position = currentSpawnPoint;
-            controller.rb.linearVelocity = Vector2.zero;
+            if (controller.rb != null) controller.rb.linearVelocity = Vector2.zero;
             yield return new WaitForFixedUpdate();
         }
-    }
 
-
-    private void CheckRespawn()
-    {
-        string sceneName = SceneManager.GetActiveScene().name;
-        if (sceneName == "Lobby" || sceneName == "Main")
-        {
-            return;
-        }
-        if (transform.position.y < -50f)
-        {
-            Respawn();
-        }
+        if (controller.rb != null) controller.rb.linearVelocity = Vector2.zero;
     }
 }
