@@ -12,9 +12,9 @@ public class PlayerInput : NetworkBehaviour
     public InputAction actionAction;
 
     public float HorizontalInput { get; private set; }
-    public bool JumpPressedThisFrame => jumpAction.WasPressedThisFrame();
-    public bool JumpReleasedThisFrame => jumpAction.WasReleasedThisFrame();
-    public bool ActionPressedThisFrame => actionAction.WasPressedThisFrame();
+    public bool JumpPressedThisFrame => jumpAction != null && jumpAction.WasPressedThisFrame();
+    public bool JumpReleasedThisFrame => jumpAction != null && jumpAction.WasReleasedThisFrame();
+    public bool ActionPressedThisFrame => actionAction != null && actionAction.WasPressedThisFrame();
 
     [Header("기믹: 좌우반전")]
     public bool isReversed { get; private set; } = false;
@@ -26,61 +26,39 @@ public class PlayerInput : NetworkBehaviour
         InitializeInputs();
     }
 
-    private void InitializeInputs()
+    public override void OnStartLocalPlayer()
     {
-        if (moveAction == null || moveAction.bindings.Count == 0)
-        {
-            moveAction = new InputAction("Move", InputActionType.Value);
-            moveAction.AddCompositeBinding("1DAxis")
-                .With("Negative", "<Keyboard>/a")
-                .With("Negative", "<Keyboard>/leftArrow")
-                .With("Negative", "<Gamepad>/dpad/left")
-                .With("Negative", "<Gamepad>/leftStick/left")
-                .With("Positive", "<Keyboard>/d")
-                .With("Positive", "<Keyboard>/rightArrow")
-                .With("Positive", "<Gamepad>/dpad/right")
-                .With("Positive", "<Gamepad>/leftStick/right");
-        }
-
-        if (jumpAction == null || jumpAction.bindings.Count == 0)
-        {
-            jumpAction = new InputAction("Jump", InputActionType.Button);
-            jumpAction.AddBinding("<Keyboard>/w");
-            jumpAction.AddBinding("<Keyboard>/upArrow");
-            jumpAction.AddBinding("<Keyboard>/space");
-            jumpAction.AddBinding("<Gamepad>/buttonSouth");
-        }
-
-        if (actionAction == null || actionAction.bindings.Count == 0)
-        {
-            actionAction = new InputAction("Action", InputActionType.Button);
-            actionAction.AddBinding("<Keyboard>/v");
-            actionAction.AddBinding("<Gamepad>/buttonEast");
-        }
-    }
-
-    void OnEnable()
-    {
-        moveAction.Enable();
-        jumpAction.Enable();
-        actionAction.Enable();
+        base.OnStartLocalPlayer();
+        // 💡 [리팩토링]: 동적 생성을 고려한 명시적 Enable
+        moveAction?.Enable();
+        jumpAction?.Enable();
+        actionAction?.Enable();
     }
 
     void OnDisable()
     {
-        moveAction.Disable();
-        jumpAction.Disable();
-        actionAction.Disable();
+        if (isLocalPlayer)
+        {
+            // 💡 [리팩토링]: 메모리 누수 방지 비활성화
+            moveAction?.Disable();
+            jumpAction?.Disable();
+            actionAction?.Disable();
+        }
     }
 
-    void Update()
+    // 💡 [리팩토링]: PlayerController에서 최우선 호출
+    public void CustomUpdate()
     {
-        if (!isLocalPlayer) return;
+        UpdateHorizontalInput();
+    }
+
+    private void UpdateHorizontalInput()
+    {
+        if (moveAction == null) return;
 
         float rawInput = 0f;
 
-        // 합체 상태 체크
-        if (controller.combineHandler != null && controller.combineHandler.isCombined)
+        if (controller != null && controller.combineHandler != null && controller.combineHandler.isCombined)
         {
             if (gameObject != controller.combineHandler.bodyTarget)
             {
@@ -142,7 +120,38 @@ public class PlayerInput : NetworkBehaviour
             if (isReversed)
                 Debug.Log("🚨 조작 방향 [역방향]으로 변경!");
             else
-                Debug.Log("🟢 조작 방향 [정방향]으로 복구!");
+                Debug.Log("🟢 조작 방향 [정방향]으로 변경!");
+        }
+    }
+
+    private void InitializeInputs()
+    {
+        if (moveAction == null || moveAction.bindings.Count == 0)
+        {
+            moveAction = new InputAction("Move", InputActionType.Value);
+            moveAction.AddCompositeBinding("1DAxis")
+                .With("Negative", "<Keyboard>/a")
+                .With("Negative", "<Keyboard>/leftArrow")
+                .With("Negative", "<Gamepad>/dpad/left")
+                .With("Negative", "<Gamepad>/leftStick/left")
+                .With("Positive", "<Keyboard>/d")
+                .With("Positive", "<Keyboard>/rightArrow")
+                .With("Positive", "<Gamepad>/dpad/right")
+                .With("Positive", "<Gamepad>/leftStick/right");
+        }
+
+        if (jumpAction == null || jumpAction.bindings.Count == 0)
+        {
+            jumpAction = new InputAction("Jump", InputActionType.Button);
+            jumpAction.AddBinding("<Keyboard>/space");
+            jumpAction.AddBinding("<Gamepad>/buttonSouth");
+        }
+
+        if (actionAction == null || actionAction.bindings.Count == 0)
+        {
+            actionAction = new InputAction("Action", InputActionType.Button);
+            actionAction.AddBinding("<Keyboard>/f");
+            actionAction.AddBinding("<Gamepad>/buttonEast");
         }
     }
 }

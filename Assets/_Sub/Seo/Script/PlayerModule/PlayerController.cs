@@ -60,6 +60,32 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+    // 💡 [핵심 리팩토링]: localPlayer의 Update 실행 순서를 중앙 통제 (Race Condition 및 프레임 밀림 방지)
+    void Update()
+    {
+        if (!isLocalPlayer) return;
+
+        // 1. 키보드/패드 입력 최우선 수집
+        if (input != null) input.CustomUpdate();
+
+        // 2. 입력 기반 기능 업데이트
+        if (respawn != null) respawn.CustomUpdate();
+        if (flashlight != null) flashlight.CustomUpdate();
+        if (knockback != null) knockback.CustomUpdate();
+
+        // 3. 최신 입력 및 위치를 바탕으로 애니메이션 최종 갱신
+        if (animationModule != null) animationModule.CustomUpdate();
+    }
+
+    // 💡 [핵심 리팩토링]: localPlayer의 물리 연산 순서 중앙 통제
+    void FixedUpdate()
+    {
+        if (!isLocalPlayer) return;
+
+        if (movement != null) movement.CustomFixedUpdate();
+        if (knockback != null) knockback.CustomFixedUpdate();
+    }
+
     public Vector3 currentSpawnPoint
     {
         get => respawn.currentSpawnPoint;
@@ -73,6 +99,7 @@ public class PlayerController : NetworkBehaviour
         get => movement.windVelocity;
         set => movement.windVelocity = value;
     }
+
     public void CallCombinedJump() => movement.CallCombinedJump();
     public void ApplyShortJump() => movement.ApplyShortJump();
     public void CallCombinedAction() => movement.CallCombinedAction();

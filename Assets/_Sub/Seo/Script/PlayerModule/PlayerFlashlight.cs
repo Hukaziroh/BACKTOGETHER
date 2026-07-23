@@ -14,6 +14,9 @@ public class PlayerFlashlight : NetworkBehaviour
 
     public bool canUseFlashlight = true;
 
+    // 💡 [리팩토링]: 매 프레임 문자열 생성을 막는 씬 캐싱 변수
+    private bool isChapter5Scene = false;
+
     void Awake()
     {
         controller = GetComponent<PlayerController>();
@@ -21,7 +24,12 @@ public class PlayerFlashlight : NetworkBehaviour
 
     public override void OnStartLocalPlayer()
     {
-        if (SceneManager.GetActiveScene().name != "chapter5")
+        base.OnStartLocalPlayer();
+
+        // 💡 시작 시점에 한 번만 씬 검사 수행
+        isChapter5Scene = (SceneManager.GetActiveScene().name == "chapter5");
+
+        if (!isChapter5Scene)
         {
             if (flashlightObjs != null)
             {
@@ -33,13 +41,12 @@ public class PlayerFlashlight : NetworkBehaviour
         }
     }
 
-    void Update()
+    // 💡 [리팩토링]: PlayerController에서 순서대로 호출
+    public void CustomUpdate()
     {
-        if (!isLocalPlayer) return;
-
-        if (controller.input.ActionPressedThisFrame)
+        if (controller != null && controller.input != null && controller.input.ActionPressedThisFrame)
         {
-            if (SceneManager.GetActiveScene().name == "chapter5" && canUseFlashlight)
+            if (isChapter5Scene && canUseFlashlight)
             {
                 CmdToggleFlashlight();
             }
