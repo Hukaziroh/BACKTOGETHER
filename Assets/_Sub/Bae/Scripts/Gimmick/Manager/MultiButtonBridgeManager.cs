@@ -47,11 +47,15 @@ public class MultiButtonBridgeManager : NetworkBehaviour
                 break;
             }
         }
+
         if (isBridgeActive != isAnyPressed)
         {
             isBridgeActive = isAnyPressed;
-
-            if (bridgeCoroutine != null) StopCoroutine(bridgeCoroutine);
+            if (bridgeCoroutine != null)
+            {
+                StopCoroutine(bridgeCoroutine);
+                bridgeCoroutine = null;
+            }
             bridgeCoroutine = StartCoroutine(ManageBridgeSequence(isBridgeActive));
         }
     }
@@ -61,6 +65,8 @@ public class MultiButtonBridgeManager : NetworkBehaviour
     {
         if (build)
         {
+            spawnedBridges.RemoveAll(b => b == null);
+
             while (spawnedBridges.Count < maxBridgeLength)
             {
                 Vector3 spawnPos = startPoint.position + new Vector3(-(spawnedBridges.Count * tileWidth), 0, 0);
@@ -78,7 +84,6 @@ public class MultiButtonBridgeManager : NetworkBehaviour
                 int lastIndex = spawnedBridges.Count - 1;
                 GameObject bridgeToRemove = spawnedBridges[lastIndex];
                 spawnedBridges.RemoveAt(lastIndex);
-
                 if (bridgeToRemove != null)
                 {
                     NetworkServer.Destroy(bridgeToRemove);
@@ -87,5 +92,6 @@ public class MultiButtonBridgeManager : NetworkBehaviour
                 yield return new WaitForSeconds(buildDelay);
             }
         }
+        bridgeCoroutine = null;
     }
 }
