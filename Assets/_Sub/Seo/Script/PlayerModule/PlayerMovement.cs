@@ -47,9 +47,7 @@ public class PlayerMovement : NetworkBehaviour
 
     private bool isOnIce = false;
     private bool wasOnIceLastFrame = false;
-    private int touchingPlayerCount = 0;
 
-    // 최적화: 매 프레임 할당 방지
     private Collider2D[] groundCheckResults = new Collider2D[5];
     private Collider2D[] playerCheckResults = new Collider2D[5];
     private Collider2D[] headCheckResults = new Collider2D[5];
@@ -60,14 +58,16 @@ public class PlayerMovement : NetworkBehaviour
     public float windVelocity = 0f;
     private Transform currentPlatform;
     private Vector2 platformVelocity;
-    private System.Func<Vector2> getPlatformVelocityFunc; // 최적화: 발판 속도 반환 델리게이트 캐싱
+    private System.Func<Vector2> getPlatformVelocityFunc;
+
+    private bool justJumped = false;
+    private bool wasGroundedLastFrame = false;
 
     void Awake()
     {
         controller = GetComponent<PlayerController>();
         playerLayerMask = 1 << LayerMask.NameToLayer("Player");
 
-        // 필터 초기화 (GC 할당 최적화)
         groundFilter = new ContactFilter2D { useLayerMask = true, useTriggers = false, layerMask = groundLayer };
         playerFilter = new ContactFilter2D { useLayerMask = true, useTriggers = false, layerMask = playerLayerMask };
     }
@@ -104,16 +104,8 @@ public class PlayerMovement : NetworkBehaviour
         CheckHeadForPlayer();
         HandleMovementPhysics();
         ClampVelocity();
-    }
 
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Player")) touchingPlayerCount++;
-    }
-
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Player")) touchingPlayerCount = Mathf.Max(0, touchingPlayerCount - 1);
+        wasGroundedLastFrame = isGrounded;
     }
 
     private void UpdateTimers() { if (ckTimer > 0f) ckTimer -= Time.deltaTime; }
@@ -153,6 +145,8 @@ public class PlayerMovement : NetworkBehaviour
         float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
         controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, jumpForce * mult);
         ckTimer = jumpCk;
+
+        justJumped = true; 
     }
 
     public void ApplyShortJump()
@@ -183,27 +177,39 @@ public class PlayerMovement : NetworkBehaviour
 
         float rawInput = controller.input.HorizontalInput;
 
-        // 🎯 [핵심] 리버스 존 방향 반전 2중 체크 (고스트 입력, 동기화 지연 완벽 차단)
+        // 🎯 [유저님 코드 100% 유지]: 리버스 존 방향 반전 2중 체크
         if (controller.currentReverseZone != null && !controller.currentReverseZone.isForward)
         {
             float originalInput = 0f;
-
-            // 현재 키보드의 순수 원본 입력값을 가져옵니다
             if (controller.combineHandler != null && controller.combineHandler.isCombined)
                 originalInput = controller.combineHandler.GetCombinedHorizontalInput();
             else
                 originalInput = controller.input.moveAction.ReadValue<float>();
 
-            // Input.cs에서 값이 제대로 안 뒤집혔다면(원본 키보드 방향과 일치한다면), 무브먼트에서 강제로 부호를 바꿔버립니다!
             if ((originalInput > 0 && rawInput > 0) || (originalInput < 0 && rawInput < 0))
             {
                 rawInput *= -1f;
             }
         }
 
+        bool isTouchingPlayer = false;
+        if (Mathf.Abs(rawInput) > 0.1f)
+        {
+            float moveDir = Mathf.Sign(rawInput);
+            Vector2 boxCenter = controller.bodyCollider.bounds.center;
+            Vector2 boxSize = controller.bodyCollider.bounds.size;
+            boxSize.y -= 0.3f; 
+
+            RaycastHit2D hit = Physics2D.BoxCast(boxCenter, boxSize, 0f, new Vector2(moveDir, 0f), 0.05f, playerLayerMask);
+            if (hit.collider != null && hit.collider.gameObject != gameObject)
+            {
+                rawInput = 0f; 
+                isTouchingPlayer = true; 
+            }
+        }
+
         float targetVelocityX = (rawInput * moveSpeed) + windVelocity;
         float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
-        bool isTouchingPlayer = touchingPlayerCount > 0;
 
         float currentFriction = isOnIce ? iceSlideFriction : (isGrounded ? (isTouchingPlayer ? 15f : 9999f) : (wasOnIceLastFrame ? (isRestrictedByRope ? 0f : airFriction) : (isTouchingPlayer ? 15f : 9999f)));
 
@@ -224,6 +230,19 @@ public class PlayerMovement : NetworkBehaviour
 
         bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
         clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, isInverted ? -maxFallSpeed * 1.5f : -maxFallSpeed, isInverted ? maxFallSpeed : maxFallSpeed * 1.5f);
+
+        if (wasGroundedLastFrame && !justJumped)
+        {
+            float allowedSpeed = currentPlatform != null ? platformVelocity.y : 0f;
+            if (isInverted)
+            {
+                if (clampedVelocity.y < allowedSpeed - 0.1f) clampedVelocity.y = allowedSpeed;
+            }
+            else
+            {
+                if (clampedVelocity.y > allowedSpeed + 0.1f) clampedVelocity.y = allowedSpeed;
+            }
+        }
 
         controller.rb.linearVelocity = clampedVelocity;
     }
@@ -265,7 +284,8 @@ public class PlayerMovement : NetworkBehaviour
             }
         }
 
-        // 플랫폼 변경 시에만 GetComponent 연산 수행 (핵심 최적화)
+        if (isGrounded && Mathf.Abs(controller.rb.linearVelocity.y) <= 0.1f) justJumped = false;
+
         if (foundPlatform)
         {
             if (currentPlatform != detectedPlatform)
