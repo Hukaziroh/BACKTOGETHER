@@ -182,22 +182,44 @@ public class PlayerMovement : NetworkBehaviour
         float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
         float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
 
-        if (isGrounded && isOnIce)
+        if (isGrounded)
         {
-            float newX = Mathf.MoveTowards(
-                controller.rb.linearVelocity.x,
-                targetVelocityX + currentPlatformVelX,
-                iceSlideFriction * moveSpeed * Time.fixedDeltaTime
-            );
-
-            controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
+            if (isOnIce)
+            {
+                float newX = Mathf.MoveTowards(
+                    controller.rb.linearVelocity.x,
+                    targetVelocityX + currentPlatformVelX,
+                    iceSlideFriction * moveSpeed * Time.fixedDeltaTime
+                );
+                controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
+            }
+            else
+            {
+                controller.rb.linearVelocity = new Vector2(
+                    targetVelocityX + currentPlatformVelX,
+                    controller.rb.linearVelocity.y
+                );
+            }
         }
         else
         {
-            controller.rb.linearVelocity = new Vector2(
-                targetVelocityX + currentPlatformVelX,
-                controller.rb.linearVelocity.y
-            );
+            if (wasOnIceLastFrame)
+            {
+                float currentAirFriction = isRestrictedByRope ? 0f : airFriction;
+                float newX = Mathf.MoveTowards(
+                    controller.rb.linearVelocity.x,
+                    targetVelocityX,
+                    currentAirFriction * moveSpeed * Time.fixedDeltaTime
+                );
+                controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
+            }
+            else
+            {
+                controller.rb.linearVelocity = new Vector2(
+                    targetVelocityX,
+                    controller.rb.linearVelocity.y
+                );
+            }
         }
     }
 
@@ -378,19 +400,4 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
-    private void OnCollisionStay2D(Collision2D col)
-    {
-        if (!isLocalPlayer) return;
-
-        if (!isGrounded && col.gameObject.CompareTag("Player"))
-        {
-            Vector2 dir = transform.position - col.transform.position;
-
-            if (Mathf.Abs(dir.x) > 0.1f && Mathf.Abs(dir.y) < 0.8f)
-            {
-                float pushForce = 3f * controller.rb.mass;
-                controller.rb.AddForce(new Vector2(Mathf.Sign(dir.x) * pushForce, 0f));
-            }
-        }
-    }
 }
