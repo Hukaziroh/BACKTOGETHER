@@ -16,13 +16,7 @@ public class CoopWallManager : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
-        foreach (var btn in requiredButtons)
-        {
-            if (btn != null)
-            {
-                btn.OnButtonStateChangedEvent += CheckAllButtons;
-            }
-        }
+        CoopButtonUtility.SubscribeButtons(requiredButtons, CheckAllButtons);
     }
 
     public override void OnStartClient()
@@ -38,19 +32,7 @@ public class CoopWallManager : NetworkBehaviour
     private void CheckAllButtons(CoopButton changedButton)
     {
         if (isOpen) return;
-
-        bool allPressed = true;
-
-        foreach (var btn in requiredButtons)
-        {
-            if (btn == null || !btn.isPressed)
-            {
-                allPressed = false;
-                break;
-            }
-        }
-
-        if (allPressed)
+        if (CoopButtonUtility.AreAllPressed(requiredButtons))
         {
             isOpen = true;
         }
