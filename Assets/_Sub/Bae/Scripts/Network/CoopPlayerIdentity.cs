@@ -23,12 +23,14 @@ public class CoopPlayerIdentity : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
+        CoopPlayerManager.RegisterPlayer(gameObject); 
         AssignAvailableIndex();
     }
 
     public override void OnStartClient()
     {
         base.OnStartClient();
+        CoopPlayerManager.RegisterPlayer(gameObject); 
 
         if (playerIndex != -1)
         {
@@ -40,6 +42,7 @@ public class CoopPlayerIdentity : NetworkBehaviour
     public override void OnStopClient()
     {
         base.OnStopClient();
+        CoopPlayerManager.UnregisterPlayer(gameObject); 
         if (players.ContainsKey(playerIndex))
         {
             players.Remove(playerIndex);
@@ -49,9 +52,11 @@ public class CoopPlayerIdentity : NetworkBehaviour
     public override void OnStopServer()
     {
         base.OnStopServer();
+        CoopPlayerManager.UnregisterPlayer(gameObject); 
         if (!NetworkServer.active)
         {
             serverConnectionIndexMap.Clear();
+            CoopPlayerManager.Clear();
         }
     }
 
@@ -59,18 +64,7 @@ public class CoopPlayerIdentity : NetworkBehaviour
     private void AssignAvailableIndex()
     {
         int connId = connectionToClient != null ? connectionToClient.connectionId : -1;
-        List<int> disconnectedIds = new List<int>();
-        foreach (var key in serverConnectionIndexMap.Keys)
-        {
-            if (!NetworkServer.connections.ContainsKey(key))
-            {
-                disconnectedIds.Add(key);
-            }
-        }
-        foreach (var id in disconnectedIds)
-        {
-            serverConnectionIndexMap.Remove(id);
-        }
+
         if (connId != -1 && serverConnectionIndexMap.TryGetValue(connId, out int existingIndex))
         {
             playerIndex = existingIndex;
@@ -78,6 +72,7 @@ public class CoopPlayerIdentity : NetworkBehaviour
             Debug.Log($"[플레이어 유지] 접속 ID({connId}) - 기존 {playerIndex + 1}P 번호 및 색상을 유지합니다.");
             return;
         }
+
         bool[] isIndexTaken = new bool[4];
         foreach (int takenIndex in serverConnectionIndexMap.Values)
         {
@@ -121,10 +116,6 @@ public class CoopPlayerIdentity : NetworkBehaviour
         if (index >= 0 && index < playerColors.Length)
         {
             playerSpriteRenderer.color = playerColors[index];
-        }
-        else
-        {
-            Debug.LogWarning($"{index + 1}P에 지정된 색상이 없습니다!");
         }
     }
 }

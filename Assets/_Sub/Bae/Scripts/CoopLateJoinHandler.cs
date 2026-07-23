@@ -20,10 +20,10 @@ public class CoopLateJoinHandler : NetworkBehaviour
     [Server]
     private void TeleportToTeam()
     {
-        CoopLateJoinHandler[] allPlayers = FindObjectsByType<CoopLateJoinHandler>();
+        var allPlayers = CoopPlayerManager.GetPlayerComponents<CoopLateJoinHandler>();
         foreach (var player in allPlayers)
         {
-            if (player.gameObject != this.gameObject)
+            if (player != null && player.gameObject != this.gameObject)
             {
                 Vector3 targetPosition = player.transform.position;
                 TargetTeleportToPlayer(connectionToClient, targetPosition);
@@ -33,6 +33,7 @@ public class CoopLateJoinHandler : NetworkBehaviour
             }
         }
     }
+
     [TargetRpc]
     private void TargetTeleportToPlayer(NetworkConnection target, Vector3 targetPos)
     {
@@ -49,6 +50,6 @@ public class CoopLateJoinHandler : NetworkBehaviour
             playerController.currentSpawnPoint = targetPos;
         }
 
-        Debug.Log($"[클라이언트] 서버 명령 수신 - 기존 팀원의 위치({targetPos})로 안전하게 합류했습니다.");
+        Debug.Log($"[클라이언트] 팀원 위치({targetPos})로 스폰 위치가 안전하게 동기화되었습니다.");
     }
 }
