@@ -26407,6 +26407,10 @@ PrefabInstance:
       propertyPath: timerText
       value: 
       objectReference: {fileID: 618188901}
+    - target: {fileID: 8959875953552910367, guid: 76e4c836bc12600449f051395a7644ba, type: 3}
+      propertyPath: toggleInterval
+      value: 5
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
