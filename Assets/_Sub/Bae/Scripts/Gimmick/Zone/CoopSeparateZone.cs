@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
@@ -17,14 +18,14 @@ public class CoopSeparateZone : NetworkBehaviour
 
                 Vector3 basePos = body.transform.position;
 
-                PlayerCombineHandler[] allPlayers = FindObjectsByType<PlayerCombineHandler>(FindObjectsInactive.Exclude);
+                List<PlayerCombineHandler> allPlayers = CoopPlayerManager.GetPlayerComponents<PlayerCombineHandler>();
 
                 int spreadIndex = 0;
                 float[] spreadOffsets = { 0f, -1.2f, 1.2f, -2.4f, 2.4f };
 
                 foreach (var p in allPlayers)
                 {
-                    if (p.isCombined && p.bodyTarget == body)
+                    if (p != null && p.isCombined && p.bodyTarget == body)
                     {
                         float offsetX = spreadOffsets[spreadIndex % spreadOffsets.Length];
                         Vector3 safeReleasePos = basePos + new Vector3(offsetX, 0.5f, 0f);
