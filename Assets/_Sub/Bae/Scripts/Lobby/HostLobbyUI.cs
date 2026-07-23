@@ -23,15 +23,4 @@ public class HostLobbyUI : MonoBehaviour
             roomCodeText.text = "Room Code: " + PrivateLobbyManager.currentShortCode;
         }
     }
-
-    public void OnCopyButtonClicked()
-    {
-        string currentCode = PrivateLobbyManager.currentShortCode;
-
-        if (!string.IsNullOrEmpty(currentCode))
-        {
-            GUIUtility.systemCopyBuffer = currentCode;
-            Debug.Log("방 코드가 복사되었습니다: " + currentCode);
-        }
-    }
 }

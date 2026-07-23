@@ -17,8 +17,8 @@ public class CoopPlayerIdentity : NetworkBehaviour
 
     [SyncVar(hook = nameof(OnPlayerIndexChanged))]
     public int playerIndex = -1;
-
     public static Dictionary<int, CoopPlayerIdentity> players = new Dictionary<int, CoopPlayerIdentity>();
+    private static readonly Dictionary<int, int> serverConnectionIndexMap = new Dictionary<int, int>();
 
     public override void OnStartServer()
     {
@@ -46,17 +46,44 @@ public class CoopPlayerIdentity : NetworkBehaviour
         }
     }
 
+    public override void OnStopServer()
+    {
+        base.OnStopServer();
+        if (!NetworkServer.active)
+        {
+            serverConnectionIndexMap.Clear();
+        }
+    }
+
     [Server]
     private void AssignAvailableIndex()
     {
-        CoopPlayerIdentity[] allPlayers = FindObjectsByType<CoopPlayerIdentity>();
-        bool[] isIndexTaken = new bool[4];
-
-        foreach (var p in allPlayers)
+        int connId = connectionToClient != null ? connectionToClient.connectionId : -1;
+        List<int> disconnectedIds = new List<int>();
+        foreach (var key in serverConnectionIndexMap.Keys)
         {
-            if (p != this && p.playerIndex >= 0 && p.playerIndex < 4)
+            if (!NetworkServer.connections.ContainsKey(key))
             {
-                isIndexTaken[p.playerIndex] = true;
+                disconnectedIds.Add(key);
+            }
+        }
+        foreach (var id in disconnectedIds)
+        {
+            serverConnectionIndexMap.Remove(id);
+        }
+        if (connId != -1 && serverConnectionIndexMap.TryGetValue(connId, out int existingIndex))
+        {
+            playerIndex = existingIndex;
+            if (isClient) UpdatePlayerVisual(playerIndex);
+            Debug.Log($"[플레이어 유지] 접속 ID({connId}) - 기존 {playerIndex + 1}P 번호 및 색상을 유지합니다.");
+            return;
+        }
+        bool[] isIndexTaken = new bool[4];
+        foreach (int takenIndex in serverConnectionIndexMap.Values)
+        {
+            if (takenIndex >= 0 && takenIndex < 4)
+            {
+                isIndexTaken[takenIndex] = true;
             }
         }
 
@@ -65,9 +92,13 @@ public class CoopPlayerIdentity : NetworkBehaviour
             if (!isIndexTaken[i])
             {
                 playerIndex = i;
+                if (connId != -1)
+                {
+                    serverConnectionIndexMap[connId] = i;
+                }
                 if (isClient) UpdatePlayerVisual(playerIndex);
 
-                Debug.Log($"[플레이어 생성] {i + 1}P 번호가 부여되었습니다.");
+                Debug.Log($"[플레이어 최초 생성] 접속 ID({connId}) - {i + 1}P 번호가 새로 부여되었습니다.");
                 break;
             }
         }
