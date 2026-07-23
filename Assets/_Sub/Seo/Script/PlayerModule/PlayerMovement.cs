@@ -181,7 +181,27 @@ public class PlayerMovement : NetworkBehaviour
             return;
         }
 
-        float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
+        float rawInput = controller.input.HorizontalInput;
+
+        // 🎯 [핵심] 리버스 존 방향 반전 2중 체크 (고스트 입력, 동기화 지연 완벽 차단)
+        if (controller.currentReverseZone != null && !controller.currentReverseZone.isForward)
+        {
+            float originalInput = 0f;
+
+            // 현재 키보드의 순수 원본 입력값을 가져옵니다
+            if (controller.combineHandler != null && controller.combineHandler.isCombined)
+                originalInput = controller.combineHandler.GetCombinedHorizontalInput();
+            else
+                originalInput = controller.input.moveAction.ReadValue<float>();
+
+            // Input.cs에서 값이 제대로 안 뒤집혔다면(원본 키보드 방향과 일치한다면), 무브먼트에서 강제로 부호를 바꿔버립니다!
+            if ((originalInput > 0 && rawInput > 0) || (originalInput < 0 && rawInput < 0))
+            {
+                rawInput *= -1f;
+            }
+        }
+
+        float targetVelocityX = (rawInput * moveSpeed) + windVelocity;
         float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
         bool isTouchingPlayer = touchingPlayerCount > 0;
 

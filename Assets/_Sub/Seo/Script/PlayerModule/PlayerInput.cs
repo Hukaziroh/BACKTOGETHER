@@ -16,10 +16,6 @@ public class PlayerInput : NetworkBehaviour
     public bool JumpReleasedThisFrame => jumpAction.WasReleasedThisFrame();
     public bool ActionPressedThisFrame => actionAction.WasPressedThisFrame();
 
-    [Header("기믹: 좌우반전")]
-    public bool isReversed { get; private set; } = false;
-    private Coroutine reverseToggleCoroutine;
-
     void Awake()
     {
         controller = GetComponent<PlayerController>();
@@ -95,41 +91,12 @@ public class PlayerInput : NetworkBehaviour
             rawInput = moveAction.ReadValue<float>();
         }
 
-        if (isReversed) rawInput *= -1f;
+        // 🎯 수정된 부분: Player가 독자적으로 시간을 재지 않고, 현재 들어와 있는 존(서버)의 방향 상태를 그대로 따라갑니다.
+        if (controller.currentReverseZone != null && !controller.currentReverseZone.isForward)
+        {
+            rawInput *= -1f; // 역방향일 경우 입력값 뒤집기
+        }
 
         HorizontalInput = rawInput;
-    }
-
-    public void StartReverseToggle(float interval)
-    {
-        if (!isLocalPlayer) return;
-        if (reverseToggleCoroutine != null) StopCoroutine(reverseToggleCoroutine);
-        reverseToggleCoroutine = StartCoroutine(ReverseToggleRoutine(interval));
-    }
-
-    public void StopReverseToggle()
-    {
-        if (!isLocalPlayer) return;
-        if (reverseToggleCoroutine != null)
-        {
-            StopCoroutine(reverseToggleCoroutine);
-            reverseToggleCoroutine = null;
-        }
-        isReversed = false;
-        Debug.Log("반전 구역 이탈: 조작이 정상으로 돌아옵니다.");
-    }
-
-    private System.Collections.IEnumerator ReverseToggleRoutine(float interval)
-    {
-        isReversed = false;
-        Debug.Log($"반전 구역 진입: {interval}초 뒤부터 조작이 주기적으로 바뀝니다.");
-
-        while (true)
-        {
-            yield return new WaitForSeconds(interval);
-            isReversed = !isReversed;
-            if (isReversed) Debug.Log("🚨 조작 방향 [역방향]으로 변경!");
-            else Debug.Log("🟢 조작 방향 [정방향]으로 복구!");
-        }
     }
 }
