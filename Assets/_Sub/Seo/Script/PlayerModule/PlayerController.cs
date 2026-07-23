@@ -22,6 +22,9 @@ public class PlayerController : NetworkBehaviour
     public PlayerFlashlight flashlight { get; private set; }
     public PlayerAnimation animationModule { get; private set; }
 
+    [Header("기믹 상태 (리버스 존)")]
+    public IntervalTrigger currentReverseZone { get; private set; } // 추가됨
+
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -77,6 +80,16 @@ public class PlayerController : NetworkBehaviour
     public void ApplyShortJump() => movement.ApplyShortJump();
     public void CallCombinedAction() => movement.CallCombinedAction();
 
-    public void StartReverseToggle(float interval) => input.StartReverseToggle(interval);
-    public void StopReverseToggle() => input.StopReverseToggle();
+    // ==========================================
+    // 리버스 존 상태 참조 함수 추가
+    // ==========================================
+    public void SetCurrentReverseZone(IntervalTrigger zone)
+    {
+        currentReverseZone = zone;
+    }
+
+    public void ClearCurrentReverseZone()
+    {
+        currentReverseZone = null;
+    }
 }
