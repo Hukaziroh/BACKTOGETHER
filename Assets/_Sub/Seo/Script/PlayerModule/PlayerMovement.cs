@@ -231,7 +231,11 @@ public class PlayerMovement : NetworkBehaviour
         bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
         clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, isInverted ? -maxFallSpeed * 1.5f : -maxFallSpeed, isInverted ? maxFallSpeed : maxFallSpeed * 1.5f);
 
-        if (wasGroundedLastFrame && !justJumped)
+        // 🚀 [버그 수정]: 넉백 맞고 날아가는 상태(isKnocked)일 때는 방어막을 끕니다!
+        bool isKnocked = controller.knockback != null && controller.knockback.isKnockedBack;
+
+        // 방어막 작동 조건에 !isKnocked 추가
+        if (wasGroundedLastFrame && !justJumped && !isKnocked)
         {
             float allowedSpeed = currentPlatform != null ? platformVelocity.y : 0f;
             if (isInverted)
