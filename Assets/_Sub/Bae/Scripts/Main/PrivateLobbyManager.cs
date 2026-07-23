@@ -10,6 +10,9 @@ public class PrivateLobbyManager : MonoBehaviour
     public Button hostCreateButton;
     public Button joinButton;
 
+    [Header("로딩 UI 연결 (비워두어도 자동 탐색됩니다)")]
+    [SerializeField] private GameObject loadingPanel;
+
     public static string currentShortCode = "";
 
     private void Start()
@@ -17,7 +20,26 @@ public class PrivateLobbyManager : MonoBehaviour
         if (hostCreateButton != null) hostCreateButton.interactable = false;
         if (joinButton != null) joinButton.interactable = false;
 
+        // 시작 시 로딩 패널 자동 확보 및 비활성화
+        GameObject panel = GetLoadingPanel();
+        if (panel != null) panel.SetActive(false);
+
         StartCoroutine(WaitForEpicLoginRoutine());
+    }
+
+    /// <span style="color:gray;">/// 로딩 패널이 연결되지 않았거나 씬 전환으로 참조가 끊겼을 때 자동으로 찾아주는 함수</span>
+    private GameObject GetLoadingPanel()
+    {
+        if (loadingPanel == null)
+        {
+            // 씬 내에 숨겨져(Inactive) 있는 WalkingLoadingPanel 컴포넌트까지 전부 탐색
+            WalkingLoadingPanel panelScript = FindObjectOfType<WalkingLoadingPanel>(true);
+            if (panelScript != null)
+            {
+                loadingPanel = panelScript.gameObject;
+            }
+        }
+        return loadingPanel;
     }
 
     private IEnumerator WaitForEpicLoginRoutine()
@@ -35,7 +57,7 @@ public class PrivateLobbyManager : MonoBehaviour
                     isLoggedIn = true;
                 }
             }
-            catch { /* yield가 포함되지 않은 안전한 try-catch */ }
+            catch { }
 
             timeout -= Time.deltaTime;
             yield return null;
@@ -55,6 +77,17 @@ public class PrivateLobbyManager : MonoBehaviour
 
     private IEnumerator CleanAndCreateLobbyRoutine()
     {
+        // =========================================================
+        // 0. 로딩 패널 켜기 및 초기화 (0.05)
+        // =========================================================
+        GameObject currentPanel = GetLoadingPanel();
+        if (currentPanel != null)
+        {
+            currentPanel.SetActive(true);
+            var panelScript = currentPanel.GetComponent<WalkingLoadingPanel>();
+            if (panelScript != null) panelScript.SetProgress(0.05f);
+        }
+
         Debug.Log($"[HOST FLOW] ① Host 버튼 클릭 | ServerActive={NetworkServer.active} | ClientActive={NetworkClient.active}");
 
         // =========================================================
@@ -72,6 +105,13 @@ public class PrivateLobbyManager : MonoBehaviour
         {
             Debug.Log("[HOST FLOW] 기존 Client 종료");
             NetworkManager.singleton.StopClient();
+        }
+
+        currentPanel = GetLoadingPanel();
+        if (currentPanel != null)
+        {
+            var panelScript = currentPanel.GetComponent<WalkingLoadingPanel>();
+            if (panelScript != null) panelScript.SetProgress(0.15f);
         }
 
         Debug.Log($"[HOST FLOW] ③ StopHost/StopClient 완료 | ServerActive={NetworkServer.active} | ClientActive={NetworkClient.active}");
@@ -93,7 +133,17 @@ public class PrivateLobbyManager : MonoBehaviour
             if (joinButton != null)
                 joinButton.interactable = true;
 
+            currentPanel = GetLoadingPanel();
+            if (currentPanel != null) currentPanel.SetActive(false);
+
             yield break;
+        }
+
+        currentPanel = GetLoadingPanel();
+        if (currentPanel != null)
+        {
+            var panelScript = currentPanel.GetComponent<WalkingLoadingPanel>();
+            if (panelScript != null) panelScript.SetProgress(0.25f);
         }
 
         Debug.Log(
@@ -118,6 +168,14 @@ public class PrivateLobbyManager : MonoBehaviour
             while (eosLobby.ConnectedToLobby && leaveTimeout > 0f)
             {
                 leaveTimeout -= Time.unscaledDeltaTime;
+
+                float leaveProg = Mathf.Lerp(0.25f, 0.45f, 1f - (leaveTimeout / 5f));
+                currentPanel = GetLoadingPanel();
+                if (currentPanel != null)
+                {
+                    var panelScript = currentPanel.GetComponent<WalkingLoadingPanel>();
+                    if (panelScript != null) panelScript.SetProgress(leaveProg);
+                }
 
                 Debug.Log(
                     $"[HOST FLOW] EOS Lobby Leave 대기 중... " +
@@ -187,6 +245,14 @@ public class PrivateLobbyManager : MonoBehaviour
         {
             timeout -= Time.unscaledDeltaTime;
 
+            float createProg = Mathf.Lerp(0.50f, 0.75f, 1f - (timeout / 5f));
+            currentPanel = GetLoadingPanel();
+            if (currentPanel != null)
+            {
+                var panelScript = currentPanel.GetComponent<WalkingLoadingPanel>();
+                if (panelScript != null) panelScript.SetProgress(createProg);
+            }
+
             Debug.Log(
                 $"[HOST FLOW] Lobby 생성 대기 중... " +
                 $"LobbyID={eosLobby.GetCurrentLobbyId()} | " +
@@ -207,9 +273,18 @@ public class PrivateLobbyManager : MonoBehaviour
             if (joinButton != null)
                 joinButton.interactable = true;
 
+            currentPanel = GetLoadingPanel();
+            if (currentPanel != null) currentPanel.SetActive(false);
+
             yield break;
         }
 
+        currentPanel = GetLoadingPanel();
+        if (currentPanel != null)
+        {
+            var panelScript = currentPanel.GetComponent<WalkingLoadingPanel>();
+            if (panelScript != null) panelScript.SetProgress(0.85f);
+        }
 
         Debug.Log(
             $"[HOST FLOW] ⑥ Lobby 생성 완료 | " +
@@ -253,6 +328,13 @@ public class PrivateLobbyManager : MonoBehaviour
             Debug.LogWarning("[HOST FLOW] EosTransport를 찾을 수 없음");
         }
 
+        currentPanel = GetLoadingPanel();
+        if (currentPanel != null)
+        {
+            var panelScript = currentPanel.GetComponent<WalkingLoadingPanel>();
+            if (panelScript != null) panelScript.SetProgress(0.95f);
+        }
+
 
         // =========================================================
         // 9. StartHost
@@ -267,6 +349,14 @@ public class PrivateLobbyManager : MonoBehaviour
 
         NetworkManager.singleton.StartHost();
 
+        currentPanel = GetLoadingPanel();
+        if (currentPanel != null)
+        {
+            var panelScript = currentPanel.GetComponent<WalkingLoadingPanel>();
+            if (panelScript != null) panelScript.SetProgress(1.0f);
+        }
+        yield return new WaitForSecondsRealtime(0.2f);
+
         Debug.Log(
             $"[HOST FLOW] ⑧ StartHost 직후 | " +
             $"ServerActive={NetworkServer.active} | " +
@@ -275,7 +365,7 @@ public class PrivateLobbyManager : MonoBehaviour
 
 
         // =========================================================
-        // 10. 버튼 복구
+        // 10. 버튼 복구 및 로딩 패널 끄기
         // =========================================================
 
         if (hostCreateButton != null)
@@ -283,6 +373,12 @@ public class PrivateLobbyManager : MonoBehaviour
 
         if (joinButton != null)
             joinButton.interactable = true;
+
+        currentPanel = GetLoadingPanel();
+        if (currentPanel != null)
+        {
+            currentPanel.SetActive(false);
+        }
 
         Debug.Log("[HOST FLOW] Host 생성 루틴 종료");
     }
