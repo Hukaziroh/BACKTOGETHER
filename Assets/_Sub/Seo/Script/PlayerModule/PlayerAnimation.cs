@@ -13,27 +13,20 @@ public class PlayerAnimation : NetworkBehaviour
         controller = GetComponent<PlayerController>();
     }
 
-    // 💡 [리팩토링]: PlayerController의 CustomUpdate에서 입력 최신화 직후 순서대로 호출
-    public void CustomUpdate()
+    void Update()
     {
+        if (!isLocalPlayer) return;
         UpdateAnimation();
     }
 
     private void UpdateAnimation()
     {
-        if (controller == null || controller.anim == null) return;
+        if (controller.anim == null) return;
 
-        if (controller.input != null)
-        {
-            controller.anim.SetFloat("Speed", Mathf.Abs(controller.input.HorizontalInput));
-        }
+        controller.anim.SetFloat("Speed", Mathf.Abs(controller.input.HorizontalInput));
+        controller.anim.SetBool("isGrounded", controller.movement.isGrounded);
 
-        if (controller.movement != null)
-        {
-            controller.anim.SetBool("isGrounded", controller.movement.isGrounded);
-        }
-
-        if (controller.input != null && controller.knockback != null && controller.input.HorizontalInput != 0 && !controller.knockback.IsStunned)
+        if (controller.input.HorizontalInput != 0 && !controller.knockback.IsStunned)
         {
             float targetDirection = controller.input.HorizontalInput > 0 ? 1f : -1f;
 
