@@ -42,13 +42,7 @@ public class CoopSpikeTimerManager : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
-        foreach (var btn in requiredButtons)
-        {
-            if (btn != null)
-            {
-                btn.OnButtonStateChangedEvent += CheckAllButtons;
-            }
-        }
+        CoopButtonUtility.SubscribeButtons(requiredButtons, CheckAllButtons);
     }
 
     public override void OnStartClient()
@@ -61,18 +55,7 @@ public class CoopSpikeTimerManager : NetworkBehaviour
     private void CheckAllButtons(CoopButton changedButton)
     {
         if (isSpikesHidden) return;
-
-        bool allPressed = true;
-        foreach (var btn in requiredButtons)
-        {
-            if (btn == null || !btn.isPressed)
-            {
-                allPressed = false;
-                break;
-            }
-        }
-
-        if (allPressed)
+        if (CoopButtonUtility.AreAllPressed(requiredButtons))
         {
             isSpikesHidden = true;
             StartCoroutine(SpikeTimerRoutine());
@@ -94,8 +77,11 @@ public class CoopSpikeTimerManager : NetworkBehaviour
     private void UpdateSpikesVisual(bool isHidden, bool instant)
     {
         if (targetSpikes == null) return;
-
-        if (moveCoroutine != null) StopCoroutine(moveCoroutine);
+        if (moveCoroutine != null)
+        {
+            StopCoroutine(moveCoroutine);
+            moveCoroutine = null;
+        }
 
         Vector3 targetPos = isHidden ? hiddenSpikePos : originalSpikePos;
 
@@ -117,5 +103,6 @@ public class CoopSpikeTimerManager : NetworkBehaviour
             yield return null;
         }
         targetSpikes.position = targetPos;
+        moveCoroutine = null;
     }
 }

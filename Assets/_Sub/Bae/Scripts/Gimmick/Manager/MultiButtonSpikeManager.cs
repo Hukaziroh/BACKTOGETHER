@@ -35,27 +35,14 @@ public class MultiButtonSpikeManager : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
-        foreach (var btn in connectedButtons)
-        {
-            if (btn != null)
-            {
-                btn.OnButtonStateChangedEvent += CheckAllButtons;
-            }
-        }
+        CoopButtonUtility.SubscribeButtons(connectedButtons, CheckAllButtons);
     }
 
     [Server]
     private void CheckAllButtons(CoopButton changedButton)
     {
-        bool isAnyPressed = false;
-        foreach (var btn in connectedButtons)
-        {
-            if (btn != null && btn.isPressed)
-            {
-                isAnyPressed = true;
-                break;
-            }
-        }
+        bool isAnyPressed = CoopButtonUtility.IsAnyPressed(connectedButtons);
+
         if (isSpikesHidden != isAnyPressed)
         {
             isSpikesHidden = isAnyPressed;
@@ -70,9 +57,11 @@ public class MultiButtonSpikeManager : NetworkBehaviour
     private void UpdateSpikesVisual(bool isHidden, bool instant)
     {
         if (targetSpikes == null) return;
-        if (echoManager != null) echoManager.SetEchoActive(!isHidden);
-
-        if (moveCoroutine != null) StopCoroutine(moveCoroutine);
+        if (moveCoroutine != null)
+        {
+            StopCoroutine(moveCoroutine);
+            moveCoroutine = null;
+        }
 
         Vector3 targetPos = isHidden ? hiddenSpikePos : originalSpikePos;
 
@@ -94,5 +83,6 @@ public class MultiButtonSpikeManager : NetworkBehaviour
             yield return null;
         }
         targetSpikes.position = targetPos;
+        moveCoroutine = null;
     }
 }

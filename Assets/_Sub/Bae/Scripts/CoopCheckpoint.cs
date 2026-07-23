@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
@@ -21,7 +22,8 @@ public class CoopCheckpoint : NetworkBehaviour
             if (syncToAllPlayers)
             {
                 Debug.Log($"[체크포인트] '{other.name}' 진입! 팀 전체 스폰 동기화.");
-                PlayerRespawn[] allRespawns = FindObjectsByType<PlayerRespawn>(FindObjectsInactive.Exclude);
+
+                List<PlayerRespawn> allRespawns = CoopPlayerManager.GetPlayerComponents<PlayerRespawn>();
                 foreach (var respawn in allRespawns)
                 {
                     if (respawn != null) respawn.RpcUpdateSpawnPoint(spawnLocation.position);

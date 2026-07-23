@@ -30,16 +30,7 @@ public class CoopDarknessManager : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
-        if (unlockButtons != null)
-        {
-            foreach (var btn in unlockButtons)
-            {
-                if (btn != null)
-                {
-                    btn.OnButtonStateChangedEvent += CheckAllButtons;
-                }
-            }
-        }
+        CoopButtonUtility.SubscribeButtons(unlockButtons, CheckAllButtons);
     }
 
     [Server]
@@ -71,25 +62,13 @@ public class CoopDarknessManager : NetworkBehaviour
     private void CheckAllButtons(CoopButton changedButton)
     {
         if (currentState != GimmickState.Darkness) return;
-        if (unlockButtons == null || unlockButtons.Length == 0) return;
-
-        bool allPressed = true;
-        foreach (var btn in unlockButtons)
-        {
-            if (btn == null || !btn.isPressed)
-            {
-                allPressed = false;
-                break;
-            }
-        }
-
-        if (allPressed)
+        if (CoopButtonUtility.AreAllPressed(unlockButtons))
         {
             currentState = GimmickState.Clear;
-
             if (loopCoroutine != null)
             {
                 StopCoroutine(loopCoroutine);
+                loopCoroutine = null;
             }
         }
     }
