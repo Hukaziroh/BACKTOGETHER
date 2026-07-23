@@ -59,8 +59,10 @@ public class PlayerInput : NetworkBehaviour
         }
     }
 
-    void OnEnable()
+    // 최적화: OnEnable이 아닌 로컬 플레이어 시작 시점에 입력을 활성화해야 고스트 입력 방지 가능
+    public override void OnStartLocalPlayer()
     {
+        base.OnStartLocalPlayer();
         moveAction.Enable();
         jumpAction.Enable();
         actionAction.Enable();
@@ -79,7 +81,6 @@ public class PlayerInput : NetworkBehaviour
 
         float rawInput = 0f;
 
-        // 합체 상태 체크
         if (controller.combineHandler != null && controller.combineHandler.isCombined)
         {
             if (gameObject != controller.combineHandler.bodyTarget)
@@ -94,10 +95,7 @@ public class PlayerInput : NetworkBehaviour
             rawInput = moveAction.ReadValue<float>();
         }
 
-        if (isReversed)
-        {
-            rawInput *= -1f;
-        }
+        if (isReversed) rawInput *= -1f;
 
         HorizontalInput = rawInput;
     }
@@ -105,25 +103,18 @@ public class PlayerInput : NetworkBehaviour
     public void StartReverseToggle(float interval)
     {
         if (!isLocalPlayer) return;
-
-        if (reverseToggleCoroutine != null)
-        {
-            StopCoroutine(reverseToggleCoroutine);
-        }
-
+        if (reverseToggleCoroutine != null) StopCoroutine(reverseToggleCoroutine);
         reverseToggleCoroutine = StartCoroutine(ReverseToggleRoutine(interval));
     }
 
     public void StopReverseToggle()
     {
         if (!isLocalPlayer) return;
-
         if (reverseToggleCoroutine != null)
         {
             StopCoroutine(reverseToggleCoroutine);
             reverseToggleCoroutine = null;
         }
-
         isReversed = false;
         Debug.Log("반전 구역 이탈: 조작이 정상으로 돌아옵니다.");
     }
@@ -136,13 +127,9 @@ public class PlayerInput : NetworkBehaviour
         while (true)
         {
             yield return new WaitForSeconds(interval);
-
             isReversed = !isReversed;
-
-            if (isReversed)
-                Debug.Log("🚨 조작 방향 [역방향]으로 변경!");
-            else
-                Debug.Log("🟢 조작 방향 [정방향]으로 복구!");
+            if (isReversed) Debug.Log("🚨 조작 방향 [역방향]으로 변경!");
+            else Debug.Log("🟢 조작 방향 [정방향]으로 복구!");
         }
     }
 }
