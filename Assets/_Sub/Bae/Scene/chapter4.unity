@@ -4249,19 +4249,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2126958134138387385, guid: af18edf77f13ee242b17cf09eaeb6cb3, type: 3}
       propertyPath: m_Size.x
-      value: 9.910949
+      value: 15.267981
       objectReference: {fileID: 0}
     - target: {fileID: 2126958134138387385, guid: af18edf77f13ee242b17cf09eaeb6cb3, type: 3}
       propertyPath: m_Size.y
-      value: 4.641143
+      value: 5.0532227
       objectReference: {fileID: 0}
     - target: {fileID: 2126958134138387385, guid: af18edf77f13ee242b17cf09eaeb6cb3, type: 3}
       propertyPath: m_Offset.x
-      value: -4.527864
+      value: -1.8493481
       objectReference: {fileID: 0}
     - target: {fileID: 2126958134138387385, guid: af18edf77f13ee242b17cf09eaeb6cb3, type: 3}
       propertyPath: m_Offset.y
-      value: -0.11354017
+      value: 0.092499614
       objectReference: {fileID: 0}
     - target: {fileID: 4303600409352984433, guid: af18edf77f13ee242b17cf09eaeb6cb3, type: 3}
       propertyPath: requiredPlayers
