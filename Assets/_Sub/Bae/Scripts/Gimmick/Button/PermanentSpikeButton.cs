@@ -74,8 +74,11 @@ public class PermanentSpikeButton : NetworkBehaviour
     private void UpdateSpikesVisual(bool isHidden, bool instant)
     {
         if (targetSpikes == null) return;
-
-        if (moveCoroutine != null) StopCoroutine(moveCoroutine);
+        if (moveCoroutine != null)
+        {
+            StopCoroutine(moveCoroutine);
+            moveCoroutine = null;
+        }
 
         Vector3 targetPos = isHidden ? hiddenSpikePos : originalSpikePos;
 
@@ -97,5 +100,6 @@ public class PermanentSpikeButton : NetworkBehaviour
             yield return null;
         }
         targetSpikes.position = targetPos;
+        moveCoroutine = null;
     }
 }

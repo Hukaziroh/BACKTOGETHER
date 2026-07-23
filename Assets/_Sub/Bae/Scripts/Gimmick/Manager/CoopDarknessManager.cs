@@ -86,10 +86,10 @@ public class CoopDarknessManager : NetworkBehaviour
         if (allPressed)
         {
             currentState = GimmickState.Clear;
-
             if (loopCoroutine != null)
             {
                 StopCoroutine(loopCoroutine);
+                loopCoroutine = null;
             }
         }
     }
