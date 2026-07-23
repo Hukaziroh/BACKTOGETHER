@@ -48,6 +48,8 @@ public class PlayerMovement : NetworkBehaviour
     private bool isOnIce = false;
     private bool wasOnIceLastFrame = false;
 
+    private int touchingPlayerCount = 0;
+
     private Collider2D[] groundCheckResults = new Collider2D[5];
     private Collider2D[] playerCheckResults = new Collider2D[5];
     private Collider2D[] headCheckResults = new Collider2D[5];
@@ -67,10 +69,7 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
-        // ★ [퍼즈 체크] 일시정지 상태면 입력 및 타이머 갱신 차단
         if (PauseManager.instance != null && PauseManager.instance.isPaused) return;
-
-        // ★ [이모지 메뉴 체크] 이모지 창이 열려있으면 이동/점프 입력 차단
         if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen()) return;
 
         UpdateTimers();
@@ -83,7 +82,6 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
-        // ★ [퍼즈 체크] 일시정지 상태면 물리 이동 계산 차단 (미끄러짐 방지)
         if (PauseManager.instance != null && PauseManager.instance.isPaused)
         {
             if (TryGetComponent<Rigidbody2D>(out Rigidbody2D rb2d))
@@ -93,7 +91,6 @@ public class PlayerMovement : NetworkBehaviour
             return;
         }
 
-        // ★ [이모지 메뉴 체크] 이모지 창이 열려있으면 물리 이동 계산 차단
         if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())
         {
             if (TryGetComponent<Rigidbody2D>(out Rigidbody2D rb2d))
@@ -103,7 +100,6 @@ public class PlayerMovement : NetworkBehaviour
             return;
         }
 
-        // 결합 상태이면서 몸체 타겟이 아닐 경우 이동 연산 스킵
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
 
@@ -112,6 +108,16 @@ public class PlayerMovement : NetworkBehaviour
         CheckHeadForPlayer();
         HandleMovementPhysics();
         ClampVelocity();
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Player")) touchingPlayerCount++;
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Player")) touchingPlayerCount = Mathf.Max(0, touchingPlayerCount - 1);
     }
 
     private void UpdateTimers() { if (ckTimer > 0f) ckTimer -= Time.deltaTime; }
@@ -182,6 +188,8 @@ public class PlayerMovement : NetworkBehaviour
         float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
         float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
 
+        bool isTouchingPlayer = touchingPlayerCount > 0;
+
         if (isGrounded)
         {
             if (isOnIce)
@@ -195,10 +203,13 @@ public class PlayerMovement : NetworkBehaviour
             }
             else
             {
-                controller.rb.linearVelocity = new Vector2(
+                float accel = isTouchingPlayer ? 15f : 9999f;
+                float newX = Mathf.MoveTowards(
+                    controller.rb.linearVelocity.x,
                     targetVelocityX + currentPlatformVelX,
-                    controller.rb.linearVelocity.y
+                    accel * Time.fixedDeltaTime
                 );
+                controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
             }
         }
         else
@@ -215,10 +226,13 @@ public class PlayerMovement : NetworkBehaviour
             }
             else
             {
-                controller.rb.linearVelocity = new Vector2(
+                float accel = isTouchingPlayer ? 15f : 9999f;
+                float newX = Mathf.MoveTowards(
+                    controller.rb.linearVelocity.x,
                     targetVelocityX,
-                    controller.rb.linearVelocity.y
+                    accel * Time.fixedDeltaTime
                 );
+                controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
             }
         }
     }
@@ -399,5 +413,4 @@ public class PlayerMovement : NetworkBehaviour
             Gizmos.DrawWireCube(hCheckPosition, headCheckBoxSize);
         }
     }
-
 }
