@@ -18,6 +18,9 @@ public class PlayerRespawn : NetworkBehaviour
     [Tooltip("여기에 적힌 씬에서는 1명만 죽어도 4명이 다 같이 부활합니다. (로프 맵 등)")]
     public List<string> teamRespawnScenes = new List<string> { "Chapter4" };
 
+    // 💡 [리팩토링]: 씬 이름 비교 결과 캐싱 변수
+    private bool isLobbyOrMainScene = false;
+
     void Awake()
     {
         controller = GetComponent<PlayerController>();
@@ -25,15 +28,18 @@ public class PlayerRespawn : NetworkBehaviour
 
     public override void OnStartLocalPlayer()
     {
+        base.OnStartLocalPlayer();
         currentSpawnPoint = transform.position;
+
+        // 💡 시작 시점에 한 번만 씬 체크
+        string sceneName = SceneManager.GetActiveScene().name;
+        isLobbyOrMainScene = (sceneName == "Lobby" || sceneName == "Main");
     }
 
-    void Update()
+    // 💡 [리팩토링]: PlayerController에서 순서대로 호출
+    public void CustomUpdate()
     {
-        if (!isLocalPlayer) return;
-
-        string sceneName = SceneManager.GetActiveScene().name;
-        if (sceneName == "Lobby" || sceneName == "Main") return;
+        if (isLobbyOrMainScene) return;
 
         if (Keyboard.current != null)
         {
@@ -49,19 +55,9 @@ public class PlayerRespawn : NetworkBehaviour
             }
             else
             {
-                if (holdTimer > 0f) holdTimer = 0f;
+                holdTimer = 0f;
             }
         }
-    }
-    [ClientRpc]
-    public void RpcUpdateSpawnPoint(Vector3 newPoint)
-    {
-        currentSpawnPoint = newPoint;
-    }
-    [TargetRpc]
-    public void TargetUpdateSpawnPoint(NetworkConnection target, Vector3 newPoint)
-    {
-        currentSpawnPoint = newPoint;
     }
 
     public void Respawn()
@@ -82,7 +78,8 @@ public class PlayerRespawn : NetworkBehaviour
     [Command]
     private void CmdTeamRespawn()
     {
-        PlayerRespawn[] allPlayers = FindObjectsByType<PlayerRespawn>(FindObjectsInactive.Exclude);
+        // 💡 CoopPlayerManager를 활용하여 FindObjectsByType 연산 제거
+        var allPlayers = CoopPlayerManager.GetPlayerComponents<PlayerRespawn>();
 
         foreach (var player in allPlayers)
         {

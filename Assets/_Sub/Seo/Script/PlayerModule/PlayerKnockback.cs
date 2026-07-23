@@ -32,15 +32,15 @@ public class PlayerKnockback : NetworkBehaviour
         controller = GetComponent<PlayerController>();
     }
 
-    void Update()
+    // 💡 [리팩토링]: PlayerController에서 순서대로 호출
+    public void CustomUpdate()
     {
-        if (!isLocalPlayer) return;
         UpdateTimers();
     }
 
-    void FixedUpdate()
+    // 💡 [리팩토링]: PlayerController의 FixedUpdate에서 순서대로 호출
+    public void CustomFixedUpdate()
     {
-        if (!isLocalPlayer) return;
         HandleKnockbackPhysics();
     }
 
@@ -52,114 +52,70 @@ public class PlayerKnockback : NetworkBehaviour
         if (spikeResetTimer > 0f)
         {
             spikeResetTimer -= Time.deltaTime;
-            if (spikeResetTimer <= 0f) spikeHitCount = 0;
+            if (spikeResetTimer <= 0f)
+            {
+                spikeHitCount = 0;
+            }
+        }
+
+        if (stunTimer > 0f)
+        {
+            stunTimer -= Time.deltaTime;
         }
     }
 
     private void HandleKnockbackPhysics()
     {
-        if (isKnockedBack)
+        if (!isKnockedBack) return;
+
+        if (knockbackGraceTimer > 0f)
         {
-            if (knockbackGraceTimer > 0f) knockbackGraceTimer -= Time.fixedDeltaTime;
+            knockbackGraceTimer -= Time.fixedDeltaTime;
+        }
 
-            if (knockbackTimeoutTimer > 0f) knockbackTimeoutTimer -= Time.fixedDeltaTime;
-
-            controller.rb.linearVelocity = new Vector2(activeKnockbackX, controller.rb.linearVelocity.y);
-
-            bool hitGround = knockbackGraceTimer <= 0f && controller.movement.isGrounded && Mathf.Abs(controller.rb.linearVelocity.y) <= 0.1f;
-
-            bool airTimeout = knockbackTimeoutTimer <= 0f;
-
-            if (hitGround || airTimeout)
+        if (knockbackTimeoutTimer > 0f)
+        {
+            knockbackTimeoutTimer -= Time.fixedDeltaTime;
+            if (knockbackTimeoutTimer <= 0f)
             {
-                isKnockedBack = false;
-
-                stunTimer = hitGround ? stunTime : 0f;
+                ResetKnockback();
+                return;
             }
         }
-        else if (stunTimer > 0f)
+
+        if (knockbackGraceTimer <= 0f && controller != null && controller.movement != null && controller.movement.isGrounded)
         {
-            stunTimer -= Time.fixedDeltaTime;
-            float slideSpeed = Mathf.Lerp(controller.rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
-            controller.rb.linearVelocity = new Vector2(slideSpeed, controller.rb.linearVelocity.y);
+            ResetKnockback();
         }
     }
 
-    private void OnTriggerStay2D(Collider2D other)
+    public void ApplyKnockbackFromEye(Vector3 eyePosition)
     {
         if (!isLocalPlayer) return;
 
-        if (other.CompareTag("Spike"))
+        Vector2 knockDir = (transform.position - eyePosition).normalized;
+        activeKnockbackX = (knockDir.x >= 0 ? 1f : -1f) * knockPowerX;
+
+        float mult = (controller != null && controller.gravityModule != null) ? controller.gravityModule.gravityMultiplier : 1f;
+        if (controller != null && controller.rb != null)
         {
-            CheckSpikeHit();
+            controller.rb.linearVelocity = new Vector2(activeKnockbackX, knockDir.y * knockPowerY * mult);
         }
-    }
-
-    private void CheckSpikeHit()
-    {
-        if (spikeDamageCooldown > 0f) return;
-
-        spikeDamageCooldown = 0.3f;
-        spikeHitCount++;
-        spikeResetTimer = 1.5f;
-
-        if (spikeHitCount >= 3 && criticalCooldownTimer <= 0f)
-        {
-            if (Random.value <= 0.5f)
-            {
-                StartCoroutine(CriticalEscape(0.1f));
-                criticalCooldownTimer = 1.0f;
-            }
-            else
-            {
-                ApplyLocalKnockback(new Vector2(-1f, 0.5f));
-            }
-            spikeHitCount = 0;
-            spikeResetTimer = 0f;
-        }
-        else if (spikeHitCount < 3)
-        {
-            ApplyLocalKnockback(new Vector2(-1f, 0.5f));
-        }
-    }
-
-    private void ApplyLocalKnockback(Vector2 knockDir)
-    {
-        controller.rb.linearVelocity = Vector2.zero;
-        activeKnockbackX = knockDir.x * knockPowerX;
-
-        float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
-        controller.rb.linearVelocity = new Vector2(activeKnockbackX, knockDir.y * knockPowerY * mult);
 
         isKnockedBack = true;
-        stunTimer = 0f;
+        stunTimer = stunTime;
         knockbackGraceTimer = 0.2f;
-
         knockbackTimeoutTimer = 3.0f;
 
         CmdPlayHitAnimation();
     }
 
-    private System.Collections.IEnumerator CriticalEscape(float seconds)
+    public void ResetKnockback()
     {
-        if (criticalUI != null) criticalUI.SetActive(true);
-
-        activeKnockbackX = -30f;
-        float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
-        controller.rb.linearVelocity = new Vector2(activeKnockbackX, 40f * mult);
-
-        isKnockedBack = true;
+        isKnockedBack = false;
         stunTimer = 0f;
-        knockbackGraceTimer = 0.5f;
-
-        knockbackTimeoutTimer = 3.0f;
-
-        CmdPlayHitAnimation();
-
-        yield return new WaitForSeconds(seconds);
-        yield return new WaitForSeconds(2f);
-
-        if (criticalUI != null) criticalUI.SetActive(false);
+        knockbackTimeoutTimer = 0f;
+        knockbackGraceTimer = 0f;
     }
 
     [Command]
@@ -168,19 +124,6 @@ public class PlayerKnockback : NetworkBehaviour
     [ClientRpc]
     void RpcPlayHitAnimation()
     {
-        if (controller.anim != null) controller.anim.SetTrigger("Hit");
-    }
-
-    public void ResetKnockback()
-    {
-        isKnockedBack = false;
-        stunTimer = 0f;
-        knockbackTimeoutTimer = 0f; 
-    }
-
-    public void ApplyKnockbackFromEye(Vector3 eyePosition)
-    {
-        if (!isLocalPlayer) return;
-        ApplyLocalKnockback(new Vector2(-1, 0.5f));
+        if (controller != null && controller.anim != null) controller.anim.SetTrigger("Hit");
     }
 }

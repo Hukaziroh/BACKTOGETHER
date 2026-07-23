@@ -41,332 +41,72 @@ public class PlayerMovement : NetworkBehaviour
 
     [Header("헤드 체크 (머리 위 플레이어 감지)")]
     public Vector2 headCheckBoxSize = new Vector2(0.8f, 0.2f);
-    public Vector2 headCheckOffset = Vector2.zero;
+    public Vector2 headCheckOffset = new Vector2(0f, 0.5f);
     public Transform headCheck;
     public bool hasPlayerOnHead { get; private set; }
 
-    private bool isOnIce = false;
-    private bool wasOnIceLastFrame = false;
-
-    private int touchingPlayerCount = 0;
-
-    private Collider2D[] groundCheckResults = new Collider2D[5];
-    private Collider2D[] playerCheckResults = new Collider2D[5];
-    private Collider2D[] headCheckResults = new Collider2D[5];
-
-    [Header("외부 환경 속도")]
+    [Header("바람 효과")]
     public float windVelocity = 0f;
+
     private Transform currentPlatform;
     private Vector2 platformVelocity;
 
     void Awake()
     {
         controller = GetComponent<PlayerController>();
-        playerLayerMask = 1 << LayerMask.NameToLayer("Player");
+        playerLayerMask = LayerMask.GetMask("Player");
     }
 
-    void Update()
+    // 💡 [리팩토링]: PlayerController의 FixedUpdate에서 순서대로 호출
+    public void CustomFixedUpdate()
     {
-        if (!isLocalPlayer) return;
-
-        if (PauseManager.instance != null && PauseManager.instance.isPaused) return;
-        if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen()) return;
-
-        UpdateTimers();
-        UpdateCoyoteTime();
-        HandleJumpInput();
-        UpdateGravity();
-    }
-
-    void FixedUpdate()
-    {
-        if (!isLocalPlayer) return;
-
-        if (PauseManager.instance != null && PauseManager.instance.isPaused)
-        {
-            if (TryGetComponent<Rigidbody2D>(out Rigidbody2D rb2d))
-            {
-                rb2d.linearVelocity = new Vector2(0f, rb2d.linearVelocity.y);
-            }
-            return;
-        }
-
-        if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())
-        {
-            if (TryGetComponent<Rigidbody2D>(out Rigidbody2D rb2d))
-            {
-                rb2d.linearVelocity = new Vector2(0f, rb2d.linearVelocity.y);
-            }
-            return;
-        }
-
-        if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
-            return;
-
-        HandleMovingPlatform();
-        CheckGroundOrPlayer();
-        CheckHeadForPlayer();
+        CheckGrounded();
+        CheckPlayerOnHead();
+        UpdatePlatformVelocity();
         HandleMovementPhysics();
-        ClampVelocity();
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void CheckGrounded()
     {
-        if (collision.gameObject.CompareTag("Player")) touchingPlayerCount++;
-    }
+        if (groundCheck == null) return;
 
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Player")) touchingPlayerCount = Mathf.Max(0, touchingPlayerCount - 1);
-    }
+        Vector2 gCheckPosition = (Vector2)groundCheck.position + checkOffset;
+        Collider2D hit = Physics2D.OverlapCircle(gCheckPosition, checkRadius, groundLayer);
 
-    private void UpdateTimers() { if (ckTimer > 0f) ckTimer -= Time.deltaTime; }
-
-    private void UpdateCoyoteTime()
-    {
-        if (isGrounded && ckTimer <= 0f) coyoteTimeCounter = coyoteTime;
-        else coyoteTimeCounter -= Time.deltaTime;
-    }
-
-    private void HandleJumpInput()
-    {
-        if (controller.combineHandler == null || !controller.combineHandler.isCombined)
-        {
-            if (controller.input.JumpPressedThisFrame && coyoteTimeCounter > 0f && !controller.knockback.IsStunned && !hasPlayerOnHead)
-            {
-                Jump();
-                coyoteTimeCounter = 0f;
-            }
-
-            bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
-            bool isMovingUp = inverted ? (controller.rb.linearVelocity.y < 0f) : (controller.rb.linearVelocity.y > 0f);
-
-            if (controller.input.JumpReleasedThisFrame && isMovingUp && !controller.knockback.IsStunned)
-            {
-                if (controller.syncJumpHandler != null && controller.syncJumpHandler.isInSyncZone) controller.syncJumpHandler.CmdCutSyncJump();
-                else ApplyShortJump();
-            }
-        }
-    }
-
-    public void Jump()
-    {
-        if (controller.knockback.isKnockedBack) return;
-        float gravity = Mathf.Abs(Physics2D.gravity.y) * jumpSpeed;
-        float jumpForce = Mathf.Sqrt(2f * gravity * jumpHeight);
-        float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
-        controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, jumpForce * mult);
-        ckTimer = jumpCk;
-    }
-
-    public void ApplyShortJump()
-    {
-        bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
-        bool isMovingUpCheck = inverted ? (controller.rb.linearVelocity.y < 0f) : (controller.rb.linearVelocity.y > 0f);
-        if (isMovingUpCheck) controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, controller.rb.linearVelocity.y * superJump);
-    }
-
-    private void UpdateGravity()
-    {
-        bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
-        float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
-        bool isFalling = isInverted ? (controller.rb.linearVelocity.y > 0f) : (controller.rb.linearVelocity.y < 0f);
-        controller.rb.gravityScale = isFalling ? (jumpSpeed * fallSpeed * mult) : (jumpSpeed * mult);
-    }
-
-    private void HandleMovementPhysics()
-    {
-        if (controller.knockback.isKnockedBack) return;
-
-        if (controller.knockback.IsStunned)
-        {
-            float slideSpeed = Mathf.Lerp(controller.rb.linearVelocity.x, 0f, 10f * Time.fixedDeltaTime);
-            controller.rb.linearVelocity = new Vector2(slideSpeed, controller.rb.linearVelocity.y);
-            return;
-        }
-
-        float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
-        float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
-
-        bool isTouchingPlayer = touchingPlayerCount > 0;
+        isGrounded = (hit != null);
 
         if (isGrounded)
         {
-            if (isOnIce)
-            {
-                float newX = Mathf.MoveTowards(
-                    controller.rb.linearVelocity.x,
-                    targetVelocityX + currentPlatformVelX,
-                    iceSlideFriction * moveSpeed * Time.fixedDeltaTime
-                );
-                controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
-            }
-            else
-            {
-                float accel = isTouchingPlayer ? 15f : 9999f;
-                float newX = Mathf.MoveTowards(
-                    controller.rb.linearVelocity.x,
-                    targetVelocityX + currentPlatformVelX,
-                    accel * Time.fixedDeltaTime
-                );
-                controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
-            }
+            coyoteTimeCounter = coyoteTime;
+            currentPlatform = hit.transform;
         }
         else
         {
-            if (wasOnIceLastFrame)
-            {
-                float currentAirFriction = isRestrictedByRope ? 0f : airFriction;
-                float newX = Mathf.MoveTowards(
-                    controller.rb.linearVelocity.x,
-                    targetVelocityX,
-                    currentAirFriction * moveSpeed * Time.fixedDeltaTime
-                );
-                controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
-            }
-            else
-            {
-                float accel = isTouchingPlayer ? 15f : 9999f;
-                float newX = Mathf.MoveTowards(
-                    controller.rb.linearVelocity.x,
-                    targetVelocityX,
-                    accel * Time.fixedDeltaTime
-                );
-                controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
-            }
+            coyoteTimeCounter -= Time.fixedDeltaTime;
+            currentPlatform = null;
         }
     }
 
-    private void ClampVelocity()
-    {
-        float maxSpeedX = 30f;
-        Vector2 clampedVelocity = controller.rb.linearVelocity;
-        clampedVelocity.x = Mathf.Clamp(clampedVelocity.x, -maxSpeedX, maxSpeedX);
-
-        bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
-
-        if (isInverted) clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed * 1.5f, maxFallSpeed);
-        else clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed, maxFallSpeed * 1.5f);
-
-        controller.rb.linearVelocity = clampedVelocity;
-    }
-
-    void CheckGroundOrPlayer()
-    {
-        ContactFilter2D groundFilter = new ContactFilter2D();
-        groundFilter.useLayerMask = true;
-        groundFilter.useTriggers = false;
-        groundFilter.layerMask = groundLayer;
-
-        int hitCount = Physics2D.OverlapCircle(groundCheck.position, checkRadius, groundFilter, groundCheckResults);
-
-        isGrounded = false;
-        bool currentOnIce = false;
-        bool foundPlatform = false;
-        Transform detectedPlatform = null;
-
-        for (int i = 0; i < hitCount; i++)
-        {
-            Collider2D col = groundCheckResults[i];
-            if (col.CompareTag("Spike")) continue;
-            if (col.gameObject == gameObject || col.isTrigger) continue;
-
-            isGrounded = true;
-            if (col.CompareTag("Ice")) currentOnIce = true;
-            if (col.CompareTag("MovingPlatform"))
-            {
-                detectedPlatform = col.transform;
-                foundPlatform = true;
-            }
-        }
-
-        if (!isGrounded)
-        {
-            ContactFilter2D playerFilter = new ContactFilter2D();
-            playerFilter.useLayerMask = true;
-            playerFilter.useTriggers = false;
-            playerFilter.layerMask = playerLayerMask;
-
-            int playerHitCount = Physics2D.OverlapCircle(groundCheck.position, checkRadius, playerFilter, playerCheckResults);
-
-            for (int i = 0; i < playerHitCount; i++)
-            {
-                Collider2D col = playerCheckResults[i];
-
-                if (col.gameObject == gameObject) continue;
-                if (!col.CompareTag("Player")) continue;
-
-                if (groundCheck.position.y > col.bounds.max.y - 0.05f)
-                {
-                    isGrounded = true;
-                    break;
-                }
-            }
-        }
-
-        if (foundPlatform)
-        {
-            if (currentPlatform != detectedPlatform)
-            {
-                currentPlatform = detectedPlatform;
-            }
-        }
-        else currentPlatform = null;
-
-        isOnIce = currentOnIce;
-        if (isGrounded) wasOnIceLastFrame = isOnIce;
-    }
-
-    void CheckHeadForPlayer()
+    private void CheckPlayerOnHead()
     {
         if (headCheck == null) return;
 
-        hasPlayerOnHead = false;
+        Vector2 hCheckPosition = (Vector2)headCheck.position + headCheckOffset;
+        Collider2D hit = Physics2D.OverlapBox(hCheckPosition, headCheckBoxSize, 0f, playerLayerMask);
 
-        ContactFilter2D filter = new ContactFilter2D();
-        filter.useLayerMask = true;
-        filter.useTriggers = false;
-        filter.layerMask = playerLayerMask;
-
-        Vector2 checkPosition = (Vector2)headCheck.position + headCheckOffset;
-
-        int hitCount = Physics2D.OverlapBox(checkPosition, headCheckBoxSize, 0f, filter, headCheckResults);
-
-        for (int i = 0; i < hitCount; i++)
-        {
-            Collider2D col = headCheckResults[i];
-
-            if (col.gameObject == gameObject || col.isTrigger) continue;
-
-            Vector2 dir = col.transform.position - transform.position;
-            if (dir.y <= 0.2f) continue;
-
-            if (col.attachedRigidbody != null && col.attachedRigidbody.linearVelocity.y > 0.1f)
-                continue;
-
-            hasPlayerOnHead = true;
-            break;
-        }
+        hasPlayerOnHead = (hit != null && hit.gameObject != gameObject);
     }
 
-    private void HandleMovingPlatform()
+    private void UpdatePlatformVelocity()
     {
         platformVelocity = Vector2.zero;
+        if (currentPlatform == null) return;
 
-        if (currentPlatform == null)
+        if (currentPlatform.TryGetComponent<CoopPlatformBase>(out var platformBase))
+        {
+            platformVelocity = platformBase.CurrentVelocity;
             return;
-
-        var roundTrip = currentPlatform.GetComponentInParent<CoopRoundTripPlatform>();
-        if (roundTrip != null) { platformVelocity = roundTrip.CurrentVelocity; return; }
-
-        var patrol = currentPlatform.GetComponentInParent<CoopPatrolPlatform>();
-        if (patrol != null) { platformVelocity = patrol.CurrentVelocity; return; }
-
-        var log = currentPlatform.GetComponentInParent<CoopMovingLog>();
-        if (log != null) { platformVelocity = log.CurrentVelocity; return; }
-
-        var parallel = currentPlatform.GetComponentInParent<CoopParallelPlatform>();
-        if (parallel != null) { platformVelocity = parallel.CurrentVelocity; return; }
+        }
 
         var mirror = currentPlatform.GetComponentInParent<CoopMirrorPlatforms>();
         if (mirror != null)
@@ -379,20 +119,80 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
+    private void HandleMovementPhysics()
+    {
+        if (controller == null || controller.rb == null) return;
+
+        // 넉백 중이거나 스턴 상태일 때는 일반 이동 제어 금지
+        if (controller.knockback != null && controller.knockback.IsStunned) return;
+
+        float targetXInput = controller.input != null ? controller.input.HorizontalInput : 0f;
+        Vector2 currentVel = controller.rb.linearVelocity;
+
+        float targetVelX = targetXInput * moveSpeed + windVelocity + platformVelocity.x;
+        float friction = isGrounded ? normalFriction : airFriction;
+
+        float newVelX = Mathf.Lerp(currentVel.x, targetVelX, Time.fixedDeltaTime * friction);
+
+        // 점프 처리
+        float newVelY = currentVel.y;
+        if (controller.input != null && controller.input.JumpPressedThisFrame)
+        {
+            if ((isGrounded || coyoteTimeCounter > 0f) && !hasPlayerOnHead)
+            {
+                float gravityMult = (controller.gravityModule != null) ? controller.gravityModule.gravityMultiplier : 1f;
+                newVelY = jumpSpeed * gravityMult;
+                coyoteTimeCounter = 0f;
+            }
+        }
+
+        // 가변 점프 (짧게 누르면 낮게)
+        if (controller.input != null && controller.input.JumpReleasedThisFrame)
+        {
+            float gravityMult = (controller.gravityModule != null) ? controller.gravityModule.gravityMultiplier : 1f;
+            if ((gravityMult > 0 && newVelY > 0) || (gravityMult < 0 && newVelY < 0))
+            {
+                newVelY *= superJump;
+            }
+        }
+
+        controller.rb.linearVelocity = new Vector2(newVelX, newVelY);
+    }
+
     public void CallCombinedJump()
     {
         if ((isGrounded || coyoteTimeCounter > 0f) && !hasPlayerOnHead)
         {
-            controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
-            Jump();
+            if (controller != null && controller.rb != null)
+            {
+                controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
+                float gravityMult = (controller.gravityModule != null) ? controller.gravityModule.gravityMultiplier : 1f;
+                controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, jumpSpeed * gravityMult);
+            }
             coyoteTimeCounter = 0f;
+        }
+    }
+
+    public void ApplyShortJump()
+    {
+        if (controller != null && controller.rb != null)
+        {
+            float gravityMult = (controller.gravityModule != null) ? controller.gravityModule.gravityMultiplier : 1f;
+            Vector2 currentVel = controller.rb.linearVelocity;
+            if ((gravityMult > 0 && currentVel.y > 0) || (gravityMult < 0 && currentVel.y < 0))
+            {
+                controller.rb.linearVelocity = new Vector2(currentVel.x, currentVel.y * superJump);
+            }
         }
     }
 
     public void CallCombinedAction()
     {
-        controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
-        controller.rb.AddForce(Vector2.down * 18f, ForceMode2D.Impulse);
+        if (controller != null && controller.rb != null)
+        {
+            controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
+            controller.rb.AddForce(Vector2.down * 18f, ForceMode2D.Impulse);
+        }
     }
 
     private void OnDrawGizmosSelected()
