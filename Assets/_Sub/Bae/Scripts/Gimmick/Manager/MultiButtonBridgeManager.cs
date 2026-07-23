@@ -25,32 +25,18 @@ public class MultiButtonBridgeManager : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
-        foreach (var btn in connectedButtons)
-        {
-            if (btn != null)
-            {
-                btn.OnButtonStateChangedEvent += CheckAllButtons;
-            }
-        }
+        CoopButtonUtility.SubscribeButtons(connectedButtons, CheckAllButtons);
     }
 
     [Server]
     private void CheckAllButtons(CoopButton changedButton)
     {
-        bool isAnyPressed = false;
-
-        foreach (var btn in connectedButtons)
-        {
-            if (btn != null && btn.isPressed)
-            {
-                isAnyPressed = true;
-                break;
-            }
-        }
+        bool isAnyPressed = CoopButtonUtility.IsAnyPressed(connectedButtons);
 
         if (isBridgeActive != isAnyPressed)
         {
             isBridgeActive = isAnyPressed;
+
             if (bridgeCoroutine != null)
             {
                 StopCoroutine(bridgeCoroutine);

@@ -31,13 +31,7 @@ public class PermanentSpikeButton : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
-        foreach (var btn in requiredButtons)
-        {
-            if (btn != null)
-            {
-                btn.OnButtonStateChangedEvent += CheckAllButtons;
-            }
-        }
+        CoopButtonUtility.SubscribeButtons(requiredButtons, CheckAllButtons);
     }
 
     public override void OnStartClient()
@@ -49,18 +43,7 @@ public class PermanentSpikeButton : NetworkBehaviour
     private void CheckAllButtons(CoopButton changedButton)
     {
         if (isSpikesHidden) return;
-
-        bool isAnyButtonPressed = false;
-        foreach (var btn in requiredButtons)
-        {
-            if (btn != null && btn.isPressed)
-            {
-                isAnyButtonPressed = true;
-                break;
-            }
-        }
-
-        if (isAnyButtonPressed)
+        if (CoopButtonUtility.IsAnyPressed(requiredButtons))
         {
             isSpikesHidden = true;
         }

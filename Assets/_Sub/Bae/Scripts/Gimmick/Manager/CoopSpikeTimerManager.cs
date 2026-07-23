@@ -42,13 +42,7 @@ public class CoopSpikeTimerManager : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
-        foreach (var btn in requiredButtons)
-        {
-            if (btn != null)
-            {
-                btn.OnButtonStateChangedEvent += CheckAllButtons;
-            }
-        }
+        CoopButtonUtility.SubscribeButtons(requiredButtons, CheckAllButtons);
     }
 
     public override void OnStartClient()
@@ -61,18 +55,7 @@ public class CoopSpikeTimerManager : NetworkBehaviour
     private void CheckAllButtons(CoopButton changedButton)
     {
         if (isSpikesHidden) return;
-
-        bool allPressed = true;
-        foreach (var btn in requiredButtons)
-        {
-            if (btn == null || !btn.isPressed)
-            {
-                allPressed = false;
-                break;
-            }
-        }
-
-        if (allPressed)
+        if (CoopButtonUtility.AreAllPressed(requiredButtons))
         {
             isSpikesHidden = true;
             StartCoroutine(SpikeTimerRoutine());
