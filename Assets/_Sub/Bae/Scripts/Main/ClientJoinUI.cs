@@ -31,11 +31,22 @@ public class ClientJoinUI : MonoBehaviour
     {
         if (loadingPanel == null)
         {
-            // 씬 내에 숨겨져(Inactive) 있는 WalkingLoadingPanel 컴포넌트까지 전부 탐색
-            WalkingLoadingPanel? panelScript = FindObjectOfType<WalkingLoadingPanel>(true);
-            if (panelScript != null)
+            // 씬 내의 활성 및 비활성(Inactive) 상태인 모든 WalkingLoadingPanel을 검색
+            WalkingLoadingPanel[] allPanels = Resources.FindObjectsOfTypeAll<WalkingLoadingPanel>();
+
+            foreach (var panel in allPanels)
             {
-                loadingPanel = panelScript.gameObject;
+                // 프로젝트 뷰의 프리팹 에셋이 아니라, 현재 씬(Scene)에 실제로 배치된 오브젝트인지 검증
+                if (panel != null && panel.gameObject.scene.IsValid())
+                {
+                    loadingPanel = panel.gameObject;
+                    break;
+                }
+            }
+
+            if (loadingPanel == null)
+            {
+                Debug.LogWarning("[ClientJoinUI] 현재 씬 내에 WalkingLoadingPanel을 찾지 못했습니다.");
             }
         }
         return loadingPanel;
