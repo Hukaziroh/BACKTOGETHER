@@ -15,7 +15,6 @@ public class PlayerRespawn : NetworkBehaviour
     private const float HOLD_TIME_TO_RESPAWN = 2f;
 
     [Header("팀 리스폰 씬 설정")]
-    [Tooltip("여기에 적힌 씬에서는 1명만 죽어도 4명이 다 같이 부활합니다. (로프 맵 등)")]
     public List<string> teamRespawnScenes = new List<string> { "Chapter4" };
 
     void Awake()
@@ -53,11 +52,13 @@ public class PlayerRespawn : NetworkBehaviour
             }
         }
     }
+
     [ClientRpc]
     public void RpcUpdateSpawnPoint(Vector3 newPoint)
     {
         currentSpawnPoint = newPoint;
     }
+
     [TargetRpc]
     public void TargetUpdateSpawnPoint(NetworkConnection target, Vector3 newPoint)
     {
@@ -69,21 +70,14 @@ public class PlayerRespawn : NetworkBehaviour
         if (!isLocalPlayer) return;
 
         string currentScene = SceneManager.GetActiveScene().name;
-        if (teamRespawnScenes.Contains(currentScene))
-        {
-            CmdTeamRespawn();
-        }
-        else
-        {
-            StartCoroutine(DoLocalRespawnRoutine());
-        }
+        if (teamRespawnScenes.Contains(currentScene)) CmdTeamRespawn();
+        else StartCoroutine(DoLocalRespawnRoutine());
     }
 
     [Command]
     private void CmdTeamRespawn()
     {
         PlayerRespawn[] allPlayers = FindObjectsByType<PlayerRespawn>(FindObjectsInactive.Exclude);
-
         foreach (var player in allPlayers)
         {
             if (player != null && player.connectionToClient != null)
@@ -102,18 +96,21 @@ public class PlayerRespawn : NetworkBehaviour
     private IEnumerator DoLocalRespawnRoutine()
     {
         if (controller.knockback != null) controller.knockback.ResetKnockback();
+
         if (controller.rb != null)
         {
             controller.rb.linearVelocity = Vector2.zero;
             controller.rb.angularVelocity = 0f;
         }
-        for (int i = 0; i < 10; i++)
+
+        // 최적화: 과도한 fixedUpdate 대기를 줄이고 확실히 물리 엔진을 리셋
+        transform.position = currentSpawnPoint;
+        Physics2D.SyncTransforms(); // 즉시 콜라이더 위치 강제 동기화
+
+        for (int i = 0; i < 3; i++) // 10프레임 대기는 지연이 너무 김, 3프레임으로 안정화
         {
-            transform.position = currentSpawnPoint;
             if (controller.rb != null) controller.rb.linearVelocity = Vector2.zero;
             yield return new WaitForFixedUpdate();
         }
-
-        if (controller.rb != null) controller.rb.linearVelocity = Vector2.zero;
     }
 }

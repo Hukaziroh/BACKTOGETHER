@@ -47,22 +47,29 @@ public class PlayerMovement : NetworkBehaviour
 
     private bool isOnIce = false;
     private bool wasOnIceLastFrame = false;
-
     private int touchingPlayerCount = 0;
 
+    // 최적화: 매 프레임 할당 방지
     private Collider2D[] groundCheckResults = new Collider2D[5];
     private Collider2D[] playerCheckResults = new Collider2D[5];
     private Collider2D[] headCheckResults = new Collider2D[5];
+    private ContactFilter2D groundFilter;
+    private ContactFilter2D playerFilter;
 
     [Header("외부 환경 속도")]
     public float windVelocity = 0f;
     private Transform currentPlatform;
     private Vector2 platformVelocity;
+    private System.Func<Vector2> getPlatformVelocityFunc; // 최적화: 발판 속도 반환 델리게이트 캐싱
 
     void Awake()
     {
         controller = GetComponent<PlayerController>();
         playerLayerMask = 1 << LayerMask.NameToLayer("Player");
+
+        // 필터 초기화 (GC 할당 최적화)
+        groundFilter = new ContactFilter2D { useLayerMask = true, useTriggers = false, layerMask = groundLayer };
+        playerFilter = new ContactFilter2D { useLayerMask = true, useTriggers = false, layerMask = playerLayerMask };
     }
 
     void Update()
@@ -82,21 +89,10 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
-        if (PauseManager.instance != null && PauseManager.instance.isPaused)
+        if ((PauseManager.instance != null && PauseManager.instance.isPaused) ||
+            (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen()))
         {
-            if (TryGetComponent<Rigidbody2D>(out Rigidbody2D rb2d))
-            {
-                rb2d.linearVelocity = new Vector2(0f, rb2d.linearVelocity.y);
-            }
-            return;
-        }
-
-        if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())
-        {
-            if (TryGetComponent<Rigidbody2D>(out Rigidbody2D rb2d))
-            {
-                rb2d.linearVelocity = new Vector2(0f, rb2d.linearVelocity.y);
-            }
+            controller.rb.linearVelocity = new Vector2(0f, controller.rb.linearVelocity.y);
             return;
         }
 
@@ -187,54 +183,17 @@ public class PlayerMovement : NetworkBehaviour
 
         float targetVelocityX = (controller.input.HorizontalInput * moveSpeed) + windVelocity;
         float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
-
         bool isTouchingPlayer = touchingPlayerCount > 0;
 
-        if (isGrounded)
-        {
-            if (isOnIce)
-            {
-                float newX = Mathf.MoveTowards(
-                    controller.rb.linearVelocity.x,
-                    targetVelocityX + currentPlatformVelX,
-                    iceSlideFriction * moveSpeed * Time.fixedDeltaTime
-                );
-                controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
-            }
-            else
-            {
-                float accel = isTouchingPlayer ? 15f : 9999f;
-                float newX = Mathf.MoveTowards(
-                    controller.rb.linearVelocity.x,
-                    targetVelocityX + currentPlatformVelX,
-                    accel * Time.fixedDeltaTime
-                );
-                controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
-            }
-        }
-        else
-        {
-            if (wasOnIceLastFrame)
-            {
-                float currentAirFriction = isRestrictedByRope ? 0f : airFriction;
-                float newX = Mathf.MoveTowards(
-                    controller.rb.linearVelocity.x,
-                    targetVelocityX,
-                    currentAirFriction * moveSpeed * Time.fixedDeltaTime
-                );
-                controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
-            }
-            else
-            {
-                float accel = isTouchingPlayer ? 15f : 9999f;
-                float newX = Mathf.MoveTowards(
-                    controller.rb.linearVelocity.x,
-                    targetVelocityX,
-                    accel * Time.fixedDeltaTime
-                );
-                controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
-            }
-        }
+        float currentFriction = isOnIce ? iceSlideFriction : (isGrounded ? (isTouchingPlayer ? 15f : 9999f) : (wasOnIceLastFrame ? (isRestrictedByRope ? 0f : airFriction) : (isTouchingPlayer ? 15f : 9999f)));
+
+        float newX = Mathf.MoveTowards(
+            controller.rb.linearVelocity.x,
+            targetVelocityX + (isGrounded ? currentPlatformVelX : 0f),
+            (currentFriction > 100f ? currentFriction : currentFriction * moveSpeed) * Time.fixedDeltaTime
+        );
+
+        controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
     }
 
     private void ClampVelocity()
@@ -244,20 +203,13 @@ public class PlayerMovement : NetworkBehaviour
         clampedVelocity.x = Mathf.Clamp(clampedVelocity.x, -maxSpeedX, maxSpeedX);
 
         bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
-
-        if (isInverted) clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed * 1.5f, maxFallSpeed);
-        else clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, -maxFallSpeed, maxFallSpeed * 1.5f);
+        clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, isInverted ? -maxFallSpeed * 1.5f : -maxFallSpeed, isInverted ? maxFallSpeed : maxFallSpeed * 1.5f);
 
         controller.rb.linearVelocity = clampedVelocity;
     }
 
     void CheckGroundOrPlayer()
     {
-        ContactFilter2D groundFilter = new ContactFilter2D();
-        groundFilter.useLayerMask = true;
-        groundFilter.useTriggers = false;
-        groundFilter.layerMask = groundLayer;
-
         int hitCount = Physics2D.OverlapCircle(groundCheck.position, checkRadius, groundFilter, groundCheckResults);
 
         isGrounded = false;
@@ -268,8 +220,7 @@ public class PlayerMovement : NetworkBehaviour
         for (int i = 0; i < hitCount; i++)
         {
             Collider2D col = groundCheckResults[i];
-            if (col.CompareTag("Spike")) continue;
-            if (col.gameObject == gameObject || col.isTrigger) continue;
+            if (col.CompareTag("Spike") || col.gameObject == gameObject || col.isTrigger) continue;
 
             isGrounded = true;
             if (col.CompareTag("Ice")) currentOnIce = true;
@@ -282,21 +233,11 @@ public class PlayerMovement : NetworkBehaviour
 
         if (!isGrounded)
         {
-            ContactFilter2D playerFilter = new ContactFilter2D();
-            playerFilter.useLayerMask = true;
-            playerFilter.useTriggers = false;
-            playerFilter.layerMask = playerLayerMask;
-
             int playerHitCount = Physics2D.OverlapCircle(groundCheck.position, checkRadius, playerFilter, playerCheckResults);
-
             for (int i = 0; i < playerHitCount; i++)
             {
                 Collider2D col = playerCheckResults[i];
-
-                if (col.gameObject == gameObject) continue;
-                if (!col.CompareTag("Player")) continue;
-
-                if (groundCheck.position.y > col.bounds.max.y - 0.05f)
+                if (col.gameObject != gameObject && col.CompareTag("Player") && groundCheck.position.y > col.bounds.max.y - 0.05f)
                 {
                     isGrounded = true;
                     break;
@@ -304,14 +245,20 @@ public class PlayerMovement : NetworkBehaviour
             }
         }
 
+        // 플랫폼 변경 시에만 GetComponent 연산 수행 (핵심 최적화)
         if (foundPlatform)
         {
             if (currentPlatform != detectedPlatform)
             {
                 currentPlatform = detectedPlatform;
+                CachePlatformVelocityDelegate(currentPlatform);
             }
         }
-        else currentPlatform = null;
+        else
+        {
+            currentPlatform = null;
+            getPlatformVelocityFunc = null;
+        }
 
         isOnIce = currentOnIce;
         if (isGrounded) wasOnIceLastFrame = isOnIce;
@@ -320,63 +267,54 @@ public class PlayerMovement : NetworkBehaviour
     void CheckHeadForPlayer()
     {
         if (headCheck == null) return;
-
         hasPlayerOnHead = false;
-
-        ContactFilter2D filter = new ContactFilter2D();
-        filter.useLayerMask = true;
-        filter.useTriggers = false;
-        filter.layerMask = playerLayerMask;
-
         Vector2 checkPosition = (Vector2)headCheck.position + headCheckOffset;
 
-        int hitCount = Physics2D.OverlapBox(checkPosition, headCheckBoxSize, 0f, filter, headCheckResults);
+        int hitCount = Physics2D.OverlapBox(checkPosition, headCheckBoxSize, 0f, playerFilter, headCheckResults);
 
         for (int i = 0; i < hitCount; i++)
         {
             Collider2D col = headCheckResults[i];
-
             if (col.gameObject == gameObject || col.isTrigger) continue;
 
             Vector2 dir = col.transform.position - transform.position;
             if (dir.y <= 0.2f) continue;
-
-            if (col.attachedRigidbody != null && col.attachedRigidbody.linearVelocity.y > 0.1f)
-                continue;
+            if (col.attachedRigidbody != null && col.attachedRigidbody.linearVelocity.y > 0.1f) continue;
 
             hasPlayerOnHead = true;
             break;
         }
     }
 
-    private void HandleMovingPlatform()
+    private void CachePlatformVelocityDelegate(Transform platform)
     {
-        platformVelocity = Vector2.zero;
+        if (platform == null) { getPlatformVelocityFunc = null; return; }
 
-        if (currentPlatform == null)
-            return;
+        var roundTrip = platform.GetComponentInParent<CoopRoundTripPlatform>();
+        if (roundTrip != null) { getPlatformVelocityFunc = () => roundTrip.CurrentVelocity; return; }
 
-        var roundTrip = currentPlatform.GetComponentInParent<CoopRoundTripPlatform>();
-        if (roundTrip != null) { platformVelocity = roundTrip.CurrentVelocity; return; }
+        var patrol = platform.GetComponentInParent<CoopPatrolPlatform>();
+        if (patrol != null) { getPlatformVelocityFunc = () => patrol.CurrentVelocity; return; }
 
-        var patrol = currentPlatform.GetComponentInParent<CoopPatrolPlatform>();
-        if (patrol != null) { platformVelocity = patrol.CurrentVelocity; return; }
+        var log = platform.GetComponentInParent<CoopMovingLog>();
+        if (log != null) { getPlatformVelocityFunc = () => log.CurrentVelocity; return; }
 
-        var log = currentPlatform.GetComponentInParent<CoopMovingLog>();
-        if (log != null) { platformVelocity = log.CurrentVelocity; return; }
+        var parallel = platform.GetComponentInParent<CoopParallelPlatform>();
+        if (parallel != null) { getPlatformVelocityFunc = () => parallel.CurrentVelocity; return; }
 
-        var parallel = currentPlatform.GetComponentInParent<CoopParallelPlatform>();
-        if (parallel != null) { platformVelocity = parallel.CurrentVelocity; return; }
-
-        var mirror = currentPlatform.GetComponentInParent<CoopMirrorPlatforms>();
+        var mirror = platform.GetComponentInParent<CoopMirrorPlatforms>();
         if (mirror != null)
         {
-            if (currentPlatform.gameObject == mirror.leftPlatform.gameObject || currentPlatform.IsChildOf(mirror.leftPlatform.transform))
-                platformVelocity = mirror.LeftVelocity;
-            else
-                platformVelocity = mirror.RightVelocity;
+            bool isLeft = platform.gameObject == mirror.leftPlatform.gameObject || platform.IsChildOf(mirror.leftPlatform.transform);
+            getPlatformVelocityFunc = () => isLeft ? mirror.LeftVelocity : mirror.RightVelocity;
             return;
         }
+        getPlatformVelocityFunc = null;
+    }
+
+    private void HandleMovingPlatform()
+    {
+        platformVelocity = getPlatformVelocityFunc != null ? getPlatformVelocityFunc() : Vector2.zero;
     }
 
     public void CallCombinedJump()
@@ -398,19 +336,15 @@ public class PlayerMovement : NetworkBehaviour
     private void OnDrawGizmosSelected()
     {
         if (!showGizmo) return;
-
         if (groundCheck != null)
         {
             Gizmos.color = Color.yellow;
-            Vector2 gCheckPosition = (Vector2)groundCheck.position + checkOffset;
-            Gizmos.DrawWireSphere(gCheckPosition, checkRadius);
+            Gizmos.DrawWireSphere((Vector2)groundCheck.position + checkOffset, checkRadius);
         }
-
         if (headCheck != null)
         {
             Gizmos.color = Color.cyan;
-            Vector2 hCheckPosition = (Vector2)headCheck.position + headCheckOffset;
-            Gizmos.DrawWireCube(hCheckPosition, headCheckBoxSize);
+            Gizmos.DrawWireCube((Vector2)headCheck.position + headCheckOffset, headCheckBoxSize);
         }
     }
 }
