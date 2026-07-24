@@ -24,6 +24,8 @@ public class PauseManager : MonoBehaviour
     public string mainMenuSceneName = "Main";
     public bool isPaused = false;
 
+    public bool IsCodeVisible => isCodeVisible;
+
     private bool isCodeVisible = false;
     private Coroutine fetchCodeRoutine;
 
@@ -142,19 +144,17 @@ public class PauseManager : MonoBehaviour
 
         string displayCode = "";
 
-        // 1. 이미 정상 작동하는 LobbySyncManager에서 동기화된 룸 코드를 가져옵니다.
         if (LobbySyncManager.instance != null)
         {
             displayCode = LobbySyncManager.instance.roomCode;
         }
 
-        // 2. 만약 거기도 비어있다면 기존 코드(PrivateLobbyManager)를 차선책으로 사용합니다.
         if (string.IsNullOrEmpty(displayCode))
         {
             displayCode = PrivateLobbyManager.currentShortCode;
         }
 
-        // 3. UI 텍스트 적용
+        // 퍼즈 메뉴 UI 갱신
         if (string.IsNullOrEmpty(displayCode))
         {
             pauseRoomCodeText.text = "CODE:\nEmpty";
@@ -164,6 +164,12 @@ public class PauseManager : MonoBehaviour
             pauseRoomCodeText.text = isCodeVisible ?
                 $"CODE:\n{displayCode}" :
                 "CODE:\n******";
+        }
+
+        // ★ 로비 화면에 있는 룸코드 UI도 퍼즈 상태에 맞춰 같이 변경
+        if (LobbySyncManager.instance != null)
+        {
+            LobbySyncManager.instance.RefreshRoomCodeUIState();
         }
     }
 
