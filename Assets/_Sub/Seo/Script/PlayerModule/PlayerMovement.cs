@@ -12,8 +12,11 @@ public class PlayerMovement : NetworkBehaviour
 
     [Header("관성 및 미끄러짐 셋팅")]
     public float normalFriction = 20f;
-    public float iceSlideFriction = 3f;
+    public float iceSlideFriction = 2.5f;
     public float airFriction = 3f;
+
+    [Header("얼음 셋팅")]
+    public float iceAcceleration = 150f;
 
     [Header("점프셋팅")]
     public float jumpHeight = 4f;
@@ -177,7 +180,6 @@ public class PlayerMovement : NetworkBehaviour
 
         float rawInput = controller.input.HorizontalInput;
 
-        // 🎯 [유저님 코드 100% 유지]: 리버스 존 방향 반전 2중 체크
         if (controller.currentReverseZone != null && !controller.currentReverseZone.isForward)
         {
             float originalInput = 0f;
@@ -198,30 +200,55 @@ public class PlayerMovement : NetworkBehaviour
             float moveDir = Mathf.Sign(rawInput);
             Vector2 boxCenter = controller.bodyCollider.bounds.center;
             Vector2 boxSize = controller.bodyCollider.bounds.size;
-            boxSize.y -= 0.3f; 
+            boxSize.y -= 0.3f;
 
             RaycastHit2D hit = Physics2D.BoxCast(boxCenter, boxSize, 0f, new Vector2(moveDir, 0f), 0.05f, playerLayerMask);
             if (hit.collider != null && hit.collider.gameObject != gameObject)
             {
-                rawInput = 0f; 
-                isTouchingPlayer = true; 
+                rawInput = 0f;
+                isTouchingPlayer = true;
             }
         }
 
         float targetVelocityX = (rawInput * moveSpeed) + windVelocity;
         float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
 
-        float currentFriction = isOnIce ? iceSlideFriction : (isGrounded ? (isTouchingPlayer ? 15f : 9999f) : (wasOnIceLastFrame ? (isRestrictedByRope ? 0f : airFriction) : (isTouchingPlayer ? 15f : 9999f)));
+        float currentFriction = isGrounded
+            ? (isTouchingPlayer ? 15f : normalFriction)
+            : (isTouchingPlayer ? 15f : (isRestrictedByRope ? 0f : 9999f));
 
-        float newX = Mathf.MoveTowards(
-            controller.rb.linearVelocity.x,
-            targetVelocityX + (isGrounded ? currentPlatformVelX : 0f),
-            (currentFriction > 100f ? currentFriction : currentFriction * moveSpeed) * Time.fixedDeltaTime
-        );
+        float newX;
+
+        if (isOnIce || (!isGrounded && wasOnIceLastFrame))
+        {
+            if (Mathf.Abs(rawInput) > 0.01f)
+            {
+                newX = Mathf.MoveTowards(
+                    controller.rb.linearVelocity.x,
+                    targetVelocityX + currentPlatformVelX,
+                    iceAcceleration * Time.fixedDeltaTime
+                );
+            }
+            else
+            {
+                newX = Mathf.MoveTowards(
+                    controller.rb.linearVelocity.x,
+                    windVelocity + currentPlatformVelX,
+                    iceSlideFriction * Time.fixedDeltaTime
+                );
+            }
+        }
+        else
+        {
+            newX = Mathf.MoveTowards(
+                controller.rb.linearVelocity.x,
+                targetVelocityX + currentPlatformVelX,
+                (currentFriction > 100f ? currentFriction : currentFriction * moveSpeed) * Time.fixedDeltaTime
+            );
+        }
 
         controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
     }
-
     private void ClampVelocity()
     {
         float maxSpeedX = 30f;
