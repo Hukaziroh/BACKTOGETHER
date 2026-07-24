@@ -23,8 +23,11 @@ public class PlayerAnimation : NetworkBehaviour
     {
         if (controller.anim == null) return;
 
-        controller.anim.SetFloat("Speed", Mathf.Abs(controller.input.HorizontalInput));
+        float currentSpeed = controller.knockback.IsStunned ? 0f : Mathf.Abs(controller.input.HorizontalInput);
+        controller.anim.SetFloat("Speed", currentSpeed);
+
         controller.anim.SetBool("isGrounded", controller.movement.isGrounded);
+        controller.anim.SetBool("isStunned", controller.knockback.IsStunned);
 
         if (controller.input.HorizontalInput != 0 && !controller.knockback.IsStunned)
         {
@@ -35,7 +38,9 @@ public class PlayerAnimation : NetworkBehaviour
                 CmdSetDirection(targetDirection);
             }
         }
-
+        Debug.Log(
+    $"Ground:{controller.movement.isGrounded}  Stun:{controller.knockback.IsStunned}"
+);
         ApplyScale(syncDirectionX);
     }
 

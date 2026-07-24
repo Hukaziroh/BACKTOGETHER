@@ -8,7 +8,7 @@ public class PlayerKnockback : NetworkBehaviour
     [Header("장애물판정")]
     public float knockPowerX = 15f;
     public float knockPowerY = 37f;
-    public float stunTime = 0.7f;
+    public float stunTime = 0.5f;
     public float stunTimer { get; private set; }
 
     [Header("크리티컬 ")]
