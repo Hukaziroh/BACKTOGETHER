@@ -189,16 +189,11 @@ public class CoopRopeManager : NetworkBehaviour
             }
         }
     }
-
     private bool ApplyRopeConstraint(Rigidbody2D rb, Rigidbody2D targetRb, bool amIGrounded)
     {
         Vector2 targetPos = targetRb.position;
         Vector2 direction = targetPos - rb.position;
         float distance = direction.magnitude;
-        if (distance > maxRopeLength * 3f)
-        {
-            return false;
-        }
 
         if (distance > maxRopeLength)
         {
@@ -208,12 +203,10 @@ public class CoopRopeManager : NetworkBehaviour
             float totalMass = rb.mass + targetRb.mass;
             float myRatio = targetRb.mass / totalMass;
             Vector2 posCorrection = dirNorm * (stretch * myRatio);
-
             if (amIGrounded && posCorrection.y < 0)
             {
                 posCorrection.y = 0;
             }
-
             rb.position += posCorrection;
             Vector2 relativeVelocity = rb.linearVelocity - targetRb.linearVelocity;
             float relVelAlongRope = Vector2.Dot(relativeVelocity, dirNorm);
