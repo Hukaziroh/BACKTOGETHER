@@ -79,8 +79,6 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
-        if (PauseManager.instance != null && PauseManager.instance.isPaused) return;
-        if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen()) return;
 
         UpdateTimers();
         UpdateCoyoteTime();
@@ -91,13 +89,6 @@ public class PlayerMovement : NetworkBehaviour
     void FixedUpdate()
     {
         if (!isLocalPlayer) return;
-
-        if ((PauseManager.instance != null && PauseManager.instance.isPaused) ||
-            (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen()))
-        {
-            controller.rb.linearVelocity = new Vector2(0f, controller.rb.linearVelocity.y);
-            return;
-        }
 
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
@@ -121,6 +112,12 @@ public class PlayerMovement : NetworkBehaviour
 
     private void HandleJumpInput()
     {
+        if (PauseManager.instance != null && PauseManager.instance.isPaused)
+            return;
+
+        if (EmojiRadialMenu.Instance != null &&
+            EmojiRadialMenu.Instance.IsOpen())
+            return;
         if (controller.combineHandler == null || !controller.combineHandler.isCombined)
         {
             if (controller.input.JumpPressedThisFrame && coyoteTimeCounter > 0f && !controller.knockback.IsStunned && !hasPlayerOnHead)
@@ -149,7 +146,7 @@ public class PlayerMovement : NetworkBehaviour
         controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, jumpForce * mult);
         ckTimer = jumpCk;
 
-        justJumped = true; 
+        justJumped = true;
     }
 
     public void ApplyShortJump()
@@ -169,6 +166,13 @@ public class PlayerMovement : NetworkBehaviour
 
     private void HandleMovementPhysics()
     {
+        float rawInput = controller.input.HorizontalInput;
+
+        if ((PauseManager.instance != null && PauseManager.instance.isPaused) ||
+            (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen()))
+        {
+            rawInput = 0f;
+        }
         if (controller.knockback.isKnockedBack) return;
 
         if (controller.knockback.IsStunned)
@@ -177,8 +181,6 @@ public class PlayerMovement : NetworkBehaviour
             controller.rb.linearVelocity = new Vector2(slideSpeed, controller.rb.linearVelocity.y);
             return;
         }
-
-        float rawInput = controller.input.HorizontalInput;
 
         if (controller.currentReverseZone != null && !controller.currentReverseZone.isForward)
         {
