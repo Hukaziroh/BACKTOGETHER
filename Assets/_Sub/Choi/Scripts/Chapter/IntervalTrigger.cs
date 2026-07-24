@@ -1,6 +1,8 @@
 using UnityEngine;
 using TMPro;
 using Mirror;
+using System.Collections;
+using System.Collections.Generic;
 
 public class IntervalTrigger : NetworkBehaviour
 {
@@ -10,7 +12,6 @@ public class IntervalTrigger : NetworkBehaviour
     [Header("UI 연결")]
     public TMP_Text timerText;
 
-    // 서버가 결정하는 현재 방향 상태 (true: 정방향, false: 역방향)
     [SyncVar]
     public bool isForward = true;
 
@@ -18,6 +19,8 @@ public class IntervalTrigger : NetworkBehaviour
     private double nextChangeNetworkTime;
 
     private bool isLocalPlayerInside = false;
+
+    private Dictionary<Collider2D, Coroutine> exitRoutines = new Dictionary<Collider2D, Coroutine>();
 
     private void Start()
     {
@@ -34,10 +37,16 @@ public class IntervalTrigger : NetworkBehaviour
     {
         if (collision.CompareTag("Player"))
         {
+            if (exitRoutines.ContainsKey(collision))
+            {
+                StopCoroutine(exitRoutines[collision]);
+                exitRoutines.Remove(collision);
+                return; 
+            }
+
             PlayerController player = collision.GetComponent<PlayerController>();
             if (player != null)
             {
-                // 플레이어에게 존 참조 전달
                 player.SetCurrentReverseZone(this);
             }
 
@@ -54,10 +63,23 @@ public class IntervalTrigger : NetworkBehaviour
     {
         if (collision.CompareTag("Player"))
         {
+            if (!exitRoutines.ContainsKey(collision))
+            {
+                exitRoutines[collision] = StartCoroutine(ExitDelayRoutine(collision));
+            }
+        }
+    }
+
+    private IEnumerator ExitDelayRoutine(Collider2D collision)
+    {
+        // 0.15초 대기 (이 시간 동안은 계속 구역 안에 있는 것으로 판정)
+        yield return new WaitForSeconds(0.15f);
+
+        if (collision != null)
+        {
             PlayerController player = collision.GetComponent<PlayerController>();
             if (player != null)
             {
-                // 플레이어 존 참조 해제
                 player.ClearCurrentReverseZone();
             }
 
@@ -68,6 +90,8 @@ public class IntervalTrigger : NetworkBehaviour
                 if (timerText != null) timerText.gameObject.SetActive(false);
             }
         }
+
+        exitRoutines.Remove(collision);
     }
 
     private void Update()
@@ -90,7 +114,7 @@ public class IntervalTrigger : NetworkBehaviour
         timerText.text = $"{arrowChar}";
 
         if (timeLeft > 3f) timerText.color = Color.green;
-        else if (timeLeft > 1f) timerText.color = Color.yellow;
+        else if (timeLeft > 1.5f) timerText.color = Color.yellow;
         else timerText.color = Color.red;
     }
 }
