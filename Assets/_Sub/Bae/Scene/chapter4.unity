@@ -128,6 +128,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 1659539207}
     m_Modifications:
     - target: {fileID: 2204656344973186083, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
+      propertyPath: checkpointIndex
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2204656344973186083, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
       propertyPath: syncToAllPlayers
       value: 1
       objectReference: {fileID: 0}
@@ -4342,6 +4346,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 1659539207}
     m_Modifications:
     - target: {fileID: 2204656344973186083, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
+      propertyPath: checkpointIndex
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2204656344973186083, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
       propertyPath: syncToAllPlayers
       value: 1
       objectReference: {fileID: 0}
@@ -4427,6 +4435,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1659539207}
     m_Modifications:
+    - target: {fileID: 2204656344973186083, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
+      propertyPath: checkpointIndex
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 2204656344973186083, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
       propertyPath: syncToAllPlayers
       value: 1
@@ -5142,6 +5154,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1659539207}
     m_Modifications:
+    - target: {fileID: 2204656344973186083, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
+      propertyPath: checkpointIndex
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 2204656344973186083, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
       propertyPath: syncToAllPlayers
       value: 1
@@ -295918,6 +295934,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 1659539207}
     m_Modifications:
     - target: {fileID: 2204656344973186083, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
+      propertyPath: checkpointIndex
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2204656344973186083, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
       propertyPath: syncToAllPlayers
       value: 1
       objectReference: {fileID: 0}
@@ -296360,6 +296380,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1659539207}
     m_Modifications:
+    - target: {fileID: 2204656344973186083, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
+      propertyPath: checkpointIndex
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 2204656344973186083, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
       propertyPath: syncToAllPlayers
       value: 1
@@ -296985,6 +297009,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1659539207}
     m_Modifications:
+    - target: {fileID: 2204656344973186083, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
+      propertyPath: checkpointIndex
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 2204656344973186083, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
       propertyPath: syncToAllPlayers
       value: 1
@@ -298693,6 +298721,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1659539207}
     m_Modifications:
+    - target: {fileID: 2204656344973186083, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
+      propertyPath: checkpointIndex
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2204656344973186083, guid: bb8ec3723469ab44f80dfd374723cf60, type: 3}
       propertyPath: syncToAllPlayers
       value: 1
@@ -301663,9 +301695,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1370156576}
     m_Modifications:
-    - target: {fileID: -7123106241490419490, guid: e0d17d2308d49a74bbc60e7692e04060, type: 3}
-      propertyPath: sceneId
-      value: 1443529020
+    - target: {fileID: 732408097169389455, guid: fe6c66bc76fde594bb5006632c8a6047, type: 3}
+      propertyPath: m_Name
+      value: CoopButton
       objectReference: {fileID: 0}
     - target: {fileID: 2768572727897551799, guid: fe6c66bc76fde594bb5006632c8a6047, type: 3}
       propertyPath: sceneId
@@ -301711,9 +301743,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 90
       objectReference: {fileID: 0}
-    - target: {fileID: 732408097169389455, guid: fe6c66bc76fde594bb5006632c8a6047, type: 3}
-      propertyPath: m_Name
-      value: CoopButton
+    - target: {fileID: -7123106241490419490, guid: e0d17d2308d49a74bbc60e7692e04060, type: 3}
+      propertyPath: sceneId
+      value: 1443529020
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
