@@ -20,7 +20,8 @@ public class CoopParallelPlatform : CoopPlatformBase
 
     [Header("물리 설정")]
     public Rigidbody2D platformRb;
-
+    private Vector2 lastPosition;
+    public new Vector2 CurrentVelocity { get; private set; }
     [System.NonSerialized]
     public HashSet<GameObject> topPlayers = new HashSet<GameObject>();
     [System.NonSerialized]
@@ -31,9 +32,18 @@ public class CoopParallelPlatform : CoopPlatformBase
     [SyncVar]
     private State currentState = State.Idle;
     private Coroutine waitCoroutine;
+    // 이 함수를 FixedUpdate() 위쪽 빈 공간에 넣어주세요!
+    void Start()
+    {
+        lastPosition = transform.position;
+    }
+
 
     void FixedUpdate()
     {
+        Vector2 currentPos = transform.position;
+        CurrentVelocity = (currentPos - lastPosition) / Time.fixedDeltaTime;
+        lastPosition = currentPos;
         if (!isServer) return;
         topPlayers.RemoveWhere(p => p == null || !p.activeInHierarchy);
         bottomPlayers.RemoveWhere(p => p == null || !p.activeInHierarchy);
@@ -99,7 +109,7 @@ public class CoopParallelPlatform : CoopPlatformBase
         Vector2 nextPos = Vector2.MoveTowards(currentPos, target, speed * Time.fixedDeltaTime);
 
         platformRb.MovePosition(nextPos);
-        syncVelocity = (nextPos - currentPos) / Time.fixedDeltaTime; 
+        syncVelocity = (nextPos - currentPos) / Time.fixedDeltaTime;
     }
 
     private IEnumerator WaitRoutine()
