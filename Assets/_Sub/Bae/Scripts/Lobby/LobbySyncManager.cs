@@ -15,7 +15,6 @@ public class LobbySyncManager : NetworkBehaviour
     [Header("오른쪽 UI: 룸코드")]
     public TextMeshProUGUI roomCodeText;
 
-    // ★ Mirror SyncVar: 호스트(서버)가 이 값을 바꾸면 클라이언트들에게 자동으로 동기화됨!
     [SyncVar(hook = nameof(OnRoomCodeUpdated))]
     public string roomCode = "";
 
@@ -27,17 +26,14 @@ public class LobbySyncManager : NetworkBehaviour
 
     void Update()
     {
-        // 서버(호스트) 전용 로직
         if (isServer)
         {
-            // 1. 실시간 인원수 체크
             int currentCount = NetworkServer.connections.Count;
             if (playerCount != currentCount)
             {
                 playerCount = currentCount;
             }
 
-            // 2. 호스트가 발급받은 숏코드가 생성되었다면 SyncVar에 등록하여 클라이언트들에게 전송
             if (string.IsNullOrEmpty(roomCode) && !string.IsNullOrEmpty(PrivateLobbyManager.currentShortCode))
             {
                 roomCode = PrivateLobbyManager.currentShortCode;
@@ -49,7 +45,7 @@ public class LobbySyncManager : NetworkBehaviour
     {
         base.OnStartClient();
         UpdatePlayerCountUI(playerCount);
-        UpdateRoomCodeUI(roomCode); // 클라이언트 접속 시 초기화
+        UpdateRoomCodeUI(roomCode);
     }
 
     [Server]
@@ -76,11 +72,29 @@ public class LobbySyncManager : NetworkBehaviour
         }
     }
 
+    // ★ PauseManager에서 호출하여 상태를 동기화할 수 있는 함수
+    public void RefreshRoomCodeUIState()
+    {
+        UpdateRoomCodeUI(roomCode);
+    }
+
     private void UpdateRoomCodeUI(string code)
     {
         if (roomCodeText != null)
         {
-            roomCodeText.text = $"Room Code: {(string.IsNullOrEmpty(code) ? "-" : code)}";
+            // PauseManager가 존재하고, 코드가 가려져 있는 상태(isCodeVisible == false)인지 확인
+            bool isVisible = PauseManager.instance == null || PauseManager.instance.IsCodeVisible;
+
+            string formattedCode = string.IsNullOrEmpty(code) ? "-" : code;
+
+            if (isVisible)
+            {
+                roomCodeText.text = $"Room Code: {formattedCode}";
+            }
+            else
+            {
+                roomCodeText.text = "Room Code: ******";
+            }
         }
     }
 }
