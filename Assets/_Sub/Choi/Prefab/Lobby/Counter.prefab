@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6004370265167242223}
   - component: {fileID: 5229212575877560158}
-  - component: {fileID: 1569098665384869600}
   - component: {fileID: 4271023003086775501}
   m_Layer: 0
   m_Name: Counter
@@ -69,7 +68,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -1.9259605, y: 2.4341998}
+  m_Offset: {x: -2.153881, y: -0.9026413}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -79,25 +78,8 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 15.872696, y: 10.469304}
+  m_Size: {x: 3.0516052, y: 3.7956219}
   m_EdgeRadius: 0
---- !u!114 &1569098665384869600
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1925333371316135368}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
-  sceneId: 0
-  _assetId: 2262260223
-  serverOnly: 0
-  visibility: 0
-  hasSpawned: 0
 --- !u!114 &4271023003086775501
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -115,6 +97,7 @@ MonoBehaviour:
   syncInterval: 0
   requiredPlayerCount: 4
   counterAndChapterText: {fileID: 2020620552394857235}
+  completeText: Go!
 --- !u!1 &4737718632756148998
 GameObject:
   m_ObjectHideFlags: 0
@@ -147,10 +130,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 5425679398505350696}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 10, y: 10}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -0.0000011920929, y: 0.00000011920929}
+  m_SizeDelta: {x: -0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4041280149423434541
 CanvasRenderer:
@@ -207,8 +190,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 1.5
-  m_fontSizeBase: 1.5
+  m_fontSize: 0.5
+  m_fontSizeBase: 0.5
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -288,8 +271,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -1.83, y: 0.24}
-  m_SizeDelta: {x: 10, y: 10}
+  m_AnchoredPosition: {x: -2.21, y: -0.98}
+  m_SizeDelta: {x: 2.6749, y: 2.6329}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &7518498816806029046
 Canvas:
