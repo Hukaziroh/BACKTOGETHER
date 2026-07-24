@@ -1203,6 +1203,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   currentSpawnPoint: {x: 0, y: 30, z: 0}
+  currentCheckpointIndex: -1
   teamRespawnScenes:
   - Chapter4
 --- !u!61 &1312891903968155803
@@ -1249,7 +1250,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.6978479, y: 0.9506994}
+  m_Size: {x: 0.6978479, y: 0.9163}
   m_EdgeRadius: 0
 --- !u!114 &6800475550925425856
 MonoBehaviour:
