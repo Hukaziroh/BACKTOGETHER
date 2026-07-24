@@ -25,6 +25,7 @@ public class PauseManager : MonoBehaviour
     public bool isPaused = false;
 
     private bool isCodeVisible = false;
+    private Coroutine fetchCodeRoutine;
 
     void Awake()
     {
@@ -54,6 +55,13 @@ public class PauseManager : MonoBehaviour
 
         UpdateRoomCodeUI();
 
+        // 코드가 아직 없다면(클라이언트 등) 동기화될 때까지 비동기로 코드를 가져오는 루틴 실행
+        if (string.IsNullOrEmpty(PrivateLobbyManager.currentShortCode))
+        {
+            if (fetchCodeRoutine != null) StopCoroutine(fetchCodeRoutine);
+            fetchCodeRoutine = StartCoroutine(FetchRoomCodeAsync());
+        }
+
         if (GlobalSceneInputManager.Instance != null && pausePanel != null)
         {
             GlobalSceneInputManager.Instance.SetFocusScope(pausePanel);
@@ -62,6 +70,12 @@ public class PauseManager : MonoBehaviour
 
     public void ResumeGame()
     {
+        if (fetchCodeRoutine != null)
+        {
+            StopCoroutine(fetchCodeRoutine);
+            fetchCodeRoutine = null;
+        }
+
         if (pausePanel != null) pausePanel.SetActive(false);
         isPaused = false;
 
@@ -77,39 +91,70 @@ public class PauseManager : MonoBehaviour
         UpdateRoomCodeUI();
     }
 
+    private IEnumerator FetchRoomCodeAsync()
+    {
+        float timeout = 3.0f;
+        while (timeout > 0f)
+        {
+            string code = GetCodeFromEOS();
+            if (!string.IsNullOrEmpty(code))
+            {
+                PrivateLobbyManager.currentShortCode = code;
+                UpdateRoomCodeUI();
+                yield break;
+            }
+
+            timeout -= 0.2f;
+            yield return new WaitForSecondsRealtime(0.2f);
+        }
+    }
+
+    private string GetCodeFromEOS()
+    {
+        if (NetworkManager.singleton == null) return null;
+
+        EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
+        if (eosLobby != null && eosLobby.ConnectedToLobby && eosLobby.ConnectedLobbyDetails != null)
+        {
+            try
+            {
+                Attribute shortCodeAttribute = new Attribute();
+                Result result = eosLobby.ConnectedLobbyDetails.CopyAttributeByKey(
+                    new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "SHORTCODE" },
+                    out shortCodeAttribute
+                );
+
+                if (result == Result.Success)
+                {
+                    return shortCodeAttribute.Data.Value.AsUtf8;
+                }
+            }
+            catch
+            {
+            }
+        }
+        return null;
+    }
+
     private void UpdateRoomCodeUI()
     {
         if (pauseRoomCodeText == null) return;
 
-        // 1. 우선 PrivateLobbyManager에 코드가 있다면 가져옵니다.
-        string displayCode = PrivateLobbyManager.currentShortCode;
+        string displayCode = "";
 
-        // 2. 만약 비어있다면(클라이언트 등) 에픽 로비(EOSLobby) 어트리뷰트에서 코드를 가져옵니다.
-        if (string.IsNullOrEmpty(displayCode) && NetworkManager.singleton != null)
+        // 1. 이미 정상 작동하는 LobbySyncManager에서 동기화된 룸 코드를 가져옵니다.
+        if (LobbySyncManager.instance != null)
         {
-            EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
-            if (eosLobby != null && eosLobby.ConnectedToLobby && eosLobby.ConnectedLobbyDetails != null)
-            {
-                try
-                {
-                    Attribute shortCodeAttribute = new Attribute();
-                    Result result = eosLobby.ConnectedLobbyDetails.CopyAttributeByKey(
-                        new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "SHORTCODE" },
-                        out shortCodeAttribute
-                    );
-
-                    if (result == Result.Success)
-                    {
-                        displayCode = shortCodeAttribute.Data.Value.AsUtf8;
-                    }
-                }
-                catch
-                {
-
-                }
-            }
+            displayCode = LobbySyncManager.instance.roomCode;
         }
 
+        // 2. 만약 거기도 비어있다면 기존 코드(PrivateLobbyManager)를 차선책으로 사용합니다.
+        if (string.IsNullOrEmpty(displayCode))
+        {
+            displayCode = PrivateLobbyManager.currentShortCode;
+        }
+
+        // 3. UI 텍스트 적용
         if (string.IsNullOrEmpty(displayCode))
         {
             pauseRoomCodeText.text = "CODE:\nEmpty";
@@ -150,7 +195,6 @@ public class PauseManager : MonoBehaviour
     private IEnumerator LeaveGameGracefullyRoutine()
     {
         isLeaving = true;
-
 #if UNITY_EDITOR
         UnityEditor.Selection.activeGameObject = null;
 #endif
@@ -197,7 +241,6 @@ public class PauseManager : MonoBehaviour
 
                 eosLobby.LeaveLobby();
 
-                // 최대 5초 동안 Lobby 퇴장 완료 대기
                 float timeout = 5f;
 
                 while (
@@ -209,11 +252,6 @@ public class PauseManager : MonoBehaviour
 
                     yield return null;
                 }
-
-
-                // =================================================
-                // 2. 퇴장 결과 확인
-                // =================================================
 
                 if (eosLobby.IsLeavingLobby)
                 {
@@ -252,7 +290,7 @@ public class PauseManager : MonoBehaviour
 
 
         // =========================================================
-        // 3. Mirror 네트워크 종료
+        // 2. Mirror 네트워크 종료
         // =========================================================
 
         if (NetworkServer.active)
@@ -262,13 +300,13 @@ public class PauseManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("[퍼즈 시스템] ⑤ 클라이언트 종료");
+            Debug.Log("[퍼즈 시스템] ⑤ 클라이언트라이언트 종료");
             NetworkManager.singleton.StopClient();
         }
 
 
         // =========================================================
-        // 4. 종료 처리
+        // 3. 종료 처리
         // =========================================================
 
         yield return new WaitForSecondsRealtime(0.5f);
