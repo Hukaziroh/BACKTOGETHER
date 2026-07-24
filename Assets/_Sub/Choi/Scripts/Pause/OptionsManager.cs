@@ -59,8 +59,11 @@ public class OptionsManager : MonoBehaviour
     {
         if (optionsPanel != null) optionsPanel.SetActive(false);
 
-        // 만약 퍼즈 매니저가 존재하고 퍼즈 패널이 있다면 포커스를 퍼즈 패널 쪽으로 안전하게 복구
-        if (PauseManager.instance != null && PauseManager.instance.pausePanel != null)
+        // 현재 씬 이름이 "Main"(메인 씬 이름)인지 확인합니다. (필요시 메인 씬 이름으로 변경하세요)
+        bool isMainScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Main";
+
+        // 메인 씬이 아닐 때만 퍼즈 패널로 포커스 복구
+        if (!isMainScene && PauseManager.instance != null && PauseManager.instance.pausePanel != null)
         {
             PauseManager.instance.pausePanel.SetActive(true);
             if (GlobalSceneInputManager.Instance != null)
@@ -70,7 +73,7 @@ public class OptionsManager : MonoBehaviour
         }
         else
         {
-            // 퍼즈 패널이 없다면 일반 격리 해제
+            // 메인 씬이거나 퍼즈 패널이 없다면 그냥 격리 해제 및 옵션창만 닫기
             if (GlobalSceneInputManager.Instance != null)
             {
                 GlobalSceneInputManager.Instance.ClearFocusScope();
@@ -91,5 +94,11 @@ public class OptionsManager : MonoBehaviour
     public void SetFullscreen(bool isFullscreen)
     {
         Screen.fullScreen = isFullscreen;
+
+        // 창모드(전체화면이 아닐 때) 1280x720 크기로 변경
+        if (!isFullscreen)
+        {
+            Screen.SetResolution(1280, 720, false);
+        }
     }
 }

@@ -30,6 +30,9 @@ public class GlobalSceneInputManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         SceneManager.sceneLoaded += OnSceneLoaded;
+
+        // ★ [키보드 전용 설정] 게임 시작 시 마우스 커서 숨기기 및 잠금
+        LockAndHideCursor();
     }
 
     private void OnDestroy()
@@ -47,12 +50,28 @@ public class GlobalSceneInputManager : MonoBehaviour
         _currentFocusScope = null;
         _temporarilyDisabled.Clear();
 
+        // 씬이 넘어갈 때도 마우스 숨김 상태 유지
+        LockAndHideCursor();
+
         RefreshAllSelectables();
+    }
+
+    // ★ [마우스 제어 함수] 마우스를 보이지 않게 하고 화면 중앙에 고정
+    private void LockAndHideCursor()
+    {
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     private void Update()
     {
         if (EventSystem.current == null) return;
+
+        // ★ [추가 방어] 사용자가 마우스를 건드려서 마우스 커서가 켜지거나 풀리는 것을 강제로 차단
+        if (Cursor.visible || Cursor.lockState != CursorLockMode.Locked)
+        {
+            LockAndHideCursor();
+        }
 
         // ★ [추가] 이모지 메뉴가 열려있는 동안에는 전역 포커스 리셋 로직이 간섭하지 않도록 차단
         if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())
@@ -207,7 +226,7 @@ public class GlobalSceneInputManager : MonoBehaviour
     {
         if (EventSystem.current == null || selectables == null) return;
 
-        GameObject targetObj = (_isLocked && _lockedObject != null) ? _lockedObject : EventSystem.current.currentSelectedGameObject;
+        GameObject targetObj = (_is_Locked_Inline_Check()) ? _lockedObject : EventSystem.current.currentSelectedGameObject;
 
         foreach (var sel in selectables)
         {
@@ -219,6 +238,11 @@ public class GlobalSceneInputManager : MonoBehaviour
                 highlight.gameObject.SetActive(sel.gameObject == targetObj);
             }
         }
+    }
+
+    private bool _is_Locked_Inline_Check()
+    {
+        return _isLocked && _lockedObject != null;
     }
 
     // 특정 패널(창) 내부로 포커스를 격리하고 배경을 얼리는 함수

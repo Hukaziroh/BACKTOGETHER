@@ -2397,9 +2397,25 @@ PrefabInstance:
       value: -280
       objectReference: {fileID: 0}
     - target: {fileID: 1430784019729467397, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1430784019729467397, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1506203213}
+    - target: {fileID: 1430784019729467397, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1430784019729467397, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: CloseOptionPanel
+      objectReference: {fileID: 0}
+    - target: {fileID: 1430784019729467397, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: ClientMenu, Assembly-CSharp
+      objectReference: {fileID: 0}
     - target: {fileID: 1698300277476224384, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_Color.b
       value: 1
@@ -2519,18 +2535,18 @@ PrefabInstance:
     - target: {fileID: 3552379308435807786, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1506203213}
+      objectReference: {fileID: 6870475135527063539}
     - target: {fileID: 3552379308435807786, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
       objectReference: {fileID: 1506203213}
     - target: {fileID: 3552379308435807786, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OpenOptionPanel
+      value: Open
       objectReference: {fileID: 0}
     - target: {fileID: 3552379308435807786, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: ClientMenu, Assembly-CSharp
+      value: OptionsManager, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 4001352306162782268, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_Color.g
@@ -2797,6 +2813,7 @@ PrefabInstance:
     - {fileID: 5685198013253504035, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
     - {fileID: 5730266884657709734, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
     - {fileID: 2394638119635181765, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+    - {fileID: 65703918423068661, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 3490600222446395187, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       insertIndex: -1
@@ -9706,11 +9723,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1928054238 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 65703918423068661, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
-  m_PrefabInstance: {fileID: 552944003}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1940767927
 GameObject:
   m_ObjectHideFlags: 0
@@ -11437,7 +11449,7 @@ PrefabInstance:
     - target: {fileID: 9118601658099520460, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
       propertyPath: optionsPanel
       value: 
-      objectReference: {fileID: 1928054238}
+      objectReference: {fileID: 0}
     - target: {fileID: 9118601658099520460, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
       propertyPath: roomCodeInput
       value: 
@@ -11555,6 +11567,18 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2909815721968211781, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_UiScaleMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2909815721968211781, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_ReferenceResolution.x
+      value: 1920
+      objectReference: {fileID: 0}
+    - target: {fileID: 2909815721968211781, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_ReferenceResolution.y
+      value: 1080
+      objectReference: {fileID: 0}
     - target: {fileID: 3101628958932043637, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -11582,6 +11606,18 @@ PrefabInstance:
     - target: {fileID: 3712452966203298800, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_FontData.m_FontStyle
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4051397137647730821, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 6870475135527063539}
+    - target: {fileID: 4051397137647730821, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Close
+      objectReference: {fileID: 0}
+    - target: {fileID: 4051397137647730821, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: OptionsManager, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 4082492797863237866, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
