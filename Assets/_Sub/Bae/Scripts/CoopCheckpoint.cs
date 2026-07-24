@@ -21,7 +21,8 @@ public class CoopCheckpoint : NetworkBehaviour
         if (!other.CompareTag("Player"))
             return;
 
-        PlayerRespawn respawnScript = other.GetComponent<PlayerRespawn>();
+        PlayerRespawn respawnScript =
+            other.GetComponent<PlayerRespawn>();
 
         if (respawnScript == null)
             return;
@@ -29,6 +30,7 @@ public class CoopCheckpoint : NetworkBehaviour
         // =====================================================
         // 챕터4 : 한 명이 체크포인트를 찍으면 전원 갱신
         // =====================================================
+
         if (syncToAllPlayers)
         {
             Debug.Log(
@@ -37,22 +39,15 @@ public class CoopCheckpoint : NetworkBehaviour
                 $"팀 전체 체크포인트 갱신 시도"
             );
 
-            List<PlayerRespawn> allRespawns = CoopPlayerManager.GetPlayerComponents<PlayerRespawn>();
+            List<PlayerRespawn> allRespawns =
+                CoopPlayerManager.GetPlayerComponents<PlayerRespawn>();
 
-            // 스폰 위치 분산 (1.0f 간격)
-            float spacing = 1.0f;
-            // 4명이 체크포인트 중앙을 기준으로 좌우로 정렬되도록 시작 오프셋 계산
-            float startOffsetX = -((allRespawns.Count - 1) * spacing) / 2f;
-
-            for (int i = 0; i < allRespawns.Count; i++)
+            foreach (var respawn in allRespawns)
             {
-                if (allRespawns[i] != null)
+                if (respawn != null)
                 {
-                    // X축으로 간격을 두고 좌표를 찍음
-                    Vector3 offset = new Vector3(startOffsetX + (i * spacing), 0f, 0f);
-
-                    allRespawns[i].RpcUpdateSpawnPointIfNewer(
-                        spawnLocation.position + offset,
+                    respawn.RpcUpdateSpawnPointIfNewer(
+                        spawnLocation.position,
                         checkpointIndex
                     );
                 }
@@ -62,6 +57,7 @@ public class CoopCheckpoint : NetworkBehaviour
         // =====================================================
         // 일반 맵 : 체크포인트를 밟은 플레이어만 갱신
         // =====================================================
+
         else
         {
             Debug.Log(
