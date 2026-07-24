@@ -55,17 +55,16 @@ public class UIManager : MonoBehaviour
                 spectatorSystem.StopSpectating();
             }
 
-            // ★ 1, 2, 3, 4 키를 제거하고 Tab 키를 누를 때마다 다음 타겟으로 순환 관전
-            // (주의: 이모지 메뉴가 열려있지 않을 때만 관전 순환이 작동하도록 예외 처리를 추가했습니다)
+            // 이모지 메뉴가 열려있지 않을 때만 관전 순환이 작동하도록 예외 처리
             bool isEmojiMenuOpen = EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen();
 
             if (!isEmojiMenuOpen && Keyboard.current.tabKey.wasPressedThisFrame)
             {
-                spectatorSystem.CycleNextTarget(); // SpectatorSystem에 이 이름의 함수가 있다고 가정합니다. (없다면 아래 참고)
+                spectatorSystem.CycleNextTarget();
             }
         }
 
-        // 3. [관제탑 역할] T 키 입력 감지 후 이모티콘 패널(EmojiRadialMenu)에 신호 전달
+        // 3. [관제탑 역할] T 키 입력 감지 후 이모티콘 패널(EmojiRadialMenu)에 홀드 방식 신호 전달
         string currentScene = SceneManager.GetActiveScene().name;
 
         // 퍼즈 상태인지 확인
@@ -74,13 +73,17 @@ public class UIManager : MonoBehaviour
         // 메인 씬이 아니고, 퍼즈 상태가 아닐 때만 T 키 이모지 메뉴 작동
         if (currentScene != mainSceneName && !isPaused && EmojiRadialMenu.Instance != null)
         {
-            // ★ Tab 키 대신 T 키를 누를 때 메뉴 토글 (열기/닫기)
+            // ★ [수정] T 키를 누르기 시작할 때 열고, 뗄 때 닫기 (홀드 방식)
             if (Keyboard.current.tKey.wasPressedThisFrame)
             {
-                EmojiRadialMenu.Instance.ToggleMenu();
+                EmojiRadialMenu.Instance.OpenMenu();
+            }
+            else if (Keyboard.current.tKey.wasReleasedThisFrame)
+            {
+                EmojiRadialMenu.Instance.CloseMenu();
             }
 
-            // 메뉴가 열려있는 동안 키보드 조작(A/D, 좌우 화살표, Enter 등) 업데이트 처리
+            // 메뉴가 열려있는 동안 키보드 조작(A/D, 좌우 화살표 등 연속 이동) 업데이트 처리
             if (EmojiRadialMenu.Instance.IsOpen())
             {
                 EmojiRadialMenu.Instance.OnMenuUpdate();
@@ -108,6 +111,13 @@ public class UIManager : MonoBehaviour
         string currentScene = SceneManager.GetActiveScene().name;
 
         if (currentScene == mainSceneName) return;
+
+        // ★ T 키를 누르고 있거나 이모지 메뉴가 열려있는 상태라면 ESC 입력 무시 (패널창 안 나옴)
+        if ((Keyboard.current != null && Keyboard.current.tKey.isPressed) ||
+            (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen()))
+        {
+            return;
+        }
 
         if (optionsManager?.optionsPanel != null && optionsManager.optionsPanel.activeSelf)
         {

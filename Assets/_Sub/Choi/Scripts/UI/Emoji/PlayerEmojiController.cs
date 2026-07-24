@@ -7,6 +7,10 @@ public class PlayerEmojiController : MonoBehaviour
     [Tooltip("플레이어 머리 위에 이모지를 보여줄 SpriteRenderer 오브젝트")]
     [SerializeField] private SpriteRenderer emojiSpriteRenderer;
 
+    [Header("이모지 스프라이트 리스트 (네트워크 동기화용)")]
+    [Tooltip("EmojiRadialMenu에 등록된 순서와 동일하게 스프라이트들을 등록해주세요.")]
+    [SerializeField] private Sprite[] emojiSprites;
+
     [Header("크기 및 위치 설정")]
     [Tooltip("이미지 원본 비율과 상관없이 맞출 정사각형 표준 크기 (월드 유닛 기준)")]
     [SerializeField] private float targetSize = 0.5f;
@@ -18,18 +22,22 @@ public class PlayerEmojiController : MonoBehaviour
     [Tooltip("이모지가 머리 위에 유지되는 시간 (초)")]
     [SerializeField] private float displayDuration = 2.0f;
 
+    [Header("멀티플레이 설정")]
+    [Tooltip("내 캐릭터인지 여부 (EOS 세션 소유자에 맞게 설정)")]
+    [SerializeField] private bool isLocalPlayer = true;
+
     private Transform parentTransform;
     private Transform emojiTransform;
     private Coroutine hideCoroutine;
 
     private void OnEnable()
     {
-        EmojiRadialMenu.OnEmojiSelected += HandleEmojiSelected;
+        EmojiRadialMenu.OnEmojiIndexSelected += HandleEmojiIndexSelected;
     }
 
     private void OnDisable()
     {
-        EmojiRadialMenu.OnEmojiSelected -= HandleEmojiSelected;
+        EmojiRadialMenu.OnEmojiIndexSelected -= HandleEmojiIndexSelected;
     }
 
     private void Awake()
@@ -45,7 +53,7 @@ public class PlayerEmojiController : MonoBehaviour
         {
             emojiTransform = emojiSpriteRenderer.transform;
 
-            // ★ 핵심: 부모-자식 관계를 끊어버려 캐릭터의 좌우 반전(스케일 변경) 시 깜빡임 원천 차단
+            // 부모-자식 관계를 끊어버려 캐릭터의 좌우 반전 시 깜빡임 원천 차단
             emojiTransform.SetParent(null);
 
             emojiSpriteRenderer.gameObject.SetActive(false);
@@ -61,12 +69,14 @@ public class PlayerEmojiController : MonoBehaviour
             return;
         }
 
-        // 이모지가 켜져있는 동안 위치 실시간 추적 (좌우 반전 시 오프셋 위치 보정)
+        // 이모지가 켜져있는 동안 위치 실시간 추적
         if (emojiSpriteRenderer != null && emojiSpriteRenderer.gameObject.activeSelf)
         {
             float facingDir = (parentTransform.localScale.x < 0) ? -1f : 1f;
             Vector3 currentOffset = new Vector3(headOffset.x * facingDir, headOffset.y, headOffset.z);
             emojiTransform.position = parentTransform.position + currentOffset;
+
+            // 회전값 고정 (플레이어가 회전해도 이모지는 똑바로 유지)
             emojiTransform.rotation = Quaternion.identity;
         }
     }
@@ -79,9 +89,42 @@ public class PlayerEmojiController : MonoBehaviour
         }
     }
 
-    private void HandleEmojiSelected(Sprite selectedSprite)
+    // 로컬 플레이어가 이모지 메뉴에서 항목을 확정했을 때 호출
+    private void HandleEmojiIndexSelected(int emojiIndex)
     {
-        if (selectedSprite == null || emojiSpriteRenderer == null) return;
+        if (!isLocalPlayer) return;
+
+        // 1. 내 화면에 즉시 표시
+        ShowEmojiByIndex(emojiIndex);
+
+        // 2. EOS 네트워크를 통해 다른 플레이어들에게 선택된 인덱스 전송
+        SendEmojiIndexViaEOS(emojiIndex);
+    }
+
+    // EOS 네트워크를 통해 다른 클라이언트들에게 이모지 인덱스를 전송하는 함수
+    private void SendEmojiIndexViaEOS(int emojiIndex)
+    {
+        // TODO: 사용 중인 EOS P2P 혹은 네트워크 시스템에 맞춰 바이트 배열 전송 코드를 작성하세요.
+        // 예시: 
+        // byte[] data = System.BitConverter.GetBytes(emojiIndex);
+        // P2PManager.Instance.SendPacketToAll(data);
+
+        Debug.Log($"[EOS 멀티플레이] 내 이모지 인덱스({emojiIndex})를 다른 플레이어들에게 전송함");
+    }
+
+    // 다른 플레이어로부터 EOS 패킷을 수신했을 때 외부(네트워크 관리자)에서 호출해 줄 함수
+    public void ReceiveEmojiFromEOS(int emojiIndex)
+    {
+        // 다른 플레이어의 캐릭터에서 이모지를 띄움
+        ShowEmojiByIndex(emojiIndex);
+    }
+
+    // 인덱스 기반으로 이모지를 화면에 띄우는 공통 로직
+    private void ShowEmojiByIndex(int emojiIndex)
+    {
+        if (emojiSpriteRenderer == null || emojiSprites == null) return;
+        if (emojiIndex < 0 || emojiIndex >= emojiSprites.Length) return;
+        if (emojiSprites[emojiIndex] == null) return;
 
         if (hideCoroutine != null)
         {
@@ -89,28 +132,18 @@ public class PlayerEmojiController : MonoBehaviour
         }
 
         // 1. 스프라이트 교체
-        emojiSpriteRenderer.sprite = selectedSprite;
+        emojiSpriteRenderer.sprite = emojiSprites[emojiIndex];
 
-        // 2. 원본 비율 무시하고 무조건 정사각형 크기로 설정
-        float scaleX = targetSize;
-        float scaleY = targetSize;
-
-        // 3. 캐릭터가 바라보는 방향(좌우 반전)에 맞춰 X축 부호 적용
-        if (parentTransform != null && parentTransform.localScale.x < 0)
-        {
-            scaleX = -Mathf.Abs(scaleX);
-        }
-        else
-        {
-            scaleX = Mathf.Abs(scaleX);
-        }
+        // 2. 플레이어 방향과 상관없이 scaleX를 항상 양수(절대값)로 설정하여 좌우 반전 방지
+        float scaleX = Mathf.Abs(targetSize);
+        float scaleY = Mathf.Abs(targetSize);
 
         emojiTransform.localScale = new Vector3(scaleX, scaleY, 1f);
 
-        // 4. 활성화
+        // 3. 활성화
         emojiSpriteRenderer.gameObject.SetActive(true);
 
-        // 5. 타이머 시작
+        // 4. 타이머 시작
         hideCoroutine = StartCoroutine(HideEmojiRoutine());
     }
 
