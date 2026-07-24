@@ -1167,8 +1167,9 @@ MonoBehaviour:
   isRestrictedByRope: 0
   moveSpeed: 7
   normalFriction: 20
-  iceSlideFriction: 3
+  iceSlideFriction: 20
   airFriction: 3
+  iceAcceleration: 150
   jumpHeight: 4
   jumpSpeed: 4
   fallSpeed: 2.5
@@ -1242,7 +1243,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 3.14, y: 3.29}
+    oldSize: {x: 0.8971428, y: 0.94}
     newSize: {x: 0.66, y: 0.92}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
