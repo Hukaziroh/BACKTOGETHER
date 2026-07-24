@@ -320,7 +320,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 20
   m_MaskInteraction: 0
   m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -1203,6 +1203,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   currentSpawnPoint: {x: 0, y: 30, z: 0}
+  currentCheckpointIndex: -1
   teamRespawnScenes:
   - Chapter4
 --- !u!61 &1312891903968155803
