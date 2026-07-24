@@ -20,7 +20,7 @@ public class PlayerRespawn : NetworkBehaviour
     private const float HOLD_TIME_TO_RESPAWN = 2f;
 
     [Header("팀 리스폰 씬 설정")]
-    public List<string> teamRespawnScenes = new List<string> { "Chapter4" };
+    public List<string> teamRespawnScenes = new List<string> { "chapter4" };
 
     void Awake()
     {
