@@ -54,7 +54,7 @@ public class PlayerRespawn : NetworkBehaviour
                 {
                     holdTimer = 0f;
 
-                    if (teamRespawnScenes.Contains(sceneName) || sceneName.Contains("Chapter4") || sceneName.Contains("Stage4"))
+                    if (teamRespawnScenes.Contains(sceneName) || sceneName.Contains("chapter4"))
                     {
                         CmdStartTeamRespawnSequence(currentSpawnPoint);
                     }
@@ -116,6 +116,9 @@ public class PlayerRespawn : NetworkBehaviour
     private IEnumerator ServerRespawnSequence(Vector3 centerSpawnPoint)
     {
         List<PlayerRespawn> allPlayers = CoopPlayerManager.GetPlayerComponents<PlayerRespawn>();
+        Debug.Log("====== TEAM RESPAWN ======");
+        Debug.Log("Player Count : " + allPlayers.Count);
+
         foreach (var p in allPlayers)
         {
             if (p != null) p.RpcPrepareRespawn();
@@ -149,6 +152,8 @@ public class PlayerRespawn : NetworkBehaviour
     [ClientRpc]
     private void RpcExecuteTeleport(Vector3 centerSpawnPoint)
     {
+        Debug.Log($"RpcExecuteTeleport : {name}");
+
         int playerIndex = 0;
         CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
         if (identity != null)
