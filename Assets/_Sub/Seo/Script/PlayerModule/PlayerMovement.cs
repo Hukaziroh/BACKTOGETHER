@@ -96,12 +96,13 @@ public class PlayerMovement : NetworkBehaviour
         HandleMovingPlatform();
         CheckGroundOrPlayer();
         CheckHeadForPlayer();
+        CheckTouchingPlayer(); 
         HandleMovementPhysics();
         ClampVelocity();
 
         wasGroundedLastFrame = isGrounded;
 
-        float maxSpeed = 40f; 
+        float maxSpeed = 40f;
         if (controller.rb.linearVelocity.magnitude > maxSpeed)
         {
             controller.rb.linearVelocity = controller.rb.linearVelocity.normalized * maxSpeed;
@@ -214,7 +215,7 @@ public class PlayerMovement : NetworkBehaviour
             if (hit.collider != null && hit.collider.gameObject != gameObject)
             {
                 rawInput = 0f;
-                isTouchingPlayer = true; 
+                // isTouchingPlayer = true; ❌ 이 부분 삭제! (이제 방어막 해제 용도로만 씁니다)
             }
         }
 
@@ -257,6 +258,26 @@ public class PlayerMovement : NetworkBehaviour
 
         controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
     }
+    void CheckTouchingPlayer()
+    {
+        Vector2 boxCenter = controller.bodyCollider.bounds.center;
+        Vector2 boxSize = controller.bodyCollider.bounds.size;
+        boxSize.x += 0.1f; // 좌우로 아주 살짝 늘려서 닿았는지 판정
+        boxSize.y -= 0.2f; // 바닥 판정과 겹치지 않게 살짝 줄임
+
+        int hitCount = Physics2D.OverlapBox(boxCenter, boxSize, 0f, playerFilter, playerCheckResults);
+        isTouchingPlayer = false;
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            Collider2D col = playerCheckResults[i];
+            if (col.gameObject != gameObject && !col.isTrigger)
+            {
+                isTouchingPlayer = true;
+                break;
+            }
+        }
+    }
     private void ClampVelocity()
     {
         float maxSpeedX = 30f;
@@ -266,10 +287,9 @@ public class PlayerMovement : NetworkBehaviour
         bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
         clampedVelocity.y = Mathf.Clamp(clampedVelocity.y, isInverted ? -maxFallSpeed * 1.5f : -maxFallSpeed, isInverted ? maxFallSpeed : maxFallSpeed * 1.5f);
 
-        // 🚀 [버그 수정]: 넉백 맞고 날아가는 상태(isKnocked)일 때는 방어막을 끕니다!
         bool isKnocked = controller.knockback != null && controller.knockback.isKnockedBack;
 
-        // 방어막 작동 조건에 !isKnocked 추가
+        // 🚀 [핵심 수정]: !hasPlayerOnHead 와 !isTouchingPlayer 추가!
         if (wasGroundedLastFrame && !justJumped && !isKnocked && !hasPlayerOnHead && !isTouchingPlayer)
         {
             float allowedSpeed = currentPlatform != null ? platformVelocity.y : 0f;
