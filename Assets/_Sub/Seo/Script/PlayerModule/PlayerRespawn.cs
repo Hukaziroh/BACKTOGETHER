@@ -13,8 +13,7 @@ public class PlayerRespawn : NetworkBehaviour
     public Vector3 currentSpawnPoint;
 
     [Tooltip("현재 플레이어가 도달한 가장 뒤쪽 체크포인트 번호")]
-    [SerializeField]
-    private int currentCheckpointIndex = -1;
+    public int currentCheckpointIndex = -1; // 서버에서도 접근 가능하도록 public으로 변경
 
     private float holdTimer = 0f;
     private const float HOLD_TIME_TO_RESPAWN = 2f;
@@ -59,7 +58,8 @@ public class PlayerRespawn : NetworkBehaviour
                     // 챕터 4 등 팀 리스폰이 필요한 씬인지 확인
                     if (teamRespawnScenes.Contains(sceneName) || sceneName.Contains("Chapter4") || sceneName.Contains("Stage4"))
                     {
-                        CmdTeamRespawn();
+                        // [수정됨] 내 클라이언트가 알고 있는 확실한 스폰 위치를 서버로 보냅니다.
+                        CmdTeamRespawn(currentSpawnPoint);
                     }
                     else
                     {
@@ -83,8 +83,20 @@ public class PlayerRespawn : NetworkBehaviour
     }
 
     // =========================================================
-    // 체크포인트 갱신 (CoopCheckpoint 스크립트에서 호출됨)
+    // 체크포인트 갱신 (서버 & 클라이언트 동기화)
     // =========================================================
+
+    // [추가됨] 서버 쪽 변수도 갱신하여 꼬임을 방지합니다.
+    [Server]
+    public void ServerUpdateSpawnPointIfNewer(Vector3 newPos, int newIndex)
+    {
+        if (newIndex > currentCheckpointIndex)
+        {
+            currentSpawnPoint = newPos;
+            currentCheckpointIndex = newIndex;
+        }
+    }
+
     [ClientRpc]
     public void RpcUpdateSpawnPointIfNewer(Vector3 newPos, int newIndex)
     {
@@ -145,10 +157,12 @@ public class PlayerRespawn : NetworkBehaviour
     // =========================================================
     // 🌟 [수정 완료] 챕터4 팀 전체 리스폰
     // =========================================================
+
+    // [수정됨] 클라이언트의 정확한 체크포인트 위치(clientSpawnPos)를 매개변수로 받습니다.
     [Command]
-    private void CmdTeamRespawn()
+    private void CmdTeamRespawn(Vector3 clientSpawnPos)
     {
-        RpcForceAllPlayersRespawn(currentSpawnPoint);
+        RpcForceAllPlayersRespawn(clientSpawnPos);
     }
 
     [ClientRpc]
@@ -166,10 +180,11 @@ public class PlayerRespawn : NetworkBehaviour
 
         if (controller.rb != null)
         {
-            controller.rb.simulated = false;
+            controller.rb.simulated = false; // 물리 연산 즉시 정지
             controller.rb.linearVelocity = Vector2.zero;
             controller.rb.angularVelocity = 0f;
         }
+
         int playerIndex = 0;
         CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
         if (identity != null)
@@ -185,12 +200,15 @@ public class PlayerRespawn : NetworkBehaviour
 
         Physics2D.SyncTransforms();
 
-        yield return new WaitForFixedUpdate();
+        // [핵심 수정] 네트워크 핑 차이로 인한 로프 당겨짐 방지
+        // 모든 클라이언트가 RPC를 받고 위치를 이동할 때까지 충분히 대기합니다. (0.3초)
+        // 이 시간이 지나기 전까지는 물리 엔진(simulated)이 꺼져 있으므로 서로 당겨지지 않습니다.
+        yield return new WaitForSeconds(0.3f);
 
         if (controller.rb != null)
         {
-            controller.rb.simulated = true;
             controller.rb.linearVelocity = Vector2.zero;
+            controller.rb.simulated = true; // 안전하게 이동이 끝난 후 물리 연산 재개
         }
     }
 }
