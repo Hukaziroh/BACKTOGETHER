@@ -19,7 +19,7 @@ public class PlayerRespawn : NetworkBehaviour
     private const float HOLD_TIME_TO_RESPAWN = 2f;
 
     [Header("팀 리스폰 씬 설정")]
-    public List<string> teamRespawnScenes = new List<string> { "Chapter4" };
+    public List<string> teamRespawnScenes = new List<string> { "chapter4" };
 
     void Awake()
     {
@@ -158,15 +158,21 @@ public class PlayerRespawn : NetworkBehaviour
     // 🌟 [수정 완료] 챕터4 팀 전체 리스폰
     // =========================================================
 
-    // [수정됨] 클라이언트의 정확한 체크포인트 위치(clientSpawnPos)를 매개변수로 받습니다.
     [Command]
     private void CmdTeamRespawn(Vector3 clientSpawnPos)
     {
-        RpcForceAllPlayersRespawn(clientSpawnPos);
-    }
+        List<PlayerRespawn> allPlayers = CoopPlayerManager.GetPlayerComponents<PlayerRespawn>();
 
+        foreach (var player in allPlayers)
+        {
+            if (player != null)
+            {
+                player.RpcExecuteTeamRespawn(clientSpawnPos);
+            }
+        }
+    }
     [ClientRpc]
-    private void RpcForceAllPlayersRespawn(Vector3 centerSpawnPoint)
+    private void RpcExecuteTeamRespawn(Vector3 centerSpawnPoint)
     {
         StartCoroutine(DoTeamRespawnRoutine(centerSpawnPoint));
     }
@@ -180,7 +186,7 @@ public class PlayerRespawn : NetworkBehaviour
 
         if (controller.rb != null)
         {
-            controller.rb.simulated = false; // 물리 연산 즉시 정지
+            controller.rb.simulated = false; 
             controller.rb.linearVelocity = Vector2.zero;
             controller.rb.angularVelocity = 0f;
         }
@@ -199,16 +205,12 @@ public class PlayerRespawn : NetworkBehaviour
         transform.position = finalSpawnPos;
 
         Physics2D.SyncTransforms();
-
-        // [핵심 수정] 네트워크 핑 차이로 인한 로프 당겨짐 방지
-        // 모든 클라이언트가 RPC를 받고 위치를 이동할 때까지 충분히 대기합니다. (0.3초)
-        // 이 시간이 지나기 전까지는 물리 엔진(simulated)이 꺼져 있으므로 서로 당겨지지 않습니다.
         yield return new WaitForSeconds(0.3f);
 
         if (controller.rb != null)
         {
             controller.rb.linearVelocity = Vector2.zero;
-            controller.rb.simulated = true; // 안전하게 이동이 끝난 후 물리 연산 재개
+            controller.rb.simulated = true; 
         }
     }
 }
