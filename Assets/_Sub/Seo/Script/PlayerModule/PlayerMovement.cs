@@ -100,6 +100,12 @@ public class PlayerMovement : NetworkBehaviour
         ClampVelocity();
 
         wasGroundedLastFrame = isGrounded;
+
+        float maxSpeed = 15f; 
+        if (controller.rb.linearVelocity.magnitude > maxSpeed)
+        {
+            controller.rb.linearVelocity = controller.rb.linearVelocity.normalized * maxSpeed;
+        }
     }
 
     private void UpdateTimers() { if (ckTimer > 0f) ckTimer -= Time.deltaTime; }
@@ -420,4 +426,6 @@ public class PlayerMovement : NetworkBehaviour
             Gizmos.DrawWireCube((Vector2)headCheck.position + headCheckOffset, headCheckBoxSize);
         }
     }
+
+
 }
