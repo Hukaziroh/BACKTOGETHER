@@ -46,6 +46,9 @@ public class CoopCheckpoint : NetworkBehaviour
             {
                 if (respawn != null)
                 {
+                    // [핵심 추가] 서버 쪽 데이터도 강제로 갱신하여 불일치 원천 차단
+                    respawn.ServerUpdateSpawnPointIfNewer(spawnLocation.position, checkpointIndex);
+
                     respawn.RpcUpdateSpawnPointIfNewer(
                         spawnLocation.position,
                         checkpointIndex
@@ -65,6 +68,9 @@ public class CoopCheckpoint : NetworkBehaviour
                 $"체크포인트 Index = {checkpointIndex} | " +
                 $"개인 체크포인트 갱신 시도"
             );
+
+            // [핵심 추가] 서버 쪽 데이터 갱신
+            respawnScript.ServerUpdateSpawnPointIfNewer(spawnLocation.position, checkpointIndex);
 
             respawnScript.TargetUpdateSpawnPointIfNewer(
                 respawnScript.connectionToClient,
