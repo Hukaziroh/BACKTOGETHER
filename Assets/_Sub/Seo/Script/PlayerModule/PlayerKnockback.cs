@@ -42,6 +42,13 @@ public class PlayerKnockback : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
         HandleKnockbackPhysics();
+
+        // 🌟 [추가됨] 버그 1 해결: 벽 뚫기(터널링) 방지를 위한 절대 속도 제한
+        float maxSafeSpeed = 40f; // 필요시 수치 조절 (너무 낮으면 넉백이 안 되고, 높으면 벽을 뚫습니다)
+        if (controller.rb.linearVelocity.magnitude > maxSafeSpeed)
+        {
+            controller.rb.linearVelocity = controller.rb.linearVelocity.normalized * maxSafeSpeed;
+        }
     }
 
     private void UpdateTimers()
@@ -138,6 +145,13 @@ public class PlayerKnockback : NetworkBehaviour
         knockbackTimeoutTimer = 3.0f;
 
         CmdPlayHitAnimation();
+
+        // 🌟 [추가됨] 버그 2 해결: 로프 기믹 중이면 다른 팀원들도 스턴을 걸어 같이 끌려가게 함
+        CoopRopeManager ropeManager = FindAnyObjectByType<CoopRopeManager>();
+        if (ropeManager != null && ropeManager.isRopeActive)
+        {
+            CmdShareKnockbackDrag();
+        }
     }
 
     private System.Collections.IEnumerator CriticalEscape(float seconds)
@@ -155,6 +169,13 @@ public class PlayerKnockback : NetworkBehaviour
         knockbackTimeoutTimer = 3.0f;
 
         CmdPlayHitAnimation();
+
+        // 🌟 [추가됨] 버그 2 해결: 크리티컬 넉백 시에도 로프 기믹 중이면 팀원 스턴
+        CoopRopeManager ropeManager = FindAnyObjectByType<CoopRopeManager>();
+        if (ropeManager != null && ropeManager.isRopeActive)
+        {
+            CmdShareKnockbackDrag();
+        }
 
         yield return new WaitForSeconds(seconds);
         yield return new WaitForSeconds(2f);
@@ -175,12 +196,34 @@ public class PlayerKnockback : NetworkBehaviour
     {
         isKnockedBack = false;
         stunTimer = 0f;
-        knockbackTimeoutTimer = 0f; 
+        knockbackTimeoutTimer = 0f;
     }
 
     public void ApplyKnockbackFromEye(Vector3 eyePosition)
     {
         if (!isLocalPlayer) return;
         ApplyLocalKnockback(new Vector2(-1, 0.5f));
+    }
+
+    // =========================================================
+    // 🌟 [추가됨] 연대 책임 스턴 처리 (로프 기믹 시 끌려가게 만듦)
+    // =========================================================
+    [Command(requiresAuthority = false)]
+    private void CmdShareKnockbackDrag()
+    {
+        RpcShareKnockbackDrag();
+    }
+
+    [ClientRpc]
+    private void RpcShareKnockbackDrag()
+    {
+        if (!isLocalPlayer) return;
+
+        // 가시에 직접 맞은 본인은 이미 넉백 중이므로 제외
+        if (isKnockedBack) return;
+
+        // 가시를 밟지 않은 나머지 팀원들의 조작을 0.5초간 마비시킴
+        // (이로 인해 키보드 입력을 덮어씌우지 않게 되어, 맞은 사람을 향해 밧줄로 자연스럽게 확! 끌려감)
+        stunTimer = 0.5f;
     }
 }
