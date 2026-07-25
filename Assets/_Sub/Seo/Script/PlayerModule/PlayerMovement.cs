@@ -101,7 +101,7 @@ public class PlayerMovement : NetworkBehaviour
 
         wasGroundedLastFrame = isGrounded;
 
-        float maxSpeed = 15f; 
+        float maxSpeed = 40f; 
         if (controller.rb.linearVelocity.magnitude > maxSpeed)
         {
             controller.rb.linearVelocity = controller.rb.linearVelocity.normalized * maxSpeed;
