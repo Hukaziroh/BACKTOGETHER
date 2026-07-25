@@ -6,7 +6,7 @@ public class PlayerMovement : NetworkBehaviour
     private PlayerController controller;
     public bool isRestrictedByRope = false;
     private int playerLayerMask;
-
+    public bool isTouchingPlayer { get; private set; }
     [Header("무브")]
     public float moveSpeed = 7f;
 
@@ -202,7 +202,7 @@ public class PlayerMovement : NetworkBehaviour
             }
         }
 
-        bool isTouchingPlayer = false;
+        isTouchingPlayer = false;
         if (Mathf.Abs(rawInput) > 0.1f)
         {
             float moveDir = Mathf.Sign(rawInput);
@@ -214,7 +214,7 @@ public class PlayerMovement : NetworkBehaviour
             if (hit.collider != null && hit.collider.gameObject != gameObject)
             {
                 rawInput = 0f;
-                isTouchingPlayer = true;
+                isTouchingPlayer = true; 
             }
         }
 
@@ -270,7 +270,7 @@ public class PlayerMovement : NetworkBehaviour
         bool isKnocked = controller.knockback != null && controller.knockback.isKnockedBack;
 
         // 방어막 작동 조건에 !isKnocked 추가
-        if (wasGroundedLastFrame && !justJumped && !isKnocked)
+        if (wasGroundedLastFrame && !justJumped && !isKnocked && !hasPlayerOnHead && !isTouchingPlayer)
         {
             float allowedSpeed = currentPlatform != null ? platformVelocity.y : 0f;
             if (isInverted)
