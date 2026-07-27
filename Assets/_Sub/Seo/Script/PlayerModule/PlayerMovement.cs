@@ -85,14 +85,12 @@ public class PlayerMovement : NetworkBehaviour
         playerFilter = new ContactFilter2D { useLayerMask = true, useTriggers = false, layerMask = playerLayerMask };
 
         // 🔧 [디버그] 체크박스/설정과 무관하게 무조건 찍힘 - 이 스크립트가 실제로 로드/실행되는지 확인용.
-        // 이것조차 콘솔에 안 뜨면 코드 문제가 아니라, 이 파일이 실제로 적용이 안 된 것임.
         Debug.Log($"★★★★★ [PlayerMovement] Awake 실행됨 - {gameObject.name} (진단용 스크립트 버전) ★★★★★", this);
     }
 
     void Update()
     {
         if (!isLocalPlayer) return;
-
 
         UpdateTimers();
         UpdateCoyoteTime();
@@ -112,8 +110,6 @@ public class PlayerMovement : NetworkBehaviour
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
 
-        Vector2 before = controller.rb.position;
-
         if (debugLogOverlap)
         {
             string parentName = transform.parent != null ? transform.parent.name : "없음";
@@ -123,8 +119,7 @@ public class PlayerMovement : NetworkBehaviour
             Debug.Log($"[프레임상태:{gameObject.name}] pos={controller.rb.position} vel={controller.rb.linearVelocity} gravityScale={controller.rb.gravityScale} mass={controller.rb.mass} isGrounded={isGrounded} isTouchingPlayer={isTouchingPlayer} 부모={parentName} isCombined={isCombined} isBodyTarget={isBodyTarget} 플랫폼={platformName} 플랫폼속도={platformVelocity}", this);
         }
 
-        // 🚀 [원흉 제거] 물리 엔진의 정상적인 충돌 방어를 무시하고 강제로 파고들게 만들던 원인!
-        // CancelUnexpectedPlayerCollisionPush();
+        CancelUnexpectedPlayerCollisionPush();
 
         HandleMovingPlatform();
         CheckGroundOrPlayer();
@@ -141,19 +136,54 @@ public class PlayerMovement : NetworkBehaviour
             controller.rb.linearVelocity = controller.rb.linearVelocity.normalized * maxSpeed;
         }
 
+        // 💡 [해결책 2 적용] 매 프레임 무한 미끄러짐 방어 로직 호출
+        BreakNetworkFeedbackLoop();
+
+        // 🔧 이번 프레임에 스크립트가 최종적으로 확정한 X속도를 기억해둔다.
         lastCommandedVelocityX = controller.rb.linearVelocity.x;
         hasCommandedVelocity = true;
-
-        Vector2 after = controller.rb.position;
-        if (debugLogOverlap)
-        {
-            Debug.Log($"[위치변화 테스트] {gameObject.name} 변화량: {after - before} | Before: {before} -> After: {after}");
-        }
     }
 
     private void LogDebug(string message)
     {
         if (debugLogOverlap) Debug.Log($"[겹침디버그:{gameObject.name}] {message}", this);
+    }
+
+    /// <summary>
+    /// 💡 [핵심 버그 수정] 물리 엔진 피드백 루프 방지
+    /// 상대방이 내 옆구리를 깊숙이 파고들었을 때 강제로 밀어내는 물리 충돌을 일시적으로 꺼서 미끄러짐을 막습니다.
+    /// </summary>
+    private void BreakNetworkFeedbackLoop()
+    {
+        // 내 주변(1.5배 크기)에 있는 모든 플레이어 콜라이더를 찾습니다.
+        Vector2 searchSize = controller.bodyCollider.bounds.size * 1.5f;
+        Collider2D[] nearbyPlayers = Physics2D.OverlapBoxAll(controller.bodyCollider.bounds.center, searchSize, 0f, playerLayerMask);
+
+        foreach (var otherCollider in nearbyPlayers)
+        {
+            // 나 자신이거나 트리거인 경우는 무시
+            if (otherCollider.gameObject == gameObject || otherCollider.isTrigger) continue;
+
+            // 상대방과 내 콜라이더가 실제로 겹쳤는지 확인
+            if (controller.bodyCollider.bounds.Intersects(otherCollider.bounds))
+            {
+                // Y축(높이) 차이를 계산 (머리 위를 밟은 것인지, 옆구리로 파고든 것인지 구분)
+                float yDiff = Mathf.Abs(otherCollider.bounds.center.y - controller.bodyCollider.bounds.center.y);
+                float safeY = controller.bodyCollider.bounds.extents.y * 0.9f;
+
+                // 옆구리로 깊숙이 파고든 상태라면 (무한 미끄러짐 버그 발생 조건)
+                if (yDiff < safeY)
+                {
+                    // 🚨 물리 충돌을 즉시 무시합니다! (물리 엔진이 억지로 밀어내는 현상 중지)
+                    Physics2D.IgnoreCollision(controller.bodyCollider, otherCollider, true);
+                }
+            }
+            else
+            {
+                // 💡 서로 완전히 빠져나왔다면 다시 물리 충돌을 정상적으로 켭니다.
+                Physics2D.IgnoreCollision(controller.bodyCollider, otherCollider, false);
+            }
+        }
     }
 
     private void CancelUnexpectedPlayerCollisionPush()
@@ -204,9 +234,9 @@ public class PlayerMovement : NetworkBehaviour
         if (PauseManager.instance != null && PauseManager.instance.isPaused)
             return;
 
-        if (EmojiRadialMenu.Instance != null &&
-            EmojiRadialMenu.Instance.IsOpen())
+        if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())
             return;
+
         if (controller.combineHandler == null || !controller.combineHandler.isCombined)
         {
             if (controller.input.JumpPressedThisFrame && coyoteTimeCounter > 0f && !controller.knockback.IsStunned && !hasPlayerOnHead)
@@ -303,7 +333,11 @@ public class PlayerMovement : NetworkBehaviour
             }
             if (hit.collider != null && hit.collider.gameObject != gameObject)
             {
-                rawInput = 0f;
+                // 💡 [수정된 부분] 상대방이 이미 내 몸 안에 파고들었다면 방향키를 막지 않고 빠져나갈 수 있게 허용!
+                if (!controller.bodyCollider.bounds.Intersects(hit.collider.bounds))
+                {
+                    rawInput = 0f;
+                }
             }
         }
 
@@ -344,7 +378,6 @@ public class PlayerMovement : NetworkBehaviour
             );
         }
 
-        // 🚀 [복구] 테스트를 위해 막아뒀던 X축 속도 적용 로직을 다시 켭니다.
         controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
     }
 
@@ -352,8 +385,8 @@ public class PlayerMovement : NetworkBehaviour
     {
         Vector2 boxCenter = controller.bodyCollider.bounds.center;
         Vector2 boxSize = controller.bodyCollider.bounds.size;
-        boxSize.x += 0.1f; // 좌우로 아주 살짝 늘려서 닿았는지 판정
-        boxSize.y -= 0.2f; // 바닥 판정과 겹치지 않게 살짝 줄임
+        boxSize.x += 0.1f;
+        boxSize.y -= 0.2f;
 
         int hitCount = Physics2D.OverlapBox(boxCenter, boxSize, 0f, playerFilter, playerCheckResults);
         isTouchingPlayer = false;
@@ -393,7 +426,6 @@ public class PlayerMovement : NetworkBehaviour
             }
         }
 
-        // 🚀 [복구] 테스트를 위해 막아뒀던 최종 속도 제한 적용 로직을 다시 켭니다.
         controller.rb.linearVelocity = clampedVelocity;
     }
 
