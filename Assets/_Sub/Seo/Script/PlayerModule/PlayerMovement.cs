@@ -85,14 +85,12 @@ public class PlayerMovement : NetworkBehaviour
         playerFilter = new ContactFilter2D { useLayerMask = true, useTriggers = false, layerMask = playerLayerMask };
 
         // 🔧 [디버그] 체크박스/설정과 무관하게 무조건 찍힘 - 이 스크립트가 실제로 로드/실행되는지 확인용.
-        // 이것조차 콘솔에 안 뜨면 코드 문제가 아니라, 이 파일이 실제로 적용이 안 된 것임.
         Debug.Log($"★★★★★ [PlayerMovement] Awake 실행됨 - {gameObject.name} (진단용 스크립트 버전) ★★★★★", this);
     }
 
     void Update()
     {
         if (!isLocalPlayer) return;
-
 
         UpdateTimers();
         UpdateCoyoteTime();
@@ -102,8 +100,6 @@ public class PlayerMovement : NetworkBehaviour
 
     void FixedUpdate()
     {
-        // 🔧 [디버그] 체크박스와 무관하게 1초에 한 번 무조건 찍힘 - isLocalPlayer가 실제로
-        // true인지, FixedUpdate 자체가 이 오브젝트에서 돌고 있는지 확인용.
         if (Time.frameCount % 50 == 0)
         {
             Debug.Log($"★ [FixedUpdate 체크] {gameObject.name} isLocalPlayer={isLocalPlayer}", this);
@@ -114,8 +110,6 @@ public class PlayerMovement : NetworkBehaviour
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
 
-        // 🔧 [디버그] 매 프레임 기본 상태. 겹침 감지 로그가 하나도 안 뜬다면
-        // 이 버그가 플레이어-플레이어 충돌이 아닐 가능성이 높다는 뜻.
         if (debugLogOverlap)
         {
             string parentName = transform.parent != null ? transform.parent.name : "없음";
@@ -125,15 +119,6 @@ public class PlayerMovement : NetworkBehaviour
             Debug.Log($"[프레임상태:{gameObject.name}] pos={controller.rb.position} vel={controller.rb.linearVelocity} gravityScale={controller.rb.gravityScale} mass={controller.rb.mass} isGrounded={isGrounded} isTouchingPlayer={isTouchingPlayer} 부모={parentName} isCombined={isCombined} isBodyTarget={isBodyTarget} 플랫폼={platformName} 플랫폼속도={platformVelocity}", this);
         }
 
-        // 🔧 [제거됨] ResolvePlayerOverlap()은 겹침을 "즉시 텔레포트로 떼어놓는" 방식이었는데,
-        // 실제 로그 확인 결과 이게 오히려 눈에 보이는 슬라이딩의 직접 원인이었다(vel=0인데
-        // pos만 계속 바뀜 = 이 함수가 매 프레임 위치를 강제로 밀고 있었던 것).
-        // 진짜 원인(상대가 계속 파고드는 것 자체)을 해결하기 전까지는 비활성화.
-        // ResolvePlayerOverlap();
-
-        // 🔧 [코너 충돌 보정] 실제 물리 충돌(겹침 방지)은 절대 끄지 않는다.
-        // 다만 지난 물리 스텝에서 충돌을 "풀어내는" 과정 중 옆으로 튀는 속도가 끼어들었다면,
-        // 여기서 그 잔여 속도만 지운다. 두 플레이어가 겹치는 것 자체는 항상 물리엔진이 막는다.
         CancelUnexpectedPlayerCollisionPush();
 
         HandleMovingPlatform();
@@ -142,7 +127,7 @@ public class PlayerMovement : NetworkBehaviour
         CheckTouchingPlayer();
         HandleMovementPhysics();
         ClampVelocity();
-        BreakNetworkFeedbackLoop();
+
         wasGroundedLastFrame = isGrounded;
 
         float maxSpeed = 40f;
@@ -151,129 +136,65 @@ public class PlayerMovement : NetworkBehaviour
             controller.rb.linearVelocity = controller.rb.linearVelocity.normalized * maxSpeed;
         }
 
+        // 💡 [해결책 2 적용] 매 프레임 무한 미끄러짐 방어 로직 호출
+        BreakNetworkFeedbackLoop();
+
         // 🔧 이번 프레임에 스크립트가 최종적으로 확정한 X속도를 기억해둔다.
-        // 다음 FixedUpdate 시작 시 이 값과 실제 값이 다르면, 그 사이(물리 시뮬레이션 단계)에
-        // 충돌 해소 과정에서 X속도가 건드려졌다는 뜻이 된다.
         lastCommandedVelocityX = controller.rb.linearVelocity.x;
         hasCommandedVelocity = true;
     }
-    private void BreakNetworkFeedbackLoop()
-    {
-        // 내 콜라이더보다 30% 작은 박스로 겹침을 검사합니다. (스친 게 아니라 깊게 파고든 상대만 감지)
-        Vector2 boxSize = controller.bodyCollider.bounds.size * 0.7f;
-        int hitCount = Physics2D.OverlapBox(controller.bodyCollider.bounds.center, boxSize, 0f, playerFilter, playerCheckResults);
 
-        for (int i = 0; i < hitCount; i++)
-        {
-            Collider2D hit = playerCheckResults[i];
-            if (hit.gameObject != gameObject && !hit.isTrigger)
-            {
-                // Y축 위치 차이를 검사하여, 머리 위가 아니라 '옆구리'에 깊게 파고들었을 때만 발동
-                float yDiff = Mathf.Abs(hit.bounds.center.y - controller.bodyCollider.bounds.center.y);
-                if (yDiff < controller.bodyCollider.bounds.extents.y)
-                {
-                    // 🔥 물리 엔진 피드백 루프를 끊기 위해, 겹친 상대와의 물리 충돌을 일시적으로 무시합니다!
-                    Physics2D.IgnoreCollision(controller.bodyCollider, hit, true);
-                    StartCoroutine(RestoreCollisionWhenSeparated(hit));
-                }
-            }
-        }
-    }
-    private System.Collections.IEnumerator RestoreCollisionWhenSeparated(Collider2D otherCollider)
-    {
-        // 두 콜라이더가 겹친 상태를 완전히 빠져나갈 때까지 대기합니다.
-        while (otherCollider != null && controller.bodyCollider.bounds.Intersects(otherCollider.bounds))
-        {
-            yield return null;
-        }
-
-        // 완전히 분리되어 버그가 해소되면, 다시 정상적으로 충돌을 켭니다.
-        if (otherCollider != null)
-        {
-            Physics2D.IgnoreCollision(controller.bodyCollider, otherCollider, false);
-        }
-    }
     private void LogDebug(string message)
     {
         if (debugLogOverlap) Debug.Log($"[겹침디버그:{gameObject.name}] {message}", this);
     }
 
     /// <summary>
-    /// 🔧 [핵심] 다른 플레이어와 실제로 "깊게" 겹쳐있다면(=단순히 스치는 정도가 아니라 콜라이더가
-    /// 서로 파고든 상태), 물리엔진의 다음 스텝을 기다리지 않고 여기서 직접 침투 깊이(AABB 기준
-    /// 최소 분리 거리)를 계산해서 즉시 떼어놓는다. 얕게 스치는 정도(허용 오차 이하)는 건드리지
-    /// 않고 물리엔진에 맡긴다 — "밟고 서있기"처럼 정상적으로 맞닿아있는 상태는 겹침이 아니라
-    /// 거의 0에 가까우므로 여기 걸리지 않는다.
+    /// 💡 [핵심 버그 수정] 물리 엔진 피드백 루프 방지
+    /// 상대방이 내 옆구리를 깊숙이 파고들었을 때 강제로 밀어내는 물리 충돌을 일시적으로 꺼서 미끄러짐을 막습니다.
     /// </summary>
-    private void ResolvePlayerOverlap()
+    private void BreakNetworkFeedbackLoop()
     {
-        Vector2 boxCenter = controller.bodyCollider.bounds.center;
-        Vector2 boxSize = (Vector2)controller.bodyCollider.bounds.size + new Vector2(0.02f, 0.02f);
+        // 내 주변(1.5배 크기)에 있는 모든 플레이어 콜라이더를 찾습니다.
+        Vector2 searchSize = controller.bodyCollider.bounds.size * 1.5f;
+        Collider2D[] nearbyPlayers = Physics2D.OverlapBoxAll(controller.bodyCollider.bounds.center, searchSize, 0f, playerLayerMask);
 
-        int hitCount = Physics2D.OverlapBox(boxCenter, boxSize, 0f, playerFilter, playerCheckResults);
-
-        if (debugLogOverlap && hitCount > 0)
+        foreach (var otherCollider in nearbyPlayers)
         {
-            LogDebug($"OverlapBox 감지됨 - hitCount={hitCount} 내위치={controller.rb.position} 내속도={controller.rb.linearVelocity} 중력스케일={controller.rb.gravityScale} 질량={controller.rb.mass} isGrounded={isGrounded} isTouchingPlayer={isTouchingPlayer} hasPlayerOnHead={hasPlayerOnHead}");
-        }
+            // 나 자신이거나 트리거인 경우는 무시
+            if (otherCollider.gameObject == gameObject || otherCollider.isTrigger) continue;
 
-        for (int i = 0; i < hitCount; i++)
-        {
-            Collider2D col = playerCheckResults[i];
-            if (col.gameObject == gameObject || col.isTrigger) continue;
-
-            Bounds myBounds = controller.bodyCollider.bounds;
-            Bounds otherBounds = col.bounds;
-
-            float overlapX = Mathf.Min(myBounds.max.x, otherBounds.max.x) - Mathf.Max(myBounds.min.x, otherBounds.min.x);
-            float overlapY = Mathf.Min(myBounds.max.y, otherBounds.max.y) - Mathf.Max(myBounds.min.y, otherBounds.min.y);
-
-            LogDebug($"상대={col.gameObject.name} overlapX={overlapX:F4} overlapY={overlapY:F4} (허용치={overlapPushTolerance})");
-
-            // 살짝 스치는 정도(허용 오차 이하)는 물리엔진이 알아서 처리하도록 둔다.
-            if (overlapX <= overlapPushTolerance || overlapY <= overlapPushTolerance) continue;
-
-            Vector2 vel = controller.rb.linearVelocity;
-            Vector2 pos = controller.rb.position;
-
-            // 더 얕게 겹친 축으로 밀어낸다 (표준 AABB 최소 분리 벡터 방식)
-            if (overlapX < overlapY)
+            // 상대방과 내 콜라이더가 실제로 겹쳤는지 확인
+            if (controller.bodyCollider.bounds.Intersects(otherCollider.bounds))
             {
-                float dir = myBounds.center.x <= otherBounds.center.x ? -1f : 1f;
-                pos.x += dir * overlapX;
-                if (vel.x * dir < 0f) vel.x = 0f; // 다시 파고드는 방향 속도는 제거
-                LogDebug($"⚠️ 강제 분리 실행(X축) - dir={dir} 이동량={dir * overlapX:F4} 보정후위치={pos}");
+                // Y축(높이) 차이를 계산 (머리 위를 밟은 것인지, 옆구리로 파고든 것인지 구분)
+                float yDiff = Mathf.Abs(otherCollider.bounds.center.y - controller.bodyCollider.bounds.center.y);
+                float safeY = controller.bodyCollider.bounds.extents.y * 0.9f;
+
+                // 옆구리로 깊숙이 파고든 상태라면 (무한 미끄러짐 버그 발생 조건)
+                if (yDiff < safeY)
+                {
+                    // 🚨 물리 충돌을 즉시 무시합니다! (물리 엔진이 억지로 밀어내는 현상 중지)
+                    Physics2D.IgnoreCollision(controller.bodyCollider, otherCollider, true);
+                }
             }
             else
             {
-                float dir = myBounds.center.y <= otherBounds.center.y ? -1f : 1f;
-                pos.y += dir * overlapY;
-                if (vel.y * dir < 0f) vel.y = 0f;
-                LogDebug($"⚠️ 강제 분리 실행(Y축) - dir={dir} 이동량={dir * overlapY:F4} 보정후위치={pos}");
+                // 💡 서로 완전히 빠져나왔다면 다시 물리 충돌을 정상적으로 켭니다.
+                Physics2D.IgnoreCollision(controller.bodyCollider, otherCollider, false);
             }
-
-            controller.rb.position = pos;
-            controller.rb.linearVelocity = vel;
-            break; // 한 프레임에 한 명씩만 처리 (여러 명과 동시에 겹쳐도 몇 프레임 안에 순차적으로 다 풀림)
         }
     }
-    /// <summary>
-    /// 플레이어끼리 박스 콜라이더가 겹칠 때(특히 모서리), Unity/Box2D 물리엔진이 겹침을
-    /// 풀어내면서 자동으로 주입하는 X축 속도(불필요한 옆방향 튐)를 무효화한다.
-    /// 겹침 자체를 막는 실제 충돌 처리는 절대 건드리지 않는다 — Y축과 "겹침 방지"는
-    /// 100% 물리엔진에 맡기고, 그 결과로 생긴 원치 않는 X속도만 지운다.
-    /// </summary>
+
     private void CancelUnexpectedPlayerCollisionPush()
     {
-        if (!hasCommandedVelocity) return; // 첫 프레임은 비교 기준이 없으므로 스킵
+        if (!hasCommandedVelocity) return;
 
-        // 넉백/기절 중에는 다른 시스템이 의도적으로 X속도를 바꾸는 것이므로 건드리지 않는다.
         if (controller.knockback != null && (controller.knockback.isKnockedBack || controller.knockback.IsStunned))
             return;
 
-        // 실제로 다른 플레이어와 겹쳐있을 때만 보정한다. (벽 충돌 등 다른 상황은 건드리지 않음)
         if (!IsOverlappingAnyPlayer()) return;
-        if (IsDeeplyOverlapping()) return;
+
         float actualX = controller.rb.linearVelocity.x;
         float diff = actualX - lastCommandedVelocityX;
 
@@ -286,15 +207,10 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
-    /// <summary>
-    /// 마찰 계산용 CheckTouchingPlayer()는 y축을 줄여서 검사하기 때문에 정작 모서리가
-    /// 닿는 지점은 감지 범위 밖일 수 있다. 코너 충돌 보정은 콜라이더 전체 범위를 그대로 써서
-    /// 다른 플레이어와 조금이라도 닿아있으면 놓치지 않고 잡는다.
-    /// </summary>
     private bool IsOverlappingAnyPlayer()
     {
         Vector2 boxCenter = controller.bodyCollider.bounds.center;
-        Vector2 boxSize = (Vector2)controller.bodyCollider.bounds.size - new Vector2(0.2f, 0.2f);
+        Vector2 boxSize = (Vector2)controller.bodyCollider.bounds.size + new Vector2(0.02f, 0.02f);
 
         int hitCount = Physics2D.OverlapBox(boxCenter, boxSize, 0f, playerFilter, playerCheckResults);
         for (int i = 0; i < hitCount; i++)
@@ -304,21 +220,7 @@ public class PlayerMovement : NetworkBehaviour
         }
         return false;
     }
-    // 💡 [새로 추가할 함수] 둘이 완전히 파고들었는지 판별
-    private bool IsDeeplyOverlapping()
-    {
-        Vector2 boxCenter = controller.bodyCollider.bounds.center;
-        // 박스 크기를 줄여서, '살짝 스친' 게 아니라 '깊숙이 파고든' 상태인지 확인
-        Vector2 boxSize = (Vector2)controller.bodyCollider.bounds.size - new Vector2(0.15f, 0.15f);
 
-        int hitCount = Physics2D.OverlapBox(boxCenter, boxSize, 0f, playerFilter, playerCheckResults);
-        for (int i = 0; i < hitCount; i++)
-        {
-            Collider2D col = playerCheckResults[i];
-            if (col.gameObject != gameObject && !col.isTrigger) return true;
-        }
-        return false;
-    }
     private void UpdateTimers() { if (ckTimer > 0f) ckTimer -= Time.deltaTime; }
 
     private void UpdateCoyoteTime()
@@ -332,9 +234,9 @@ public class PlayerMovement : NetworkBehaviour
         if (PauseManager.instance != null && PauseManager.instance.isPaused)
             return;
 
-        if (EmojiRadialMenu.Instance != null &&
-            EmojiRadialMenu.Instance.IsOpen())
+        if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())
             return;
+
         if (controller.combineHandler == null || !controller.combineHandler.isCombined)
         {
             if (controller.input.JumpPressedThisFrame && coyoteTimeCounter > 0f && !controller.knockback.IsStunned && !hasPlayerOnHead)
@@ -421,10 +323,6 @@ public class PlayerMovement : NetworkBehaviour
             Vector2 boxSize = controller.bodyCollider.bounds.size;
             boxSize.y -= 0.3f;
 
-            // 🔧 [핵심 수정] 감지 거리가 고정 0.05f였는데, moveSpeed=7 기준 한 프레임 최대 이동거리(약 0.14,
-            // Time.fixedDeltaTime=0.02 가정)보다 짧아서 빠르게 다가갈 때 감지망을 매 프레임 살짝씩 피해서
-            // 파고들 수 있었다(로그의 overlapX가 조금씩 깊어지던 것과 일치). 실제 이번 프레임에 움직일 수
-            // 있는 거리 + 약간의 여유만큼 항상 커버하도록 동적으로 계산한다.
             float currentSpeedX = Mathf.Abs(controller.rb.linearVelocity.x);
             float castDistance = Mathf.Max(0.05f, currentSpeedX * Time.fixedDeltaTime + 0.05f);
 
@@ -435,11 +333,10 @@ public class PlayerMovement : NetworkBehaviour
             }
             if (hit.collider != null && hit.collider.gameObject != gameObject)
             {
-                // 🚨 [수정된 부분] 상대방 콜라이더가 이미 내 콜라이더 안으로 파고들어 교차(Intersects)한 상태라면,
-                // 입력을 막지 않고 무조건 빠져나갈 수 있게 방향키를 허용합니다!
+                // 💡 [수정된 부분] 상대방이 이미 내 몸 안에 파고들었다면 방향키를 막지 않고 빠져나갈 수 있게 허용!
                 if (!controller.bodyCollider.bounds.Intersects(hit.collider.bounds))
                 {
-                    rawInput = 0f; // 진짜 내 앞을 벽처럼 막고 있을 때만 이동 차단
+                    rawInput = 0f;
                 }
             }
         }
@@ -483,12 +380,13 @@ public class PlayerMovement : NetworkBehaviour
 
         controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
     }
+
     void CheckTouchingPlayer()
     {
         Vector2 boxCenter = controller.bodyCollider.bounds.center;
         Vector2 boxSize = controller.bodyCollider.bounds.size;
-        boxSize.x += 0.1f; // 좌우로 아주 살짝 늘려서 닿았는지 판정
-        boxSize.y -= 0.2f; // 바닥 판정과 겹치지 않게 살짝 줄임
+        boxSize.x += 0.1f;
+        boxSize.y -= 0.2f;
 
         int hitCount = Physics2D.OverlapBox(boxCenter, boxSize, 0f, playerFilter, playerCheckResults);
         isTouchingPlayer = false;
@@ -503,6 +401,7 @@ public class PlayerMovement : NetworkBehaviour
             }
         }
     }
+
     private void ClampVelocity()
     {
         float maxSpeedX = 30f;
@@ -514,7 +413,6 @@ public class PlayerMovement : NetworkBehaviour
 
         bool isKnocked = controller.knockback != null && controller.knockback.isKnockedBack;
 
-        // 🚀 [핵심 수정]: !hasPlayerOnHead 와 !isTouchingPlayer 추가!
         if (wasGroundedLastFrame && !justJumped && !isKnocked && !hasPlayerOnHead && !isTouchingPlayer)
         {
             float allowedSpeed = currentPlatform != null ? platformVelocity.y : 0f;
@@ -671,6 +569,4 @@ public class PlayerMovement : NetworkBehaviour
             Gizmos.DrawWireCube((Vector2)headCheck.position + headCheckOffset, headCheckBoxSize);
         }
     }
-
-
 }
