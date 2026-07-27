@@ -645,6 +645,22 @@ PrefabInstance:
       propertyPath: sceneId
       value: 1787077194
       objectReference: {fileID: 0}
+    - target: {fileID: 8127923415173957886, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
+      propertyPath: m_Size.x
+      value: 2.7246094
+      objectReference: {fileID: 0}
+    - target: {fileID: 8127923415173957886, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
+      propertyPath: m_Size.y
+      value: 7.835947
+      objectReference: {fileID: 0}
+    - target: {fileID: 8127923415173957886, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
+      propertyPath: m_Offset.x
+      value: 0.11425781
+      objectReference: {fileID: 0}
+    - target: {fileID: 8127923415173957886, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
+      propertyPath: m_Offset.y
+      value: 1.9960966
+      objectReference: {fileID: 0}
     - target: {fileID: 8131018449133024124, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
       propertyPath: checkpointIndex
       value: 3
@@ -8578,6 +8594,22 @@ PrefabInstance:
     - target: {fileID: 7823263737437665391, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
       propertyPath: sceneId
       value: 2790346645
+      objectReference: {fileID: 0}
+    - target: {fileID: 8127923415173957886, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
+      propertyPath: m_Size.x
+      value: 2.72464
+      objectReference: {fileID: 0}
+    - target: {fileID: 8127923415173957886, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
+      propertyPath: m_Size.y
+      value: 7.835947
+      objectReference: {fileID: 0}
+    - target: {fileID: 8127923415173957886, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
+      propertyPath: m_Offset.x
+      value: 0.11425781
+      objectReference: {fileID: 0}
+    - target: {fileID: 8127923415173957886, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
+      propertyPath: m_Offset.y
+      value: 1.9960966
       objectReference: {fileID: 0}
     - target: {fileID: 8131018449133024124, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
       propertyPath: checkpointIndex
@@ -393043,6 +393075,22 @@ PrefabInstance:
     - target: {fileID: 7823263737437665391, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
       propertyPath: sceneId
       value: 3244298801
+      objectReference: {fileID: 0}
+    - target: {fileID: 8127923415173957886, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
+      propertyPath: m_Size.x
+      value: 2.7246094
+      objectReference: {fileID: 0}
+    - target: {fileID: 8127923415173957886, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
+      propertyPath: m_Size.y
+      value: 6.835947
+      objectReference: {fileID: 0}
+    - target: {fileID: 8127923415173957886, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
+      propertyPath: m_Offset.x
+      value: 0.11425781
+      objectReference: {fileID: 0}
+    - target: {fileID: 8127923415173957886, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
+      propertyPath: m_Offset.y
+      value: 1.4960966
       objectReference: {fileID: 0}
     - target: {fileID: 8131018449133024124, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
       propertyPath: checkpointIndex
