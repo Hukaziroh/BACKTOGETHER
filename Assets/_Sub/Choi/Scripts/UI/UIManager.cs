@@ -73,7 +73,7 @@ public class UIManager : MonoBehaviour
         // 메인 씬이 아니고, 퍼즈 상태가 아닐 때만 T 키 이모지 메뉴 작동
         if (currentScene != mainSceneName && !isPaused && EmojiRadialMenu.Instance != null)
         {
-            // ★ [수정] T 키를 누르기 시작할 때 열고, 뗄 때 닫기 (홀드 방식)
+            // T 키를 누르기 시작할 때 열고, 뗄 때 닫기 (홀드 방식)
             if (Keyboard.current.tKey.wasPressedThisFrame)
             {
                 EmojiRadialMenu.Instance.OpenMenu();
@@ -93,6 +93,17 @@ public class UIManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        // ★ 씬이 넘어갈 때 옵션 패널이나 퍼즈 패널이 켜져있다면 강제로 닫고 게임 상태 정상화
+        if (optionsManager != null && optionsManager.optionsPanel != null && optionsManager.optionsPanel.activeSelf)
+        {
+            pauseManager?.CloseOptions();
+        }
+
+        if (pauseManager != null && pauseManager.isPaused)
+        {
+            pauseManager.ResumeGame();
+        }
+
         bool isChapter = (scene.name != mainSceneName && scene.name != lobbySceneName);
         progressTrackerUI?.SetActive(isChapter);
 
@@ -112,7 +123,7 @@ public class UIManager : MonoBehaviour
 
         if (currentScene == mainSceneName) return;
 
-        // ★ T 키를 누르고 있거나 이모지 메뉴가 열려있는 상태라면 ESC 입력 무시 (패널창 안 나옴)
+        // T 키를 누르고 있거나 이모지 메뉴가 열려있는 상태라면 ESC 입력 무시 (패널창 안 나옴)
         if ((Keyboard.current != null && Keyboard.current.tKey.isPressed) ||
             (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen()))
         {
