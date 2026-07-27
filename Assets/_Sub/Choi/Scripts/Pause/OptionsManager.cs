@@ -46,6 +46,7 @@ public class OptionsManager : MonoBehaviour
     public void Open()
     {
         if (optionsPanel != null) optionsPanel.SetActive(true);
+        PauseManager.instance.ClosePause();
 
         // GlobalSceneInputManager를 통해 옵션 패널 내부 요소들만 조작 가능하게 포커스 전환
         if (GlobalSceneInputManager.Instance != null && optionsPanel != null)
