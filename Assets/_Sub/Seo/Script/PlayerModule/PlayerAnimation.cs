@@ -5,6 +5,19 @@ public class PlayerAnimation : NetworkBehaviour
 {
     private PlayerController controller;
 
+    [Header("Sync Animation Variables")]
+    [SyncVar]
+    private float syncSpeed;
+
+    [SyncVar]
+    private bool syncGrounded;
+
+    [SyncVar]
+    private bool syncStunned;
+
+    [SyncVar]
+    private float syncVelocityY; // 점프 및 낙하 애니메이션용 Y축 속도
+
     [SyncVar(hook = nameof(OnDirectionChanged))]
     public float syncDirectionX = 1f;
 
@@ -15,37 +28,51 @@ public class PlayerAnimation : NetworkBehaviour
 
     void Update()
     {
-        if (!isLocalPlayer) return;
-        UpdateAnimation();
-    }
-
-    private void UpdateAnimation()
-    {
-        if (controller.anim == null) return;
-
-        float currentSpeed = controller.knockback.IsStunned ? 0f : Mathf.Abs(controller.input.HorizontalInput);
-        controller.anim.SetFloat("Speed", currentSpeed);
-
-        controller.anim.SetBool("isGrounded", controller.movement.isGrounded);
-        controller.anim.SetBool("isStunned", controller.knockback.IsStunned);
-
-        if (controller.input.HorizontalInput != 0 && !controller.knockback.IsStunned)
+        // 1. 서버인 경우에만 애니메이션 데이터를 갱신하여 SyncVar에 반영합니다.
+        if (isServer)
         {
-            float targetDirection = controller.input.HorizontalInput > 0 ? 1f : -1f;
-
-            if (syncDirectionX != targetDirection)
-            {
-                CmdSetDirection(targetDirection);
-            }
+            UpdateAnimationServer();
         }
 
-        ApplyScale(syncDirectionX);
+        // 2. 모든 클라이언트(서버 포함)는 동기화된 값으로 애니메이션을 재생합니다.
+        ApplyAnimation();
     }
 
-    [Command]
-    private void CmdSetDirection(float dir)
+    [Server]
+    private void UpdateAnimationServer()
     {
-        syncDirectionX = dir;
+        if (controller == null) return;
+
+        // 이동 속도 계산 (절댓값)
+        float speed = Mathf.Abs(controller.input.HorizontalInput);
+
+        syncSpeed = speed;
+        syncGrounded = controller.movement.isGrounded;
+        syncStunned = controller.knockback.IsStunned;
+        syncVelocityY = controller.rb.linearVelocity.y; // 리지드바디 Y축 속도 동기화
+
+        float input = controller.input.HorizontalInput;
+
+        // 기절 상태가 아니고 입력이 있을 때만 방향 갱신
+        if (input != 0 && !controller.knockback.IsStunned)
+        {
+            syncDirectionX = input > 0 ? 1f : -1f;
+        }
+    }
+
+    private void ApplyAnimation()
+    {
+        if (controller.anim == null)
+            return;
+
+        // Animator 파라미터 적용
+        controller.anim.SetFloat("Speed", syncSpeed);
+        controller.anim.SetBool("isGrounded", syncGrounded);
+        controller.anim.SetBool("isStunned", syncStunned);
+        controller.anim.SetFloat("VerticalVelocity", syncVelocityY);
+
+        // 스프라이트 방향 및 중력 반전 적용
+        ApplyScale(syncDirectionX);
     }
 
     private void OnDirectionChanged(float oldDir, float newDir)
@@ -55,15 +82,16 @@ public class PlayerAnimation : NetworkBehaviour
 
     private void ApplyScale(float dirX)
     {
-        bool isInverted = false;
+        bool inverted = false;
+
         if (controller != null && controller.gravityModule != null)
         {
-            isInverted = controller.gravityModule.isGravityInverted;
+            inverted = controller.gravityModule.isGravityInverted;
         }
 
         transform.localScale = new Vector3(
             dirX,
-            isInverted ? -1f : 1f,
+            inverted ? -1f : 1f,
             1f
         );
     }

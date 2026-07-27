@@ -84,40 +84,26 @@ public class PlayerMovement : NetworkBehaviour
         groundFilter = new ContactFilter2D { useLayerMask = true, useTriggers = false, layerMask = groundLayer };
         playerFilter = new ContactFilter2D { useLayerMask = true, useTriggers = false, layerMask = playerLayerMask };
 
-        // 🔧 [디버그] 체크박스/설정과 무관하게 무조건 찍힘 - 이 스크립트가 실제로 로드/실행되는지 확인용.
         Debug.Log($"★★★★★ [PlayerMovement] Awake 실행됨 - {gameObject.name} (진단용 스크립트 버전) ★★★★★", this);
     }
 
+    // 🚀 Update는 비워두거나 지워도 됩니다. 물리 로직은 모두 FixedUpdate로 이동했습니다.
     void Update()
     {
-        if (!isLocalPlayer) return;
 
-        UpdateTimers();
-        UpdateCoyoteTime();
-        HandleJumpInput();
-        UpdateGravity();
     }
 
     void FixedUpdate()
     {
-        if (Time.frameCount % 50 == 0)
-        {
-            Debug.Log($"★ [FixedUpdate 체크] {gameObject.name} isLocalPlayer={isLocalPlayer}", this);
-        }
-
-        if (!isLocalPlayer) return;
+        if (!isServer) return;
 
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
 
-        if (debugLogOverlap)
-        {
-            string parentName = transform.parent != null ? transform.parent.name : "없음";
-            bool isCombined = controller.combineHandler != null && controller.combineHandler.isCombined;
-            bool isBodyTarget = controller.combineHandler != null && gameObject == controller.combineHandler.bodyTarget;
-            string platformName = currentPlatform != null ? currentPlatform.name : "없음";
-            Debug.Log($"[프레임상태:{gameObject.name}] pos={controller.rb.position} vel={controller.rb.linearVelocity} gravityScale={controller.rb.gravityScale} mass={controller.rb.mass} isGrounded={isGrounded} isTouchingPlayer={isTouchingPlayer} 부모={parentName} isCombined={isCombined} isBodyTarget={isBodyTarget} 플랫폼={platformName} 플랫폼속도={platformVelocity}", this);
-        }
+        // 🚀 1. 물리 프레임에 맞춰 타이머와 중력을 업데이트 (프레임 오차 해결)
+        UpdateTimers();
+        UpdateCoyoteTime();
+        UpdateGravity();
 
         CancelUnexpectedPlayerCollisionPush();
 
@@ -125,6 +111,9 @@ public class PlayerMovement : NetworkBehaviour
         CheckGroundOrPlayer();
         CheckHeadForPlayer();
         CheckTouchingPlayer();
+
+        // 🚀 2. 점프 및 이동 처리
+        HandleJumpInput();
         HandleMovementPhysics();
         ClampVelocity();
 
@@ -136,123 +125,46 @@ public class PlayerMovement : NetworkBehaviour
             controller.rb.linearVelocity = controller.rb.linearVelocity.normalized * maxSpeed;
         }
 
-        // 💡 [해결책 2 적용] 매 프레임 무한 미끄러짐 방어 로직 호출
-        BreakNetworkFeedbackLoop();
-
-        // 🔧 이번 프레임에 스크립트가 최종적으로 확정한 X속도를 기억해둔다.
         lastCommandedVelocityX = controller.rb.linearVelocity.x;
         hasCommandedVelocity = true;
-    }
 
-    private void LogDebug(string message)
-    {
-        if (debugLogOverlap) Debug.Log($"[겹침디버그:{gameObject.name}] {message}", this);
-    }
-
-    /// <summary>
-    /// 💡 [핵심 버그 수정] 물리 엔진 피드백 루프 방지
-    /// 상대방이 내 옆구리를 깊숙이 파고들었을 때 강제로 밀어내는 물리 충돌을 일시적으로 꺼서 미끄러짐을 막습니다.
-    /// </summary>
-    private void BreakNetworkFeedbackLoop()
-    {
-        // 내 주변(1.5배 크기)에 있는 모든 플레이어 콜라이더를 찾습니다.
-        Vector2 searchSize = controller.bodyCollider.bounds.size * 1.5f;
-        Collider2D[] nearbyPlayers = Physics2D.OverlapBoxAll(controller.bodyCollider.bounds.center, searchSize, 0f, playerLayerMask);
-
-        foreach (var otherCollider in nearbyPlayers)
-        {
-            // 나 자신이거나 트리거인 경우는 무시
-            if (otherCollider.gameObject == gameObject || otherCollider.isTrigger) continue;
-
-            // 상대방과 내 콜라이더가 실제로 겹쳤는지 확인
-            if (controller.bodyCollider.bounds.Intersects(otherCollider.bounds))
-            {
-                // Y축(높이) 차이를 계산 (머리 위를 밟은 것인지, 옆구리로 파고든 것인지 구분)
-                float yDiff = Mathf.Abs(otherCollider.bounds.center.y - controller.bodyCollider.bounds.center.y);
-                float safeY = controller.bodyCollider.bounds.extents.y * 0.9f;
-
-                // 옆구리로 깊숙이 파고든 상태라면 (무한 미끄러짐 버그 발생 조건)
-                if (yDiff < safeY)
-                {
-                    // 🚨 물리 충돌을 즉시 무시합니다! (물리 엔진이 억지로 밀어내는 현상 중지)
-                    Physics2D.IgnoreCollision(controller.bodyCollider, otherCollider, true);
-                }
-            }
-            else
-            {
-                // 💡 서로 완전히 빠져나왔다면 다시 물리 충돌을 정상적으로 켭니다.
-                Physics2D.IgnoreCollision(controller.bodyCollider, otherCollider, false);
-            }
-        }
-    }
-
-    private void CancelUnexpectedPlayerCollisionPush()
-    {
-        if (!hasCommandedVelocity) return;
-
-        if (controller.knockback != null && (controller.knockback.isKnockedBack || controller.knockback.IsStunned))
-            return;
-
-        if (!IsOverlappingAnyPlayer()) return;
-
-        float actualX = controller.rb.linearVelocity.x;
-        float diff = actualX - lastCommandedVelocityX;
-
-        LogDebug($"코너보정 체크 - 이전확정속도={lastCommandedVelocityX:F3} 실제속도={actualX:F3} diff={diff:F3} (허용치={cornerPushEpsilon})");
-
-        if (Mathf.Abs(diff) > cornerPushEpsilon)
-        {
-            LogDebug($"⚠️ 코너보정 발동 - {actualX:F3} → {lastCommandedVelocityX:F3} 으로 되돌림");
-            controller.rb.linearVelocity = new Vector2(lastCommandedVelocityX, controller.rb.linearVelocity.y);
-        }
-    }
-
-    private bool IsOverlappingAnyPlayer()
-    {
-        Vector2 boxCenter = controller.bodyCollider.bounds.center;
-        Vector2 boxSize = (Vector2)controller.bodyCollider.bounds.size + new Vector2(0.02f, 0.02f);
-
-        int hitCount = Physics2D.OverlapBox(boxCenter, boxSize, 0f, playerFilter, playerCheckResults);
-        for (int i = 0; i < hitCount; i++)
-        {
-            Collider2D col = playerCheckResults[i];
-            if (col.gameObject != gameObject && !col.isTrigger) return true;
-        }
-        return false;
-    }
-
-    private void UpdateTimers() { if (ckTimer > 0f) ckTimer -= Time.deltaTime; }
-
-    private void UpdateCoyoteTime()
-    {
-        if (isGrounded && ckTimer <= 0f) coyoteTimeCounter = coyoteTime;
-        else coyoteTimeCounter -= Time.deltaTime;
+        // 🚀 3. 모든 물리/점프 판정이 끝난 후, 가장 안전한 마지막 시점에 버퍼 초기화
+        controller.input.ClearJumpInput();
     }
 
     private void HandleJumpInput()
     {
+        // 🚀 4. 합체(Combine) 상태일 때 머리 플레이어의 점프 입력 완벽 차단
+        if (controller.combineHandler != null &&
+            controller.combineHandler.isCombined &&
+            gameObject != controller.combineHandler.bodyTarget)
+        {
+            return;
+        }
+
         if (PauseManager.instance != null && PauseManager.instance.isPaused)
             return;
 
         if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())
             return;
 
-        if (controller.combineHandler == null || !controller.combineHandler.isCombined)
+        // 점프 누름 판정
+        if (controller.input.JumpPressedThisFrame && coyoteTimeCounter > 0f && !controller.knockback.IsStunned && !hasPlayerOnHead)
         {
-            if (controller.input.JumpPressedThisFrame && coyoteTimeCounter > 0f && !controller.knockback.IsStunned && !hasPlayerOnHead)
-            {
-                Jump();
-                coyoteTimeCounter = 0f;
-            }
+            Jump();
+            coyoteTimeCounter = 0f;
+        }
 
-            bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
-            bool isMovingUp = inverted ? (controller.rb.linearVelocity.y < 0f) : (controller.rb.linearVelocity.y > 0f);
+        // 짧은 점프 (점프 뗌 판정)
+        bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
+        bool isMovingUp = inverted ? (controller.rb.linearVelocity.y < 0f) : (controller.rb.linearVelocity.y > 0f);
 
-            if (controller.input.JumpReleasedThisFrame && isMovingUp && !controller.knockback.IsStunned)
-            {
-                if (controller.syncJumpHandler != null && controller.syncJumpHandler.isInSyncZone) controller.syncJumpHandler.CmdCutSyncJump();
-                else ApplyShortJump();
-            }
+        if (controller.input.JumpReleasedThisFrame && isMovingUp && !controller.knockback.IsStunned)
+        {
+            if (controller.syncJumpHandler != null && controller.syncJumpHandler.isInSyncZone)
+                controller.syncJumpHandler.CmdCutSyncJump();
+            else
+                ApplyShortJump();
         }
     }
 
@@ -333,11 +245,7 @@ public class PlayerMovement : NetworkBehaviour
             }
             if (hit.collider != null && hit.collider.gameObject != gameObject)
             {
-                // 💡 [수정된 부분] 상대방이 이미 내 몸 안에 파고들었다면 방향키를 막지 않고 빠져나갈 수 있게 허용!
-                if (!controller.bodyCollider.bounds.Intersects(hit.collider.bounds))
-                {
-                    rawInput = 0f;
-                }
+                rawInput = 0f;
             }
         }
 
@@ -553,6 +461,98 @@ public class PlayerMovement : NetworkBehaviour
     {
         controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
         controller.rb.AddForce(Vector2.down * 18f, ForceMode2D.Impulse);
+    }
+
+    private void LogDebug(string message)
+    {
+        if (debugLogOverlap) Debug.Log($"[겹침디버그:{gameObject.name}] {message}", this);
+    }
+
+    private void ResolvePlayerOverlap()
+    {
+        Vector2 boxCenter = controller.bodyCollider.bounds.center;
+        Vector2 boxSize = (Vector2)controller.bodyCollider.bounds.size + new Vector2(0.02f, 0.02f);
+
+        int hitCount = Physics2D.OverlapBox(boxCenter, boxSize, 0f, playerFilter, playerCheckResults);
+
+        if (debugLogOverlap && hitCount > 0)
+        {
+            LogDebug($"OverlapBox 감지됨 - hitCount={hitCount} 내위치={controller.rb.position} 내속도={controller.rb.linearVelocity}");
+        }
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            Collider2D col = playerCheckResults[i];
+            if (col.gameObject == gameObject || col.isTrigger) continue;
+
+            Bounds myBounds = controller.bodyCollider.bounds;
+            Bounds otherBounds = col.bounds;
+
+            float overlapX = Mathf.Min(myBounds.max.x, otherBounds.max.x) - Mathf.Max(myBounds.min.x, otherBounds.min.x);
+            float overlapY = Mathf.Min(myBounds.max.y, otherBounds.max.y) - Mathf.Max(myBounds.min.y, otherBounds.min.y);
+
+            if (overlapX <= overlapPushTolerance || overlapY <= overlapPushTolerance) continue;
+
+            Vector2 vel = controller.rb.linearVelocity;
+            Vector2 pos = controller.rb.position;
+
+            if (overlapX < overlapY)
+            {
+                float dir = myBounds.center.x <= otherBounds.center.x ? -1f : 1f;
+                pos.x += dir * overlapX;
+                if (vel.x * dir < 0f) vel.x = 0f;
+            }
+            else
+            {
+                float dir = myBounds.center.y <= otherBounds.center.y ? -1f : 1f;
+                pos.y += dir * overlapY;
+                if (vel.y * dir < 0f) vel.y = 0f;
+            }
+
+            controller.rb.position = pos;
+            controller.rb.linearVelocity = vel;
+            break;
+        }
+    }
+
+    private void CancelUnexpectedPlayerCollisionPush()
+    {
+        if (!hasCommandedVelocity) return;
+
+        if (controller.knockback != null && (controller.knockback.isKnockedBack || controller.knockback.IsStunned))
+            return;
+
+        if (!IsOverlappingAnyPlayer()) return;
+
+        float actualX = controller.rb.linearVelocity.x;
+        float diff = actualX - lastCommandedVelocityX;
+
+        if (Mathf.Abs(diff) > cornerPushEpsilon)
+        {
+            controller.rb.linearVelocity = new Vector2(lastCommandedVelocityX, controller.rb.linearVelocity.y);
+        }
+    }
+
+    private bool IsOverlappingAnyPlayer()
+    {
+        Vector2 boxCenter = controller.bodyCollider.bounds.center;
+        Vector2 boxSize = (Vector2)controller.bodyCollider.bounds.size + new Vector2(0.02f, 0.02f);
+
+        int hitCount = Physics2D.OverlapBox(boxCenter, boxSize, 0f, playerFilter, playerCheckResults);
+        for (int i = 0; i < hitCount; i++)
+        {
+            Collider2D col = playerCheckResults[i];
+            if (col.gameObject != gameObject && !col.isTrigger) return true;
+        }
+        return false;
+    }
+
+    private void UpdateTimers() { if (ckTimer > 0f) ckTimer -= Time.deltaTime; }
+
+    private void UpdateCoyoteTime()
+    {
+        if (isGrounded && ckTimer <= 0f) coyoteTimeCounter = coyoteTime;
+        else coyoteTimeCounter -= Time.deltaTime;
     }
 
     private void OnDrawGizmosSelected()

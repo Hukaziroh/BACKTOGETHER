@@ -25,9 +25,14 @@ public class PlayerController : NetworkBehaviour
     [Header("기믹 상태 (리버스 존)")]
     public IntervalTrigger currentReverseZone { get; private set; } // 추가됨
 
+  
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        rb.bodyType = RigidbodyType2D.Dynamic;
+        rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+
         anim = GetComponent<Animator>();
         bodyCollider = GetComponent<BoxCollider2D>();
 
@@ -43,14 +48,7 @@ public class PlayerController : NetworkBehaviour
         animationModule = GetComponent<PlayerAnimation>();
     }
 
-    void Start()
-    {
-        if (!isLocalPlayer)
-        {
-            rb.bodyType = RigidbodyType2D.Kinematic;
-            rb.interpolation = RigidbodyInterpolation2D.Interpolate;
-        }
-    }
+
 
     public override void OnStartLocalPlayer()
     {
@@ -63,6 +61,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+
     public Vector3 currentSpawnPoint
     {
         get => respawn.currentSpawnPoint;
@@ -74,7 +73,7 @@ public class PlayerController : NetworkBehaviour
     public float windVelocity
     {
         get => movement.windVelocity;
-        set => movement.windVelocity = value;
+        set => movement.windVelocity = value; 
     }
     public void CallCombinedJump() => movement.CallCombinedJump();
     public void ApplyShortJump() => movement.ApplyShortJump();

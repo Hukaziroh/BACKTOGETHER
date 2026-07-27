@@ -52733,9 +52733,6 @@ Tilemap:
   - serializedVersion: 2
     m_RefCount: 246
     m_Data: {fileID: 6564694999658441223, guid: 060df3573b059ed459c705d358f26b7e, type: 3}
-  - serializedVersion: 2
-    m_RefCount: 0
-    m_Data: {fileID: 8963615045809421016, guid: 5f74b5d0416365341af2d86fc739995f, type: 3}
   m_TileMatrixArray:
   - serializedVersion: 2
     m_RefCount: 5136
@@ -52758,7 +52755,7 @@ Tilemap:
       e33: 1
   m_TileColorArray:
   - serializedVersion: 2
-    m_RefCount: 5258
+    m_RefCount: 5136
     m_Data: {r: 1, g: 1, b: 1, a: 1}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
@@ -55628,7 +55625,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 567510152601654875, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.0474501
+      value: 0.94
       objectReference: {fileID: 0}
     - target: {fileID: 567510152601654875, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
       propertyPath: m_LocalPosition.z
