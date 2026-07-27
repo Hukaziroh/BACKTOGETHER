@@ -3,6 +3,9 @@ using EpicTransport;
 using Mirror;
 using System.Collections;
 using UnityEngine.UI;
+using TMPro;
+using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public class PrivateLobbyManager : MonoBehaviour
 {
@@ -12,6 +15,14 @@ public class PrivateLobbyManager : MonoBehaviour
 
     [Header("로딩 UI 연결 (비워두어도 자동 탐색됩니다)")]
     [SerializeField] private GameObject loadingPanel;
+
+    [Header("에러 팝업 UI 연결")]
+    [SerializeField] private GameObject errorPopupPanel;
+    [SerializeField] private TextMeshProUGUI errorMessageText;
+    [SerializeField] private Button errorConfirmButton;
+
+    [Header("씬 이동 설정")]
+    [SerializeField] private string mainSceneName = "MainScene"; // 이동할 메인 화면 씬 이름
 
     public static string currentShortCode = "";
 
@@ -24,10 +35,31 @@ public class PrivateLobbyManager : MonoBehaviour
         GameObject panel = GetLoadingPanel();
         if (panel != null) panel.SetActive(false);
 
+        // 에러 팝업 초기화 및 버튼 리스너 연결
+        if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
+        if (errorConfirmButton != null)
+        {
+            errorConfirmButton.onClick.AddListener(OnClick_ReturnToMain);
+        }
+
         StartCoroutine(WaitForEpicLoginRoutine());
     }
 
-    /// <span style="color:gray;">/// 로딩 패널이 연결되지 않았거나 씬 전환으로 참조가 끊겼을 때 자동으로 찾아주는 함수</span>
+    // 팝업이 떴을 때 엔터 키를 누르면 확실하게 동작하도록 처리 (뉴 인풋 시스템 대응)
+    private void Update()
+    {
+        if (errorPopupPanel != null && errorPopupPanel.activeSelf)
+        {
+            if (Keyboard.current != null && (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.numpadEnterKey.wasPressedThisFrame))
+            {
+                OnClick_ReturnToMain();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 로딩 패널이 연결되지 않았거나 씬 전환으로 참조가 끊겼을 때 자동으로 찾아주는 함수
+    /// </summary>
     private GameObject GetLoadingPanel()
     {
         if (loadingPanel == null)
@@ -147,6 +179,7 @@ public class PrivateLobbyManager : MonoBehaviour
             currentPanel = GetLoadingPanel();
             if (currentPanel != null) currentPanel.SetActive(false);
 
+            ShowErrorPopup("네트워크 시스템 오류가 발생했습니다.");
             yield break;
         }
 
@@ -195,6 +228,13 @@ public class PrivateLobbyManager : MonoBehaviour
                 );
 
                 yield return null;
+            }
+
+            if (leaveTimeout <= 0f && eosLobby.ConnectedToLobby)
+            {
+                Debug.LogError("[HOST FLOW] 기존 EOS Lobby Leave Timeout");
+                ShowErrorPopup("기존 로비를 나가는 중 응답이 없습니다.");
+                yield break;
             }
 
             Debug.Log(
@@ -286,6 +326,8 @@ public class PrivateLobbyManager : MonoBehaviour
 
             currentPanel = GetLoadingPanel();
             if (currentPanel != null) currentPanel.SetActive(false);
+
+            ShowErrorPopup("Lobby creation timed out.");
 
             yield break;
         }
@@ -404,5 +446,36 @@ public class PrivateLobbyManager : MonoBehaviour
             code += allowedChars[Random.Range(0, allowedChars.Length)];
         }
         return code;
+    }
+
+    // --- 에러 팝업 제어 및 메인 이동 함수 (Public으로 변경하여 버튼에 직접 연결 가능) ---
+    private void ShowErrorPopup(string message)
+    {
+        if (errorPopupPanel != null)
+        {
+            if (errorMessageText != null)
+            {
+                errorMessageText.text = message;
+            }
+            errorPopupPanel.SetActive(true);
+        }
+    }
+
+    public void OnClick_ReturnToMain()
+    {
+        if (errorPopupPanel != null)
+        {
+            errorPopupPanel.SetActive(false);
+        }
+
+        // 메인 씬으로 이동
+        if (!string.IsNullOrEmpty(mainSceneName))
+        {
+            SceneManager.LoadScene(mainSceneName);
+        }
+        else
+        {
+            Debug.LogWarning("[PrivateLobbyManager] 이동할 메인 씬 이름이 설정되지 않았습니다.");
+        }
     }
 }
