@@ -112,7 +112,6 @@ public class PlayerMovement : NetworkBehaviour
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
 
-        // 🚀 [디버그 테스트 추가] FixedUpdate 시작 시점의 위치 기록
         Vector2 before = controller.rb.position;
 
         if (debugLogOverlap)
@@ -124,7 +123,8 @@ public class PlayerMovement : NetworkBehaviour
             Debug.Log($"[프레임상태:{gameObject.name}] pos={controller.rb.position} vel={controller.rb.linearVelocity} gravityScale={controller.rb.gravityScale} mass={controller.rb.mass} isGrounded={isGrounded} isTouchingPlayer={isTouchingPlayer} 부모={parentName} isCombined={isCombined} isBodyTarget={isBodyTarget} 플랫폼={platformName} 플랫폼속도={platformVelocity}", this);
         }
 
-        CancelUnexpectedPlayerCollisionPush();
+        // 🚀 [원흉 제거] 물리 엔진의 정상적인 충돌 방어를 무시하고 강제로 파고들게 만들던 원인!
+        // CancelUnexpectedPlayerCollisionPush();
 
         HandleMovingPlatform();
         CheckGroundOrPlayer();
@@ -144,9 +144,8 @@ public class PlayerMovement : NetworkBehaviour
         lastCommandedVelocityX = controller.rb.linearVelocity.x;
         hasCommandedVelocity = true;
 
-        // 🚀 [디버그 테스트 추가] FixedUpdate 끝 시점의 위치 기록 및 변화량 출력
         Vector2 after = controller.rb.position;
-        if (debugLogOverlap) // 로그 폭주를 막기 위해 debugLogOverlap이 켜져있을 때만 찍도록 연동 (원하시면 빼셔도 됩니다)
+        if (debugLogOverlap)
         {
             Debug.Log($"[위치변화 테스트] {gameObject.name} 변화량: {after - before} | Before: {before} -> After: {after}");
         }
@@ -305,7 +304,6 @@ public class PlayerMovement : NetworkBehaviour
             if (hit.collider != null && hit.collider.gameObject != gameObject)
             {
                 rawInput = 0f;
-                // isTouchingPlayer = true; ❌ 이 부분 삭제! (이제 방어막 해제 용도로만 씁니다)
             }
         }
 
@@ -346,8 +344,8 @@ public class PlayerMovement : NetworkBehaviour
             );
         }
 
-        // 🚀 [디버그 테스트 추가] PlayerMovement가 개입하는 부분(X축 이동)을 완전히 차단
-        // controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
+        // 🚀 [복구] 테스트를 위해 막아뒀던 X축 속도 적용 로직을 다시 켭니다.
+        controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
     }
 
     void CheckTouchingPlayer()
@@ -370,6 +368,7 @@ public class PlayerMovement : NetworkBehaviour
             }
         }
     }
+
     private void ClampVelocity()
     {
         float maxSpeedX = 30f;
@@ -381,7 +380,6 @@ public class PlayerMovement : NetworkBehaviour
 
         bool isKnocked = controller.knockback != null && controller.knockback.isKnockedBack;
 
-        // 🚀 [핵심 수정]: !hasPlayerOnHead 와 !isTouchingPlayer 추가!
         if (wasGroundedLastFrame && !justJumped && !isKnocked && !hasPlayerOnHead && !isTouchingPlayer)
         {
             float allowedSpeed = currentPlatform != null ? platformVelocity.y : 0f;
@@ -395,8 +393,8 @@ public class PlayerMovement : NetworkBehaviour
             }
         }
 
-        // 🚀 [디버그 테스트 추가] 여기도 혹시 몰라 막아둡니다 (PlayerMovement 완전 무력화)
-        // controller.rb.linearVelocity = clampedVelocity;
+        // 🚀 [복구] 테스트를 위해 막아뒀던 최종 속도 제한 적용 로직을 다시 켭니다.
+        controller.rb.linearVelocity = clampedVelocity;
     }
 
     void CheckGroundOrPlayer()
