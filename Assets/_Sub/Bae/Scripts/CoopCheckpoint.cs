@@ -15,6 +15,40 @@ public class CoopCheckpoint : NetworkBehaviour
     [Tooltip("체크 시 1명만 밟아도 4명 모두의 부활 위치가 여기로 찍힙니다. (챕터4 로프맵 전용)\n해제 시 밟은 사람 본인만 부활 위치가 바뀝니다.")]
     public bool syncToAllPlayers = false;
 
+    [Header("깃발 비주얼")]
+    public SpriteRenderer flagRenderer;
+    public Sprite hangingFlagSprite;
+    public Sprite raisedFlagSprite;
+
+    // syncToAllPlayers(팀 공유) 모드에서만 쓰이는 전체 동기화 상태.
+    // 개인 모드에서는 이 값을 안 쓰고, TargetRpc로 밟은 사람 화면에만 반영함.
+    [SyncVar(hook = nameof(OnActivatedForAllChanged))]
+    private bool isActivatedForAll = false;
+
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        if (syncToAllPlayers)
+            UpdateFlagVisual(isActivatedForAll);
+    }
+
+    private void OnActivatedForAllChanged(bool oldValue, bool newValue)
+    {
+        UpdateFlagVisual(newValue);
+    }
+
+    private void UpdateFlagVisual(bool activated)
+    {
+        if (flagRenderer == null) return;
+        flagRenderer.sprite = activated ? raisedFlagSprite : hangingFlagSprite;
+    }
+
+    [TargetRpc]
+    private void TargetActivateFlag(NetworkConnectionToClient conn)
+    {
+        UpdateFlagVisual(true);
+    }
+
     [ServerCallback]
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -33,6 +67,9 @@ public class CoopCheckpoint : NetworkBehaviour
 
         if (syncToAllPlayers)
         {
+            if (!isActivatedForAll)
+                isActivatedForAll = true;
+
             Debug.Log(
                 $"[체크포인트] '{other.name}' 진입! " +
                 $"체크포인트 Index = {checkpointIndex} | " +
@@ -77,6 +114,8 @@ public class CoopCheckpoint : NetworkBehaviour
                 spawnLocation.position,
                 checkpointIndex
             );
+
+            TargetActivateFlag(respawnScript.connectionToClient);
         }
     }
 }
