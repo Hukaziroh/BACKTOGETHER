@@ -184,6 +184,11 @@ public class PauseManager : MonoBehaviour
         }
     }
 
+    public void ClosePause()
+    {
+        pausePanel.SetActive(false);
+    }
+
     public void ReturnToMainMenu()
     {
         if (isLeaving) return;
