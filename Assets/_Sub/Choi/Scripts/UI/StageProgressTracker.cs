@@ -9,6 +9,16 @@ public class StageProgressTracker : MonoBehaviour
     [SerializeField] private RectTransform iconContainer;
     [SerializeField] private GameObject playerIconPrefab;
 
+    [Header("체크포인트 깃발 설정")]
+    [Tooltip("커스텀 깃발 스프라이트가 있다면 여기에 넣으세요. 비워두면 빨간색 기본 깃발로 표시됩니다.")]
+    [SerializeField] private Sprite checkpointFlagSprite;
+
+    [Header("프로그래스 바 보정")]
+    [Tooltip("전체 길이 비율을 조절합니다 (밀림 폭이 점점 커지거나 작아질 때 조절)")]
+    [SerializeField] private float progressMultiplier = 1f;
+    [Tooltip("시작 위치(오프셋)를 통째로 이동시킵니다")]
+    [SerializeField] private float progressOffset = 0f;
+
     private Vector3 startPos;
     private Vector3 endPos;
     private float mapLengthX;
@@ -20,6 +30,9 @@ public class StageProgressTracker : MonoBehaviour
     // 🌟 프레임 드랍 방지용 캐싱 변수
     private GameObject[] cachedPlayers = new GameObject[0];
     private float nextSearchTime = 0f;
+
+    // 🌟 가장 최근에 찍은 체크포인트 깃발 객체 관리 변수
+    private GameObject activeCheckpointFlagObj;
 
     private void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;
     private void OnDisable() => SceneManager.sceneLoaded -= OnSceneLoaded;
@@ -34,6 +47,7 @@ public class StageProgressTracker : MonoBehaviour
             if (child != null) Destroy(child.gameObject);
         }
         playerIcons.Clear();
+        activeCheckpointFlagObj = null;
         isInitialized = false;
         nextSearchTime = 0f; // 씬 로드 시 즉시 갱신
 
@@ -51,7 +65,6 @@ public class StageProgressTracker : MonoBehaviour
             startPos = startObj.transform.position;
             endPos = doorObj.transform.position;
 
-            // 질문자님의 원래 계산식 복구
             mapLengthX = endPos.x - startPos.x;
 
             if (mapLengthX != 0) // 0으로 나누기 방지
@@ -88,7 +101,11 @@ public class StageProgressTracker : MonoBehaviour
         }
         foreach (var k in toRemove) playerIcons.Remove(k);
 
-        // --- 여기서부터는 질문자님의 원래 100% 작동하던 로직 그대로 사용 ---
+        // 🌟 가장 최근에 찍은 체크포인트 깃발 갱신
+        UpdateActiveCheckpointFlag();
+
+        float containerWidth = iconContainer.rect.width;
+
         foreach (GameObject player in cachedPlayers)
         {
             if (player == null) continue;
@@ -128,11 +145,155 @@ public class StageProgressTracker : MonoBehaviour
                 }
             }
 
-            // 질문자님의 원래 위치 업데이트 계산식 복구
+            // 🌟 시작점일 때 Pos X가 정확히 0이 되도록 순수 비율 계산만 적용
             float currentDistX = player.transform.position.x - startPos.x;
             float progress = Mathf.Clamp01(currentDistX / mapLengthX);
-            float xPos = progress * iconContainer.rect.width;
+            float xPos = (progress * containerWidth * progressMultiplier) + progressOffset;
             iconRect.anchoredPosition = new Vector2(xPos, 0);
         }
+    }
+
+    // 🌟 가장 최근에 활성화된 체크포인트를 빨간색 깃발 모양으로 프로그래스 바 위에 표시
+    private void UpdateActiveCheckpointFlag()
+    {
+        int highestIndex = -1;
+        Vector3 activeCpPos = Vector3.zero;
+        bool foundActive = false;
+
+        CoopCheckpoint[] allCheckpoints = Object.FindObjectsByType<CoopCheckpoint>(FindObjectsInactive.Exclude);
+
+        foreach (GameObject player in cachedPlayers)
+        {
+            if (player == null) continue;
+            PlayerRespawn respawn = player.GetComponent<PlayerRespawn>();
+            if (respawn == null) continue;
+
+            int cpIndex = GetPlayerCheckpointIndex(respawn);
+            if (cpIndex > highestIndex)
+            {
+                highestIndex = cpIndex;
+                foreach (var cp in allCheckpoints)
+                {
+                    if (cp != null && cp.checkpointIndex == cpIndex && cp.spawnLocation != null)
+                    {
+                        activeCpPos = cp.spawnLocation.position;
+                        foundActive = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (foundActive)
+        {
+            float containerWidth = iconContainer.rect.width;
+            float currentDistX = activeCpPos.x - startPos.x;
+            float progress = Mathf.Clamp01(currentDistX / mapLengthX);
+            float xPos = (progress * containerWidth * progressMultiplier) + progressOffset;
+
+            // 깃발 오브젝트가 없으면 새로 생성 (프로그래스 바 상단에 걸쳐지도록 설정)
+            if (activeCheckpointFlagObj == null)
+            {
+                activeCheckpointFlagObj = new GameObject("ActiveCheckpointFlag", typeof(RectTransform));
+                activeCheckpointFlagObj.transform.SetParent(iconContainer, false);
+
+                RectTransform flagContainerRect = activeCheckpointFlagObj.GetComponent<RectTransform>();
+                flagContainerRect.anchorMin = new Vector2(0, 0.5f);
+                flagContainerRect.anchorMax = new Vector2(0, 0.5f);
+                flagContainerRect.pivot = new Vector2(0.5f, 0f); // 깃발의 하단이 바의 중앙 기준선에 오도록 설정
+                flagContainerRect.sizeDelta = new Vector2(16f, 24f);
+
+                // 1. 깃대 (세로 줄)
+                GameObject poleObj = new GameObject("Pole", typeof(RectTransform), typeof(Image));
+                poleObj.transform.SetParent(flagContainerRect, false);
+                RectTransform poleRect = poleObj.GetComponent<RectTransform>();
+                poleRect.anchorMin = new Vector2(0.5f, 0f);
+                poleRect.anchorMax = new Vector2(0.5f, 1f);
+                poleRect.sizeDelta = new Vector2(2f, 0f);
+                poleRect.anchoredPosition = Vector2.zero;
+                poleObj.GetComponent<Image>().color = Color.white;
+
+                // 2. 깃발 천 (빨간색)
+                GameObject bannerObj = new GameObject("Banner", typeof(RectTransform), typeof(Image));
+                bannerObj.transform.SetParent(flagContainerRect, false);
+                RectTransform bannerRect = bannerObj.GetComponent<RectTransform>();
+                bannerRect.anchorMin = new Vector2(0.5f, 1f);
+                bannerRect.anchorMax = new Vector2(0.5f, 1f);
+                bannerRect.pivot = new Vector2(0f, 1f); // 왼쪽 위 기준
+                bannerRect.sizeDelta = new Vector2(14f, 10f);
+                bannerRect.anchoredPosition = new Vector2(0f, 0f);
+
+                Image bannerImage = bannerObj.GetComponent<Image>();
+                if (checkpointFlagSprite != null)
+                {
+                    bannerImage.sprite = checkpointFlagSprite;
+                    bannerImage.color = Color.white;
+                }
+                else
+                {
+                    bannerImage.color = Color.red;
+                }
+            }
+            else
+            {
+                Transform bannerTransform = activeCheckpointFlagObj.transform.Find("Banner");
+                if (bannerTransform != null)
+                {
+                    Image bannerImage = bannerTransform.GetComponent<Image>();
+                    if (bannerImage != null)
+                    {
+                        if (checkpointFlagSprite != null)
+                        {
+                            bannerImage.sprite = checkpointFlagSprite;
+                            bannerImage.color = Color.white;
+                        }
+                        else
+                        {
+                            bannerImage.color = Color.red;
+                        }
+                    }
+                }
+            }
+
+            RectTransform activeRect = activeCheckpointFlagObj.GetComponent<RectTransform>();
+            if (activeRect != null)
+            {
+                float barHalfHeight = iconContainer.rect.height * 0.5f;
+                activeRect.anchoredPosition = new Vector2(xPos, barHalfHeight);
+            }
+
+            if (!activeCheckpointFlagObj.activeSelf)
+            {
+                activeCheckpointFlagObj.SetActive(true);
+            }
+        }
+        else
+        {
+            if (activeCheckpointFlagObj != null && activeCheckpointFlagObj.activeSelf)
+            {
+                activeCheckpointFlagObj.SetActive(false);
+            }
+        }
+    }
+
+    private int GetPlayerCheckpointIndex(PlayerRespawn respawn)
+    {
+        if (respawn == null) return -1;
+        System.Type type = respawn.GetType();
+        string[] possibleNames = { "checkpointIndex", "currentCheckpointIndex", "respawnIndex", "lastCheckpointIndex", "spawnIndex" };
+        foreach (var name in possibleNames)
+        {
+            var field = type.GetField(name, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (field != null && field.FieldType == typeof(int))
+            {
+                return (int)field.GetValue(respawn);
+            }
+            var prop = type.GetProperty(name, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (prop != null && prop.PropertyType == typeof(int) && prop.CanRead)
+            {
+                return (int)prop.GetValue(respawn, null);
+            }
+        }
+        return -1;
     }
 }
