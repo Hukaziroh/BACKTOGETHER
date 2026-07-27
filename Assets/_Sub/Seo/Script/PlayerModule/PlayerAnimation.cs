@@ -38,9 +38,7 @@ public class PlayerAnimation : NetworkBehaviour
                 CmdSetDirection(targetDirection);
             }
         }
-        Debug.Log(
-    $"Ground:{controller.movement.isGrounded}  Stun:{controller.knockback.IsStunned}"
-);
+
         ApplyScale(syncDirectionX);
     }
 
