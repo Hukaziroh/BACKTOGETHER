@@ -10,11 +10,13 @@ public class PlayerInput : NetworkBehaviour
     public InputAction moveAction;
     public InputAction jumpAction;
     public InputAction actionAction;
+    private float serverHorizontalInput;
 
-    public float HorizontalInput { get; private set; }
+    public float HorizontalInput => serverHorizontalInput;
     public bool JumpPressedThisFrame => jumpAction.WasPressedThisFrame();
     public bool JumpReleasedThisFrame => jumpAction.WasReleasedThisFrame();
     public bool ActionPressedThisFrame => actionAction.WasPressedThisFrame();
+
 
     void Awake()
     {
@@ -81,9 +83,10 @@ public class PlayerInput : NetworkBehaviour
         {
             if (gameObject != controller.combineHandler.bodyTarget)
             {
-                HorizontalInput = 0f;
+                CmdSendInput(0f);
                 return;
             }
+
             rawInput = controller.combineHandler.GetCombinedHorizontalInput();
         }
         else
@@ -91,12 +94,11 @@ public class PlayerInput : NetworkBehaviour
             rawInput = moveAction.ReadValue<float>();
         }
 
-        // 🎯 수정된 부분: Player가 독자적으로 시간을 재지 않고, 현재 들어와 있는 존(서버)의 방향 상태를 그대로 따라갑니다.
-        if (controller.currentReverseZone != null && !controller.currentReverseZone.isForward)
-        {
-            rawInput *= -1f; // 역방향일 경우 입력값 뒤집기
-        }
-
-        HorizontalInput = rawInput;
+        CmdSendInput(rawInput);
+    }
+    [Command]
+    private void CmdSendInput(float value)
+    {
+        serverHorizontalInput = value;
     }
 }
