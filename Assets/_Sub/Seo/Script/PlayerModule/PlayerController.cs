@@ -60,15 +60,7 @@ public class PlayerController : NetworkBehaviour
             cam.target = transform;
         }
     }
-    public override void OnStartClient()
-    {
-        base.OnStartClient();
 
-        if (!isServer)
-        {
-            rb.bodyType = RigidbodyType2D.Kinematic;
-        }
-    }
 
     public Vector3 currentSpawnPoint
     {
