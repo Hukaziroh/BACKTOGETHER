@@ -2,12 +2,12 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
-using Mirror;              
-using System.Collections; 
+using Mirror;
+using System.Collections;
 
 public class OnlyOptionExit : MonoBehaviour
 {
-    public GameObject optionPanel;
+    public GameObject optionPanel; // 옵션창 오브젝트
 
     public AudioMixer audioMixer;
     public Slider volumeSlider;
@@ -15,6 +15,7 @@ public class OnlyOptionExit : MonoBehaviour
 
     void Start()
     {
+        // 초기값 설정
         fullscreenToggle.isOn = Screen.fullScreen;
         volumeSlider.onValueChanged.AddListener(SetVolume);
         fullscreenToggle.onValueChanged.AddListener(SetFullscreen);
@@ -51,15 +52,18 @@ public class OnlyOptionExit : MonoBehaviour
     {
         if (NetworkManager.singleton != null)
         {
-            if (NetworkServer.active)
-            {
-                NetworkManager.singleton.StopHost();
-            }
-            else if (NetworkClient.isConnected)
-            {
-                NetworkManager.singleton.StopClient();
-            }
+            if (NetworkServer.active) NetworkManager.singleton.StopHost();
+            else if (NetworkClient.isConnected) NetworkManager.singleton.StopClient();
+
+            Destroy(NetworkManager.singleton.gameObject);
         }
+
+        EOSLobby eosLobby = FindObjectOfType<EOSLobby>();
+        if (eosLobby != null)
+        {
+            Destroy(eosLobby.gameObject);
+        }
+
         yield return new WaitForSecondsRealtime(0.5f);
 
         Debug.Log("게임 최종 종료");
