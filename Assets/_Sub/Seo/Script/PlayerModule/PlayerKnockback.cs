@@ -9,7 +9,8 @@ public class PlayerKnockback : NetworkBehaviour
     public float knockPowerX = 15f;
     public float knockPowerY = 37f;
     public float stunTime = 0.5f;
-    public float stunTimer { get; private set; }
+
+    [SyncVar] public float stunTimer;
 
     [Header("크리티컬 ")]
     private int spikeHitCount = 0;
@@ -18,11 +19,10 @@ public class PlayerKnockback : NetworkBehaviour
     private float spikeDamageCooldown = 0f;
     private float criticalCooldownTimer = 0f;
 
-    public bool isKnockedBack { get; private set; }
+    [SyncVar] public bool isKnockedBack;
+
     private float knockbackGraceTimer = 0f;
-
     private float knockbackTimeoutTimer = 0f;
-
     private float activeKnockbackX;
 
     public bool IsStunned => isKnockedBack || stunTimer > 0f;
@@ -34,17 +34,16 @@ public class PlayerKnockback : NetworkBehaviour
 
     void Update()
     {
-        if (!isLocalPlayer) return;
+        if (!isServer) return;
         UpdateTimers();
     }
 
     void FixedUpdate()
     {
-        if (!isLocalPlayer) return;
+        if (!isServer) return;
         HandleKnockbackPhysics();
 
-        // 🌟 [추가됨] 버그 1 해결: 벽 뚫기(터널링) 방지를 위한 절대 속도 제한
-        float maxSafeSpeed = 40f; // 필요시 수치 조절 (너무 낮으면 넉백이 안 되고, 높으면 벽을 뚫습니다)
+        float maxSafeSpeed = 40f;
         if (controller.rb.linearVelocity.magnitude > maxSafeSpeed)
         {
             controller.rb.linearVelocity = controller.rb.linearVelocity.normalized * maxSafeSpeed;
@@ -68,19 +67,16 @@ public class PlayerKnockback : NetworkBehaviour
         if (isKnockedBack)
         {
             if (knockbackGraceTimer > 0f) knockbackGraceTimer -= Time.fixedDeltaTime;
-
             if (knockbackTimeoutTimer > 0f) knockbackTimeoutTimer -= Time.fixedDeltaTime;
 
             controller.rb.linearVelocity = new Vector2(activeKnockbackX, controller.rb.linearVelocity.y);
 
             bool hitGround = knockbackGraceTimer <= 0f && controller.movement.isGrounded && Mathf.Abs(controller.rb.linearVelocity.y) <= 0.1f;
-
             bool airTimeout = knockbackTimeoutTimer <= 0f;
 
             if (hitGround || airTimeout)
             {
                 isKnockedBack = false;
-
                 stunTimer = hitGround ? stunTime : 0f;
             }
         }
@@ -94,7 +90,7 @@ public class PlayerKnockback : NetworkBehaviour
 
     private void OnTriggerStay2D(Collider2D other)
     {
-        if (!isLocalPlayer) return;
+        if (!isServer) return;
 
         if (other.CompareTag("Spike"))
         {
@@ -119,18 +115,18 @@ public class PlayerKnockback : NetworkBehaviour
             }
             else
             {
-                ApplyLocalKnockback(new Vector2(-1f, 0.5f));
+                ApplyKnockback(new Vector2(-1f, 0.5f));
             }
             spikeHitCount = 0;
             spikeResetTimer = 0f;
         }
         else if (spikeHitCount < 3)
         {
-            ApplyLocalKnockback(new Vector2(-1f, 0.5f));
+            ApplyKnockback(new Vector2(-1f, 0.5f));
         }
     }
 
-    private void ApplyLocalKnockback(Vector2 knockDir)
+    private void ApplyKnockback(Vector2 knockDir)
     {
         controller.rb.linearVelocity = Vector2.zero;
         activeKnockbackX = knockDir.x * knockPowerX;
@@ -141,22 +137,26 @@ public class PlayerKnockback : NetworkBehaviour
         isKnockedBack = true;
         stunTimer = 0f;
         knockbackGraceTimer = 0.2f;
-
         knockbackTimeoutTimer = 3.0f;
 
-        CmdPlayHitAnimation();
+        RpcPlayHitAnimation();
 
-        // 🌟 [추가됨] 버그 2 해결: 로프 기믹 중이면 다른 팀원들도 스턴을 걸어 같이 끌려가게 함
         CoopRopeManager ropeManager = FindAnyObjectByType<CoopRopeManager>();
         if (ropeManager != null && ropeManager.isRopeActive)
         {
-            CmdShareKnockbackDrag();
+            RpcShareKnockbackDrag();
         }
+    }
+
+    [TargetRpc]
+    private void TargetToggleCriticalUI(NetworkConnection target, bool state)
+    {
+        if (criticalUI != null) criticalUI.SetActive(state);
     }
 
     private System.Collections.IEnumerator CriticalEscape(float seconds)
     {
-        if (criticalUI != null) criticalUI.SetActive(true);
+        TargetToggleCriticalUI(connectionToClient, true);
 
         activeKnockbackX = -30f;
         float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
@@ -165,26 +165,21 @@ public class PlayerKnockback : NetworkBehaviour
         isKnockedBack = true;
         stunTimer = 0f;
         knockbackGraceTimer = 0.5f;
-
         knockbackTimeoutTimer = 3.0f;
 
-        CmdPlayHitAnimation();
+        RpcPlayHitAnimation();
 
-        // 🌟 [추가됨] 버그 2 해결: 크리티컬 넉백 시에도 로프 기믹 중이면 팀원 스턴
         CoopRopeManager ropeManager = FindAnyObjectByType<CoopRopeManager>();
         if (ropeManager != null && ropeManager.isRopeActive)
         {
-            CmdShareKnockbackDrag();
+            RpcShareKnockbackDrag();
         }
 
         yield return new WaitForSeconds(seconds);
         yield return new WaitForSeconds(2f);
 
-        if (criticalUI != null) criticalUI.SetActive(false);
+        TargetToggleCriticalUI(connectionToClient, false);
     }
-
-    [Command]
-    public void CmdPlayHitAnimation() { RpcPlayHitAnimation(); }
 
     [ClientRpc]
     void RpcPlayHitAnimation()
@@ -201,29 +196,16 @@ public class PlayerKnockback : NetworkBehaviour
 
     public void ApplyKnockbackFromEye(Vector3 eyePosition)
     {
-        if (!isLocalPlayer) return;
-        ApplyLocalKnockback(new Vector2(-1, 0.5f));
-    }
-
-    // =========================================================
-    // 🌟 [추가됨] 연대 책임 스턴 처리 (로프 기믹 시 끌려가게 만듦)
-    // =========================================================
-    [Command(requiresAuthority = false)]
-    private void CmdShareKnockbackDrag()
-    {
-        RpcShareKnockbackDrag();
+        if (!isServer) return;
+        ApplyKnockback(new Vector2(-1, 0.5f));
     }
 
     [ClientRpc]
     private void RpcShareKnockbackDrag()
     {
         if (!isLocalPlayer) return;
-
-        // 가시에 직접 맞은 본인은 이미 넉백 중이므로 제외
         if (isKnockedBack) return;
 
-        // 가시를 밟지 않은 나머지 팀원들의 조작을 0.5초간 마비시킴
-        // (이로 인해 키보드 입력을 덮어씌우지 않게 되어, 맞은 사람을 향해 밧줄로 자연스럽게 확! 끌려감)
         stunTimer = 0.5f;
     }
 }

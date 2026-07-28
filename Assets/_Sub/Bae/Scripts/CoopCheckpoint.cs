@@ -25,13 +25,9 @@ public class CoopCheckpoint : NetworkBehaviour
     public Transform clearFanfareTransform;
     public float fanfareDuration = 0.2f;
 
-    // syncToAllPlayers(팀 공유) 모드에서만 쓰이는 전체 동기화 상태.
-    // 개인 모드에서는 이 값을 안 쓰고, TargetRpc로 밟은 사람 화면에만 반영함.
     [SyncVar(hook = nameof(OnActivatedForAllChanged))]
     private bool isActivatedForAll = false;
 
-    // 개인 모드에서 "이 사람은 이미 이 체크포인트를 밟았는지" 서버가 기억해두는 목록.
-    // 없으면 트리거 존을 들락날락할 때마다 깃발/이펙트가 계속 다시 터짐.
     private readonly HashSet<uint> activatedByNetId = new HashSet<uint>();
 
     public override void OnStartClient()
@@ -73,8 +69,6 @@ public class CoopCheckpoint : NetworkBehaviour
 
         yield return new WaitForSeconds(fanfareDuration);
 
-        // SetActive(false) 대신 Stop()만 호출 — 새로 생기는 입자만 막고,
-        // 이미 떠 있는 입자는 자기 수명/페이드 곡선대로 자연스럽게 사라지게 둠
         if (ps != null) ps.Stop();
     }
 
@@ -85,14 +79,14 @@ public class CoopCheckpoint : NetworkBehaviour
         PlayFanfare();
     }
 
+    // 이미 ServerCallback이 붙어있으므로 서버에서만 실행됩니다! 아주 훌륭합니다.
     [ServerCallback]
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Player"))
             return;
 
-        PlayerRespawn respawnScript =
-            other.GetComponent<PlayerRespawn>();
+        PlayerRespawn respawnScript = other.GetComponent<PlayerRespawn>();
 
         if (respawnScript == null)
             return;
@@ -100,7 +94,6 @@ public class CoopCheckpoint : NetworkBehaviour
         // =====================================================
         // 챕터4 : 한 명이 체크포인트를 찍으면 전원 갱신
         // =====================================================
-
         if (syncToAllPlayers)
         {
             if (!isActivatedForAll)
@@ -108,24 +101,18 @@ public class CoopCheckpoint : NetworkBehaviour
 
             Debug.Log(
                 $"[체크포인트] '{other.name}' 진입! " +
-                $"체크포인트 Index = {checkpointIndex} | " +
-                $"팀 전체 체크포인트 갱신 시도"
+                $"체크포인트 Index = {checkpointIndex} | 팀 전체 체크포인트 갱신 시도"
             );
 
-            List<PlayerRespawn> allRespawns =
-                CoopPlayerManager.GetPlayerComponents<PlayerRespawn>();
+            List<PlayerRespawn> allRespawns = CoopPlayerManager.GetPlayerComponents<PlayerRespawn>();
 
             foreach (var respawn in allRespawns)
             {
                 if (respawn != null)
                 {
-                    // [핵심 추가] 서버 쪽 데이터도 강제로 갱신하여 불일치 원천 차단
-                    respawn.ServerUpdateSpawnPointIfNewer(spawnLocation.position, checkpointIndex);
-
-                    respawn.RpcUpdateSpawnPointIfNewer(
-                        spawnLocation.position,
-                        checkpointIndex
-                    );
+                    // 🌟 [수정됨] 복잡하게 나뉘어 있던 서버/클라 동기화 호출을 하나로 통합!
+                    // SyncVar 구조 덕분에 이 한 줄만 실행하면 알아서 클라이언트까지 저장됩니다.
+                    respawn.UpdateCheckpoint(spawnLocation.position, checkpointIndex);
                 }
             }
         }
@@ -133,27 +120,20 @@ public class CoopCheckpoint : NetworkBehaviour
         // =====================================================
         // 일반 맵 : 체크포인트를 밟은 플레이어만 갱신
         // =====================================================
-
         else
         {
             Debug.Log(
                 $"[체크포인트] '{other.name}' 진입! " +
-                $"체크포인트 Index = {checkpointIndex} | " +
-                $"개인 체크포인트 갱신 시도"
+                $"체크포인트 Index = {checkpointIndex} | 개인 체크포인트 갱신 시도"
             );
 
-            // [핵심 추가] 서버 쪽 데이터 갱신
-            respawnScript.ServerUpdateSpawnPointIfNewer(spawnLocation.position, checkpointIndex);
-
-            respawnScript.TargetUpdateSpawnPointIfNewer(
-                respawnScript.connectionToClient,
-                spawnLocation.position,
-                checkpointIndex
-            );
+            // 🌟 [수정됨] 마찬가지로 하나로 통합!
+            respawnScript.UpdateCheckpoint(spawnLocation.position, checkpointIndex);
 
             NetworkIdentity identity = other.GetComponent<NetworkIdentity>();
             if (identity != null && activatedByNetId.Add(identity.netId))
             {
+                // UI(시각적) 연출은 해당 클라이언트에게만 쏴줘야 하므로 TargetRpc 유지 (완벽함)
                 TargetActivateFlag(respawnScript.connectionToClient);
             }
         }
