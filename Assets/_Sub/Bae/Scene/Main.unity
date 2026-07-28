@@ -3731,13 +3731,13 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
-  m_Type: 0
+  m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
-  m_FillMethod: 4
+  m_FillMethod: 1
   m_FillAmount: 1
   m_FillClockwise: 1
-  m_FillOrigin: 0
+  m_FillOrigin: 1
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
 --- !u!222 &748622255
@@ -4446,15 +4446,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EyeMotionController
   eyeImage: {fileID: 286618906}
-  eyeOpenSprite: {fileID: 21300000, guid: 7a8f48a1373771d4eb4a57e47cb5d162, type: 3}
   eyeClosedSprite: {fileID: 21300000, guid: f0853f59c8e4a264781a95d3f332702f, type: 3}
-  targetBoxRect: {fileID: 748622253}
+  eyeOpenSprite: {fileID: 21300000, guid: 7a8f48a1373771d4eb4a57e47cb5d162, type: 3}
+  boxImage: {fileID: 748622254}
   contentElements:
   - {fileID: 686053665}
   - {fileID: 274658572}
-  - {fileID: 0}
   eyeAppearDuration: 0.15
-  slideDuration: 0.25
+  fillDuration: 0.25
 --- !u!1 &895661571
 GameObject:
   m_ObjectHideFlags: 0
@@ -9675,16 +9674,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EyeMotionController
   eyeImage: {fileID: 499590492}
-  eyeOpenSprite: {fileID: 21300000, guid: 7a8f48a1373771d4eb4a57e47cb5d162, type: 3}
   eyeClosedSprite: {fileID: 21300000, guid: f0853f59c8e4a264781a95d3f332702f, type: 3}
-  targetBoxRect: {fileID: 2126087833}
+  eyeOpenSprite: {fileID: 21300000, guid: 7a8f48a1373771d4eb4a57e47cb5d162, type: 3}
+  boxImage: {fileID: 2126087834}
   contentElements:
   - {fileID: 79599155}
   - {fileID: 1008338245}
   - {fileID: 59256107}
   - {fileID: 779333201}
   eyeAppearDuration: 0.15
-  slideDuration: 0.25
+  fillDuration: 0.25
 --- !u!1 &1763656826
 GameObject:
   m_ObjectHideFlags: 0
@@ -11719,11 +11718,17 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
---- !u!224 &2126087833 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 2692020522350426468, guid: d391139454a53e341889149a36646d1d, type: 3}
+--- !u!114 &2126087834 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4731914129766017363, guid: d391139454a53e341889149a36646d1d, type: 3}
   m_PrefabInstance: {fileID: 6870475135527063537}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!1 &2132180809
 GameObject:
   m_ObjectHideFlags: 0
@@ -12127,6 +12132,18 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1962832248016973830, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_Color.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1962832248016973830, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_Color.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1962832248016973830, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_Color.r
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2062628588668692640, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1241.181
@@ -12173,6 +12190,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2513813003529709278, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2587025153290819365, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_Color.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2587025153290819365, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_Color.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2587025153290819365, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_Color.r
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2692020522350426468, guid: d391139454a53e341889149a36646d1d, type: 3}
@@ -12300,6 +12329,10 @@ PrefabInstance:
       value: OptionsManager, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 4731914129766017363, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_Type
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4731914129766017363, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
@@ -12314,6 +12347,18 @@ PrefabInstance:
     - target: {fileID: 4731914129766017363, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_Color.r
       value: 0.98823535
+      objectReference: {fileID: 0}
+    - target: {fileID: 4731914129766017363, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_FillAmount
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4731914129766017363, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_FillMethod
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4731914129766017363, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_FillOrigin
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5086998270296546513, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_IsActive
@@ -12421,6 +12466,18 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7125640151484125922, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_Color.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7125640151484125922, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_Color.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7125640151484125922, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_Color.r
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7811576632025988235, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_SizeDelta.x
       value: 400
@@ -12467,6 +12524,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8201338402652709385, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8652491443898333521, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_Color.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8652491443898333521, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_Color.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8652491443898333521, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_Color.r
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8863968404755897175, guid: d391139454a53e341889149a36646d1d, type: 3}
@@ -12629,12 +12698,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EyeMotionController
   eyeImage: {fileID: 0}
-  eyeOpenSprite: {fileID: 0}
   eyeClosedSprite: {fileID: 0}
-  targetBoxRect: {fileID: 0}
+  eyeOpenSprite: {fileID: 0}
+  boxImage: {fileID: 0}
   contentElements: []
   eyeAppearDuration: 0.15
-  slideDuration: 0.25
+  fillDuration: 0.25
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
