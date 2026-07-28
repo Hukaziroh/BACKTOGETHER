@@ -69,7 +69,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -1.9259605, y: 2.4341998}
+  m_Offset: {x: -1.6173954, y: 2.4341998}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -79,7 +79,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 15.872696, y: 10.469304}
+  m_Size: {x: 13.815609, y: 10.469304}
   m_EdgeRadius: 0
 --- !u!114 &1569098665384869600
 MonoBehaviour:
@@ -127,6 +127,7 @@ GameObject:
   - component: {fileID: 1890630325207962590}
   - component: {fileID: 4041280149423434541}
   - component: {fileID: 2020620552394857235}
+  - component: {fileID: 3638622667717446275}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -181,7 +182,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: Chapter
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 2627e9ca796b22d4fb592f60230c2fec, type: 2}
   m_sharedMaterial: {fileID: 4301745327245154971, guid: 2627e9ca796b22d4fb592f60230c2fec, type: 2}
@@ -253,6 +254,27 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &3638622667717446275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4737718632756148998}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b54e22d057a07ac4e9ff14b6cee8252d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  koreanText: "\uCC55\uD130"
+  englishText: Chapter
+  japaneseText: "\u30C1\u30E3\u30D7\u30BF\u30FC"
+  chineseText: "\u7AE0"
+  russianText: "\u0413\u043B\u0430\u0432\u0430"
+  englishDilate: 0
+  englishOutlineThickness: 0.4
+  defaultDilate: 0
+  defaultOutlineThickness: 0
 --- !u!1 &8543456486082391716
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,11 +1,11 @@
-using System.Collections;
-using Epic.OnlineServices.Lobby;
-using Mirror;
-using TMPro;
 using UnityEngine;
+using TMPro;
+using Mirror;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Epic.OnlineServices;
+using Epic.OnlineServices.Lobby;
+using System.Collections;
 
 public class PauseManager : MonoBehaviour
 {
@@ -169,16 +169,35 @@ public class PauseManager : MonoBehaviour
             displayCode = PrivateLobbyManager.currentShortCode;
         }
 
+        // 현재 TMP에 적힌 텍스트에서 개행 문자('\n') 또는 콜론(':')을 기준으로 앞쪽 라벨 추출 (예: "CODE:\n" 또는 다국어 대응)
+        string prefix = "CODE:\n";
+        if (!string.IsNullOrEmpty(pauseRoomCodeText.text))
+        {
+            int splitIndex = pauseRoomCodeText.text.IndexOf('\n');
+            if (splitIndex != -1)
+            {
+                prefix = pauseRoomCodeText.text.Substring(0, splitIndex + 1); // 줄바꿈 문자 포함해서 추출
+            }
+            else
+            {
+                int colonIndex = pauseRoomCodeText.text.IndexOf(':');
+                if (colonIndex != -1)
+                {
+                    prefix = pauseRoomCodeText.text.Substring(0, colonIndex + 2);
+                }
+            }
+        }
+
         // 퍼즈 메뉴 UI 갱신
         if (string.IsNullOrEmpty(displayCode))
         {
-            pauseRoomCodeText.text = "CODE:\nEmpty";
+            pauseRoomCodeText.text = prefix + "Empty";
         }
         else
         {
             pauseRoomCodeText.text = isCodeVisible ?
-                $"CODE:\n{displayCode}" :
-                "CODE:\n******";
+                prefix + displayCode :
+                prefix + "******";
         }
 
         // ★ 로비 화면에 있는 룸코드 UI도 퍼즈 상태에 맞춰 같이 변경
