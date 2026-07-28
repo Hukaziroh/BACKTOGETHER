@@ -60,9 +60,12 @@ public class CoopSyncJumpZone : NetworkBehaviour
     [Server]
     public void BroadcastCutJump(GameObject initiator)
     {
+        playersInZone.RemoveWhere(p => p == null || !p.activeInHierarchy);
+
+        
         foreach (var player in playersInZone)
         {
-            if (player != null && player != initiator)
+            if (player != null)
             {
                 var syncJump = player.GetComponent<PlayerSyncJump>();
                 if (syncJump != null)
