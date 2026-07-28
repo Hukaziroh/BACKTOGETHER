@@ -30,12 +30,13 @@ public class CoopSeparateZone : NetworkBehaviour
                         float offsetX = spreadOffsets[spreadIndex % spreadOffsets.Length];
                         Vector3 safeReleasePos = basePos + new Vector3(offsetX, 0.5f, 0f);
 
-                        p.StopCombineMode(safeReleasePos);
+                        p.StopCombineMode(safeReleasePos);              
+                        p.GetComponent<CoopPlayerIdentity>().ResetCombinedColors();
+
                         spreadIndex++;
                     }
                 }
-
-                Debug.Log("합체 해제 구역 통과 -> 연결된 모든 파티원 강제 분리 및 안전 소환 완료!");
+                Debug.Log("합체 해제 구역 통과 -> 연결된 모든 파티원 강제 분리 및 색상 복구 완료!");
             }
         }
     }

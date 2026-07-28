@@ -10,57 +10,59 @@ public class CoopPlayerIdentity : NetworkBehaviour
     public Color[] playerColors = new Color[]
     {
         Color.white,
-        new Color(1f, 0.5f, 0.5f),
-        new Color(0.5f, 0.5f, 1f),
-        new Color(0.5f, 1f, 0.5f)
+        new Color(1f, 0.5f, 0.5f), // Red
+        new Color(0.5f, 0.5f, 1f), // Blue
+        new Color(0.5f, 1f, 0.5f)  // Green
     };
 
     [SyncVar(hook = nameof(OnPlayerIndexChanged))]
     public int playerIndex = -1;
+
+    [SyncVar(hook = nameof(OnCombineVisualChanged))] public int splitMode = 1;
+    [SyncVar(hook = nameof(OnCombineVisualChanged))] public int color1 = -1;
+    [SyncVar(hook = nameof(OnCombineVisualChanged))] public int color2 = -1;
+    [SyncVar(hook = nameof(OnCombineVisualChanged))] public int color3 = -1;
+    [SyncVar(hook = nameof(OnCombineVisualChanged))] public int color4 = -1;
+
     public static Dictionary<int, CoopPlayerIdentity> players = new Dictionary<int, CoopPlayerIdentity>();
     private static readonly Dictionary<int, int> serverConnectionIndexMap = new Dictionary<int, int>();
+
+    private MaterialPropertyBlock propBlock; 
+
+    void Awake()
+    {
+        propBlock = new MaterialPropertyBlock();
+    }
 
     public override void OnStartServer()
     {
         base.OnStartServer();
-        CoopPlayerManager.RegisterPlayer(gameObject); 
+        CoopPlayerManager.RegisterPlayer(gameObject);
         AssignAvailableIndex();
     }
 
     public override void OnStartClient()
     {
         base.OnStartClient();
-        CoopPlayerManager.RegisterPlayer(gameObject); 
+        CoopPlayerManager.RegisterPlayer(gameObject);
 
         if (playerIndex != -1)
         {
             players[playerIndex] = this;
-            UpdatePlayerVisual(playerIndex);
+            UpdatePlayerVisual();
         }
     }
 
     public override void OnStopClient()
     {
         base.OnStopClient();
-        CoopPlayerManager.UnregisterPlayer(gameObject); 
+        CoopPlayerManager.UnregisterPlayer(gameObject);
         if (players.ContainsKey(playerIndex))
         {
             players.Remove(playerIndex);
         }
     }
 
-    public override void OnStopServer()
-    {
-        base.OnStopServer();
-        CoopPlayerManager.UnregisterPlayer(gameObject); 
-        if (!NetworkServer.active)
-        {
-            serverConnectionIndexMap.Clear();
-            CoopPlayerManager.Clear();
-        }
-    }
-
-    [Server]
     private void AssignAvailableIndex()
     {
         int connId = connectionToClient != null ? connectionToClient.connectionId : -1;
@@ -68,8 +70,9 @@ public class CoopPlayerIdentity : NetworkBehaviour
         if (connId != -1 && serverConnectionIndexMap.TryGetValue(connId, out int existingIndex))
         {
             playerIndex = existingIndex;
-            if (isClient) UpdatePlayerVisual(playerIndex);
-            Debug.Log($"[플레이어 유지] 접속 ID({connId}) - 기존 {playerIndex + 1}P 번호 및 색상을 유지합니다.");
+            color1 = existingIndex; 
+            splitMode = 1;
+            if (isClient) UpdatePlayerVisual();
             return;
         }
 
@@ -87,13 +90,13 @@ public class CoopPlayerIdentity : NetworkBehaviour
             if (!isIndexTaken[i])
             {
                 playerIndex = i;
+                color1 = i;
+                splitMode = 1;
                 if (connId != -1)
                 {
                     serverConnectionIndexMap[connId] = i;
                 }
-                if (isClient) UpdatePlayerVisual(playerIndex);
-
-                Debug.Log($"[플레이어 최초 생성] 접속 ID({connId}) - {i + 1}P 번호가 새로 부여되었습니다.");
+                if (isClient) UpdatePlayerVisual();
                 break;
             }
         }
@@ -106,16 +109,71 @@ public class CoopPlayerIdentity : NetworkBehaviour
             players.Remove(oldIndex);
         }
         players[newIndex] = this;
-        UpdatePlayerVisual(newIndex);
+        UpdatePlayerVisual();
     }
 
-    private void UpdatePlayerVisual(int index)
+    void OnCombineVisualChanged(int oldVal, int newVal)
+    {
+        UpdatePlayerVisual();
+    }
+
+    [Server]
+    public void SetCombinedColors(int mode, int c1, int c2, int c3 = -1, int c4 = -1)
+    {
+        splitMode = mode;
+        color1 = c1;
+        color2 = c2;
+        color3 = c3;
+        color4 = c4;
+    }
+
+    [Server]
+    public void ResetCombinedColors()
+    {
+        splitMode = 1;
+        color1 = playerIndex;
+        color2 = -1;
+        color3 = -1;
+        color4 = -1;
+    }
+
+    private void UpdatePlayerVisual()
     {
         if (playerSpriteRenderer == null) return;
+        playerSpriteRenderer.GetPropertyBlock(propBlock);
 
-        if (index >= 0 && index < playerColors.Length)
+        if (splitMode == 1)
         {
-            playerSpriteRenderer.color = playerColors[index];
+            Color mainColor = (color1 >= 0 && color1 < playerColors.Length) ? playerColors[color1] : Color.white;
+            propBlock.SetFloat("_SplitMode", 1);
+            propBlock.SetColor("_Color1", mainColor);
+            playerSpriteRenderer.color = mainColor;
         }
+        else if (splitMode == 2) 
+        {
+            Color c1 = (color1 >= 0 && color1 < playerColors.Length) ? playerColors[color1] : Color.white;
+            Color c2 = (color2 >= 0 && color2 < playerColors.Length) ? playerColors[color2] : Color.white;
+
+            propBlock.SetFloat("_SplitMode", 2);
+            propBlock.SetColor("_Color1", c1);
+            propBlock.SetColor("_Color2", c2);
+            playerSpriteRenderer.color = Color.white; 
+        }
+        else if (splitMode == 4) 
+        {
+            Color c1 = (color1 >= 0 && color1 < playerColors.Length) ? playerColors[color1] : Color.white;
+            Color c2 = (color2 >= 0 && color2 < playerColors.Length) ? playerColors[color2] : Color.white;
+            Color c3 = (color3 >= 0 && color3 < playerColors.Length) ? playerColors[color3] : Color.white;
+            Color c4 = (color4 >= 0 && color4 < playerColors.Length) ? playerColors[color4] : Color.white;
+
+            propBlock.SetFloat("_SplitMode", 4);
+            propBlock.SetColor("_Color1", c1);
+            propBlock.SetColor("_Color2", c2);
+            propBlock.SetColor("_Color3", c3);
+            propBlock.SetColor("_Color4", c4);
+            playerSpriteRenderer.color = Color.white;
+        }
+
+        playerSpriteRenderer.SetPropertyBlock(propBlock);
     }
 }
