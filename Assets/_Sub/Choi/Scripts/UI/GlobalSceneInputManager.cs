@@ -245,9 +245,41 @@ public class GlobalSceneInputManager : MonoBehaviour
         return _isLocked && _lockedObject != null;
     }
 
-    // 특정 패널(창) 내부로 포커스를 격리하고 배경을 얼리는 함수
+    // 특정 패널(창) 내부로 포커스를 격리하고 배경을 얼리는 함수 (scopeRoot가 없거나 null이면 최상단 패널 자동 탐색)
     public void SetFocusScope(GameObject scopeRoot)
     {
+        // 💡 scopeRoot를 인자로 넘기지 않았거나 null인 경우, 현재 켜져 있는 버튼들 중 가장 최상단 패널을 자동으로 탐색
+        if (scopeRoot == null)
+        {
+            Selectable[] allSelectables = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude);
+            GameObject bestRoot = null;
+            int highestOrder = int.MinValue;
+            int highestSibling = int.MinValue;
+
+            foreach (var sel in allSelectables)
+            {
+                if (sel != null && sel.gameObject.activeInHierarchy)
+                {
+                    Canvas canvas = sel.GetComponentInParent<Canvas>();
+                    int order = canvas != null ? canvas.sortingOrder : 0;
+                    Transform topPanel = GetTopLevelPanel(sel.transform, canvas?.transform);
+
+                    if (topPanel != null)
+                    {
+                        int sibling = topPanel.GetSiblingIndex();
+                        if (order > highestOrder || (order == highestOrder && sibling > highestSibling))
+                        {
+                            highestOrder = order;
+                            highestSibling = sibling;
+                            bestRoot = topPanel.gameObject;
+                        }
+                    }
+                }
+            }
+
+            scopeRoot = bestRoot != null ? bestRoot : (allSelectables.Length > 0 ? allSelectables[0].gameObject : null);
+        }
+
         if (scopeRoot == null) return;
 
         ClearFocusScope(); // 기존 격리가 있다면 해제
@@ -255,8 +287,8 @@ public class GlobalSceneInputManager : MonoBehaviour
         _currentFocusScope = scopeRoot;
 
         // 현재 하이어라키에 켜져 있는 모든 버튼 탐색
-        Selectable[] allSelectables = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude);
-        foreach (var sel in allSelectables)
+        Selectable[] allSelectablesTarget = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude);
+        foreach (var sel in allSelectablesTarget)
         {
             // 지정한 창(scopeRoot)의 자식이 아니면서 현재 켜져 있는 버튼들만 비활성화 대상으로 지정
             if (sel != null && sel.interactable && !sel.transform.IsChildOf(scopeRoot.transform))

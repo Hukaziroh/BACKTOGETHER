@@ -128,6 +128,19 @@ public class UIManager : MonoBehaviour
             return;
         }
 
+        // 0. 언어 설정 패널이 켜져 있는 경우: 언어 패널을 닫고 옵션 패널을 다시 엶
+        if (LocalizationController.Instance != null &&
+            LocalizationController.Instance.languagePanel != null &&
+            LocalizationController.Instance.languagePanel.activeSelf)
+        {
+            LocalizationController.Instance.CloseLanguagePanel();
+            if (optionsManager != null)
+            {
+                optionsManager.Open();
+            }
+            return;
+        }
+
         // 1. 옵션창이 켜져 있는 경우
         if (optionsManager?.optionsPanel != null && optionsManager.optionsPanel.activeSelf)
         {

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using Mirror;
+using System.Text.RegularExpressions;
 
 [RequireComponent(typeof(NetworkIdentity))]
 [RequireComponent(typeof(Collider2D))]
@@ -67,8 +68,35 @@ public class TriggerPlayerCounter : NetworkBehaviour
     {
         if (counterAndChapterText != null)
         {
-            // 허공 캔버스에 챕터 번호와 인원수가 실시간으로 표시됩니다. (예: Chapter 1 \n 2 / 4)
-            counterAndChapterText.text = $"Chapter {chapterNumber}\n{count} / {requiredPlayerCount}";
+            string rawText = counterAndChapterText.text;
+            string baseChapterWord = "Chapter";
+
+            if (!string.IsNullOrEmpty(rawText))
+            {
+                // 기존 텍스트에서 개행 문자('\n')나 숫자 등을 제외하고 순수 다국어 챕터 명칭만 추출
+                int newlineIdx = rawText.IndexOf('\n');
+                if (newlineIdx != -1)
+                {
+                    rawText = rawText.Substring(0, newlineIdx);
+                }
+
+                int spaceIdx = rawText.IndexOf(' ');
+                if (spaceIdx != -1)
+                {
+                    baseChapterWord = rawText.Substring(0, spaceIdx);
+                }
+                else
+                {
+                    baseChapterWord = Regex.Replace(rawText, @"[\d]", "").Trim();
+                    if (string.IsNullOrEmpty(baseChapterWord))
+                    {
+                        baseChapterWord = rawText;
+                    }
+                }
+            }
+
+            // [다국어 챕터 명칭] [챕터 번호] \n [현재 인원] / [필요 인원] 형태로 조합
+            counterAndChapterText.text = $"{baseChapterWord} {chapterNumber}\n{count} / {requiredPlayerCount}";
         }
     }
 }

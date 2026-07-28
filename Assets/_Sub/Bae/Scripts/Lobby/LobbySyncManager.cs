@@ -87,13 +87,24 @@ public class LobbySyncManager : NetworkBehaviour
 
             string formattedCode = string.IsNullOrEmpty(code) ? "-" : code;
 
+            // 현재 TMP에 적힌 텍스트에서 콜론(:)을 기준으로 앞쪽 라벨(예: "Room Code: ")을 추출
+            string prefix = "Room Code: ";
+            if (!string.IsNullOrEmpty(roomCodeText.text))
+            {
+                int colonIndex = roomCodeText.text.IndexOf(':');
+                if (colonIndex != -1)
+                {
+                    prefix = roomCodeText.text.Substring(0, colonIndex + 2); // 콜론과 공백 포함해서 추출
+                }
+            }
+
             if (isVisible)
             {
-                roomCodeText.text = $"Room Code: {formattedCode}";
+                roomCodeText.text = prefix + formattedCode;
             }
             else
             {
-                roomCodeText.text = "Room Code: ******";
+                roomCodeText.text = prefix + "******";
             }
         }
     }
