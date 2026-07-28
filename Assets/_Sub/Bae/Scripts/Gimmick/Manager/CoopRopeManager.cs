@@ -140,55 +140,53 @@ public class CoopRopeManager : NetworkBehaviour
         }
     }
 
-    [ServerCallback]
     void FixedUpdate()
     {
-        if (!isRopeActive || connectedPlayers.Count < 2)
-            return;
+        if (!isRopeActive || connectedPlayers.Count < 2) return;
 
+        GameObject localPlayer = null;
+        int localIndex = -1;
 
         for (int i = 0; i < connectedPlayers.Count; i++)
         {
-            GameObject player = connectedPlayers[i];
-
-            if (player == null)
-                continue;
-
-
-            Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
-            PlayerMovement movement = player.GetComponent<PlayerMovement>();
-
-            if (rb == null || movement == null)
-                continue;
-
-
-            rb.mass = movement.isGrounded
-                ? groundedMass
-                : airborneMass;
-
-
-            bool tension = false;
-
-
-            if (i > 0)
+            if (connectedPlayers[i] != null)
             {
-                Rigidbody2D prev = connectedPlayers[i - 1].GetComponent<Rigidbody2D>();
-
-                if (prev != null)
-                    tension |= ApplyRopeConstraint(rb, prev, movement.isGrounded);
+                NetworkIdentity identity = connectedPlayers[i].GetComponent<NetworkIdentity>();
+                if (identity != null && identity.isLocalPlayer)
+                {
+                    localPlayer = connectedPlayers[i];
+                    localIndex = i;
+                    break;
+                }
             }
+        }
 
+        if (localPlayer != null)
+        {
+            Rigidbody2D rb = localPlayer.GetComponent<Rigidbody2D>();
+            PlayerMovement movement = localPlayer.GetComponent<PlayerMovement>();
 
-            if (i < connectedPlayers.Count - 1)
+            if (rb != null && movement != null)
             {
-                Rigidbody2D next = connectedPlayers[i + 1].GetComponent<Rigidbody2D>();
+                rb.mass = movement.isGrounded ? groundedMass : airborneMass;
 
-                if (next != null)
-                    tension |= ApplyRopeConstraint(rb, next, movement.isGrounded);
+                bool isTensionActive = false;
+                if (localIndex > 0 && connectedPlayers[localIndex - 1] != null)
+                {
+                    Rigidbody2D prevRb = connectedPlayers[localIndex - 1].GetComponent<Rigidbody2D>();
+                    if (prevRb != null && ApplyRopeConstraint(rb, prevRb, movement.isGrounded))
+                        isTensionActive = true;
+                }
+
+                if (localIndex < connectedPlayers.Count - 1 && connectedPlayers[localIndex + 1] != null)
+                {
+                    Rigidbody2D nextRb = connectedPlayers[localIndex + 1].GetComponent<Rigidbody2D>();
+                    if (nextRb != null && ApplyRopeConstraint(rb, nextRb, movement.isGrounded))
+                        isTensionActive = true;
+                }
+
+                movement.isRestrictedByRope = isTensionActive;
             }
-
-
-            movement.isRestrictedByRope = tension;
         }
     }
     private bool ApplyRopeConstraint(Rigidbody2D rb, Rigidbody2D targetRb, bool amIGrounded)
