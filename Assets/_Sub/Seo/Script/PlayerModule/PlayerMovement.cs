@@ -7,6 +7,7 @@ public class PlayerMovement : NetworkBehaviour
     public bool isRestrictedByRope = false;
     private int playerLayerMask;
     public bool isTouchingPlayer { get; private set; }
+
     [Header("무브")]
     public float moveSpeed = 7f;
 
@@ -66,12 +67,9 @@ public class PlayerMovement : NetworkBehaviour
     private bool justJumped = false;
     private bool wasGroundedLastFrame = false;
 
-    [Header("코너 충돌 보정 (실제 충돌은 항상 유지하고, 그로 인한 잔여 속도만 제거)")]
-    [Tooltip("이 값보다 큰 X속도 변화가 감지되면 '물리엔진이 충돌 해소 중 끼워넣은 값'으로 간주하고 지운다.")]
+    [Header("코너 충돌 보정")]
     public float cornerPushEpsilon = 0.02f;
-    [Tooltip("겹친 깊이가 이 값을 넘으면 '깊게 낀 것'으로 보고 즉시 강제로 떼어놓는다. 이 값 이하의 살짝 스치는 정도는 물리엔진에 맡긴다.")]
     public float overlapPushTolerance = 0.01f;
-    [Tooltip("체크하면 겹침이 감지/보정될 때마다 콘솔에 상세 정보(깊이, 속도, 중력, 질량 등)를 출력한다. 원인 파악용 - 확인 끝나면 꺼도 됨.")]
     public bool debugLogOverlap = false;
     private float lastCommandedVelocityX;
     private bool hasCommandedVelocity;
@@ -83,24 +81,16 @@ public class PlayerMovement : NetworkBehaviour
 
         groundFilter = new ContactFilter2D { useLayerMask = true, useTriggers = false, layerMask = groundLayer };
         playerFilter = new ContactFilter2D { useLayerMask = true, useTriggers = false, layerMask = playerLayerMask };
-
-        Debug.Log($"★★★★★ [PlayerMovement] Awake 실행됨 - {gameObject.name} (진단용 스크립트 버전) ★★★★★", this);
-    }
-
-    // 🚀 Update는 비워두거나 지워도 됩니다. 물리 로직은 모두 FixedUpdate로 이동했습니다.
-    void Update()
-    {
-
     }
 
     void FixedUpdate()
     {
         if (!isServer) return;
 
+        // 고스트(팀원)는 스스로 물리 연산을 하지 않고 본체에 합쳐짐
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
 
-        // 🚀 1. 물리 프레임에 맞춰 타이머와 중력을 업데이트 (프레임 오차 해결)
         UpdateTimers();
         UpdateCoyoteTime();
         UpdateGravity();
@@ -112,8 +102,8 @@ public class PlayerMovement : NetworkBehaviour
         CheckHeadForPlayer();
         CheckTouchingPlayer();
 
-        // 🚀 2. 점프 및 이동 처리
         HandleJumpInput();
+        HandleActionInput();
         HandleMovementPhysics();
         ClampVelocity();
 
@@ -128,38 +118,47 @@ public class PlayerMovement : NetworkBehaviour
         lastCommandedVelocityX = controller.rb.linearVelocity.x;
         hasCommandedVelocity = true;
 
-        // 🚀 3. 모든 물리/점프 판정이 끝난 후, 가장 안전한 마지막 시점에 버퍼 초기화
-        controller.input.ClearJumpInput();
+        if (controller.combineHandler != null && controller.combineHandler.isCombined && controller.combineHandler.bodyTarget == gameObject)
+        {
+            controller.combineHandler.ClearAllCombinedInputBuffers();
+        }
+        else
+        {
+            controller.input.ClearInputBuffers();
+        }
     }
+
+    // ============================================================
+    // 입력 처리 파트
+    // ============================================================
 
     private void HandleJumpInput()
     {
-        // 🚀 4. 합체(Combine) 상태일 때 머리 플레이어의 점프 입력 완벽 차단
-        if (controller.combineHandler != null &&
-            controller.combineHandler.isCombined &&
-            gameObject != controller.combineHandler.bodyTarget)
-        {
+        if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
+
+
+        bool isJumpPressed = controller.input.JumpPressedThisFrame;
+        bool isJumpReleased = controller.input.JumpReleasedThisFrame;
+        bool isJumpHolding = controller.input.JumpHolding;
+
+        if (controller.combineHandler != null && controller.combineHandler.isCombined && controller.combineHandler.bodyTarget == gameObject)
+        {
+            isJumpPressed = controller.combineHandler.GetServerCombinedJumpPressed();
+            isJumpReleased = controller.combineHandler.GetServerCombinedJumpReleased();
+            isJumpHolding = controller.combineHandler.GetServerCombinedJumpHolding();
         }
 
-        if (PauseManager.instance != null && PauseManager.instance.isPaused)
-            return;
-
-        if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())
-            return;
-
-        // 점프 누름 판정
-        if (controller.input.JumpPressedThisFrame && coyoteTimeCounter > 0f && !controller.knockback.IsStunned && !hasPlayerOnHead)
+        if (isJumpPressed && coyoteTimeCounter > 0f && !controller.knockback.IsStunned && !hasPlayerOnHead)
         {
             Jump();
             coyoteTimeCounter = 0f;
         }
 
-        // 짧은 점프 (점프 뗌 판정)
         bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
         bool isMovingUp = inverted ? (controller.rb.linearVelocity.y < 0f) : (controller.rb.linearVelocity.y > 0f);
 
-        if (controller.input.JumpReleasedThisFrame && isMovingUp && !controller.knockback.IsStunned)
+        if ((isJumpReleased || !isJumpHolding) && isMovingUp && !controller.knockback.IsStunned)
         {
             if (controller.syncJumpHandler != null && controller.syncJumpHandler.isInSyncZone)
                 controller.syncJumpHandler.CmdCutSyncJump();
@@ -168,42 +167,36 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
-    public void Jump()
+    private void HandleActionInput()
     {
-        if (controller.knockback.isKnockedBack) return;
-        float gravity = Mathf.Abs(Physics2D.gravity.y) * jumpSpeed;
-        float jumpForce = Mathf.Sqrt(2f * gravity * jumpHeight);
-        float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
-        controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, jumpForce * mult);
-        ckTimer = jumpCk;
+        if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
+            return;
 
-        justJumped = true;
-    }
+        bool isActionPressed = controller.input.ActionPressedThisFrame;
 
-    public void ApplyShortJump()
-    {
-        bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
-        bool isMovingUpCheck = inverted ? (controller.rb.linearVelocity.y < 0f) : (controller.rb.linearVelocity.y > 0f);
-        if (isMovingUpCheck) controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, controller.rb.linearVelocity.y * superJump);
-    }
+        if (controller.combineHandler != null && controller.combineHandler.isCombined && controller.combineHandler.bodyTarget == gameObject)
+        {
+            isActionPressed = controller.combineHandler.GetServerCombinedActionPressed();
+        }
 
-    private void UpdateGravity()
-    {
-        bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
-        float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
-        bool isFalling = isInverted ? (controller.rb.linearVelocity.y > 0f) : (controller.rb.linearVelocity.y < 0f);
-        controller.rb.gravityScale = isFalling ? (jumpSpeed * fallSpeed * mult) : (jumpSpeed * mult);
+        if (isActionPressed)
+        {
+            if (controller.combineHandler != null && controller.combineHandler.canUseAction)
+            {
+                CallCombinedAction();
+            }
+        }
     }
 
     private void HandleMovementPhysics()
     {
         float rawInput = controller.input.HorizontalInput;
 
-        if ((PauseManager.instance != null && PauseManager.instance.isPaused) ||
-            (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen()))
+        if (controller.combineHandler != null && controller.combineHandler.isCombined && controller.combineHandler.bodyTarget == gameObject)
         {
-            rawInput = 0f;
+            rawInput = controller.combineHandler.GetServerCombinedHorizontalInput();
         }
+
         if (controller.knockback.isKnockedBack) return;
 
         if (controller.knockback.IsStunned)
@@ -212,15 +205,9 @@ public class PlayerMovement : NetworkBehaviour
             controller.rb.linearVelocity = new Vector2(slideSpeed, controller.rb.linearVelocity.y);
             return;
         }
-
         if (controller.currentReverseZone != null && !controller.currentReverseZone.isForward)
         {
-            float originalInput = 0f;
-            if (controller.combineHandler != null && controller.combineHandler.isCombined)
-                originalInput = controller.combineHandler.GetCombinedHorizontalInput();
-            else
-                originalInput = controller.input.moveAction.ReadValue<float>();
-
+            float originalInput = rawInput;
             if ((originalInput > 0 && rawInput > 0) || (originalInput < 0 && rawInput < 0))
             {
                 rawInput *= -1f;
@@ -241,7 +228,7 @@ public class PlayerMovement : NetworkBehaviour
             RaycastHit2D hit = Physics2D.BoxCast(boxCenter, boxSize, 0f, new Vector2(moveDir, 0f), castDistance, playerLayerMask);
             if (debugLogOverlap && hit.collider != null && hit.collider.gameObject != gameObject)
             {
-                LogDebug($"BoxCast 차단됨 - castDistance={castDistance:F3} 상대={hit.collider.gameObject.name} hit.distance={hit.distance:F3}");
+                LogDebug($"BoxCast 차단됨 - castDistance={castDistance:F3} 상대={hit.collider.gameObject.name}");
             }
             if (hit.collider != null && hit.collider.gameObject != gameObject)
             {
@@ -287,6 +274,36 @@ public class PlayerMovement : NetworkBehaviour
         }
 
         controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
+    }
+
+    // ============================================================
+    // 기타 물리 및 보조 파트
+    // ============================================================
+
+    public void Jump()
+    {
+        if (controller.knockback.isKnockedBack) return;
+        float gravity = Mathf.Abs(Physics2D.gravity.y) * jumpSpeed;
+        float jumpForce = Mathf.Sqrt(2f * gravity * jumpHeight);
+        float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
+        controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, jumpForce * mult);
+        ckTimer = jumpCk;
+        justJumped = true;
+    }
+
+    public void ApplyShortJump()
+    {
+        bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
+        bool isMovingUpCheck = inverted ? (controller.rb.linearVelocity.y < 0f) : (controller.rb.linearVelocity.y > 0f);
+        if (isMovingUpCheck) controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, controller.rb.linearVelocity.y * superJump);
+    }
+
+    private void UpdateGravity()
+    {
+        bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
+        float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
+        bool isFalling = isInverted ? (controller.rb.linearVelocity.y > 0f) : (controller.rb.linearVelocity.y < 0f);
+        controller.rb.gravityScale = isFalling ? (jumpSpeed * fallSpeed * mult) : (jumpSpeed * mult);
     }
 
     void CheckTouchingPlayer()
@@ -466,53 +483,6 @@ public class PlayerMovement : NetworkBehaviour
     private void LogDebug(string message)
     {
         if (debugLogOverlap) Debug.Log($"[겹침디버그:{gameObject.name}] {message}", this);
-    }
-
-    private void ResolvePlayerOverlap()
-    {
-        Vector2 boxCenter = controller.bodyCollider.bounds.center;
-        Vector2 boxSize = (Vector2)controller.bodyCollider.bounds.size + new Vector2(0.02f, 0.02f);
-
-        int hitCount = Physics2D.OverlapBox(boxCenter, boxSize, 0f, playerFilter, playerCheckResults);
-
-        if (debugLogOverlap && hitCount > 0)
-        {
-            LogDebug($"OverlapBox 감지됨 - hitCount={hitCount} 내위치={controller.rb.position} 내속도={controller.rb.linearVelocity}");
-        }
-
-        for (int i = 0; i < hitCount; i++)
-        {
-            Collider2D col = playerCheckResults[i];
-            if (col.gameObject == gameObject || col.isTrigger) continue;
-
-            Bounds myBounds = controller.bodyCollider.bounds;
-            Bounds otherBounds = col.bounds;
-
-            float overlapX = Mathf.Min(myBounds.max.x, otherBounds.max.x) - Mathf.Max(myBounds.min.x, otherBounds.min.x);
-            float overlapY = Mathf.Min(myBounds.max.y, otherBounds.max.y) - Mathf.Max(myBounds.min.y, otherBounds.min.y);
-
-            if (overlapX <= overlapPushTolerance || overlapY <= overlapPushTolerance) continue;
-
-            Vector2 vel = controller.rb.linearVelocity;
-            Vector2 pos = controller.rb.position;
-
-            if (overlapX < overlapY)
-            {
-                float dir = myBounds.center.x <= otherBounds.center.x ? -1f : 1f;
-                pos.x += dir * overlapX;
-                if (vel.x * dir < 0f) vel.x = 0f;
-            }
-            else
-            {
-                float dir = myBounds.center.y <= otherBounds.center.y ? -1f : 1f;
-                pos.y += dir * overlapY;
-                if (vel.y * dir < 0f) vel.y = 0f;
-            }
-
-            controller.rb.position = pos;
-            controller.rb.linearVelocity = vel;
-            break;
-        }
     }
 
     private void CancelUnexpectedPlayerCollisionPush()
