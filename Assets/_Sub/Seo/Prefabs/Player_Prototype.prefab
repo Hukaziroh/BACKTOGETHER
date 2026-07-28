@@ -717,7 +717,7 @@ GameObject:
   - component: {fileID: 106991141419042085}
   - component: {fileID: 1312891903968155803}
   - component: {fileID: 6800475550925425856}
-  - component: {fileID: 6995279029630361249}
+  - component: {fileID: 1904173253102594305}
   - component: {fileID: 8745062610783527755}
   m_Layer: 8
   m_Name: Player_Prototype
@@ -945,6 +945,11 @@ MonoBehaviour:
   - {r: 0.5, g: 0.5, b: 1, a: 1}
   - {r: 0.5, g: 1, b: 0.5, a: 1}
   playerIndex: -1
+  splitMode: 1
+  color1: -1
+  color2: -1
+  color3: -1
+  color4: -1
 --- !u!114 &3358145353756136941
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -963,37 +968,8 @@ MonoBehaviour:
   isCombined: 0
   myRole: 0
   bodyTarget: {fileID: 0}
-  ghostLeftInput: 0
-  ghostRightInput: 0
-  ghostDuoInput: 0
   canUseAction: 0
-  moveAction:
-    m_Name: Move
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: 64d0dd9c-9349-4e18-9cb8-51fea926f4b1
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings: []
-    m_Flags: 0
-  jumpAction:
-    m_Name: Jump
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: 11155dc7-e328-47b5-bd66-3db33f798231
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings: []
-    m_Flags: 0
-  actionAction:
-    m_Name: Action
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: 9399acc5-9dd3-470a-9f36-54cb51b6d38f
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings: []
-    m_Flags: 0
+  connectedGhosts: []
 --- !u!114 &3475600457935097304
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1149,7 +1125,9 @@ MonoBehaviour:
   knockPowerX: 15
   knockPowerY: 37
   stunTime: 0.7
+  stunTimer: 0
   criticalUI: {fileID: 5928420892551892794}
+  isKnockedBack: 0
 --- !u!114 &4858706675134242407
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1284,7 +1262,7 @@ MonoBehaviour:
   targetSize: 0.5
   headOffset: {x: 0, y: 2, z: 0}
   displayDuration: 2
---- !u!114 &6995279029630361249
+--- !u!114 &1904173253102594305
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
