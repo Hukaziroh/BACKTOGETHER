@@ -169,10 +169,12 @@ public class PlayerMovement : NetworkBehaviour
 
         if (shouldCutJump && isMovingUp && !controller.knockback.IsStunned)
         {
+            ApplyShortJump(); 
+
             if (controller.syncJumpHandler != null && controller.syncJumpHandler.isInSyncZone)
-                controller.syncJumpHandler.CmdCutSyncJump();
-            else
-                ApplyShortJump();
+            {
+                controller.syncJumpHandler.CmdCutSyncJump(); 
+            }
         }
     }
 
