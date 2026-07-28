@@ -137,7 +137,6 @@ public class PlayerMovement : NetworkBehaviour
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
 
-
         bool isJumpPressed = controller.input.JumpPressedThisFrame;
         bool isJumpReleased = controller.input.JumpReleasedThisFrame;
         bool isJumpHolding = controller.input.JumpHolding;
@@ -158,7 +157,17 @@ public class PlayerMovement : NetworkBehaviour
         bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
         bool isMovingUp = inverted ? (controller.rb.linearVelocity.y < 0f) : (controller.rb.linearVelocity.y > 0f);
 
-        if ((isJumpReleased || !isJumpHolding) && isMovingUp && !controller.knockback.IsStunned)
+        bool shouldCutJump = false;
+        if (controller.syncJumpHandler != null && controller.syncJumpHandler.isInSyncZone)
+        {
+            shouldCutJump = isJumpReleased;
+        }
+        else
+        {
+            shouldCutJump = isJumpReleased || !isJumpHolding;
+        }
+
+        if (shouldCutJump && isMovingUp && !controller.knockback.IsStunned)
         {
             if (controller.syncJumpHandler != null && controller.syncJumpHandler.isInSyncZone)
                 controller.syncJumpHandler.CmdCutSyncJump();
