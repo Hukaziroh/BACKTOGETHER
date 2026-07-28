@@ -9,7 +9,30 @@ using Epic.OnlineServices;
 
 public class PauseManager : MonoBehaviour
 {
-    public static PauseManager instance;
+    // ★ 경고가 발생하던 FindObjectsSortMode 부분을 최신 API인 FindObjectsInactive로 변경
+    private static PauseManager _instance;
+    public static PauseManager instance
+    {
+        get
+        {
+            if (_instance == null || _instance.gameObject.scene != SceneManager.GetActiveScene())
+            {
+                PauseManager[] managers = FindObjectsByType<PauseManager>(FindObjectsInactive.Exclude);
+                foreach (var mgr in managers)
+                {
+                    if (mgr.gameObject.scene == SceneManager.GetActiveScene())
+                    {
+                        _instance = mgr;
+                        break;
+                    }
+                }
+                if (_instance == null && managers.Length > 0) _instance = managers[0];
+            }
+            return _instance;
+        }
+        set => _instance = value;
+    }
+
     private bool isLeaving = false;
 
     [Header("UI 패널 할당")]
@@ -31,15 +54,7 @@ public class PauseManager : MonoBehaviour
 
     void Awake()
     {
-        if (instance == null)
-        {
-            instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        instance = this;
     }
 
     void Start()
