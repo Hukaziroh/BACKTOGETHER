@@ -42,18 +42,33 @@ public class CoopDuoCombineTrigger : NetworkBehaviour
             playersInZone.Remove(other.gameObject);
         }
     }
-
     [Server]
     private void ActivateDuoCombine()
     {
         List<GameObject> playerList = new List<GameObject>(playersInZone);
         if (playerList.Count < 2) return;
 
-        Debug.Log($"{playerList.Count}인 진입 완료 -> 2인 듀오 기믹 발동!");
+        for (int i = 0; i < playerList.Count; i++)
+        {
+            int randomIndex = UnityEngine.Random.Range(0, playerList.Count);
+            GameObject temp = playerList[i];
+            playerList[i] = playerList[randomIndex];
+            playerList[randomIndex] = temp;
+        }
+
+        Debug.Log($"{playerList.Count}인 진입 완료 -> 2인 듀오 기믹 발동! (역할 랜덤)");
+
         AssignRole(playerList[0], playerList[1], CombineRole.Move, CombineRole.Jump);
+        int id0 = playerList[0].GetComponent<CoopPlayerIdentity>().playerIndex;
+        int id1 = playerList[1].GetComponent<CoopPlayerIdentity>().playerIndex;
+        playerList[0].GetComponent<CoopPlayerIdentity>().SetCombinedColors(2, id0, id1);
+
         if (playerList.Count >= 4)
         {
             AssignRole(playerList[2], playerList[3], CombineRole.Move, CombineRole.Jump);
+            int id2 = playerList[2].GetComponent<CoopPlayerIdentity>().playerIndex;
+            int id3 = playerList[3].GetComponent<CoopPlayerIdentity>().playerIndex;
+            playerList[2].GetComponent<CoopPlayerIdentity>().SetCombinedColors(2, id2, id3);
         }
     }
 
