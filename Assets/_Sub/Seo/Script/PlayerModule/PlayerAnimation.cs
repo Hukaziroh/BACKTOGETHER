@@ -49,7 +49,6 @@ public class PlayerAnimation : NetworkBehaviour
         syncSpeed = speed;
         syncGrounded = controller.movement.isGrounded;
         syncStunned = controller.knockback.IsStunned;
-        syncVelocityY = controller.rb.linearVelocity.y; // 리지드바디 Y축 속도 동기화
 
         float input = controller.input.HorizontalInput;
 
@@ -69,7 +68,6 @@ public class PlayerAnimation : NetworkBehaviour
         controller.anim.SetFloat("Speed", syncSpeed);
         controller.anim.SetBool("isGrounded", syncGrounded);
         controller.anim.SetBool("isStunned", syncStunned);
-        controller.anim.SetFloat("VerticalVelocity", syncVelocityY);
 
         // 스프라이트 방향 및 중력 반전 적용
         ApplyScale(syncDirectionX);

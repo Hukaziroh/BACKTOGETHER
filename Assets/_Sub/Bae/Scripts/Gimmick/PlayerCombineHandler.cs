@@ -1,6 +1,6 @@
+using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public enum CombineRole
 {
@@ -14,67 +14,20 @@ public class PlayerCombineHandler : NetworkBehaviour
     [SyncVar] public CombineRole myRole = CombineRole.None;
     [SyncVar] public GameObject bodyTarget;
 
-    [HideInInspector] public float ghostLeftInput = 0f;
-    [HideInInspector] public float ghostRightInput = 0f;
-    [HideInInspector] public float ghostDuoInput = 0f;
-
-    // 💡 4인 기믹 전용: 특정 발판(트리거)에 올라가 있는지 체크하는 변수 추가!
     [SyncVar] public bool canUseAction = false;
 
-    private float lastSentMove = 0f;
+    // 본체(Body)가 자신에게 붙은 고스트들을 기억하는 리스트 (서버 전용 최적화)
+    public List<PlayerCombineHandler> connectedGhosts = new List<PlayerCombineHandler>();
 
     private SpriteRenderer spriteRenderer;
     private Collider2D col;
     private Rigidbody2D rb;
-
-    [Header("입력 설정")]
-    public InputAction moveAction;
-    public InputAction jumpAction;
-    public InputAction actionAction;
 
     void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         col = GetComponent<Collider2D>();
         rb = GetComponent<Rigidbody2D>();
-
-        if (moveAction == null || moveAction.bindings.Count == 0)
-        {
-            moveAction = new InputAction("CombineMove", InputActionType.Value);
-            moveAction.AddCompositeBinding("1DAxis")
-                .With("Negative", "<Keyboard>/a").With("Negative", "<Keyboard>/leftArrow")
-                .With("Positive", "<Keyboard>/d").With("Positive", "<Keyboard>/rightArrow");
-        }
-
-        if (jumpAction == null || jumpAction.bindings.Count == 0)
-        {
-            jumpAction = new InputAction("CombineJump", InputActionType.Button);
-            jumpAction.AddBinding("<Keyboard>/space");
-            jumpAction.AddBinding("<Keyboard>/w");
-            jumpAction.AddBinding("<Keyboard>/upArrow");
-        }
-
-        if (actionAction == null || actionAction.bindings.Count == 0)
-        {
-            actionAction = new InputAction("CombineAction", InputActionType.Button);
-            actionAction.AddBinding("<Keyboard>/v"); // 💡 V키로 완벽 고정
-        }
-    }
-
-    public override void OnStartLocalPlayer()
-    {
-        base.OnStartLocalPlayer();
-        moveAction.Enable();
-        jumpAction.Enable();
-        actionAction.Enable();
-    }
-
-    void OnDisable()
-    {
-        if (isLocalPlayer)
-        {
-            moveAction.Disable(); jumpAction.Disable(); actionAction.Disable();
-        }
     }
 
     [Server]
@@ -83,6 +36,20 @@ public class PlayerCombineHandler : NetworkBehaviour
         isCombined = true;
         myRole = role;
         bodyTarget = body;
+
+        if (gameObject != body && rb != null)
+        {
+            rb.simulated = false;
+            rb.linearVelocity = Vector2.zero;
+
+            // 본체(Body)의 명단에 나(고스트)를 등록!
+            PlayerCombineHandler bodyHandler = body.GetComponent<PlayerCombineHandler>();
+            if (bodyHandler != null && !bodyHandler.connectedGhosts.Contains(this))
+            {
+                bodyHandler.connectedGhosts.Add(this);
+            }
+        }
+
         RpcApplyCombineVisual(body);
     }
 
@@ -93,7 +60,7 @@ public class PlayerCombineHandler : NetworkBehaviour
         {
             spriteRenderer.enabled = false;
             col.enabled = false;
-            rb.simulated = false;
+            if (rb != null) rb.simulated = false;
         }
 
         if (isLocalPlayer && body != null)
@@ -107,60 +74,6 @@ public class PlayerCombineHandler : NetworkBehaviour
         }
     }
 
-    void Update()
-    {
-        if (!isLocalPlayer || !isCombined) return;
-
-        if (gameObject != bodyTarget)
-        {
-            float currentMove = 0f;
-            float inputVal = moveAction.ReadValue<float>(); // -1 ~ 1
-
-            if (myRole == CombineRole.Move_Left) currentMove = Mathf.Clamp(inputVal, -1f, 0f);
-            else if (myRole == CombineRole.Move_Right) currentMove = Mathf.Clamp(inputVal, 0f, 1f);
-            else if (myRole == CombineRole.Move) currentMove = inputVal;
-
-            if (currentMove != lastSentMove)
-            {
-                lastSentMove = currentMove;
-                CmdSendMoveState(bodyTarget, currentMove, myRole);
-            }
-
-            if (myRole == CombineRole.Jump)
-            {
-                if (jumpAction.WasPressedThisFrame()) CmdSendJumpToBody(bodyTarget);
-                if (jumpAction.WasReleasedThisFrame()) CmdSendShortJumpToBody(bodyTarget);
-            }
-
-            // 💡 유령 플레이어(4번 유저)의 액션 통제: 
-            // 역할이 Action이면서, 현재 본체가 특정 트리거(canUseAction) 위에 있을 때만 발동!
-            if (myRole == CombineRole.Action && actionAction.WasPressedThisFrame())
-            {
-                if (bodyTarget.GetComponent<PlayerCombineHandler>().canUseAction)
-                {
-                    CmdSendActionToBody(bodyTarget);
-                }
-            }
-        }
-        else
-        {
-            if (myRole == CombineRole.Jump)
-            {
-                if (jumpAction.WasPressedThisFrame()) GetComponent<PlayerController>().CallCombinedJump();
-                if (jumpAction.WasReleasedThisFrame()) GetComponent<PlayerController>().ApplyShortJump();
-            }
-
-            // 💡 본체 플레이어의 액션 통제 (혹시나 본체가 Action 역할을 받았을 때를 대비한 안전장치)
-            if (myRole == CombineRole.Action && actionAction.WasPressedThisFrame())
-            {
-                if (canUseAction)
-                {
-                    GetComponent<PlayerController>().CallCombinedAction();
-                }
-            }
-        }
-    }
-
     void LateUpdate()
     {
         if (isCombined && bodyTarget != null && gameObject != bodyTarget)
@@ -169,85 +82,151 @@ public class PlayerCombineHandler : NetworkBehaviour
         }
     }
 
-    public float GetCombinedHorizontalInput()
+    // ====================================================
+    // 서버 최적화 입력 긁어오기 (Move, Jump, Action)
+    // ====================================================
+
+    [Server]
+    public float GetServerCombinedHorizontalInput()
     {
         float totalInput = 0f;
-        float inputVal = moveAction.ReadValue<float>();
+        PlayerInput myInput = GetComponent<PlayerInput>();
 
-        // 본체의 역할에 맞는 입력만 더하기
-        if (myRole == CombineRole.Move_Left && inputVal < 0) totalInput += -1f;
-        if (myRole == CombineRole.Move_Right && inputVal > 0) totalInput += 1f;
-        if (myRole == CombineRole.Move) totalInput += inputVal;
+        if (myRole == CombineRole.Move_Left && myInput.HorizontalInput < 0) totalInput += myInput.HorizontalInput;
+        else if (myRole == CombineRole.Move_Right && myInput.HorizontalInput > 0) totalInput += myInput.HorizontalInput;
+        else if (myRole == CombineRole.Move) totalInput += myInput.HorizontalInput;
 
-        // 유령들의 통제된 입력 더하기
-        totalInput += ghostLeftInput;
-        totalInput += ghostRightInput;
-        totalInput += ghostDuoInput;
-
+        foreach (var ghost in connectedGhosts)
+        {
+            if (ghost == null) continue;
+            PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
+            if (ghostInput != null)
+            {
+                if (ghost.myRole == CombineRole.Move_Left && ghostInput.HorizontalInput < 0) totalInput += ghostInput.HorizontalInput;
+                else if (ghost.myRole == CombineRole.Move_Right && ghostInput.HorizontalInput > 0) totalInput += ghostInput.HorizontalInput;
+                else if (ghost.myRole == CombineRole.Move) totalInput += ghostInput.HorizontalInput;
+            }
+        }
         return Mathf.Clamp(totalInput, -1f, 1f);
     }
 
-    [Command]
-    private void CmdSendMoveState(GameObject body, float moveValue, CombineRole role)
+    [Server]
+    public bool GetServerCombinedJumpPressed()
     {
-        if (body == null) return;
-        body.GetComponent<PlayerCombineHandler>().TargetReceiveMoveState(body.GetComponent<NetworkIdentity>().connectionToClient, moveValue, role);
+        PlayerInput myInput = GetComponent<PlayerInput>();
+        if (myRole == CombineRole.Jump && myInput != null && myInput.JumpPressedThisFrame) return true;
+
+        foreach (var ghost in connectedGhosts)
+        {
+            if (ghost != null && ghost.myRole == CombineRole.Jump)
+            {
+                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
+                if (ghostInput != null && ghostInput.JumpPressedThisFrame) return true;
+            }
+        }
+        return false;
     }
 
-    [TargetRpc]
-    private void TargetReceiveMoveState(NetworkConnection target, float moveValue, CombineRole role)
+    [Server]
+    public bool GetServerCombinedJumpReleased()
     {
-        if (role == CombineRole.Move_Left) ghostLeftInput = moveValue;
-        else if (role == CombineRole.Move_Right) ghostRightInput = moveValue;
-        else if (role == CombineRole.Move) ghostDuoInput = moveValue;
+        PlayerInput myInput = GetComponent<PlayerInput>();
+        if (myRole == CombineRole.Jump && myInput != null && myInput.JumpReleasedThisFrame) return true;
+
+        foreach (var ghost in connectedGhosts)
+        {
+            if (ghost != null && ghost.myRole == CombineRole.Jump)
+            {
+                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
+                if (ghostInput != null && ghostInput.JumpReleasedThisFrame) return true;
+            }
+        }
+        return false;
     }
 
-    [Command]
-    private void CmdSendJumpToBody(GameObject body)
+    // 🌟 [에러 해결!] 점프 담당 고스트가 점프 키를 유지(Hold)하고 있는지 확인
+    [Server]
+    public bool GetServerCombinedJumpHolding()
     {
-        if (body == null) return;
-        body.GetComponent<PlayerCombineHandler>().TargetDoJump(body.GetComponent<NetworkIdentity>().connectionToClient);
+        PlayerInput myInput = GetComponent<PlayerInput>();
+        if (myRole == CombineRole.Jump && myInput != null && myInput.JumpHolding) return true;
+
+        foreach (var ghost in connectedGhosts)
+        {
+            if (ghost != null && ghost.myRole == CombineRole.Jump)
+            {
+                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
+                if (ghostInput != null && ghostInput.JumpHolding) return true;
+            }
+        }
+        return false;
     }
 
-    [TargetRpc]
-    public void TargetDoJump(NetworkConnection target) { GetComponent<PlayerController>().CallCombinedJump(); }
-
-    [Command]
-    private void CmdSendShortJumpToBody(GameObject body)
+    [Server]
+    public bool GetServerCombinedActionPressed()
     {
-        if (body == null) return;
-        body.GetComponent<PlayerCombineHandler>().TargetDoShortJump(body.GetComponent<NetworkIdentity>().connectionToClient);
+        PlayerInput myInput = GetComponent<PlayerInput>();
+        if (myRole == CombineRole.Action && myInput != null && myInput.ActionPressedThisFrame) return true;
+
+        foreach (var ghost in connectedGhosts)
+        {
+            if (ghost != null && ghost.myRole == CombineRole.Action)
+            {
+                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
+                if (ghostInput != null && ghostInput.ActionPressedThisFrame) return true;
+            }
+        }
+        return false;
     }
 
-    [TargetRpc]
-    public void TargetDoShortJump(NetworkConnection target)
+    // 본체와 고스트(팀원)들의 입력 버퍼를 한 번에 지워주는 함수
+    [Server]
+    public void ClearAllCombinedInputBuffers()
     {
-        GetComponent<PlayerController>().ApplyShortJump();
+        PlayerInput myInput = GetComponent<PlayerInput>();
+        if (myInput != null) myInput.ClearInputBuffers();
+
+        foreach (var ghost in connectedGhosts)
+        {
+            if (ghost != null)
+            {
+                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
+                if (ghostInput != null) ghostInput.ClearInputBuffers();
+            }
+        }
     }
 
-    [Command]
-    private void CmdSendActionToBody(GameObject body)
-    {
-        if (body == null) return;
-        body.GetComponent<PlayerCombineHandler>().TargetDoAction(body.GetComponent<NetworkIdentity>().connectionToClient);
-    }
-
-    [TargetRpc]
-    public void TargetDoAction(NetworkConnection target) { GetComponent<PlayerController>().CallCombinedAction(); }
+    // ====================================================
+    // 합체 해제
+    // ====================================================
 
     [Server]
     public void StopCombineMode(Vector3 releasePosition)
     {
+        // 명단 정리
+        if (gameObject != bodyTarget && bodyTarget != null)
+        {
+            PlayerCombineHandler bodyHandler = bodyTarget.GetComponent<PlayerCombineHandler>();
+            if (bodyHandler != null) bodyHandler.connectedGhosts.Remove(this);
+        }
+        connectedGhosts.Clear();
+
         isCombined = false;
         myRole = CombineRole.None;
         bodyTarget = null;
-        canUseAction = false; 
+        canUseAction = false;
 
-        ghostLeftInput = 0f;
-        ghostRightInput = 0f;
-        ghostDuoInput = 0f;
+        // 물리 복구
+        if (rb != null)
+        {
+            rb.simulated = true;
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+        }
 
         transform.position = releasePosition;
+        Physics2D.SyncTransforms();
+
         RpcApplySeparateVisual(releasePosition);
     }
 
@@ -256,14 +235,11 @@ public class PlayerCombineHandler : NetworkBehaviour
     {
         spriteRenderer.enabled = true;
         col.enabled = true;
-        rb.simulated = true;
+        if (rb != null) rb.simulated = true;
 
         if (isLocalPlayer)
         {
             transform.position = releasePosition;
-            rb.position = releasePosition;
-            rb.linearVelocity = Vector2.zero;
-
             Camera mainCam = Camera.main;
             if (mainCam != null)
             {

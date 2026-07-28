@@ -13,19 +13,21 @@ public class PlayerInput : NetworkBehaviour
 
     // 서버용 입력 데이터 (버퍼)
     private float serverHorizontalInput;
-    public bool serverJumpHolding { get; private set; }  // 🚀 추가됨 (점프 키 누름 유지 상태)
+    public bool serverJumpHolding { get; private set; }
     public bool serverJumpPressed { get; private set; }
     public bool serverJumpReleased { get; private set; }
 
+    // 🌟 [추가됨] Action(V키)도 점프처럼 서버 버퍼를 거치게 함!
+    public bool serverActionPressed { get; private set; }
+
     public float HorizontalInput => serverHorizontalInput;
-    public bool JumpHolding => serverJumpHolding;        // 🚀 추가됨
+    public bool JumpHolding => serverJumpHolding;
     public bool JumpPressedThisFrame => serverJumpPressed;
     public bool JumpReleasedThisFrame => serverJumpReleased;
-    public bool ActionPressedThisFrame => actionAction.WasPressedThisFrame();
+    public bool ActionPressedThisFrame => serverActionPressed; // 🌟 서버 버퍼 참조
 
-    // 패킷 폭주 방지용 이전 입력값 저장
     private float lastInput = -999f;
-    private bool lastJumpHolding = false; // 🚀 유지 상태 변경 감지용
+    private bool lastJumpHolding = false;
 
     void Awake()
     {
@@ -50,7 +52,6 @@ public class PlayerInput : NetworkBehaviour
             jumpAction.AddBinding("<Keyboard>/space");
             jumpAction.AddBinding("<Keyboard>/w");
             jumpAction.AddBinding("<Keyboard>/upArrow");
-
         }
         if (actionAction == null || actionAction.bindings.Count == 0)
         {
@@ -78,34 +79,38 @@ public class PlayerInput : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
-        float rawInput = 0f;
-        if (controller.combineHandler != null && controller.combineHandler.isCombined)
-        {
-            if (gameObject != controller.combineHandler.bodyTarget) rawInput = 0f;
-            else rawInput = controller.combineHandler.GetCombinedHorizontalInput();
-        }
-        else
-        {
-            rawInput = moveAction.ReadValue<float>();
-        }
+        float rawInput = moveAction.ReadValue<float>();
 
-        bool jHolding = jumpAction.IsPressed(); // 🚀 추가됨 (유지)
+        bool jHolding = jumpAction.IsPressed();
         bool jPressed = jumpAction.WasPressedThisFrame();
         bool jReleased = jumpAction.WasReleasedThisFrame();
+        bool aPressed = actionAction.WasPressedThisFrame();
 
-        // 입력값이 바뀌거나 틱이 발생했을 때만 서버로 전송
-        if (rawInput != lastInput || jPressed || jReleased || jHolding != lastJumpHolding)
+        bool isMenuOpen = false;
+        if (PauseManager.instance != null && PauseManager.instance.isPaused) isMenuOpen = true;
+        if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen()) isMenuOpen = true;
+
+        if (isMenuOpen)
         {
-            CmdSendInput(rawInput, jHolding, jPressed, jReleased);
+            rawInput = 0f;
+            jHolding = false;
+            jPressed = false;
+            jReleased = false;
+            aPressed = false;
+        }
+
+        if (rawInput != lastInput || jPressed || jReleased || jHolding != lastJumpHolding || aPressed)
+        {
+            CmdSendInput(rawInput, jHolding, jPressed, jReleased, aPressed);
 
             lastInput = rawInput;
             lastJumpHolding = jHolding;
         }
     }
 
-    // 🚀 유저님 추천 방식: 모든 입력 상태를 하나의 Command로 통합
+    // 🌟 [수정됨] Action 정보(actionPressed) 추가 전송
     [Command]
-    private void CmdSendInput(float value, bool jumpHolding, bool jumpPressed, bool jumpReleased)
+    private void CmdSendInput(float value, bool jumpHolding, bool jumpPressed, bool jumpReleased, bool actionPressed)
     {
         serverHorizontalInput = value;
         serverJumpHolding = jumpHolding;
@@ -113,11 +118,14 @@ public class PlayerInput : NetworkBehaviour
         // true가 들어왔을 때만 덮어씌움 (FixedUpdate 처리가 끝날 때까지 버퍼 유지)
         if (jumpPressed) serverJumpPressed = true;
         if (jumpReleased) serverJumpReleased = true;
+        if (actionPressed) serverActionPressed = true; // 🌟 Action 버퍼 저장
     }
 
-    public void ClearJumpInput()
+    // 🌟 [수정됨] 이름 변경: 모든 단발성 입력 버퍼 초기화
+    public void ClearInputBuffers()
     {
         serverJumpPressed = false;
         serverJumpReleased = false;
+        serverActionPressed = false;
     }
 }
