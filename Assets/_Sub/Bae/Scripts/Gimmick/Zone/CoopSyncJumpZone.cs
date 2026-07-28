@@ -51,16 +51,15 @@ public class CoopSyncJumpZone : NetworkBehaviour
                 PlayerSyncJump syncJump = player.GetComponent<PlayerSyncJump>();
                 if (syncJump != null)
                 {
-                    syncJump.TargetDoJump(player.GetComponent<NetworkIdentity>().connectionToClient);
+                    syncJump.ServerDoJump();
                 }
             }
         }
     }
-    [Server]
 
+    [Server]
     public void BroadcastCutJump(GameObject initiator)
     {
-        // 존 안에 있는 나를 제외한 나머지 인원에게 점프 끊기 명령 하달
         foreach (var player in playersInZone)
         {
             if (player != null && player != initiator)
@@ -68,7 +67,7 @@ public class CoopSyncJumpZone : NetworkBehaviour
                 var syncJump = player.GetComponent<PlayerSyncJump>();
                 if (syncJump != null)
                 {
-                    syncJump.TargetCutJump(player.GetComponent<NetworkIdentity>().connectionToClient);
+                    syncJump.ServerCutJump();
                 }
             }
         }

@@ -8,14 +8,10 @@ public class PlayerSyncJump : NetworkBehaviour
     [HideInInspector] public CoopSyncJumpZone serverZone;
 
     private PlayerController playerController;
-    private Rigidbody2D rb;
-    private PlayerGravityController gravityModule;
 
     void Awake()
     {
         playerController = GetComponent<PlayerController>();
-        rb = GetComponent<Rigidbody2D>();
-        gravityModule = GetComponent<PlayerGravityController>();
     }
 
     void Update()
@@ -38,27 +34,27 @@ public class PlayerSyncJump : NetworkBehaviour
         }
     }
 
-    [TargetRpc]
-    public void TargetDoJump(NetworkConnection target)
+    [Server]
+    public void ServerDoJump()
     {
         if (playerController != null)
         {
-            // PlayerController의 Jump() 메서드가 private라면 public으로 변경하거나,
-            // 아래와 같이 CallCombinedJump()를 활용합니다.
             playerController.CallCombinedJump();
         }
     }
-    
-   
+
     [Command]
     public void CmdCutSyncJump()
     {
         if (serverZone != null) serverZone.BroadcastCutJump(gameObject);
     }
 
-    [TargetRpc]
-    public void TargetCutJump(NetworkConnection target)
+    [Server]
+    public void ServerCutJump()
     {
-        GetComponent<PlayerController>().ApplyShortJump();
+        if (playerController != null)
+        {
+            playerController.ApplyShortJump();
+        }
     }
 }
