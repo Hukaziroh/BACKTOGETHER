@@ -37,7 +37,7 @@ public class PlayerFlashlight : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
-        if (controller.input.ActionPressedThisFrame)
+        if (controller.input.actionAction.WasPressedThisFrame())
         {
             if (SceneManager.GetActiveScene().name == "chapter5" && canUseFlashlight)
             {
