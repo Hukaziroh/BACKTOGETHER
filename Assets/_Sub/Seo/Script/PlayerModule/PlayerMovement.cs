@@ -67,6 +67,9 @@ public class PlayerMovement : NetworkBehaviour
     private bool justJumped = false;
     private bool wasGroundedLastFrame = false;
 
+    // 🌟 [추가됨] 숏점프 커팅 권한 상태 변수
+    private bool canCutJump = false;
+
     [Header("코너 충돌 보정")]
     public float cornerPushEpsilon = 0.02f;
     public float overlapPushTolerance = 0.01f;
@@ -132,6 +135,7 @@ public class PlayerMovement : NetworkBehaviour
     // 입력 처리 파트
     // ============================================================
 
+    // 🌟 [수정됨] 완벽한 숏점프 방어 로직이 결합된 HandleJumpInput
     private void HandleJumpInput()
     {
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
@@ -157,22 +161,28 @@ public class PlayerMovement : NetworkBehaviour
         bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
         bool isMovingUp = inverted ? (controller.rb.linearVelocity.y < 0f) : (controller.rb.linearVelocity.y > 0f);
 
-        bool shouldCutJump = false;
-        if (controller.syncJumpHandler != null && controller.syncJumpHandler.isInSyncZone)
+        // 🌟 숏점프 강제 커팅 로직
+        if (canCutJump && isMovingUp && !controller.knockback.IsStunned)
         {
-            shouldCutJump = isJumpReleased;
+            // 네트워크 핑 때문에 Released 버퍼가 증발해도 !isJumpHolding을 통해 칼같이 잡아냄
+            if (isJumpReleased || !isJumpHolding)
+            {
+                if (controller.syncJumpHandler != null && controller.syncJumpHandler.isInSyncZone)
+                {
+                    controller.syncJumpHandler.CmdCutSyncJump();
+                }
+                else
+                {
+                    ApplyShortJump();
+                }
+                // 🌟 한 번 깎았으면 무한 감속을 막기 위해 숏점프 권한 차단
+                canCutJump = false;
+            }
         }
-        else
+        else if (!isMovingUp)
         {
-            shouldCutJump = isJumpReleased || !isJumpHolding;
-        }
-
-        if (shouldCutJump && isMovingUp && !controller.knockback.IsStunned)
-        {
-            if (controller.syncJumpHandler != null && controller.syncJumpHandler.isInSyncZone)
-                controller.syncJumpHandler.CmdCutSyncJump();
-            else
-                ApplyShortJump();
+            // 점프가 정점을 찍고 떨어지기 시작하면 숏점프 권한 해제
+            canCutJump = false;
         }
     }
 
@@ -275,16 +285,29 @@ public class PlayerMovement : NetworkBehaviour
         }
         else
         {
-            newX = Mathf.MoveTowards(
-                controller.rb.linearVelocity.x,
-                targetVelocityX + currentPlatformVelX,
-                (currentFriction > 100f ? currentFriction : currentFriction * moveSpeed) * Time.fixedDeltaTime
-            );
+            // 🌟 [핵심 수정 구간] 클라이언트 무조건 승리 버그 원천 차단!
+            if (isRestrictedByRope)
+            {
+                // 로프가 팽팽할 때는 속도를 덮어쓰지 않고, 땀 흘리며 힘(AddForce)만 주도록 만듦
+                float pullForce = targetVelocityX * 80f; // 줄다리기 저항력 (적당히 묵직하게 세팅)
+                controller.rb.AddForce(new Vector2(pullForce, 0f));
+
+                // 속도를 덮어쓰지 않고 로프 매니저가 계산한 현재 속도를 그대로 보존!
+                newX = controller.rb.linearVelocity.x;
+            }
+            else
+            {
+                // 평소에는 기존처럼 빠릿빠릿한 플랫포머 조작감 유지
+                newX = Mathf.MoveTowards(
+                    controller.rb.linearVelocity.x,
+                    targetVelocityX + currentPlatformVelX,
+                    (currentFriction > 100f ? currentFriction : currentFriction * moveSpeed) * Time.fixedDeltaTime
+                );
+            }
         }
 
         controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
     }
-
     // ============================================================
     // 기타 물리 및 보조 파트
     // ============================================================
@@ -298,6 +321,9 @@ public class PlayerMovement : NetworkBehaviour
         controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, jumpForce * mult);
         ckTimer = jumpCk;
         justJumped = true;
+
+        // 🌟 [추가됨] 점프를 뛰는 그 순간 숏점프 커팅용 총알 장전!
+        canCutJump = true;
     }
 
     public void ApplyShortJump()
