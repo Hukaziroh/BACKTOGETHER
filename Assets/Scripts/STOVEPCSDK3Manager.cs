@@ -189,7 +189,7 @@ public class STOVEPCSDK3Manager : MonoBehaviour
         sb.AppendLine($" - Result.methodCode : {cr.result.methodCode}");
         sb.AppendLine($" - Result.resultCode : {cr.result.resultCode}");
         sb.AppendLine($" - Result.exceptionMessage : {cr.result.exceptionMessage}");
-        sb.AppendLine($" - message : {cr.message}");
+        //sb.AppendLine($" - message : {cr.message}");
         sb.AppendLine($" - externalError : {cr.externalError}");
         Debug.Log(sb.ToString());
     }
