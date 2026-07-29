@@ -82,22 +82,33 @@ public class LobbySyncManager : NetworkBehaviour
     {
         if (roomCodeText != null)
         {
-            // PauseManager가 존재하고, 코드가 가려져 있는 상태(isCodeVisible == false)인지 확인
+            // 1. 현재 PauseManager의 눈 상태 가져오기
             bool isVisible = PauseManager.instance == null || PauseManager.instance.IsCodeVisible;
 
             string formattedCode = string.IsNullOrEmpty(code) ? "-" : code;
 
-            // 현재 TMP에 적힌 텍스트에서 콜론(:)을 기준으로 앞쪽 라벨(예: "Room Code: ")을 추출
-            string prefix = "Room Code: ";
+            // 2. 기본 프리픽스 추출 (언어별로 바뀌는 Code: / 코드: 등의 라벨과 줄바꿈 인식)
+            string prefix = "Code:";
+
             if (!string.IsNullOrEmpty(roomCodeText.text))
             {
-                int colonIndex = roomCodeText.text.IndexOf(':');
-                if (colonIndex != -1)
+                int newlineIndex = roomCodeText.text.IndexOf('\n');
+                if (newlineIndex != -1 && roomCodeText.text.Length >= newlineIndex + 1)
                 {
-                    prefix = roomCodeText.text.Substring(0, colonIndex + 2); // 콜론과 공백 포함해서 추출
+                    prefix = roomCodeText.text.Substring(0, newlineIndex + 1);
+                }
+                else
+                {
+                    int colonIndex = roomCodeText.text.IndexOf(':');
+                    if (colonIndex != -1 && roomCodeText.text.Length >= colonIndex + 2)
+                    {
+                        prefix = roomCodeText.text.Substring(0, colonIndex + 2);
+                    }
                 }
             }
 
+            // 3. 만약 언어가 바뀌어서 텍스트가 강제로 리셋되었더라도, 
+            //    실제 내부 눈 상태(isVisible)가 켜져 있다면 곧바로 숫자로 복구해 줌!
             if (isVisible)
             {
                 roomCodeText.text = prefix + formattedCode;

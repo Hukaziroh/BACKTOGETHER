@@ -182,7 +182,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Chapter
+  m_text: Chapter 1
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 2627e9ca796b22d4fb592f60230c2fec, type: 2}
   m_sharedMaterial: {fileID: 4301745327245154971, guid: 2627e9ca796b22d4fb592f60230c2fec, type: 2}
@@ -273,8 +273,8 @@ MonoBehaviour:
   russianText: "\u0413\u043B\u0430\u0432\u0430"
   englishDilate: 0
   englishOutlineThickness: 0.4
-  defaultDilate: 0
-  defaultOutlineThickness: 0
+  defaultDilate: 1
+  defaultOutlineThickness: 1
 --- !u!1 &8543456486082391716
 GameObject:
   m_ObjectHideFlags: 0

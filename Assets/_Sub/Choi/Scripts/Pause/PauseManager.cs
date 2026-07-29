@@ -104,7 +104,17 @@ public class PauseManager : MonoBehaviour
 
     private void ToggleRoomCodeVisibility()
     {
-        isCodeVisible = !isCodeVisible;
+        // ★ 언어 변경 등으로 텍스트가 강제 리셋되어 '******' 상태가 되었다면, 
+        // 버튼을 눌렀을 때 무조건 숫자가 나오도록 강제로 상태를 보정
+        if (pauseRoomCodeText != null && pauseRoomCodeText.text.Contains("***"))
+        {
+            isCodeVisible = true;
+        }
+        else
+        {
+            isCodeVisible = !isCodeVisible;
+        }
+
         UpdateRoomCodeUI();
     }
 
@@ -169,19 +179,19 @@ public class PauseManager : MonoBehaviour
             displayCode = PrivateLobbyManager.currentShortCode;
         }
 
-        // 현재 TMP에 적힌 텍스트에서 개행 문자('\n') 또는 콜론(':')을 기준으로 앞쪽 라벨 추출 (예: "CODE:\n" 또는 다국어 대응)
+        // 현재 TMP에 적힌 텍스트에서 개행 문자('\n') 또는 콜론(':')을 기준으로 안전하게 앞쪽 라벨 추출 (ArgumentOutOfRangeException 방지 포함)
         string prefix = "CODE:\n";
         if (!string.IsNullOrEmpty(pauseRoomCodeText.text))
         {
             int splitIndex = pauseRoomCodeText.text.IndexOf('\n');
-            if (splitIndex != -1)
+            if (splitIndex != -1 && pauseRoomCodeText.text.Length >= splitIndex + 1)
             {
                 prefix = pauseRoomCodeText.text.Substring(0, splitIndex + 1); // 줄바꿈 문자 포함해서 추출
             }
             else
             {
                 int colonIndex = pauseRoomCodeText.text.IndexOf(':');
-                if (colonIndex != -1)
+                if (colonIndex != -1 && pauseRoomCodeText.text.Length >= colonIndex + 2)
                 {
                     prefix = pauseRoomCodeText.text.Substring(0, colonIndex + 2);
                 }
@@ -345,7 +355,7 @@ public class PauseManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("[퍼즈 시스템] ⑤ 클라이언트라이언트 종료");
+            Debug.Log("[퍼즈 시스템] ⑤ 클라이언트 종료");
             NetworkManager.singleton.StopClient();
         }
 
