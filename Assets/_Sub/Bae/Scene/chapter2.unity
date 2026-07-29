@@ -8805,6 +8805,10 @@ PrefabInstance:
       propertyPath: sceneId
       value: 3250972380
       objectReference: {fileID: 0}
+    - target: {fileID: 8525564341486170835, guid: 898aef37ccbfeb448837d185a0562c23, type: 3}
+      propertyPath: currentStageNumber
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
