@@ -29,7 +29,6 @@ public class PlayerCombineHandler : NetworkBehaviour
         col = GetComponent<Collider2D>();
         rb = GetComponent<Rigidbody2D>();
     }
-
     [Server]
     public void StartCombineMode(CombineRole role, GameObject body)
     {
@@ -37,12 +36,18 @@ public class PlayerCombineHandler : NetworkBehaviour
         myRole = role;
         bodyTarget = body;
 
+
+        if (gameObject == body)
+        {
+            connectedGhosts.Clear();
+            canUseAction = true;
+        }
+
         if (gameObject != body && rb != null)
         {
             rb.simulated = false;
             rb.linearVelocity = Vector2.zero;
 
-            // 본체(Body)의 명단에 나(고스트)를 등록!
             PlayerCombineHandler bodyHandler = body.GetComponent<PlayerCombineHandler>();
             if (bodyHandler != null && !bodyHandler.connectedGhosts.Contains(this))
             {
