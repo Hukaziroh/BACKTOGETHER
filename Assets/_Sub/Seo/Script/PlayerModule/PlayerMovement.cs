@@ -311,8 +311,22 @@ public class PlayerMovement : NetworkBehaviour
     {
         bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
         float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
-        bool isFalling = isInverted ? (controller.rb.linearVelocity.y > 0f) : (controller.rb.linearVelocity.y < 0f);
-        controller.rb.gravityScale = isFalling ? (jumpSpeed * fallSpeed * mult) : (jumpSpeed * mult);
+
+        // 땅에서는 항상 기본 중력
+        if (isGrounded)
+        {
+            controller.rb.gravityScale = jumpSpeed * mult;
+            return;
+        }
+
+        // 공중에서만 낙하 여부 판단
+        bool isFalling = isInverted
+            ? (controller.rb.linearVelocity.y > 0f)
+            : (controller.rb.linearVelocity.y < 0f);
+
+        controller.rb.gravityScale = isFalling
+            ? (jumpSpeed * fallSpeed * mult)
+            : (jumpSpeed * mult);
     }
 
     void CheckTouchingPlayer()
