@@ -2,8 +2,6 @@ using System;
 using System.Text;
 using System.Collections;
 using UnityEngine;
-
-// 🚨 에러의 원인이었던 GameSupport를 지우고, 오직 Base 모듈만 사용합니다!
 using static Stove.PCSDK.Base;
 
 public class StovePCSDK3Manager : Singleton<StovePCSDK3Manager>
@@ -14,20 +12,25 @@ public class StovePCSDK3Manager : Singleton<StovePCSDK3Manager>
     [SerializeField] private string applicationKey;
 
     [Header("[Running Setting]")]
-    [SerializeField] private float runCallbackInterval = 1.0f; // 1초 단위 코루틴 루프
+    [SerializeField] private float runCallbackInterval = 1.0f;
     private bool isCallbackRunning = false;
-    private Coroutine callbackCoroutine; // 코루틴 제어용 변수
+    private Coroutine callbackCoroutine;
 
     [field: Space(10)]
     [field: SerializeField] public bool isInitialized { get; private set; } = false;
 
-    // Base SDK 초기화 여부 콜백
     private OnInitializeFinished onInitializeFinished;
-
     private readonly StringBuilder sb = new StringBuilder(60);
 
     protected override void Awake()
     {
+        // 🚨 핵심 방어 로직: STOVE_BUILD 심볼이 없으면 스토브를 즉시 파괴하고 꺼버림
+#if !STOVE_BUILD
+        Debug.LogWarning("⚠️ 현재 STOVE_BUILD가 아닙니다. 스토브 매니저를 비활성화합니다.");
+        Destroy(gameObject);
+        return;
+#endif
+        // ----------------------------------------------------
         base.Awake();
 
         transform.SetParent(null);
@@ -36,17 +39,19 @@ public class StovePCSDK3Manager : Singleton<StovePCSDK3Manager>
 
     private void Start()
     {
+        // Start에서도 한번 더 막아줍니다.
+#if STOVE_BUILD
         Initialize();
+#endif
     }
 
     private void OnApplicationQuit()
     {
+#if STOVE_BUILD
         UnInitialize();
+#endif
     }
 
-    /// <summary>
-    /// SDK 초기화
-    /// </summary>
     private void Initialize()
     {
         StovePCInitializeParam initParam = new StovePCInitializeParam
@@ -56,10 +61,8 @@ public class StovePCSDK3Manager : Singleton<StovePCSDK3Manager>
             applicationKey = applicationKey
         };
 
-        // 콜백 루프 시작
         StartRunCallbackLoop();
 
-        // PC 클라이언트로부터 게임이 실행이 되었는지 검증
         Base_RestartAppIfNecessaryAsync(initParam, 10_000, (callbackResult, restartAppIfNecessary) =>
         {
             PrintCallbackResult(callbackResult);
@@ -94,16 +97,11 @@ public class StovePCSDK3Manager : Singleton<StovePCSDK3Manager>
         };
     }
 
-    /// <summary>
-    /// SDK 해제
-    /// </summary>
     private void UnInitialize()
     {
         StopRunCallbackLoop();
-
         Result result = Base_UnInitialize();
         PrintResult(result);
-
         isInitialized = false;
     }
 
@@ -136,9 +134,6 @@ public class StovePCSDK3Manager : Singleton<StovePCSDK3Manager>
         }
     }
 
-    /// <summary>
-    /// 결과 출력 유틸 (에러 나던 message, externalError 삭제 완료)
-    /// </summary>
     private void PrintResult(Result result)
     {
         sb.Clear();
@@ -162,11 +157,6 @@ public class StovePCSDK3Manager : Singleton<StovePCSDK3Manager>
         sb.AppendLine($" - CallbackResult.exceptionMessage : {callbackResult.result.exceptionMessage}");
         Debug.Log(sb.ToString());
     }
-
-    // ==========================================
-    // 아래는 게임 내에서 자유롭게 호출할 수 있는 
-    // 스토브 유저 정보 관련 함수들입니다. (정상 작동함)
-    // ==========================================
 
     public string GetAccessToken()
     {
