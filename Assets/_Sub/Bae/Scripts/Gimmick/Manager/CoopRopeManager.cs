@@ -32,7 +32,8 @@ public class CoopRopeManager : NetworkBehaviour
     [SyncVar(hook = nameof(OnRopeActiveChanged))]
     public bool isRopeActive = false;
 
-    private List<GameObject> connectedPlayers = new List<GameObject>();
+    // 🌟 [수정됨] PlayerKnockback 등 다른 스크립트에서 명단을 읽을 수 있도록 public으로 변경
+    public List<GameObject> connectedPlayers = new List<GameObject>();
     private List<LineRenderer> lineRenderers = new List<LineRenderer>();
 
     [Server]
@@ -140,55 +141,50 @@ public class CoopRopeManager : NetworkBehaviour
         }
     }
 
+    // 🌟 [핵심 수정됨] 내 캐릭터만 계산하는 방식을 버리고, 서버가 매 프레임 모든 연결된 플레이어의 물리 연산을 일괄 통제합니다.
     void FixedUpdate()
     {
+        if (!isServer) return; // 서버만 연산 수행
         if (!isRopeActive || connectedPlayers.Count < 2) return;
-
-        GameObject localPlayer = null;
-        int localIndex = -1;
 
         for (int i = 0; i < connectedPlayers.Count; i++)
         {
             if (connectedPlayers[i] != null)
             {
-                NetworkIdentity identity = connectedPlayers[i].GetComponent<NetworkIdentity>();
-                if (identity != null && identity.isLocalPlayer)
+                Rigidbody2D rb = connectedPlayers[i].GetComponent<Rigidbody2D>();
+                PlayerMovement movement = connectedPlayers[i].GetComponent<PlayerMovement>();
+
+                if (rb != null && movement != null)
                 {
-                    localPlayer = connectedPlayers[i];
-                    localIndex = i;
-                    break;
+                    // 땅에 닿아있으면 무겁게, 공중에 있으면 가볍게 처리
+                    rb.mass = movement.isGrounded ? groundedMass : airborneMass;
+
+                    bool isTensionActive = false;
+
+                    // 앞 사람(i - 1)과의 로프 장력 계산
+                    if (i > 0 && connectedPlayers[i - 1] != null)
+                    {
+                        Rigidbody2D prevRb = connectedPlayers[i - 1].GetComponent<Rigidbody2D>();
+                        if (prevRb != null && ApplyRopeConstraint(rb, prevRb, movement.isGrounded))
+                            isTensionActive = true;
+                    }
+
+                    // 뒷 사람(i + 1)과의 로프 장력 계산
+                    if (i < connectedPlayers.Count - 1 && connectedPlayers[i + 1] != null)
+                    {
+                        Rigidbody2D nextRb = connectedPlayers[i + 1].GetComponent<Rigidbody2D>();
+                        if (nextRb != null && ApplyRopeConstraint(rb, nextRb, movement.isGrounded))
+                            isTensionActive = true;
+                    }
+
+                    // 줄이 팽팽해졌는지 여부 전달
+                    movement.isRestrictedByRope = isTensionActive;
                 }
-            }
-        }
-
-        if (localPlayer != null)
-        {
-            Rigidbody2D rb = localPlayer.GetComponent<Rigidbody2D>();
-            PlayerMovement movement = localPlayer.GetComponent<PlayerMovement>();
-
-            if (rb != null && movement != null)
-            {
-                rb.mass = movement.isGrounded ? groundedMass : airborneMass;
-
-                bool isTensionActive = false;
-                if (localIndex > 0 && connectedPlayers[localIndex - 1] != null)
-                {
-                    Rigidbody2D prevRb = connectedPlayers[localIndex - 1].GetComponent<Rigidbody2D>();
-                    if (prevRb != null && ApplyRopeConstraint(rb, prevRb, movement.isGrounded))
-                        isTensionActive = true;
-                }
-
-                if (localIndex < connectedPlayers.Count - 1 && connectedPlayers[localIndex + 1] != null)
-                {
-                    Rigidbody2D nextRb = connectedPlayers[localIndex + 1].GetComponent<Rigidbody2D>();
-                    if (nextRb != null && ApplyRopeConstraint(rb, nextRb, movement.isGrounded))
-                        isTensionActive = true;
-                }
-
-                movement.isRestrictedByRope = isTensionActive;
             }
         }
     }
+
+    // 유저님이 직접 만드신 예술적인 물리 보정 코드 (건드리지 않음)
     private bool ApplyRopeConstraint(Rigidbody2D rb, Rigidbody2D targetRb, bool amIGrounded)
     {
         Vector2 targetPos = targetRb.position;
