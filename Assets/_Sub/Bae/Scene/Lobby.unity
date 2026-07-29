@@ -207,13 +207,15 @@ GameObject:
   - component: {fileID: 34327837}
   - component: {fileID: 34327836}
   - component: {fileID: 34327835}
+  - component: {fileID: 34327840}
+  - component: {fileID: 34327841}
   m_Layer: 0
   m_Name: Wall3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &34327834
 Transform:
   m_ObjectHideFlags: 0
@@ -267,7 +269,17 @@ CompositeCollider2D:
   m_GeometryType: 1
   m_GenerationType: 0
   m_EdgeRadius: 0
-  m_ColliderPaths: []
+  m_ColliderPaths:
+  - m_Collider: {fileID: 34327837}
+    m_ColliderPaths:
+    - - X: 540000000
+        Y: 170000000
+      - X: 330000000
+        Y: 170000000
+      - X: 330000000
+        Y: -860000000
+      - X: 540000000
+        Y: -860000000
   m_CompositePaths:
     m_Paths:
     - - {x: 53.99997, y: -86}
@@ -22119,6 +22131,41 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!114 &34327840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 34327833}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3bad89be9d6ad84687e84ffa8ad9685, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ChapterBlocker
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  targetChapterNumber: 4
+  openSound: {fileID: 0}
+  openEffectPrefab: {fileID: 0}
+--- !u!114 &34327841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 34327833}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 2395158178
+  _assetId: 0
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1001 &51899394
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -118947,13 +118994,15 @@ GameObject:
   - component: {fileID: 744087094}
   - component: {fileID: 744087093}
   - component: {fileID: 744087092}
+  - component: {fileID: 744087097}
+  - component: {fileID: 744087098}
   m_Layer: 0
   m_Name: Wall5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &744087091
 Transform:
   m_ObjectHideFlags: 0
@@ -119007,7 +119056,17 @@ CompositeCollider2D:
   m_GeometryType: 1
   m_GenerationType: 0
   m_EdgeRadius: 0
-  m_ColliderPaths: []
+  m_ColliderPaths:
+  - m_Collider: {fileID: 744087094}
+    m_ColliderPaths:
+    - - X: 880000000
+        Y: 170000000
+      - X: 680000000
+        Y: 170000000
+      - X: 680000000
+        Y: -850000000
+      - X: 880000000
+        Y: -850000000
   m_CompositePaths:
     m_Paths:
     - - {x: 87.99997, y: -85}
@@ -139629,6 +139688,41 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!114 &744087097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 744087090}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3bad89be9d6ad84687e84ffa8ad9685, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ChapterBlocker
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  targetChapterNumber: 6
+  openSound: {fileID: 0}
+  openEffectPrefab: {fileID: 0}
+--- !u!114 &744087098
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 744087090}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 4037832742
+  _assetId: 0
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1 &770972002
 GameObject:
   m_ObjectHideFlags: 0
@@ -141355,13 +141449,15 @@ GameObject:
   - component: {fileID: 831635537}
   - component: {fileID: 831635536}
   - component: {fileID: 831635535}
+  - component: {fileID: 831635540}
+  - component: {fileID: 831635541}
   m_Layer: 0
   m_Name: Wall1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &831635534
 Transform:
   m_ObjectHideFlags: 0
@@ -141415,7 +141511,17 @@ CompositeCollider2D:
   m_GeometryType: 1
   m_GenerationType: 0
   m_EdgeRadius: 0
-  m_ColliderPaths: []
+  m_ColliderPaths:
+  - m_Collider: {fileID: 831635537}
+    m_ColliderPaths:
+    - - X: 220000000
+        Y: 170000000
+      - X: 20000000
+        Y: 170000000
+      - X: 20000000
+        Y: -850000000
+      - X: 220000000
+        Y: -850000000
   m_CompositePaths:
     m_Paths:
     - - {x: 21.999971, y: -85}
@@ -162037,6 +162143,41 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!114 &831635540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 831635533}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3bad89be9d6ad84687e84ffa8ad9685, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ChapterBlocker
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  targetChapterNumber: 2
+  openSound: {fileID: 0}
+  openEffectPrefab: {fileID: 0}
+--- !u!114 &831635541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 831635533}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 3634067382
+  _assetId: 0
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1 &853195963
 GameObject:
   m_ObjectHideFlags: 0
@@ -166596,13 +166737,15 @@ GameObject:
   - component: {fileID: 1406872654}
   - component: {fileID: 1406872653}
   - component: {fileID: 1406872652}
+  - component: {fileID: 1406872657}
+  - component: {fileID: 1406872658}
   m_Layer: 0
   m_Name: Wall2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1406872651
 Transform:
   m_ObjectHideFlags: 0
@@ -166656,7 +166799,17 @@ CompositeCollider2D:
   m_GeometryType: 1
   m_GenerationType: 0
   m_EdgeRadius: 0
-  m_ColliderPaths: []
+  m_ColliderPaths:
+  - m_Collider: {fileID: 1406872654}
+    m_ColliderPaths:
+    - - X: 380000000
+        Y: 170000000
+      - X: 180000000
+        Y: 170000000
+      - X: 180000000
+        Y: -850000000
+      - X: 380000000
+        Y: -850000000
   m_CompositePaths:
     m_Paths:
     - - {x: 37.999973, y: -85}
@@ -187278,6 +187431,41 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!114 &1406872657
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1406872650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3bad89be9d6ad84687e84ffa8ad9685, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ChapterBlocker
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  targetChapterNumber: 3
+  openSound: {fileID: 0}
+  openEffectPrefab: {fileID: 0}
+--- !u!114 &1406872658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1406872650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 2832170848
+  _assetId: 0
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1 &1414661585
 GameObject:
   m_ObjectHideFlags: 0
@@ -187930,13 +188118,15 @@ GameObject:
   - component: {fileID: 1536115336}
   - component: {fileID: 1536115335}
   - component: {fileID: 1536115334}
+  - component: {fileID: 1536115339}
+  - component: {fileID: 1536115340}
   m_Layer: 0
   m_Name: Wall4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1536115333
 Transform:
   m_ObjectHideFlags: 0
@@ -187990,7 +188180,17 @@ CompositeCollider2D:
   m_GeometryType: 1
   m_GenerationType: 0
   m_EdgeRadius: 0
-  m_ColliderPaths: []
+  m_ColliderPaths:
+  - m_Collider: {fileID: 1536115336}
+    m_ColliderPaths:
+    - - X: 720000000
+        Y: 170000000
+      - X: 500000000
+        Y: 170000000
+      - X: 500000000
+        Y: -850000000
+      - X: 720000000
+        Y: -850000000
   m_CompositePaths:
     m_Paths:
     - - {x: 71.99997, y: -85}
@@ -210664,6 +210864,41 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!114 &1536115339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1536115332}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3bad89be9d6ad84687e84ffa8ad9685, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ChapterBlocker
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  targetChapterNumber: 5
+  openSound: {fileID: 0}
+  openEffectPrefab: {fileID: 0}
+--- !u!114 &1536115340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1536115332}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 559578381
+  _assetId: 0
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1 &1536736254
 GameObject:
   m_ObjectHideFlags: 0
