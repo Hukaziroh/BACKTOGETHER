@@ -2,25 +2,24 @@ using UnityEngine;
 using Mirror;
 using System.Collections;
 using System.Collections.Generic;
-using TMPro; // TMP 사용을 위해 추가
+using TMPro;
 
 public class StageDoor : NetworkBehaviour
 {
     [Header("설정")]
+    public int currentStageNumber = 1;  
     public GameObject fanfarePrefab;
     public string lobbySceneName = "Lobby";
     public float floatSpeed = 2f;
 
     [Header("UI 요소")]
-    public GameObject clearTextUI;  // 클리어 시 나타날 텍스트 오브젝트
-    public TMP_Text countText;      // 현재 도착 인원 표시용 TMP 텍스트
+    public GameObject clearTextUI;
+    public TMP_Text countText;
 
-    // 도착한 플레이어들을 저장할 서버 전용 리스트
     private HashSet<uint> arrivedPlayers = new HashSet<uint>();
 
     void Start()
     {
-        // 처음에는 카운트 텍스트를 숨김
         if (countText != null) countText.gameObject.SetActive(false);
         if (clearTextUI != null) clearTextUI.SetActive(false);
     }
@@ -35,10 +34,8 @@ public class StageDoor : NetworkBehaviour
             {
                 arrivedPlayers.Add(identity.netId);
 
-                // 모든 클라이언트에게 숫자 업데이트 명령
                 RpcUpdateCount(arrivedPlayers.Count, NetworkServer.connections.Count);
 
-                // 모든 플레이어가 도착했는지 확인
                 if (arrivedPlayers.Count >= CoopPlayerIdentity.players.Count)
                 {
                     RpcTriggerClearEffect();
@@ -61,14 +58,16 @@ public class StageDoor : NetworkBehaviour
     [ClientRpc]
     private void RpcTriggerClearEffect()
     {
-        // 카운트 텍스트 숨기기
+        if (GameSaveManager.Instance != null)
+        {
+            GameSaveManager.Instance.ClearChapter(currentStageNumber);
+        }
+
         if (countText != null) countText.gameObject.SetActive(false);
 
-        // 파티클 생성
         if (fanfarePrefab != null)
             Instantiate(fanfarePrefab, transform.position, Quaternion.identity);
 
-        // 클리어 텍스트 띄우기
         if (clearTextUI != null)
         {
             clearTextUI.SetActive(true);
@@ -89,7 +88,7 @@ public class StageDoor : NetworkBehaviour
         }
 
         clearTextUI.SetActive(false);
-        clearTextUI.transform.localPosition = startPos; // 위치 초기화
+        clearTextUI.transform.localPosition = startPos;
     }
 
     private IEnumerator WaitAndLoadScene()
