@@ -48,7 +48,7 @@ public class PrivateLobbyManager : MonoBehaviour
 
     private int selectedChapterIndex = 1;
     private int maxChapterCount = 6;
-    private bool isPublicRoom = true;
+    private bool isPublicRoom = true; // 기본은 퍼블릭!
 
     private bool isCreatingLobby = false;
     private bool attributeUpdateDone = false;
@@ -94,26 +94,16 @@ public class PrivateLobbyManager : MonoBehaviour
         isSubscribed = false;
     }
 
-    private void OnEnable()
-    {
-        SubscribeEvents();
-    }
-
+    private void OnEnable() { SubscribeEvents(); }
     private void Start()
     {
         SubscribeEvents();
-
         if (hostPanel != null) hostPanel.SetActive(false);
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
-
         UpdateChapterUI();
         UpdateRoomTypeUI();
     }
-
-    private void OnDisable()
-    {
-        UnsubscribeEvents();
-    }
+    private void OnDisable() { UnsubscribeEvents(); }
 
     public void OnClick_MainHost()
     {
@@ -137,10 +127,7 @@ public class PrivateLobbyManager : MonoBehaviour
 
     private void UpdateChapterUI()
     {
-        if (chapterDisplayText != null)
-        {
-            chapterDisplayText.text = $"Chapter {selectedChapterIndex}";
-        }
+        if (chapterDisplayText != null) chapterDisplayText.text = $"Chapter {selectedChapterIndex}";
     }
 
     public void OnClick_PrevRoomType()
@@ -157,16 +144,12 @@ public class PrivateLobbyManager : MonoBehaviour
 
     private void UpdateRoomTypeUI()
     {
-        if (roomTypeDisplayText != null)
-        {
-            roomTypeDisplayText.text = isPublicRoom ? "Public" : "Private";
-        }
+        if (roomTypeDisplayText != null) roomTypeDisplayText.text = isPublicRoom ? "Public" : "Private";
     }
 
     public void OnClick_MakeRoom()
     {
         SubscribeEvents();
-
         if (isCreatingLobby) return;
 
         var lobby = GetEOSLobby();
@@ -177,25 +160,34 @@ public class PrivateLobbyManager : MonoBehaviour
         }
 
         string roomTitle = (roomNameInputField != null && !string.IsNullOrEmpty(roomNameInputField.text))
-            ? roomNameInputField.text
-            : "Pico Room";
+            ? roomNameInputField.text : "Pico Room";
 
-        currentShortCode = GenerateShortCode();
+        // ★ 분리 로직 핵심: 퍼블릭 방이면 코드를 비우고, 프라이빗일 때만 6자리 코드를 생성!
+        if (isPublicRoom)
+        {
+            currentShortCode = "";
+        }
+        else
+        {
+            currentShortCode = GenerateShortCode();
+        }
+
         isCreatingLobby = true;
-
         SetAllButtonsInteractable(false);
 
         currentPanel = GetLoadingPanel();
         if (currentPanel != null) currentPanel.SetActive(true);
 
-        lobby.CreateLobby(4, isPublicRoom ? LobbyPermissionLevel.Publicadvertised : LobbyPermissionLevel.Inviteonly, false, null);
+        // ★ 에픽 서버에 방 생성 요청 (퍼블릭은 리스트에 띄우고, 프라이빗은 초대 전용으로 숨김)
+        LobbyPermissionLevel permission = isPublicRoom ? LobbyPermissionLevel.Publicadvertised : LobbyPermissionLevel.Inviteonly;
+        lobby.CreateLobby(4, permission, false, null);
 
         StartCoroutine(CreateLobbyAndSetAttributesRoutine(roomTitle));
     }
 
     private void OnCreateLobbySucceeded(List<Epic.OnlineServices.Lobby.Attribute> attributes)
     {
-        isCreatingLobby = false;
+        isCreatingLobby = false; // 방 생성이 확인되면, 아래 코루틴에서 다음 단계(속성 부여)로 넘어갑니다.
     }
 
     private void OnCreateLobbyFailed(string errorMessage)
@@ -238,20 +230,25 @@ public class PrivateLobbyManager : MonoBehaviour
         attributeUpdateDone = false;
         attributeUpdateFailed = false;
 
-        // ★ 치명적인 버그 수정: 원래 EOSLobby가 받아들이던 'AttributeData 배열' 형식으로 완벽하게 복구했습니다.
-        AttributeData[] attrDataArray = new AttributeData[]
+        // ★ 해결!: 에픽 서버가 인식할 수 있는 순수한 List 형태로 속성(AttributeData)들을 조립합니다.
+        List<AttributeData> attrDataList = new List<AttributeData>();
+
+        // 공통 속성
+        attrDataList.Add(new AttributeData { Key = "ROOM_NAME", Value = roomTitle });
+        attrDataList.Add(new AttributeData { Key = "CHAPTER", Value = selectedChapterIndex.ToString() });
+        attrDataList.Add(new AttributeData { Key = "IS_PUBLIC", Value = isPublicRoom ? "1" : "0" });
+
+        // 프라이빗 방일 때만 숏코드(비밀번호) 속성을 욱여넣습니다.
+        if (!isPublicRoom)
         {
-            new AttributeData { Key = "ROOM_NAME", Value = roomTitle },
-            new AttributeData { Key = "CHAPTER", Value = selectedChapterIndex.ToString() },
-            new AttributeData { Key = "SHORTCODE", Value = currentShortCode },
-            new AttributeData { Key = "IS_PUBLIC", Value = isPublicRoom ? "1" : "0" }
-        };
+            attrDataList.Add(new AttributeData { Key = "SHORTCODE", Value = currentShortCode });
+        }
 
         var lobby = GetEOSLobby();
         if (lobby != null)
         {
-            // ★ 복구 완료: List가 아닌 순정 Array 형태로 EOS 서버에 던져줍니다.
-            lobby.UpdateLobbyAttributes(attrDataArray);
+            // 리스트를 배열(.ToArray())로 변환하여 에픽 서버로 발사!
+            lobby.UpdateLobbyAttributes(attrDataList.ToArray());
         }
 
         float attributeTimeout = 5f;
@@ -272,10 +269,10 @@ public class PrivateLobbyManager : MonoBehaviour
         EosTransport transport = NetworkManager.singleton.transport as EosTransport;
         if (transport != null) transport.ResetIgnoreMessagesAtStartUpTimer();
 
+        // 모든 준비가 끝났으니 방장으로서 접속!
         NetworkManager.singleton.StartHost();
 
         yield return new WaitForSecondsRealtime(0.2f);
-
         SetAllButtonsInteractable(true);
         if (currentPanel != null) currentPanel.SetActive(false);
     }
@@ -293,13 +290,11 @@ public class PrivateLobbyManager : MonoBehaviour
     private GameObject GetLoadingPanel()
     {
         if (loadingPanel != null) return loadingPanel;
-
         if (WalkingLoadingPanel.Instance != null)
         {
             loadingPanel = WalkingLoadingPanel.Instance.gameObject;
             return loadingPanel;
         }
-
         return null;
     }
 
