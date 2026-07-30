@@ -77,7 +77,25 @@ public class OptionsManager : MonoBehaviour
             fetchCodeRoutine = StartCoroutine(FetchRoomCodeAsync());
         }
 
-        // GlobalSceneInputManager에게 옵션창 내부로 포커스 및 하이라이트 관리를 위임
+        // ★ [핵심 1] 열릴 때 EventSystem 선택을 초기화하고, 내부 모든 Highlight 오브젝트를 강제로 끔
+        if (EventSystem.current != null)
+        {
+            EventSystem.current.SetSelectedGameObject(null);
+        }
+
+        if (optionsPanel != null)
+        {
+            Transform[] transforms = optionsPanel.GetComponentsInChildren<Transform>(true);
+            foreach (var t in transforms)
+            {
+                if (t != null && t.name == "Highlight")
+                {
+                    t.gameObject.SetActive(false);
+                }
+            }
+        }
+
+        // GlobalSceneInputManager에게 옵션창 내부로 포커스 및 하이라이트 관리를 위임 (첫 번째 항목 자동 선택)
         if (GlobalSceneInputManager.Instance != null && optionsPanel != null)
         {
             GlobalSceneInputManager.Instance.SetFocusScope(optionsPanel);
@@ -94,10 +112,22 @@ public class OptionsManager : MonoBehaviour
 
         if (optionsPanel != null) optionsPanel.SetActive(false);
 
-        // ★ [핵심] 옵션창을 닫을 때 EventSystem 선택을 해제하여 잔류 하이라이트를 모두 끔
+        // ★ [핵심 2] 닫을 때도 EventSystem 선택 해제 및 모든 Highlight 강제 끄기
         if (EventSystem.current != null)
         {
             EventSystem.current.SetSelectedGameObject(null);
+        }
+
+        if (optionsPanel != null)
+        {
+            Transform[] transforms = optionsPanel.GetComponentsInChildren<Transform>(true);
+            foreach (var t in transforms)
+            {
+                if (t != null && t.name == "Highlight")
+                {
+                    t.gameObject.SetActive(false);
+                }
+            }
         }
 
         bool isMainScene = SceneManager.GetActiveScene().name == "Main";
