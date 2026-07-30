@@ -11,24 +11,24 @@ using UnityEngine.SceneManagement;
 public class PrivateLobbyManager : MonoBehaviour
 {
     [Header("UI 패널 연결")]
-    [SerializeField] private GameObject hostPanel;              // [HOST] 클릭 시 뜨는 설정 패널
+    [SerializeField] private GameObject hostPanel;
 
     [Header("메인 & 실행 버튼 연결")]
-    [SerializeField] private Button mainHostButton;             // 메인 화면의 [HOST] 버튼
-    [SerializeField] private Button makeRoomButton;              // 패널 안의 [MAKE ROOM] 버튼
+    [SerializeField] private Button mainHostButton;
+    [SerializeField] private Button makeRoomButton;
 
     [Header("UI 연결 - 방 설정 (패널 내부)")]
-    [SerializeField] private TMP_InputField roomNameInputField;   // 방 이름 입력창 (ROOM TITLE)
+    [SerializeField] private TMP_InputField roomNameInputField;
 
     [Header("챕터 선택 UI (< Chapter 1 >)")]
-    [SerializeField] private TextMeshProUGUI chapterDisplayText; // 선택된 챕터 글자
-    [SerializeField] private Button prevChapterButton;            // 챕터 왼쪽 화살표 <
-    [SerializeField] private Button nextChapterButton;            // 챕터 오른쪽 화살표 >
+    [SerializeField] private TextMeshProUGUI chapterDisplayText;
+    [SerializeField] private Button prevChapterButton;
+    [SerializeField] private Button nextChapterButton;
 
     [Header("방 타입 선택 UI (< Public / Private >)")]
-    [SerializeField] private TextMeshProUGUI roomTypeDisplayText; // 선택된 타입 글자 ("Public" 또는 "Private")
-    [SerializeField] private Button prevRoomTypeButton;           // 타입 왼쪽 화살표 <
-    [SerializeField] private Button nextRoomTypeButton;           // 타입 오른쪽 화살표 >
+    [SerializeField] private TextMeshProUGUI roomTypeDisplayText;
+    [SerializeField] private Button prevRoomTypeButton;
+    [SerializeField] private Button nextRoomTypeButton;
 
     [Header("로딩 UI 연결 (비워두어도 자동 탐색됩니다)")]
     [SerializeField] private GameObject loadingPanel;
@@ -42,13 +42,13 @@ public class PrivateLobbyManager : MonoBehaviour
     [SerializeField] private string mainSceneName = "Main";
 
     private EOSLobby eosLobby;
-    private bool isSubscribed = false; // 중복 구독 방지 플래그
+    private bool isSubscribed = false;
 
     public static string currentShortCode = "";
 
     private int selectedChapterIndex = 1;
     private int maxChapterCount = 6;
-    private bool isPublicRoom = true; // 기본값 퍼블릭
+    private bool isPublicRoom = true;
 
     private bool isCreatingLobby = false;
     private bool attributeUpdateDone = false;
@@ -193,7 +193,7 @@ public class PrivateLobbyManager : MonoBehaviour
         StartCoroutine(CreateLobbyAndSetAttributesRoutine(roomTitle));
     }
 
-    private void OnCreateLobbySucceeded(List<Attribute> attributes)
+    private void OnCreateLobbySucceeded(List<Epic.OnlineServices.Lobby.Attribute> attributes)
     {
         isCreatingLobby = false;
     }
@@ -238,7 +238,8 @@ public class PrivateLobbyManager : MonoBehaviour
         attributeUpdateDone = false;
         attributeUpdateFailed = false;
 
-        List<AttributeData> attrDataList = new List<AttributeData>
+        // ★ 치명적인 버그 수정: 원래 EOSLobby가 받아들이던 'AttributeData 배열' 형식으로 완벽하게 복구했습니다.
+        AttributeData[] attrDataArray = new AttributeData[]
         {
             new AttributeData { Key = "ROOM_NAME", Value = roomTitle },
             new AttributeData { Key = "CHAPTER", Value = selectedChapterIndex.ToString() },
@@ -249,7 +250,8 @@ public class PrivateLobbyManager : MonoBehaviour
         var lobby = GetEOSLobby();
         if (lobby != null)
         {
-            lobby.UpdateLobbyAttributes(attrDataList.ToArray());
+            // ★ 복구 완료: List가 아닌 순정 Array 형태로 EOS 서버에 던져줍니다.
+            lobby.UpdateLobbyAttributes(attrDataArray);
         }
 
         float attributeTimeout = 5f;
@@ -292,16 +294,13 @@ public class PrivateLobbyManager : MonoBehaviour
     {
         if (loadingPanel != null) return loadingPanel;
 
-        WalkingLoadingPanel[] allPanels = Resources.FindObjectsOfTypeAll<WalkingLoadingPanel>();
-        foreach (var p in allPanels)
+        if (WalkingLoadingPanel.Instance != null)
         {
-            if (p != null && p.gameObject.scene.IsValid())
-            {
-                loadingPanel = p.gameObject;
-                break;
-            }
+            loadingPanel = WalkingLoadingPanel.Instance.gameObject;
+            return loadingPanel;
         }
-        return loadingPanel;
+
+        return null;
     }
 
     private string GenerateShortCode()
