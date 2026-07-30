@@ -6,7 +6,8 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
+using EpicTransport; // ★ EosTransport 사용을 위해 추가
+using System.Collections; // <--- 이 줄을 반드시 추가해 주세요!
 public class ClientLobbyManager : MonoBehaviour
 {
     [Header("UI 패널 연결")]
@@ -59,27 +60,21 @@ public class ClientLobbyManager : MonoBehaviour
 
     private void Start()
     {
-        // 이벤트 연결
         if (mainClientButton != null) mainClientButton.onClick.AddListener(OnClick_OpenClientSelectionPanel);
 
-        // 선택 패널 버튼 연결
         if (selectPublicModeButton != null) selectPublicModeButton.onClick.AddListener(OnClick_OpenPublicPanel);
         if (selectPrivateModeButton != null) selectPrivateModeButton.onClick.AddListener(OnClick_OpenPrivatePanel);
         if (quickJoinSelectionButton != null) quickJoinSelectionButton.onClick.AddListener(OnClick_QuickJoinSelection);
 
-        // 퍼블릭 컨트롤 버튼 연결
         if (researchButton != null) researchButton.onClick.AddListener(OnClick_Research);
         if (prevPageButton != null) prevPageButton.onClick.AddListener(OnClick_PrevPage);
         if (nextPageButton != null) nextPageButton.onClick.AddListener(OnClick_NextPage);
 
-        // 챕터 필터 좌우 버튼 연결
         if (prevChapterFilterButton != null) prevChapterFilterButton.onClick.AddListener(OnClick_PrevChapterFilter);
         if (nextChapterFilterButton != null) nextChapterFilterButton.onClick.AddListener(OnClick_NextChapterFilter);
 
-        // 프라이빗 입장 버튼
         if (joinPrivateButton != null) joinPrivateButton.onClick.AddListener(OnClick_JoinPrivateRoom);
 
-        // 검색어 입력 시 즉시 필터링
         if (searchInputField != null) searchInputField.onValueChanged.AddListener(delegate { ApplyFilters(); });
 
         UpdateChapterFilterUI();
@@ -95,6 +90,10 @@ public class ClientLobbyManager : MonoBehaviour
         {
             eosLobby.FindLobbiesSucceeded += OnFindLobbiesSucceeded;
             eosLobby.FindLobbiesFailed += OnFindLobbiesFailed;
+
+            // ★ 방 입장 성공/실패 콜백 연결
+            eosLobby.JoinLobbySucceeded += OnJoinLobbySucceeded;
+            eosLobby.JoinLobbyFailed += OnJoinLobbyFailed;
         }
     }
 
@@ -104,6 +103,10 @@ public class ClientLobbyManager : MonoBehaviour
         {
             eosLobby.FindLobbiesSucceeded -= OnFindLobbiesSucceeded;
             eosLobby.FindLobbiesFailed -= OnFindLobbiesFailed;
+
+            // ★ 방 입장 성공/실패 콜백 해제
+            eosLobby.JoinLobbySucceeded -= OnJoinLobbySucceeded;
+            eosLobby.JoinLobbyFailed -= OnJoinLobbyFailed;
         }
     }
 
@@ -203,7 +206,6 @@ public class ClientLobbyManager : MonoBehaviour
     {
         isQuickJoining = false;
 
-        // ★ 유령 방 방지: 0명이 아니고 자리가 남은 방만 골라냅니다.
         var availableRooms = allFetchedLobbies.Where(lobby =>
         {
             uint currentMembers = lobby.GetMemberCount(new LobbyDetailsGetMemberCountOptions());
@@ -275,7 +277,6 @@ public class ClientLobbyManager : MonoBehaviour
 
         filteredLobbies = allFetchedLobbies.Where(lobby =>
         {
-            // ★ 핵심 수정: 0명인 유령 방은 리스트 목록에서 완전히 제외시킵니다.
             uint currentMembers = lobby.GetMemberCount(new LobbyDetailsGetMemberCountOptions());
             if (currentMembers == 0)
                 return false;
@@ -352,16 +353,54 @@ public class ClientLobbyManager : MonoBehaviour
 
     #endregion
 
-    #region --- 방 입장 ---
+    #region --- 방 입장 (콜백 및 씬 전환) ---
 
     private void JoinRoom(LobbyDetails lobby)
     {
         if (eosLobby != null)
         {
-            Debug.Log("[Client] 선택된 방에 입장을 시도합니다.");
+            Debug.Log("[Client] 선택된 방에 EOS 입장을 시도합니다.");
             SetInteractableAll(false);
-            eosLobby.JoinLobby(lobby);
+            if (loadingText != null) loadingText.SetActive(true);
+
+            eosLobby.JoinLobby(lobby); // 이 함수가 완료되면 아래 OnJoinLobbySucceeded가 자동 호출됨
         }
+    }
+
+    // ★ 추가된 핵심 로직: EOS 입장 성공 시 Mirror 접속 실행
+    private void OnJoinLobbySucceeded(List<Epic.OnlineServices.Lobby.Attribute> attributes)
+    {
+        if (loadingText != null) loadingText.SetActive(false);
+        Debug.Log("[Client] EOS 로비 입장 성공! Mirror 서버로 연결합니다...");
+
+        if (eosLobby.ConnectedLobbyDetails != null)
+        {
+            LobbyDetailsInfo lobbyInfo;
+            if (eosLobby.ConnectedLobbyDetails.CopyInfo(new LobbyDetailsCopyInfoOptions(), out lobbyInfo) == Result.Success)
+            {
+                // 방장의 ID를 주소로 사용하여 Mirror 클라이언트 접속 시작
+                string hostAddress = lobbyInfo.LobbyOwnerUserId.ToString();
+                NetworkManager.singleton.networkAddress = hostAddress;
+
+                EosTransport transport = NetworkManager.singleton.transport as EosTransport;
+                if (transport != null) transport.ResetIgnoreMessagesAtStartUpTimer();
+
+                NetworkManager.singleton.StartClient(); // ★ 실제 게임 씬으로 접속 및 이동!
+                return;
+            }
+        }
+
+        // 실패 시 방어 코드
+        ShowError("방장 연결 정보를 불러올 수 없습니다.");
+        SetInteractableAll(true);
+        eosLobby.LeaveLobby(); // 잘못 들어갔으니 다시 나옴
+    }
+
+    private void OnJoinLobbyFailed(string error)
+    {
+        if (loadingText != null) loadingText.SetActive(false);
+        ShowError("방 입장에 실패했습니다.");
+        SetInteractableAll(true);
     }
 
     public void OnClick_JoinPrivateRoom()
@@ -383,6 +422,23 @@ public class ClientLobbyManager : MonoBehaviour
         };
 
         eosLobby.FindLobbies(1, searchOptions);
+        StartCoroutine(WaitForPrivateJoinRoutine(inputCode));
+    }
+
+    private IEnumerator WaitForPrivateJoinRoutine(string inputCode)
+    {
+        yield return new WaitForSeconds(3f);
+
+        if (allFetchedLobbies.Count > 0)
+        {
+            JoinRoom(allFetchedLobbies[0]);
+        }
+        else
+        {
+            SetInteractableAll(true);
+            if (loadingText != null) loadingText.SetActive(false);
+            ShowError("해당 코드를 가진 방을 찾을 수 없습니다.");
+        }
     }
 
     #endregion
