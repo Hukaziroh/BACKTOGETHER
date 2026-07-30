@@ -179,8 +179,7 @@ public class PrivateLobbyManager : MonoBehaviour
         if (currentPanel != null) currentPanel.SetActive(true);
 
         // ★ 에픽 서버에 방 생성 요청 (퍼블릭은 리스트에 띄우고, 프라이빗은 초대 전용으로 숨김)
-        LobbyPermissionLevel permission = isPublicRoom ? LobbyPermissionLevel.Publicadvertised : LobbyPermissionLevel.Inviteonly;
-        lobby.CreateLobby(4, permission, false, null);
+        lobby.CreateLobby(4, LobbyPermissionLevel.Publicadvertised, false, null);
 
         StartCoroutine(CreateLobbyAndSetAttributesRoutine(roomTitle));
     }
