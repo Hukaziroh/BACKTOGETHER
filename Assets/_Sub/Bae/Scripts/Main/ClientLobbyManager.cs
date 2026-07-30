@@ -40,10 +40,6 @@ public class ClientLobbyManager : MonoBehaviour
     [SerializeField] private Button nextPageButton;
     [SerializeField] private TextMeshProUGUI pageText;
 
-    [Header("프라이빗 코드 입력 UI")]
-    [SerializeField] private SixDigitCodeInputUI codeInputUI;
-    [SerializeField] private Button joinPrivateButton;
-
     [Header("공통 로딩 & 에러 UI")]
     [SerializeField] private GameObject loadingText;
     [SerializeField] private GameObject errorPopupPanel;
@@ -156,7 +152,7 @@ public class ClientLobbyManager : MonoBehaviour
         SetInteractableAll(false);
         if (loadingText != null) loadingText.SetActive(true);
 
-        // ★ 핵심: 퍼블릭 방(IS_PUBLIC = 1)만 검색하도록 에픽 서버에 필터를 보냅니다!
+        // ★ 핵심: 퍼블릭 방(IS_PUBLIC = 1)만 검색
         LobbySearchSetParameterOptions[] searchOptions = new LobbySearchSetParameterOptions[]
         {
             new LobbySearchSetParameterOptions
@@ -345,65 +341,6 @@ public class ClientLobbyManager : MonoBehaviour
 
     #endregion
 
-    #region Private Room Logic
-
-    public void OnClick_JoinPrivateRoom()
-    {
-        SubscribeEvents();
-        if (codeInputUI == null) return;
-
-        // ★ 여기서 SixDigitCodeInputUI의 GetCode() 함수를 제대로 부릅니다.
-        string inputCode = codeInputUI.GetCode();
-        if (string.IsNullOrEmpty(inputCode) || inputCode.Length < 6)
-        {
-            ShowError("6자리 코드를 정확히 입력해주세요.");
-            return;
-        }
-
-        var lobby = GetEOSLobby();
-        if (lobby == null)
-        {
-            ShowError("네트워크 시스템이 준비되지 않았습니다.");
-            return;
-        }
-
-        SetInteractableAll(false);
-        if (loadingText != null) loadingText.SetActive(true);
-
-        // ★ 프라이빗 룸은 우리가 입력한 SHORTCODE를 가진 방 하나만 검색합니다.
-        LobbySearchSetParameterOptions[] searchOptions = new LobbySearchSetParameterOptions[]
-        {
-            new LobbySearchSetParameterOptions
-            {
-                ComparisonOp = ComparisonOp.Equal,
-                Parameter = new AttributeData { Key = "SHORTCODE", Value = inputCode }
-            }
-        };
-
-        lobby.FindLobbies(1, searchOptions);
-        StartCoroutine(WaitForPrivateJoinRoutine(inputCode));
-    }
-
-    private IEnumerator WaitForPrivateJoinRoutine(string inputCode)
-    {
-        yield return new WaitForSeconds(3f);
-
-        if (allFetchedLobbies != null && allFetchedLobbies.Count > 0)
-        {
-            JoinRoom(allFetchedLobbies[0]);
-        }
-        else
-        {
-            SetInteractableAll(true);
-            if (loadingText != null) loadingText.SetActive(false);
-            ShowError("해당 코드를 가진 방을 찾을 수 없습니다.");
-        }
-    }
-
-    #endregion
-
-    #region Helpers
-
     private string GetLobbyAttribute(LobbyDetails lobby, string key, string defaultValue)
     {
         Epic.OnlineServices.Lobby.Attribute attr;
@@ -420,7 +357,6 @@ public class ClientLobbyManager : MonoBehaviour
         if (selectPrivateModeButton != null) selectPrivateModeButton.interactable = interactable;
         if (quickJoinSelectionButton != null) quickJoinSelectionButton.interactable = interactable;
         if (researchButton != null) researchButton.interactable = interactable;
-        if (joinPrivateButton != null) joinPrivateButton.interactable = interactable;
         if (prevPageButton != null) prevPageButton.interactable = interactable;
         if (nextPageButton != null) nextPageButton.interactable = interactable;
     }
@@ -438,6 +374,4 @@ public class ClientLobbyManager : MonoBehaviour
     {
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
     }
-
-    #endregion
 }

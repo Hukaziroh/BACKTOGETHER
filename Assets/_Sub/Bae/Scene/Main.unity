@@ -3992,14 +3992,14 @@ PrefabInstance:
     - target: {fileID: 61552078906226040, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1506203215}
+      objectReference: {fileID: 6526589014550713147}
     - target: {fileID: 61552078906226040, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnClick_JoinPrivateRoom
+      value: OnClick_ConnectByCode
       objectReference: {fileID: 0}
     - target: {fileID: 61552078906226040, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: ClientLobbyManager, Assembly-CSharp
+      value: ClientJoinUI, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 65703918423068661, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_IsActive
@@ -11627,17 +11627,15 @@ MonoBehaviour:
   filterChapterText: {fileID: 121102590639922179}
   prevFilterChapterButton: {fileID: 8234879079532356322}
   nextFilterChapterButton: {fileID: 6594075951928533216}
-  roomListContainer: {fileID: 0}
+  roomListContainer: {fileID: 2473280918732346846}
   roomItemPrefab: {fileID: 3931104095033623730, guid: e76c33481c058cd4d884f18558f91b9c, type: 3}
   noRoomFoundText: {fileID: 0}
   prevPageButton: {fileID: 8952697576372816901}
   nextPageButton: {fileID: 8822583357537443950}
   pageText: {fileID: 6587160486048868595}
-  codeInputUI: {fileID: 0}
-  joinPrivateButton: {fileID: 0}
   loadingText: {fileID: 4690324336998505720}
-  errorPopupPanel: {fileID: 0}
-  errorMessageText: {fileID: 0}
+  errorPopupPanel: {fileID: 1035984737}
+  errorMessageText: {fileID: 1035984735}
 --- !u!1 &1514349945
 GameObject:
   m_ObjectHideFlags: 0
@@ -18562,6 +18560,14 @@ PrefabInstance:
       propertyPath: roomCodeInput
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 638033671785360731, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
+      propertyPath: errorPopupPanel
+      value: 
+      objectReference: {fileID: 1035984737}
+    - target: {fileID: 638033671785360731, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
+      propertyPath: errorMessageText
+      value: 
+      objectReference: {fileID: 1035984735}
     - target: {fileID: 3370392405594019368, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1.44293
@@ -18742,6 +18748,17 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1506203215}
   m_SourcePrefab: {fileID: 100100000, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
+--- !u!114 &6526589014550713147 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 638033671785360731, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
+  m_PrefabInstance: {fileID: 6526589014550713146}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 895242587}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 974b7f68e19a065459c9db6c3089c56f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClientJoinUI
 --- !u!1 &6537403127540608374
 GameObject:
   m_ObjectHideFlags: 0
