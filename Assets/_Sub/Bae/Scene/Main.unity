@@ -11633,9 +11633,9 @@ MonoBehaviour:
   prevPageButton: {fileID: 8952697576372816901}
   nextPageButton: {fileID: 8822583357537443950}
   pageText: {fileID: 6587160486048868595}
-  loadingText: {fileID: 4690324336998505720}
-  errorPopupPanel: {fileID: 1035984737}
-  errorMessageText: {fileID: 1035984735}
+  loadingText: {fileID: 0}
+  errorPopupPanel: {fileID: 0}
+  errorMessageText: {fileID: 0}
 --- !u!1 &1514349945
 GameObject:
   m_ObjectHideFlags: 0
@@ -18563,11 +18563,11 @@ PrefabInstance:
     - target: {fileID: 638033671785360731, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
       propertyPath: errorPopupPanel
       value: 
-      objectReference: {fileID: 1035984737}
+      objectReference: {fileID: 0}
     - target: {fileID: 638033671785360731, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
       propertyPath: errorMessageText
       value: 
-      objectReference: {fileID: 1035984735}
+      objectReference: {fileID: 0}
     - target: {fileID: 3370392405594019368, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1.44293
@@ -19636,6 +19636,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2473280918732346846}
+  - component: {fileID: 8379354410792837744}
   m_Layer: 5
   m_Name: RoomList
   m_TagString: Untagged
@@ -19643,6 +19644,32 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &8379354410792837744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8379354410792837743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 0
+  m_Spacing: 5
+  m_ChildForceExpandWidth: 1
+  m_ChildForceExpandHeight: 0
+  m_ChildControlWidth: 1
+  m_ChildControlHeight: 0
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
+  m_ReverseArrangement: 0
 --- !u!114 &8446667540232788266
 MonoBehaviour:
   m_ObjectHideFlags: 0
