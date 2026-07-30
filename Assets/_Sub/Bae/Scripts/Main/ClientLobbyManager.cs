@@ -55,15 +55,14 @@ public class ClientLobbyManager : MonoBehaviour
 
     // 내부 제어 변수
     private int currentChapterFilter = 0; // 0 = ALL, 1~6 = Chapter 1~6
-    private bool isQuickJoining = false;   // Quick Join을 눌러서 검색 중인지 여부
-    private bool isPrivateJoining = false; // 프라이빗 코드로 검색 중인지 여부 (고정 대기 대신 이벤트로 결과를 받기 위한 플래그)
+    private bool isQuickJoining = false;
 
     private void Start()
     {
         // 이벤트 연결
         if (mainClientButton != null) mainClientButton.onClick.AddListener(OnClick_OpenClientSelectionPanel);
 
-        // 선택 패널 3가지 버튼 연결
+        // 선택 패널 버튼 연결
         if (selectPublicModeButton != null) selectPublicModeButton.onClick.AddListener(OnClick_OpenPublicPanel);
         if (selectPrivateModeButton != null) selectPrivateModeButton.onClick.AddListener(OnClick_OpenPrivatePanel);
         if (quickJoinSelectionButton != null) quickJoinSelectionButton.onClick.AddListener(OnClick_QuickJoinSelection);
@@ -127,7 +126,7 @@ public class ClientLobbyManager : MonoBehaviour
         CloseAllPanels();
         if (clientPublicPanel != null) clientPublicPanel.SetActive(true);
         isQuickJoining = false;
-        RefreshLobbyList(); // 퍼블릭 패널을 열 때 자동으로 방 검색
+        RefreshLobbyList();
     }
 
     public void OnClick_OpenPrivatePanel()
@@ -149,7 +148,7 @@ public class ClientLobbyManager : MonoBehaviour
     {
         isQuickJoining = true;
         SetInteractableAll(false);
-        RefreshLobbyList(); // 백그라운드에서 방 리스트 검색 시작
+        RefreshLobbyList();
     }
 
     public void RefreshLobbyList()
@@ -159,7 +158,6 @@ public class ClientLobbyManager : MonoBehaviour
         if (loadingText != null) loadingText.SetActive(true);
         if (!isQuickJoining) ClearRoomListUI();
 
-        // "PUBLIC" 속성인 방만 서버에 검색 요청
         LobbySearchSetParameterOptions[] searchOptions = new LobbySearchSetParameterOptions[]
         {
             new LobbySearchSetParameterOptions { ComparisonOp = ComparisonOp.Equal, Parameter = new AttributeData { Key = "ROOM_TYPE", Value = "PUBLIC" } }
@@ -171,27 +169,7 @@ public class ClientLobbyManager : MonoBehaviour
     private void OnFindLobbiesSucceeded(List<LobbyDetails> lobbies)
     {
         if (loadingText != null) loadingText.SetActive(false);
-
-        // EOSLobby가 내부적으로 들고 있는 리스트를 그대로 참조하지 않도록 방어적으로 복사합니다.
-        // (다음 검색 때 EOSLobby 쪽에서 이 핸들들을 Release/Clear 하기 때문에, 같은 리스트를 공유하면
-        //  타이밍에 따라 예기치 않게 비워질 수 있습니다.)
-        allFetchedLobbies = lobbies != null ? new List<LobbyDetails>(lobbies) : new List<LobbyDetails>();
-
-        if (isPrivateJoining)
-        {
-            isPrivateJoining = false;
-
-            if (allFetchedLobbies.Count > 0)
-            {
-                JoinRoom(allFetchedLobbies[0]);
-            }
-            else
-            {
-                SetInteractableAll(true);
-                ShowError("해당 코드를 가진 방을 찾을 수 없습니다.");
-            }
-            return;
-        }
+        allFetchedLobbies = lobbies ?? new List<LobbyDetails>();
 
         if (isQuickJoining)
         {
@@ -199,7 +177,7 @@ public class ClientLobbyManager : MonoBehaviour
         }
         else
         {
-            ApplyFilters(); // 일반 검색이면 리스트 화면 업데이트
+            ApplyFilters();
         }
     }
 
@@ -214,11 +192,6 @@ public class ClientLobbyManager : MonoBehaviour
             isQuickJoining = false;
             ShowError("빠른 입장을 위한 방을 찾을 수 없습니다.");
         }
-        else if (isPrivateJoining)
-        {
-            isPrivateJoining = false;
-            ShowError("해당 코드를 가진 방을 찾을 수 없습니다.");
-        }
         else
         {
             ApplyFilters();
@@ -228,18 +201,25 @@ public class ClientLobbyManager : MonoBehaviour
 
     private void ProcessQuickJoin()
     {
-        isQuickJoining = false; // 플래그 리셋
+        isQuickJoining = false;
 
-        // 인원이 꽉 차지 않은 방만 걸러냄
+        // ★ 유령 방 방지: 0명이 아니고 자리가 남은 방만 골라냅니다.
         var availableRooms = allFetchedLobbies.Where(lobby =>
         {
-            uint currentMembers, maxMembers;
-            return EOSLobby.IsLobbyJoinable(lobby, out currentMembers, out maxMembers);
+            uint currentMembers = lobby.GetMemberCount(new LobbyDetailsGetMemberCountOptions());
+            uint maxMembers = 4;
+
+            LobbyDetailsInfo lobbyInfo;
+            if (lobby.CopyInfo(new LobbyDetailsCopyInfoOptions(), out lobbyInfo) == Result.Success)
+            {
+                maxMembers = lobbyInfo.MaxMembers;
+            }
+
+            return currentMembers > 0 && currentMembers < maxMembers;
         }).ToList();
 
         if (availableRooms.Count > 0)
         {
-            // 빈 방들 중에서 완전히 무작위(Random)로 하나 선택
             int randomIndex = Random.Range(0, availableRooms.Count);
             JoinRoom(availableRooms[randomIndex]);
         }
@@ -252,7 +232,7 @@ public class ClientLobbyManager : MonoBehaviour
 
     #endregion
 
-    #region --- 챕터 필터 (좌우 버튼 조작) ---
+    #region --- 챕터 필터 ---
 
     public void OnClick_PrevChapterFilter()
     {
@@ -260,7 +240,7 @@ public class ClientLobbyManager : MonoBehaviour
         {
             currentChapterFilter--;
             UpdateChapterFilterUI();
-            ApplyFilters(); // 값 변경 시 즉시 필터 적용
+            ApplyFilters();
         }
     }
 
@@ -287,7 +267,7 @@ public class ClientLobbyManager : MonoBehaviour
 
     #endregion
 
-    #region --- 퍼블릭 방 리스트 출력 (필터 및 페이징) ---
+    #region --- 퍼블릭 방 리스트 출력 ---
 
     private void ApplyFilters()
     {
@@ -295,29 +275,32 @@ public class ClientLobbyManager : MonoBehaviour
 
         filteredLobbies = allFetchedLobbies.Where(lobby =>
         {
+            // ★ 핵심 수정: 0명인 유령 방은 리스트 목록에서 완전히 제외시킵니다.
+            uint currentMembers = lobby.GetMemberCount(new LobbyDetailsGetMemberCountOptions());
+            if (currentMembers == 0)
+                return false;
+
             string roomName = "";
             string chapterStr = "";
 
             Attribute attr;
-            if (lobby.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "ROOM_NAME" }, out attr) == Epic.OnlineServices.Result.Success)
+            if (lobby.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "ROOM_NAME" }, out attr) == Result.Success)
             {
                 if (attr.Data != null) roomName = attr.Data.Value.AsUtf8.ToLower();
             }
 
-            if (lobby.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "CHAPTER" }, out attr) == Epic.OnlineServices.Result.Success)
+            if (lobby.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "CHAPTER" }, out attr) == Result.Success)
             {
                 if (attr.Data != null) chapterStr = attr.Data.Value.AsUtf8;
             }
 
-            // 1. 방 이름 검색 (포함되어 있는지)
             if (!string.IsNullOrEmpty(searchKeyword) && !roomName.Contains(searchKeyword))
                 return false;
 
-            // 2. 챕터 필터 (0이면 전체보기, 아니면 해당 챕터만)
             if (currentChapterFilter != 0 && chapterStr != currentChapterFilter.ToString())
                 return false;
 
-            return true; // 조건 통과
+            return true;
         }).ToList();
 
         currentPage = 0;
@@ -369,9 +352,8 @@ public class ClientLobbyManager : MonoBehaviour
 
     #endregion
 
-    #region --- 방 입장 (선택 입장 / 프라이빗 코드 입장) ---
+    #region --- 방 입장 ---
 
-    // 선택된 퍼블릭 방 입장
     private void JoinRoom(LobbyDetails lobby)
     {
         if (eosLobby != null)
@@ -382,7 +364,6 @@ public class ClientLobbyManager : MonoBehaviour
         }
     }
 
-    // 기존 프라이빗 방 코드 입력 입장
     public void OnClick_JoinPrivateRoom()
     {
         string inputCode = shortCodeInputField != null ? shortCodeInputField.text.Trim() : "";
@@ -395,11 +376,6 @@ public class ClientLobbyManager : MonoBehaviour
         if (loadingText != null) loadingText.SetActive(true);
         SetInteractableAll(false);
 
-        isPrivateJoining = true;
-
-        // 프라이빗 방이면서, 해당 숏코드와 일치하는 방만 검색
-        // 결과는 고정 시간을 기다리는 대신 FindLobbiesSucceeded/FindLobbiesFailed 이벤트로 처리합니다
-        // (OnFindLobbiesSucceeded / OnFindLobbiesFailed 참고).
         LobbySearchSetParameterOptions[] searchOptions = new LobbySearchSetParameterOptions[]
         {
             new LobbySearchSetParameterOptions { ComparisonOp = ComparisonOp.Equal, Parameter = new AttributeData { Key = "ROOM_TYPE", Value = "PRIVATE" } },
