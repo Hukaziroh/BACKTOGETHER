@@ -9,7 +9,6 @@ using System.Collections;
 
 public class PauseManager : MonoBehaviour
 {
-    // ★ 경고가 발생하던 FindObjectsSortMode 부분을 최신 API인 FindObjectsInactive로 변경
     private static PauseManager _instance;
     public static PauseManager instance
     {
@@ -51,176 +50,93 @@ public class PauseManager : MonoBehaviour
     {
         if (pausePanel != null) pausePanel.SetActive(true);
         isPaused = true;
-
-        if (GlobalSceneInputManager.Instance != null && pausePanel != null)
-        {
-            GlobalSceneInputManager.Instance.SetFocusScope(pausePanel);
-        }
     }
 
     public void ResumeGame()
     {
         if (pausePanel != null) pausePanel.SetActive(false);
         isPaused = false;
-
-        if (GlobalSceneInputManager.Instance != null)
-        {
-            GlobalSceneInputManager.Instance.ClearFocusScope();
-        }
     }
 
-    public void CloseOptions()
-    {
-        OptionsManager.instance.Close();
-        if (pausePanel != null) pausePanel.SetActive(true);
-
-        if (GlobalSceneInputManager.Instance != null && pausePanel != null)
-        {
-            GlobalSceneInputManager.Instance.SetFocusScope(pausePanel);
-        }
-    }
-
-    public void ClosePause()
-    {
-        pausePanel.SetActive(false);
-    }
-
-    public void ReturnToMainMenu()
+    /// <summary>
+    /// [메인 메뉴로 이동] 버튼 클릭 시 실행할 함수
+    /// </summary>
+    public void OnClick_ReturnToMain()
     {
         if (isLeaving) return;
-        ResumeGame();
-
-        HostDisconnectHandler disconnectHandler = FindAnyObjectByType<HostDisconnectHandler>();
-        if (disconnectHandler != null)
-        {
-            disconnectHandler.SetIntentionalExit();
-        }
-
-        StartCoroutine(LeaveGameGracefullyRoutine());
+        StartCoroutine(LeaveGameRoutine());
     }
 
-    private IEnumerator LeaveGameGracefullyRoutine()
+    private IEnumerator LeaveGameRoutine()
     {
         isLeaving = true;
-#if UNITY_EDITOR
-        UnityEditor.Selection.activeGameObject = null;
-#endif
-
-        Debug.Log(
-            "[퍼즈 시스템] ① 에픽 로비 비동기 퇴장 시퀀스 시작..."
-        );
-
-        Time.timeScale = 1f;
-
-        yield return null;
-
-        if (NetworkManager.singleton == null)
-        {
-            Debug.LogError(
-                "[퍼즈 시스템] NetworkManager.singleton이 NULL입니다."
-            );
-
-            isLeaving = false;
-            yield break;
-        }
-
-        EOSLobby eosLobby =
-            NetworkManager.singleton.GetComponent<EOSLobby>();
-
+        Debug.Log("[퍼즈 시스템] ① 메인 메뉴 이동 시작");
 
         // =========================================================
-        // 1. EOS Lobby 퇴장
+        // 1. EOS Lobby 퇴장 및 방 파괴 처리
         // =========================================================
+        EOSLobby eosLobby = NetworkManager.singleton != null ? NetworkManager.singleton.GetComponent<EOSLobby>() : null;
 
         if (eosLobby != null)
         {
-            Debug.Log(
-                $"[퍼즈 시스템] ② EOSLobby 발견 | " +
-                $"ConnectedToLobby = {eosLobby.ConnectedToLobby} | " +
-                $"IsLeavingLobby = {eosLobby.IsLeavingLobby}"
-            );
-
             if (eosLobby.ConnectedToLobby)
             {
-                Debug.Log(
-                    "[퍼즈 시스템] ③ EOS Lobby 퇴장 요청"
-                );
-
-                eosLobby.LeaveLobby();
-
-                float timeout = 5f;
-
-                while (
-                    eosLobby.IsLeavingLobby &&
-                    timeout > 0f
-                )
+                // ★ 내가 방장(Host)이면 에픽 서버에서 방 파괴, 손님(Client)이면 나만 퇴장
+                if (NetworkServer.active)
                 {
-                    timeout -= Time.unscaledDeltaTime;
-
-                    yield return null;
-                }
-
-                if (eosLobby.IsLeavingLobby)
-                {
-                    Debug.LogWarning(
-                        "[퍼즈 시스템] ④ EOS Lobby 퇴장 콜백이 " +
-                        "5초 안에 도착하지 않았습니다."
-                    );
-                }
-                else if (eosLobby.ConnectedToLobby)
-                {
-                    Debug.LogWarning(
-                        "[퍼즈 시스템] ④ EOS Lobby 퇴장 실패 또는 " +
-                        "아직 Lobby에 연결된 상태입니다."
-                    );
+                    Debug.Log("[퍼즈 시스템] ② 호스트이므로 EOS Lobby Destroy(방 파괴) 요청");
+                    eosLobby.DestroyLobby();
                 }
                 else
                 {
-                    Debug.Log(
-                        "[퍼즈 시스템] ④ EOS Lobby 정상 퇴장 완료"
-                    );
+                    Debug.Log("[퍼즈 시스템] ② 클라이언트이므로 EOS Lobby Leave(퇴장) 요청");
+                    eosLobby.LeaveLobby();
+                }
+
+                float leaveTimeout = 5f;
+                while (eosLobby.ConnectedToLobby && leaveTimeout > 0f)
+                {
+                    leaveTimeout -= Time.unscaledDeltaTime;
+                    yield return null;
+                }
+
+                if (leaveTimeout <= 0f && eosLobby.ConnectedToLobby)
+                {
+                    Debug.LogWarning("[퍼즈 시스템] ③ EOS Lobby 처리 타임아웃");
+                }
+                else
+                {
+                    Debug.Log("[퍼즈 시스템] ③ EOS Lobby 처리 완료");
                 }
             }
-            else
-            {
-                Debug.Log(
-                    "[퍼즈 시스템] ③ 현재 EOS Lobby에 연결되어 있지 않습니다."
-                );
-            }
-        }
-        else
-        {
-            Debug.LogWarning(
-                "[퍼즈 시스템] EOSLobby 컴포넌트를 찾을 수 없습니다."
-            );
         }
 
+        yield return new WaitForSecondsRealtime(0.2f);
 
         // =========================================================
         // 2. Mirror 네트워크 종료
         // =========================================================
-
         if (NetworkServer.active)
         {
-            Debug.Log("[퍼즈 시스템] ⑤ 호스트 종료");
+            Debug.Log("[퍼즈 시스템] ④ Mirror StopHost 실행");
             NetworkManager.singleton.StopHost();
         }
-        else
+        else if (NetworkClient.active)
         {
-            Debug.Log("[퍼즈 시스템] ⑤ 클라이언트 종료");
+            Debug.Log("[퍼즈 시스템] ④ Mirror StopClient 실행");
             NetworkManager.singleton.StopClient();
         }
 
+        yield return new WaitForSecondsRealtime(0.3f);
 
         // =========================================================
-        // 3. 종료 처리
+        // 3. 메인 씬 이동
         // =========================================================
-
-        yield return new WaitForSecondsRealtime(0.5f);
-
-        Debug.Log(
-            "[퍼즈 시스템] ⑥ 게임 종료 시퀀스 완료"
-        );
+        Debug.Log("[퍼즈 시스템] ⑤ 메인 씬 로드");
+        if (!string.IsNullOrEmpty(mainMenuSceneName))
+        {
+            SceneManager.LoadScene(mainMenuSceneName);
+        }
 
         isLeaving = false;
     }
