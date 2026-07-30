@@ -72,7 +72,6 @@ public class LobbySyncManager : NetworkBehaviour
         }
     }
 
-    // ★ PauseManager에서 호출하여 상태를 동기화할 수 있는 함수
     public void RefreshRoomCodeUIState()
     {
         UpdateRoomCodeUI(roomCode);
@@ -80,43 +79,43 @@ public class LobbySyncManager : NetworkBehaviour
 
     private void UpdateRoomCodeUI(string code)
     {
-        if (roomCodeText != null)
+        if (roomCodeText == null) return;
+
+        bool isMainScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Main";
+        string formattedCode = (isMainScene || string.IsNullOrEmpty(code)) ? "Empty" : code;
+
+        // 스트리머 모드 적용 여부 확인 (OptionsManager가 존재하고 IsCodeVisible이 false이면 마스킹 처리)
+        bool isCodeVisible = true;
+        if (OptionsManager.instance != null)
         {
-            // 1. 현재 PauseManager의 눈 상태 가져오기
-            bool isVisible = PauseManager.instance == null || PauseManager.instance.IsCodeVisible;
+            isCodeVisible = OptionsManager.instance.IsCodeVisible;
+        }
 
-            string formattedCode = string.IsNullOrEmpty(code) ? "-" : code;
+        if (!isMainScene && !string.IsNullOrEmpty(code) && !isCodeVisible)
+        {
+            formattedCode = "******";
+        }
 
-            // 2. 기본 프리픽스 추출 (언어별로 바뀌는 Code: / 코드: 등의 라벨과 줄바꿈 인식)
-            string prefix = "Code:";
-
-            if (!string.IsNullOrEmpty(roomCodeText.text))
+        // 줄바꿈 문자(\n, \r)를 유지하거나 기존 텍스트 형태에 맞춰 prefix 추출
+        string prefix = "Code:\n";
+        if (!string.IsNullOrEmpty(roomCodeText.text))
+        {
+            int splitIndex = roomCodeText.text.IndexOf('\n');
+            if (splitIndex != -1 && roomCodeText.text.Length >= splitIndex + 1)
             {
-                int newlineIndex = roomCodeText.text.IndexOf('\n');
-                if (newlineIndex != -1 && roomCodeText.text.Length >= newlineIndex + 1)
-                {
-                    prefix = roomCodeText.text.Substring(0, newlineIndex + 1);
-                }
-                else
-                {
-                    int colonIndex = roomCodeText.text.IndexOf(':');
-                    if (colonIndex != -1 && roomCodeText.text.Length >= colonIndex + 2)
-                    {
-                        prefix = roomCodeText.text.Substring(0, colonIndex + 2);
-                    }
-                }
-            }
-
-            // 3. 만약 언어가 바뀌어서 텍스트가 강제로 리셋되었더라도, 
-            //    실제 내부 눈 상태(isVisible)가 켜져 있다면 곧바로 숫자로 복구해 줌!
-            if (isVisible)
-            {
-                roomCodeText.text = prefix + formattedCode;
+                prefix = roomCodeText.text.Substring(0, splitIndex + 1);
             }
             else
             {
-                roomCodeText.text = prefix + "******";
+                int colonIndex = roomCodeText.text.IndexOf(':');
+                if (colonIndex != -1)
+                {
+                    prefix = roomCodeText.text.Substring(0, colonIndex + 1);
+                }
             }
         }
+
+        // 최종 텍스트 적용 (줄바꿈 포함)
+        roomCodeText.text = prefix + formattedCode;
     }
 }
