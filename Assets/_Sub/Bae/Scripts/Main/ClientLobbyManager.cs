@@ -1,7 +1,6 @@
 using Epic.OnlineServices;
 using Epic.OnlineServices.Lobby;
 using Mirror;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -56,7 +55,8 @@ public class ClientLobbyManager : MonoBehaviour
 
     // 내부 제어 변수
     private int currentChapterFilter = 0; // 0 = ALL, 1~6 = Chapter 1~6
-    private bool isQuickJoining = false;  // Quick Join을 눌러서 검색 중인지 여부
+    private bool isQuickJoining = false;   // Quick Join을 눌러서 검색 중인지 여부
+    private bool isPrivateJoining = false; // 프라이빗 코드로 검색 중인지 여부 (고정 대기 대신 이벤트로 결과를 받기 위한 플래그)
 
     private void Start()
     {
@@ -171,7 +171,27 @@ public class ClientLobbyManager : MonoBehaviour
     private void OnFindLobbiesSucceeded(List<LobbyDetails> lobbies)
     {
         if (loadingText != null) loadingText.SetActive(false);
-        allFetchedLobbies = lobbies ?? new List<LobbyDetails>();
+
+        // EOSLobby가 내부적으로 들고 있는 리스트를 그대로 참조하지 않도록 방어적으로 복사합니다.
+        // (다음 검색 때 EOSLobby 쪽에서 이 핸들들을 Release/Clear 하기 때문에, 같은 리스트를 공유하면
+        //  타이밍에 따라 예기치 않게 비워질 수 있습니다.)
+        allFetchedLobbies = lobbies != null ? new List<LobbyDetails>(lobbies) : new List<LobbyDetails>();
+
+        if (isPrivateJoining)
+        {
+            isPrivateJoining = false;
+
+            if (allFetchedLobbies.Count > 0)
+            {
+                JoinRoom(allFetchedLobbies[0]);
+            }
+            else
+            {
+                SetInteractableAll(true);
+                ShowError("해당 코드를 가진 방을 찾을 수 없습니다.");
+            }
+            return;
+        }
 
         if (isQuickJoining)
         {
@@ -194,6 +214,11 @@ public class ClientLobbyManager : MonoBehaviour
             isQuickJoining = false;
             ShowError("빠른 입장을 위한 방을 찾을 수 없습니다.");
         }
+        else if (isPrivateJoining)
+        {
+            isPrivateJoining = false;
+            ShowError("해당 코드를 가진 방을 찾을 수 없습니다.");
+        }
         else
         {
             ApplyFilters();
@@ -208,16 +233,8 @@ public class ClientLobbyManager : MonoBehaviour
         // 인원이 꽉 차지 않은 방만 걸러냄
         var availableRooms = allFetchedLobbies.Where(lobby =>
         {
-            uint currentMembers = lobby.GetMemberCount(new LobbyDetailsGetMemberCountOptions());
-            uint maxMembers = 4;
-
-            LobbyDetailsInfo lobbyInfo;
-            if (lobby.CopyInfo(new LobbyDetailsCopyInfoOptions(), out lobbyInfo) == Epic.OnlineServices.Result.Success)
-            {
-                maxMembers = lobbyInfo.MaxMembers;
-            }
-
-            return currentMembers < maxMembers;
+            uint currentMembers, maxMembers;
+            return EOSLobby.IsLobbyJoinable(lobby, out currentMembers, out maxMembers);
         }).ToList();
 
         if (availableRooms.Count > 0)
@@ -378,7 +395,11 @@ public class ClientLobbyManager : MonoBehaviour
         if (loadingText != null) loadingText.SetActive(true);
         SetInteractableAll(false);
 
+        isPrivateJoining = true;
+
         // 프라이빗 방이면서, 해당 숏코드와 일치하는 방만 검색
+        // 결과는 고정 시간을 기다리는 대신 FindLobbiesSucceeded/FindLobbiesFailed 이벤트로 처리합니다
+        // (OnFindLobbiesSucceeded / OnFindLobbiesFailed 참고).
         LobbySearchSetParameterOptions[] searchOptions = new LobbySearchSetParameterOptions[]
         {
             new LobbySearchSetParameterOptions { ComparisonOp = ComparisonOp.Equal, Parameter = new AttributeData { Key = "ROOM_TYPE", Value = "PRIVATE" } },
@@ -386,23 +407,6 @@ public class ClientLobbyManager : MonoBehaviour
         };
 
         eosLobby.FindLobbies(1, searchOptions);
-        StartCoroutine(WaitForPrivateJoinRoutine(inputCode));
-    }
-
-    private IEnumerator WaitForPrivateJoinRoutine(string inputCode)
-    {
-        yield return new WaitForSeconds(3f);
-
-        if (allFetchedLobbies.Count > 0)
-        {
-            JoinRoom(allFetchedLobbies[0]);
-        }
-        else
-        {
-            SetInteractableAll(true);
-            if (loadingText != null) loadingText.SetActive(false);
-            ShowError("해당 코드를 가진 방을 찾을 수 없습니다.");
-        }
     }
 
     #endregion
