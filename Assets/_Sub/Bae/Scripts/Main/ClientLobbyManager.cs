@@ -1,58 +1,58 @@
-using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
-using System.Collections.Generic;
-using System.Collections;
+using Epic.OnlineServices;
 using Epic.OnlineServices.Lobby;
 using Mirror;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
-using Epic.OnlineServices;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class ClientLobbyManager : MonoBehaviour
 {
-    [Header("UI ÆĞ³Î ¿¬°á")]
-    [SerializeField] private GameObject mainPanel;             // ¸ŞÀÎ È­¸é
-    [SerializeField] private GameObject clientSelectionPanel;  // [Public / Private] ¼±ÅÃ ÆË¾÷
-    [SerializeField] private GameObject clientPublicPanel;     // ÆÛºí¸¯ ¹æ ¸®½ºÆ® È­¸é
-    [SerializeField] private GameObject clientPrivatePanel;    // ÇÁ¶óÀÌºø ÄÚµå ÀÔ·Â È­¸é (±âÁ¸ ÆĞ³Î)
+    [Header("UI íŒ¨ë„ ì—°ê²°")]
+    [SerializeField] private GameObject mainPanel;             // ë©”ì¸ í™”ë©´
+    [SerializeField] private GameObject clientSelectionPanel;  // [Public / Private] ì„ íƒ íŒì—…
+    [SerializeField] private GameObject clientPublicPanel;     // í¼ë¸”ë¦­ ë°© ë¦¬ìŠ¤íŠ¸ í™”ë©´
+    [SerializeField] private GameObject clientPrivatePanel;    // í”„ë¼ì´ë¹— ì½”ë“œ ì…ë ¥ í™”ë©´ (ê¸°ì¡´ íŒ¨ë„)
 
-    [Header("¸ŞÀÎ & ÆĞ³Î ¹öÆ° ¿¬°á")]
-    [SerializeField] private Button mainClientButton;          // ¸ŞÀÎ È­¸éÀÇ [CLIENT] ¹öÆ°
-    [SerializeField] private Button selectPublicModeButton;    // ÆË¾÷ ³» [Public] ¹öÆ°
-    [SerializeField] private Button selectPrivateModeButton;   // ÆË¾÷ ³» [Private] ¹öÆ°
+    [Header("ë©”ì¸ & íŒ¨ë„ ë²„íŠ¼ ì—°ê²°")]
+    [SerializeField] private Button mainClientButton;          // ë©”ì¸ í™”ë©´ì˜ [CLIENT] ë²„íŠ¼
+    [SerializeField] private Button selectPublicModeButton;    // íŒì—… ë‚´ [Public] ë²„íŠ¼
+    [SerializeField] private Button selectPrivateModeButton;   // íŒì—… ë‚´ [Private] ë²„íŠ¼
 
-    [Header("ÆÛºí¸¯ ¹æ ¸®½ºÆ® - »ó´Ü ÄÁÆ®·Ñ")]
-    [SerializeField] private TMP_InputField searchInputField;  // ¹æ ÀÌ¸§ °Ë»öÃ¢
-    [SerializeField] private TMP_Dropdown chapterFilterDropdown; // Ã©ÅÍ Á¤·Ä/ÇÊÅÍ (All, 1, 2, 3, 4, 5, 6)
-    [SerializeField] private Button researchButton;            // ¸®¼­Ä¡(»õ·Î°íÄ§) ¹öÆ°
-    [SerializeField] private Button quickJoinButton;           // ºü¸¥ ÀÔÀå ¹öÆ°
+    [Header("í¼ë¸”ë¦­ ë°© ë¦¬ìŠ¤íŠ¸ - ìƒë‹¨ ì»¨íŠ¸ë¡¤")]
+    [SerializeField] private TMP_InputField searchInputField;  // ë°© ì´ë¦„ ê²€ìƒ‰ì°½
+    [SerializeField] private TMP_Dropdown chapterFilterDropdown; // ì±•í„° ì •ë ¬/í•„í„° (All, 1, 2, 3, 4, 5, 6)
+    [SerializeField] private Button researchButton;            // ë¦¬ì„œì¹˜(ìƒˆë¡œê³ ì¹¨) ë²„íŠ¼
+    [SerializeField] private Button quickJoinButton;           // ë¹ ë¥¸ ì…ì¥ ë²„íŠ¼
 
-    [Header("ÆÛºí¸¯ ¹æ ¸®½ºÆ® - È­¸é ¹× ÆäÀÌÂ¡")]
-    [SerializeField] private Transform roomListParent;         // 8°³ ¹æ ÇÁ¸®ÆÕÀÌ »ı¼ºµÉ ºÎ¸ğ Grid
-    [SerializeField] private GameObject clientRoomItemPrefab;  // ¹æ ¾ÆÀÌÅÛ ÇÁ¸®ÆÕ (ClientRoomItemUI)
-    [SerializeField] private Button prevPageButton;            // < ÀÌÀü ÆäÀÌÁö
-    [SerializeField] private Button nextPageButton;            // > ´ÙÀ½ ÆäÀÌÁö
-    [SerializeField] private TextMeshProUGUI pageText;         // ÆäÀÌÁö ÅØ½ºÆ® (¿¹: 1 / 3)
-    [SerializeField] private GameObject loadingText;           // "°Ë»ö Áß..." ÅØ½ºÆ®/ÀÌ¹ÌÁö
+    [Header("í¼ë¸”ë¦­ ë°© ë¦¬ìŠ¤íŠ¸ - í™”ë©´ ë° í˜ì´ì§•")]
+    [SerializeField] private Transform roomListParent;         // 8ê°œ ë°© í”„ë¦¬íŒ¹ì´ ìƒì„±ë  ë¶€ëª¨ Grid
+    [SerializeField] private GameObject clientRoomItemPrefab;  // ë°© ì•„ì´í…œ í”„ë¦¬íŒ¹ (ClientRoomItemUI)
+    [SerializeField] private Button prevPageButton;            // < ì´ì „ í˜ì´ì§€
+    [SerializeField] private Button nextPageButton;            // > ë‹¤ìŒ í˜ì´ì§€
+    [SerializeField] private TextMeshProUGUI pageText;         // í˜ì´ì§€ í…ìŠ¤íŠ¸ (ì˜ˆ: 1 / 3)
+    [SerializeField] private GameObject loadingText;           // "ê²€ìƒ‰ ì¤‘..." í…ìŠ¤íŠ¸/ì´ë¯¸ì§€
 
-    [Header("ÇÁ¶óÀÌºø ÆĞ³Î ¼³Á¤")]
-    [SerializeField] private TMP_InputField shortCodeInputField; // ÇÁ¶óÀÌºø ·ëÄÚµå ÀÔ·ÂÃ¢
-    [SerializeField] private Button joinPrivateButton;           // ÄÚµå ÀÔ·Â ÈÄ ÀÔÀå ¹öÆ°
+    [Header("í”„ë¼ì´ë¹— íŒ¨ë„ ì„¤ì •")]
+    [SerializeField] private TMP_InputField shortCodeInputField; // í”„ë¼ì´ë¹— ë£¸ì½”ë“œ ì…ë ¥ì°½
+    [SerializeField] private Button joinPrivateButton;           // ì½”ë“œ ì…ë ¥ í›„ ì…ì¥ ë²„íŠ¼
 
-    [Header("¿¡·¯ ÆË¾÷")]
+    [Header("ì—ëŸ¬ íŒì—…")]
     [SerializeField] private GameObject errorPopupPanel;
     [SerializeField] private TextMeshProUGUI errorMessageText;
 
     private EOSLobby eosLobby;
-    private List<LobbyDetails> allFetchedLobbies = new List<LobbyDetails>(); // ¼­¹ö¿¡¼­ °¡Á®¿Â ÀüÃ¼ ¹æ
-    private List<LobbyDetails> filteredLobbies = new List<LobbyDetails>();   // Á¶°Ç¿¡ ¸Â°Ô °É·¯Áø ¹æ
+    private List<LobbyDetails> allFetchedLobbies = new List<LobbyDetails>(); // ì„œë²„ì—ì„œ ê°€ì ¸ì˜¨ ì „ì²´ ë°©
+    private List<LobbyDetails> filteredLobbies = new List<LobbyDetails>();   // ì¡°ê±´ì— ë§ê²Œ ê±¸ëŸ¬ì§„ ë°©
 
     private const int ROOMS_PER_PAGE = 8;
     private int currentPage = 0;
 
     private void Start()
     {
-        // ÀÌº¥Æ® ¿¬°á
+        // ì´ë²¤íŠ¸ ì—°ê²°
         if (mainClientButton != null) mainClientButton.onClick.AddListener(OnClick_OpenClientSelectionPanel);
         if (selectPublicModeButton != null) selectPublicModeButton.onClick.AddListener(OnClick_OpenPublicPanel);
         if (selectPrivateModeButton != null) selectPrivateModeButton.onClick.AddListener(OnClick_OpenPrivatePanel);
@@ -63,7 +63,7 @@ public class ClientLobbyManager : MonoBehaviour
         if (nextPageButton != null) nextPageButton.onClick.AddListener(OnClick_NextPage);
         if (joinPrivateButton != null) joinPrivateButton.onClick.AddListener(OnClick_JoinPrivateRoom);
 
-        // °Ë»ö/ÇÊÅÍ °ªÀÌ ¹Ù²ğ ¶§¸¶´Ù Áï½Ã ¸®½ºÆ® ÇÊÅÍ¸µ
+        // ê²€ìƒ‰/í•„í„° ê°’ì´ ë°”ë€” ë•Œë§ˆë‹¤ ì¦‰ì‹œ ë¦¬ìŠ¤íŠ¸ í•„í„°ë§
         if (searchInputField != null) searchInputField.onValueChanged.AddListener(delegate { ApplyFilters(); });
         if (chapterFilterDropdown != null) chapterFilterDropdown.onValueChanged.AddListener(delegate { ApplyFilters(); });
 
@@ -91,7 +91,7 @@ public class ClientLobbyManager : MonoBehaviour
         }
     }
 
-    #region --- ÆĞ³Î ÀüÈ¯ Á¦¾î ---
+    #region --- íŒ¨ë„ ì „í™˜ ì œì–´ ---
     public void CloseAllPanels()
     {
         if (clientSelectionPanel != null) clientSelectionPanel.SetActive(false);
@@ -109,7 +109,7 @@ public class ClientLobbyManager : MonoBehaviour
     {
         CloseAllPanels();
         if (clientPublicPanel != null) clientPublicPanel.SetActive(true);
-        RefreshLobbyList(); // ÆÛºí¸¯ ÆĞ³ÎÀ» ¿­ ¶§ ÀÚµ¿À¸·Î ¹æ °Ë»ö
+        RefreshLobbyList(); // í¼ë¸”ë¦­ íŒ¨ë„ì„ ì—´ ë•Œ ìë™ìœ¼ë¡œ ë°© ê²€ìƒ‰
     }
 
     public void OnClick_OpenPrivatePanel()
@@ -119,7 +119,7 @@ public class ClientLobbyManager : MonoBehaviour
     }
     #endregion
 
-    #region --- ÆÛºí¸¯ ¹æ ¸®½ºÆ® ¹× °Ë»ö/ÇÊÅÍ ·ÎÁ÷ ---
+    #region --- í¼ë¸”ë¦­ ë°© ë¦¬ìŠ¤íŠ¸ ë° ê²€ìƒ‰/í•„í„° ë¡œì§ ---
     public void RefreshLobbyList()
     {
         if (eosLobby == null) return;
@@ -127,7 +127,7 @@ public class ClientLobbyManager : MonoBehaviour
         if (loadingText != null) loadingText.SetActive(true);
         ClearRoomListUI();
 
-        // ¿ÀÁ÷ "PUBLIC" ¹æ¸¸ °¡Á®¿É´Ï´Ù
+        // ì˜¤ì§ "PUBLIC" ë°©ë§Œ ê°€ì ¸ì˜µë‹ˆë‹¤
         LobbySearchSetParameterOptions[] searchOptions = new LobbySearchSetParameterOptions[]
         {
             new LobbySearchSetParameterOptions { ComparisonOp = ComparisonOp.Equal, Parameter = new AttributeData { Key = "ROOM_TYPE", Value = "PUBLIC" } }
@@ -140,7 +140,7 @@ public class ClientLobbyManager : MonoBehaviour
     {
         if (loadingText != null) loadingText.SetActive(false);
         allFetchedLobbies = lobbies ?? new List<LobbyDetails>();
-        ApplyFilters(); // µ¥ÀÌÅÍ°¡ µé¾î¿À¸é ÇÊÅÍ Àû¿ë ÈÄ È­¸é ¾÷µ¥ÀÌÆ®
+        ApplyFilters(); // ë°ì´í„°ê°€ ë“¤ì–´ì˜¤ë©´ í•„í„° ì ìš© í›„ í™”ë©´ ì—…ë°ì´íŠ¸
     }
 
     private void OnFindLobbiesFailed(string error)
@@ -148,14 +148,14 @@ public class ClientLobbyManager : MonoBehaviour
         if (loadingText != null) loadingText.SetActive(false);
         allFetchedLobbies.Clear();
         ApplyFilters();
-        ShowError("¹æ ¸ñ·ÏÀ» ºÒ·¯¿ÀÁö ¸øÇß½À´Ï´Ù.");
+        ShowError("ë°© ëª©ë¡ì„ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.");
     }
 
     private void ApplyFilters()
     {
         string searchKeyword = searchInputField != null ? searchInputField.text.Trim().ToLower() : "";
 
-        // Dropdown 0¹øÀÌ "All" ÀÌ°í, 1¹øÀÌ "Ch.1" ÀÌ¶ó°í °¡Á¤
+        // Dropdown 0ë²ˆì´ "All" ì´ê³ , 1ë²ˆì´ "Ch.1" ì´ë¼ê³  ê°€ì •
         int targetChapter = chapterFilterDropdown != null ? chapterFilterDropdown.value : 0;
 
         filteredLobbies = allFetchedLobbies.Where(lobby =>
@@ -163,22 +163,28 @@ public class ClientLobbyManager : MonoBehaviour
             string roomName = "";
             string chapterStr = "";
 
-            Epic.OnlineServices.Lobby.Attribute attr;
+            Attribute attr;
             if (lobby.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "ROOM_NAME" }, out attr) == Epic.OnlineServices.Result.Success)
-                roomName = attr.Data.Value.Value.AsUtf8.ToLower();
+            {
+                if (attr.Data != null)
+                    roomName = attr.Data.Value.AsUtf8.ToLower();
+            }
 
             if (lobby.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "CHAPTER" }, out attr) == Epic.OnlineServices.Result.Success)
-                chapterStr = attr.Data.Value.Value.AsUtf8;
+            {
+                if (attr.Data != null)
+                    chapterStr = attr.Data.Value.AsUtf8;
+            }
 
-            // 1. ¹æ ÀÌ¸§ °Ë»ö (Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö)
+            // 1. ë°© ì´ë¦„ ê²€ìƒ‰ (í¬í•¨ë˜ì–´ ìˆëŠ”ì§€)
             if (!string.IsNullOrEmpty(searchKeyword) && !roomName.Contains(searchKeyword))
                 return false;
 
-            // 2. Ã©ÅÍ ÇÊÅÍ (0ÀÌ¸é ÀüÃ¼º¸±â, ¾Æ´Ï¸é ÇØ´ç Ã©ÅÍ¸¸)
+            // 2. ì±•í„° í•„í„° (0ì´ë©´ ì „ì²´ë³´ê¸°, ì•„ë‹ˆë©´ í•´ë‹¹ ì±•í„°ë§Œ)
             if (targetChapter != 0 && chapterStr != targetChapter.ToString())
                 return false;
 
-            return true; // Á¶°Ç Åë°ú
+            return true; // ì¡°ê±´ í†µê³¼
         }).ToList();
 
         currentPage = 0;
@@ -230,29 +236,34 @@ public class ClientLobbyManager : MonoBehaviour
 
     #endregion
 
-    #region --- ÀÔÀå ±â´É (Quick Join / ¼±ÅÃ ÀÔÀå / ÄÚµå ÀÔÀå) ---
+    #region --- ì…ì¥ ê¸°ëŠ¥ (Quick Join / ì„ íƒ ì…ì¥ / ì½”ë“œ ì…ì¥) ---
 
-    // ¼±ÅÃµÈ ÆÛºí¸¯ ¹æ ÀÔÀå
+    // ì„ íƒëœ í¼ë¸”ë¦­ ë°© ì…ì¥
     private void JoinRoom(LobbyDetails lobby)
     {
         if (eosLobby != null)
         {
-            Debug.Log("[Client] ÆÛºí¸¯ ¹æ ÀÔÀåÀ» ½ÃµµÇÕ´Ï´Ù.");
+            Debug.Log("[Client] í¼ë¸”ë¦­ ë°© ì…ì¥ì„ ì‹œë„í•©ë‹ˆë‹¤.");
             SetInteractableAll(false);
             eosLobby.JoinLobby(lobby);
         }
     }
 
-    // ºü¸¥ ÀÔÀå (Quick Join)
+    // ë¹ ë¥¸ ì…ì¥ (Quick Join)
     public void OnClick_QuickJoin()
     {
-        // ÇÊÅÍ¸µµÈ ¹æ ¸ñ·Ï Áß¿¡¼­, ¾ÆÁ÷ ÀÚ¸®°¡ ³²Àº(4¸í ¹Ì¸¸) Ã¹ ¹øÂ° ¹æÀ» Ã£¾Æ µé¾î°¨
         var availableRoom = filteredLobbies.FirstOrDefault(lobby =>
         {
             uint currentMembers = lobby.GetMemberCount(new LobbyDetailsGetMemberCountOptions());
             uint maxMembers = 4;
-            var infoResult = lobby.GetLobbyDetailsInfo(new LobbyDetailsGetLobbyDetailsInfoOptions(), out var lobbyInfo);
-            if (infoResult == Epic.OnlineServices.Result.Success && lobbyInfo.HasValue) maxMembers = lobbyInfo.Value.MaxMembers;
+
+            LobbyDetailsInfo lobbyInfo;
+            if (lobby.CopyInfo(new LobbyDetailsCopyInfoOptions(), out lobbyInfo) == Epic.OnlineServices.Result.Success)
+            {
+                // .HasValue, .Value ì—†ì´ ì§ì ‘ ì ‘ê·¼
+                maxMembers = lobbyInfo.MaxMembers;
+            }
+
             return currentMembers < maxMembers;
         });
 
@@ -262,24 +273,24 @@ public class ClientLobbyManager : MonoBehaviour
         }
         else
         {
-            ShowError("ÇöÀç ÀÔÀå °¡´ÉÇÑ ¹æÀÌ ¾ø½À´Ï´Ù.");
+            ShowError("í˜„ì¬ ì…ì¥ ê°€ëŠ¥í•œ ë°©ì´ ì—†ìŠµë‹ˆë‹¤.");
         }
     }
 
-    // ±âÁ¸ ÇÁ¶óÀÌºø ¹æ ÄÚµå ÀÔ·Â ÀÔÀå
+    // ê¸°ì¡´ í”„ë¼ì´ë¹— ë°© ì½”ë“œ ì…ë ¥ ì…ì¥
     public void OnClick_JoinPrivateRoom()
     {
         string inputCode = shortCodeInputField != null ? shortCodeInputField.text.Trim() : "";
         if (string.IsNullOrEmpty(inputCode) || inputCode.Length != 6)
         {
-            ShowError("6ÀÚ¸® ÄÚµå¸¦ Á¤È®È÷ ÀÔ·ÂÇÏ¼¼¿ä.");
+            ShowError("6ìë¦¬ ì½”ë“œë¥¼ ì •í™•íˆ ì…ë ¥í•˜ì„¸ìš”.");
             return;
         }
 
         if (loadingText != null) loadingText.SetActive(true);
         SetInteractableAll(false);
 
-        // ÇÁ¶óÀÌºø ¹æÀÌ¸é¼­, ÇØ´ç ¼ôÄÚµå¿Í ÀÏÄ¡ÇÏ´Â ¹æ¸¸ °Ë»ö
+        // í”„ë¼ì´ë¹— ë°©ì´ë©´ì„œ, í•´ë‹¹ ìˆì½”ë“œì™€ ì¼ì¹˜í•˜ëŠ” ë°©ë§Œ ê²€ìƒ‰
         LobbySearchSetParameterOptions[] searchOptions = new LobbySearchSetParameterOptions[]
         {
             new LobbySearchSetParameterOptions { ComparisonOp = ComparisonOp.Equal, Parameter = new AttributeData { Key = "ROOM_TYPE", Value = "PRIVATE" } },
@@ -292,18 +303,17 @@ public class ClientLobbyManager : MonoBehaviour
 
     private IEnumerator WaitForPrivateJoinRoutine(string inputCode)
     {
-        yield return new WaitForSeconds(3f); // °Ë»ö ´ë±â
+        yield return new WaitForSeconds(3f);
 
         if (allFetchedLobbies.Count > 0)
         {
-            // Ã£¾ÒÀ¸¸é Ã¹¹øÂ° ·Îºñ·Î Á¢¼Ó
             JoinRoom(allFetchedLobbies[0]);
         }
         else
         {
             SetInteractableAll(true);
             if (loadingText != null) loadingText.SetActive(false);
-            ShowError("ÇØ´ç ÄÚµå¸¦ °¡Áø ¹æÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            ShowError("í•´ë‹¹ ì½”ë“œë¥¼ ê°€ì§„ ë°©ì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
         }
     }
 

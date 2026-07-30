@@ -5,11 +5,11 @@ using Epic.OnlineServices.Lobby;
 
 public class ClientRoomItemUI : MonoBehaviour
 {
-    [Header("UI ¿ä¼Ò ¿¬°á")]
-    [SerializeField] private TextMeshProUGUI roomNameText;   // ¹æ Á¦¸ñ
-    [SerializeField] private TextMeshProUGUI chapterText;    // Ã©ÅÍ (¿¹: "Ch.3")
-    [SerializeField] private TextMeshProUGUI playerCountText; // ÀÎ¿ø¼ö (¿¹: "2/4")
-    [SerializeField] private Button joinButton;             // ÀÔÀå ¹öÆ°
+    [Header("UI ìš”ì†Œ ì—°ê²°")]
+    [SerializeField] private TextMeshProUGUI roomNameText;   // ë°© ì œëª©
+    [SerializeField] private TextMeshProUGUI chapterText;    // ì±•í„° (ì˜ˆ: "Ch.3")
+    [SerializeField] private TextMeshProUGUI playerCountText; // ì¸ì›ìˆ˜ (ì˜ˆ: "2/4")
+    [SerializeField] private Button joinButton;             // ì…ì¥ ë²„íŠ¼
 
     private LobbyDetails targetLobby;
     private System.Action<LobbyDetails> onJoinCallback;
@@ -25,36 +25,44 @@ public class ClientRoomItemUI : MonoBehaviour
         targetLobby = lobby;
         onJoinCallback = onJoinClicked;
 
-        // 1. ¹æ ÀÌ¸§ °¡Á®¿À±â
-        string roomName = "¾Ë ¼ö ¾ø´Â ¹æ";
-        Epic.OnlineServices.Lobby.Attribute attr;
-        if (lobby.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "ROOM_NAME" }, out attr) == Epic.OnlineServices.Result.Success && attr.Data.HasValue)
+        // 1. ë°© ì´ë¦„ ê°€ì ¸ì˜¤ê¸°
+        string roomName = "ì•Œ ìˆ˜ ì—†ëŠ” ë°©";
+        Attribute attr;
+        if (lobby.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "ROOM_NAME" }, out attr) == Epic.OnlineServices.Result.Success)
         {
-            roomName = attr.Data.Value.Value.AsUtf8;
+            if (attr.Data != null)
+            {
+                roomName = attr.Data.Value.AsUtf8;
+            }
         }
 
-        // 2. Ã©ÅÍ °¡Á®¿À±â
+        // 2. ì±•í„° ê°€ì ¸ì˜¤ê¸°
         string chapterStr = "1";
-        if (lobby.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "CHAPTER" }, out attr) == Epic.OnlineServices.Result.Success && attr.Data.HasValue)
+        if (lobby.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "CHAPTER" }, out attr) == Epic.OnlineServices.Result.Success)
         {
-            chapterStr = attr.Data.Value.Value.AsUtf8;
+            if (attr.Data != null)
+            {
+                chapterStr = attr.Data.Value.AsUtf8;
+            }
         }
 
-        // 3. ÀÎ¿ø¼ö °¡Á®¿À±â
+        // 3. ì¸ì›ìˆ˜ ê°€ì ¸ì˜¤ê¸° (LobbyDetailsInfo ìˆ˜ì •)
         uint currentMembers = lobby.GetMemberCount(new LobbyDetailsGetMemberCountOptions());
-        uint maxMembers = 4;
-        var infoResult = lobby.GetLobbyDetailsInfo(new LobbyDetailsGetLobbyDetailsInfoOptions(), out var lobbyInfo);
-        if (infoResult == Epic.OnlineServices.Result.Success && lobbyInfo.HasValue)
+        uint maxMembers = 4; // ê¸°ë³¸ê°’
+
+        LobbyDetailsInfo lobbyInfo;
+        if (lobby.CopyInfo(new LobbyDetailsCopyInfoOptions(), out lobbyInfo) == Epic.OnlineServices.Result.Success)
         {
-            maxMembers = lobbyInfo.Value.MaxMembers;
+            // .HasValue, .Value ì—†ì´ ì§ì ‘ ì ‘ê·¼í•©ë‹ˆë‹¤.
+            maxMembers = lobbyInfo.MaxMembers;
         }
 
-        // UI ¼¼ÆÃ
+        // UI ì„¸íŒ…
         if (roomNameText != null) roomNameText.text = roomName;
         if (chapterText != null) chapterText.text = $"Ch.{chapterStr}";
         if (playerCountText != null) playerCountText.text = $"{currentMembers} / {maxMembers}";
 
-        // ²Ë Âù ¹æÀº ÀÔÀå ºÒ°¡
+        // ê½‰ ì°¬ ë°©ì€ ì…ì¥ ë¶ˆê°€
         if (joinButton != null)
         {
             joinButton.interactable = (currentMembers < maxMembers);
