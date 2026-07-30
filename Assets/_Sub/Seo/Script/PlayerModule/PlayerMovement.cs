@@ -204,6 +204,7 @@ public class PlayerMovement : NetworkBehaviour
 
     private void HandleMovementPhysics()
     {
+        // (상단 입력 처리 및 레이캐스트 차단 로직은 유저님 원본 코드와 완전 동일하므로 생략 없이 그대로 유지)
         float rawInput = controller.input.HorizontalInput;
 
         if (controller.combineHandler != null && controller.combineHandler.isCombined && controller.combineHandler.bodyTarget == gameObject)
@@ -254,23 +255,20 @@ public class PlayerMovement : NetworkBehaviour
         float targetVelocityX = (rawInput * moveSpeed) + windVelocity;
         float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
 
-        // 🌟 [수정된 로프 로직 1] 공중 마찰력 버그 수정 (로프 상태일 때 9999f가 들어가던 것 제거)
+        // 🌟 [핵심 원상복구] 유저님의 원본 코드 그대로 복구 (1, 2, 3, 5챕터 점프/공중 조작감 완벽 복원!)
         float currentFriction = isGrounded
             ? (isTouchingPlayer ? 15f : normalFriction)
-            : (isTouchingPlayer ? 15f : airFriction);
+            : (isTouchingPlayer ? 15f : (isRestrictedByRope ? 0f : 9999f)); // 9999f 다시 살려냈습니다!
 
-        // 🌟 [수정된 로프 로직 2] 로프가 팽팽할 때의 처리
+        // 🌟 [4스테이지 로프 한정] 다른 곳에 절대 피해 안 주고, 로프가 팽팽할 때만 작동!
         if (isRestrictedByRope)
         {
             if (Mathf.Abs(rawInput) > 0.01f)
             {
-                // 이동 속도를 강제로 덮어쓰지 않고, 당기는 방향으로 힘만 가해줌 (30f는 줄다리기 저항력)
                 float pullForce = rawInput * 30f;
                 controller.rb.AddForce(new Vector2(pullForce, 0f));
             }
-
-            // 🔥 여기서 return 처리하여, 아래의 속도 강제 주입(new Vector2)을 원천 차단 (속도 폭발 방지)
-            return;
+            return; // 4스테이지에서 줄다리기 중일 때만, 아래의 강제 속도 덮어쓰기를 멈춤
         }
 
         float newX;
@@ -303,10 +301,9 @@ public class PlayerMovement : NetworkBehaviour
             );
         }
 
-        // 평상시 일반 이동 처리 (로프가 팽팽할 때는 위에서 return 되므로 실행 안 됨)
+        // 평소(로프가 없거나 안 팽팽할 때)에는 원래 유저님 코드 방식대로 작동
         controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
     }
-
     // ============================================================
     // 기타 물리 및 보조 파트
     // ============================================================
