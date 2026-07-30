@@ -2,6 +2,8 @@ using UnityEngine;
 using EpicTransport;
 using Mirror;
 using System.Collections;
+using System.Collections.Generic;
+using Epic.OnlineServices.Lobby;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
@@ -50,6 +52,56 @@ public class PrivateLobbyManager : MonoBehaviour
     private int selectedChapterIndex = 1;
     private const int MAX_CHAPTER = 6;
     private bool isPublicSelected = true; // true = Public, false = Private
+
+    // EOSLobby 이벤트 구독용 (방 생성 실패 / 속성 일괄 업데이트 결과를 폴링 대신 이벤트로 받기 위함)
+    private EOSLobby eosLobby;
+    private bool lobbyCreationFailed = false;
+    private string lobbyCreationErrorMessage = "";
+    private bool attributeUpdateDone = false;
+    private bool attributeUpdateFailed = false;
+
+    private void OnEnable()
+    {
+        if (eosLobby == null && NetworkManager.singleton != null)
+            eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
+
+        if (eosLobby != null)
+        {
+            eosLobby.CreateLobbyFailed += OnCreateLobbyFailed;
+            eosLobby.LobbyAttributesUpdateSucceeded += OnLobbyAttributesUpdateSucceeded;
+            eosLobby.LobbyAttributesUpdateFailed += OnLobbyAttributesUpdateFailed;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (eosLobby != null)
+        {
+            eosLobby.CreateLobbyFailed -= OnCreateLobbyFailed;
+            eosLobby.LobbyAttributesUpdateSucceeded -= OnLobbyAttributesUpdateSucceeded;
+            eosLobby.LobbyAttributesUpdateFailed -= OnLobbyAttributesUpdateFailed;
+        }
+    }
+
+    private void OnCreateLobbyFailed(string errorMessage)
+    {
+        // 폴링 타임아웃(5초)을 다 기다리지 않고 실패를 즉시 감지하기 위한 콜백
+        lobbyCreationFailed = true;
+        lobbyCreationErrorMessage = errorMessage;
+    }
+
+    private void OnLobbyAttributesUpdateSucceeded()
+    {
+        attributeUpdateDone = true;
+        attributeUpdateFailed = false;
+    }
+
+    private void OnLobbyAttributesUpdateFailed(string errorMessage)
+    {
+        attributeUpdateDone = true;
+        attributeUpdateFailed = true;
+        Debug.LogError("[PrivateLobbyManager] 로비 속성 업데이트 실패: " + errorMessage);
+    }
 
     private void Start()
     {
@@ -278,7 +330,20 @@ public class PrivateLobbyManager : MonoBehaviour
         if (NetworkServer.active) NetworkManager.singleton.StopHost();
         else if (NetworkClient.active) NetworkManager.singleton.StopClient();
 
-        EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
+        if (eosLobby == null)
+        {
+            eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
+            if (eosLobby != null)
+            {
+                // OnEnable 시점보다 늦게 참조를 얻었을 수 있으므로 여기서도 구독을 보장합니다.
+                eosLobby.CreateLobbyFailed -= OnCreateLobbyFailed;
+                eosLobby.CreateLobbyFailed += OnCreateLobbyFailed;
+                eosLobby.LobbyAttributesUpdateSucceeded -= OnLobbyAttributesUpdateSucceeded;
+                eosLobby.LobbyAttributesUpdateSucceeded += OnLobbyAttributesUpdateSucceeded;
+                eosLobby.LobbyAttributesUpdateFailed -= OnLobbyAttributesUpdateFailed;
+                eosLobby.LobbyAttributesUpdateFailed += OnLobbyAttributesUpdateFailed;
+            }
+        }
 
         if (eosLobby == null)
         {
@@ -301,15 +366,26 @@ public class PrivateLobbyManager : MonoBehaviour
 
         yield return new WaitForSecondsRealtime(0.5f);
 
+        lobbyCreationFailed = false;
+        lobbyCreationErrorMessage = "";
+
         uint maxPlayers = 4;
         Epic.OnlineServices.Lobby.LobbyPermissionLevel permissionLevel = Epic.OnlineServices.Lobby.LobbyPermissionLevel.Publicadvertised;
         eosLobby.CreateLobby(maxPlayers, permissionLevel, true);
 
         float timeout = 5f;
-        while (string.IsNullOrEmpty(eosLobby.GetCurrentLobbyId()) && timeout > 0f)
+        while (string.IsNullOrEmpty(eosLobby.GetCurrentLobbyId()) && timeout > 0f && !lobbyCreationFailed)
         {
             timeout -= Time.unscaledDeltaTime;
             yield return null;
+        }
+
+        if (lobbyCreationFailed)
+        {
+            SetAllButtonsInteractable(true);
+            if (currentPanel != null) currentPanel.SetActive(false);
+            ShowErrorPopup(string.IsNullOrEmpty(lobbyCreationErrorMessage) ? "로비 생성에 실패했습니다." : lobbyCreationErrorMessage);
+            yield break;
         }
 
         if (timeout <= 0f)
@@ -321,15 +397,19 @@ public class PrivateLobbyManager : MonoBehaviour
         }
 
         // EOS Attribute 등록
+        // 속성마다 UpdateLobbyAttribute를 따로 호출하면 각각 별개의 비동기 요청이 되어
+        // 순서를 보장할 수 없고 일부만 반영될 수 있으므로, 한 번의 UpdateLobbyAttributes 호출로 묶어서 보냅니다.
+        List<AttributeData> attributesToSet = new List<AttributeData>();
+
         if (isPublic)
         {
             currentRoomName = roomName;
             currentChapter = chapter;
             currentShortCode = "";
 
-            eosLobby.UpdateLobbyAttribute("ROOM_TYPE", "PUBLIC");
-            eosLobby.UpdateLobbyAttribute("ROOM_NAME", currentRoomName);
-            eosLobby.UpdateLobbyAttribute("CHAPTER", currentChapter.ToString());
+            attributesToSet.Add(new AttributeData { Key = "ROOM_TYPE", Value = "PUBLIC" });
+            attributesToSet.Add(new AttributeData { Key = "ROOM_NAME", Value = currentRoomName });
+            attributesToSet.Add(new AttributeData { Key = "CHAPTER", Value = currentChapter.ToString() });
         }
         else
         {
@@ -337,11 +417,28 @@ public class PrivateLobbyManager : MonoBehaviour
             currentRoomName = "";
             currentChapter = 1;
 
-            eosLobby.UpdateLobbyAttribute("ROOM_TYPE", "PRIVATE");
-            eosLobby.UpdateLobbyAttribute("SHORTCODE", currentShortCode);
+            attributesToSet.Add(new AttributeData { Key = "ROOM_TYPE", Value = "PRIVATE" });
+            attributesToSet.Add(new AttributeData { Key = "SHORTCODE", Value = currentShortCode });
         }
 
-        yield return new WaitForSecondsRealtime(0.3f);
+        attributeUpdateDone = false;
+        attributeUpdateFailed = false;
+        eosLobby.UpdateLobbyAttributes(attributesToSet.ToArray());
+
+        float attributeTimeout = 5f;
+        while (!attributeUpdateDone && attributeTimeout > 0f)
+        {
+            attributeTimeout -= Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        if (attributeUpdateFailed || attributeTimeout <= 0f)
+        {
+            SetAllButtonsInteractable(true);
+            if (currentPanel != null) currentPanel.SetActive(false);
+            ShowErrorPopup("방 정보를 설정하지 못했습니다. 다시 시도해주세요.");
+            yield break;
+        }
 
         EosTransport transport = NetworkManager.singleton.transport as EosTransport;
         if (transport != null) transport.ResetIgnoreMessagesAtStartUpTimer();

@@ -69,6 +69,15 @@ public class EOSLobby : MonoBehaviour
     /// <summary>When invoked, a message is sent to all subscribers with the key of the attribute that wasn't updated and an error message. </summary>
     public event UpdateAttributeFailure AttributeUpdateFailed;
 
+    //batch update attributes events (여러 속성을 한 번의 UpdateLobby 요청으로 반영할 때 사용)
+    public delegate void UpdateAttributesBatchSuccess();
+    /// <summary>When invoked, all attributes passed to <see cref="UpdateLobbyAttributes"/> were applied in a single UpdateLobby request.</summary>
+    public event UpdateAttributesBatchSuccess LobbyAttributesUpdateSucceeded;
+
+    public delegate void UpdateAttributesBatchFailure(string errorMessage);
+    /// <summary>When invoked, the batch attribute update in <see cref="UpdateLobbyAttributes"/> failed.</summary>
+    public event UpdateAttributesBatchFailure LobbyAttributesUpdateFailed;
+
     //lobby update events
     private ulong lobbyMemberStatusNotifyId = 0;
     private ulong lobbyAttributeUpdateNotifyId = 0;
@@ -198,6 +207,8 @@ public class EOSLobby : MonoBehaviour
                 LobbyDetails details;
                 EOSSDKComponent.GetLobbyInterface().CopyLobbyDetailsHandle(new CopyLobbyDetailsHandleOptions { LobbyId = callback.LobbyId, LocalUserId = EOSSDKComponent.LocalUserProductId }, out details);
 
+                // 이전에 들고 있던 ConnectedLobbyDetails 핸들이 있다면 해제 후 교체 (메모리 누수 방지)
+                ConnectedLobbyDetails?.Release();
                 ConnectedLobbyDetails = details;
                 isLobbyOwner = true;
                 ConnectedToLobby = true;
@@ -250,7 +261,10 @@ public class EOSLobby : MonoBehaviour
                 return;
             }
 
-            foundLobbies.Clear();
+            // 이전 검색 결과로 받은 LobbyDetails 핸들을 해제한 뒤 비웁니다.
+            // (LobbyDetails는 EOS 네이티브 메모리를 들고 있으므로, 검색을 반복할 때마다
+            //  덮어쓰기 전에 반드시 Release 해줘야 누적 누수가 발생하지 않습니다.)
+            ReleaseFoundLobbies();
 
             //for each lobby found, add data to details
             for (int i = 0; i < search.GetSearchResultCount(new LobbySearchGetSearchResultCountOptions { }); i++)
@@ -260,9 +274,26 @@ public class EOSLobby : MonoBehaviour
                 foundLobbies.Add(lobbyInformation);
             }
 
+            // 검색 결과는 이미 각 LobbyDetails로 복사해왔으므로 LobbySearch 핸들 자체는 더 필요 없습니다.
+            search.Release();
+
             //invoke event
             FindLobbiesSucceeded?.Invoke(foundLobbies);
         });
+    }
+
+    /// <summary>
+    /// foundLobbies에 들어있는 이전 검색 결과의 LobbyDetails 핸들을 전부 Release하고 리스트를 비웁니다.
+    /// EOSLobby가 이 핸들들의 유일한 소유자이므로(리스트를 그대로 넘겨 쓰는 쪽에서는 복사해서 쓰는 걸 권장),
+    /// 여기서만 Release 하도록 통일해 중복 해제(double free)를 피합니다.
+    /// </summary>
+    private void ReleaseFoundLobbies()
+    {
+        foreach (LobbyDetails oldDetails in foundLobbies)
+        {
+            oldDetails?.Release();
+        }
+        foundLobbies.Clear();
     }
 
     /// <summary>
@@ -303,6 +334,8 @@ public class EOSLobby : MonoBehaviour
             LobbyDetails details;
             EOSSDKComponent.GetLobbyInterface().CopyLobbyDetailsHandle(new CopyLobbyDetailsHandleOptions { LobbyId = callback.LobbyId, LocalUserId = EOSSDKComponent.LocalUserProductId }, out details);
 
+            // 이전에 들고 있던 ConnectedLobbyDetails 핸들이 있다면 해제 후 교체 (메모리 누수 방지)
+            ConnectedLobbyDetails?.Release();
             ConnectedLobbyDetails = details;
             isLobbyOwner = false;
             ConnectedToLobby = true;
@@ -327,7 +360,7 @@ public class EOSLobby : MonoBehaviour
                 return;
             }
 
-            foundLobbies.Clear();
+            ReleaseFoundLobbies();
 
             //for each lobby found, add data to details
             for (int i = 0; i < search.GetSearchResultCount(new LobbySearchGetSearchResultCountOptions { }); i++)
@@ -337,11 +370,31 @@ public class EOSLobby : MonoBehaviour
                 foundLobbies.Add(lobbyInformation);
             }
 
+            search.Release();
+
             if (foundLobbies.Count > 0)
             {
                 JoinLobby(foundLobbies[0]);
             }
         });
+    }
+
+    /// <summary>
+    /// 로비가 참가 가능한 상태인지(정원이 다 차지 않았는지) 확인하고, 현재/최대 인원도 함께 돌려줍니다.
+    /// ClientRoomItemUI, ClientLobbyManager(Quick Join) 등 여러 곳에서 중복 구현되던 로직을 하나로 모았습니다.
+    /// </summary>
+    public static bool IsLobbyJoinable(LobbyDetails lobby, out uint currentMembers, out uint maxMembers)
+    {
+        currentMembers = lobby.GetMemberCount(new LobbyDetailsGetMemberCountOptions());
+        maxMembers = 4; // 기본값
+
+        LobbyDetailsInfo lobbyInfo;
+        if (lobby.CopyInfo(new LobbyDetailsCopyInfoOptions(), out lobbyInfo) == Result.Success)
+        {
+            maxMembers = lobbyInfo.MaxMembers;
+        }
+
+        return currentMembers < maxMembers;
     }
 
     /// <summary>
@@ -413,35 +466,35 @@ public class EOSLobby : MonoBehaviour
     private void OnLeaveLobbyCompleted(
     LeaveLobbyCallbackInfo data
 )
-{
-    Debug.Log(
-        $"[EOSLobby] ③ LeaveLobby 콜백 도착 | " +
-        $"ResultCode = {data.ResultCode}"
-    );
-
-    IsLeavingLobby = false;
-
-    if (data.ResultCode == Result.Success)
     {
-        ConnectedToLobby = false;
-        ConnectedLobbyDetails = null;
-        currentLobbyId = string.Empty;
-        isLobbyOwner = false;
-
         Debug.Log(
-            "[EOSLobby] ④ Lobby 정상 퇴장 완료"
-        );
-
-        LeaveLobbySucceeded?.Invoke();
-    }
-    else
-    {
-        Debug.LogError(
-            $"[EOSLobby] ④ Lobby 퇴장 실패 | " +
+            $"[EOSLobby] ③ LeaveLobby 콜백 도착 | " +
             $"ResultCode = {data.ResultCode}"
         );
+
+        IsLeavingLobby = false;
+
+        if (data.ResultCode == Result.Success)
+        {
+            ConnectedToLobby = false;
+            ConnectedLobbyDetails = null;
+            currentLobbyId = string.Empty;
+            isLobbyOwner = false;
+
+            Debug.Log(
+                "[EOSLobby] ④ Lobby 정상 퇴장 완료"
+            );
+
+            LeaveLobbySucceeded?.Invoke();
+        }
+        else
+        {
+            Debug.LogError(
+                $"[EOSLobby] ④ Lobby 퇴장 실패 | " +
+                $"ResultCode = {data.ResultCode}"
+            );
+        }
     }
-}
     /// <summary>
     /// Remove an attribute attached to the lobby.
     /// </summary>
@@ -530,6 +583,49 @@ public class EOSLobby : MonoBehaviour
     {
         AttributeData data = new AttributeData { Key = key, Value = newValue };
         UpdateAttribute(data);
+    }
+
+    /// <summary>
+    /// 여러 속성을 하나의 LobbyModification / UpdateLobby 요청으로 한 번에 반영합니다.
+    /// <para>
+    /// UpdateLobbyAttribute를 여러 번 연달아 호출하면 각 호출이 서로 기다리지 않는
+    /// 별개의 비동기 요청이 되어 순서를 보장할 수 없고, 그중 하나만 실패해도
+    /// 나머지 속성만 반영된 채로 남을 수 있습니다.
+    /// 방 생성처럼 여러 속성을 "한 세트"로 등록해야 하는 경우에는 이 메서드를 사용하세요.
+    /// </para>
+    /// <para>결과는 <see cref="LobbyAttributesUpdateSucceeded"/> / <see cref="LobbyAttributesUpdateFailed"/> 이벤트로 전달됩니다.</para>
+    /// </summary>
+    /// <param name="attributes">한 번에 반영할 속성 목록.</param>
+    public void UpdateLobbyAttributes(AttributeData[] attributes)
+    {
+        if (attributes == null || attributes.Length == 0)
+        {
+            return;
+        }
+
+        if (string.IsNullOrEmpty(currentLobbyId))
+        {
+            LobbyAttributesUpdateFailed?.Invoke("현재 연결된 로비가 없어 속성을 업데이트할 수 없습니다.");
+            return;
+        }
+
+        LobbyModification modHandle = new LobbyModification();
+        EOSSDKComponent.GetLobbyInterface().UpdateLobbyModification(new UpdateLobbyModificationOptions { LobbyId = currentLobbyId, LocalUserId = EOSSDKComponent.LocalUserProductId }, out modHandle);
+
+        foreach (AttributeData attribute in attributes)
+        {
+            modHandle.AddAttribute(new LobbyModificationAddAttributeOptions { Attribute = attribute, Visibility = LobbyAttributeVisibility.Public });
+        }
+
+        EOSSDKComponent.GetLobbyInterface().UpdateLobby(new UpdateLobbyOptions { LobbyModificationHandle = modHandle }, null, (UpdateLobbyCallbackInfo callback) => {
+            if (callback.ResultCode != Result.Success)
+            {
+                LobbyAttributesUpdateFailed?.Invoke("로비 속성 일괄 업데이트 중 오류가 발생했습니다. Error: " + callback.ResultCode);
+                return;
+            }
+
+            LobbyAttributesUpdateSucceeded?.Invoke();
+        });
     }
 
     /// <summary>

@@ -46,16 +46,9 @@ public class ClientRoomItemUI : MonoBehaviour
             }
         }
 
-        // 3. 인원수 가져오기 (LobbyDetailsInfo 수정)
-        uint currentMembers = lobby.GetMemberCount(new LobbyDetailsGetMemberCountOptions());
-        uint maxMembers = 4; // 기본값
-
-        LobbyDetailsInfo lobbyInfo;
-        if (lobby.CopyInfo(new LobbyDetailsCopyInfoOptions(), out lobbyInfo) == Epic.OnlineServices.Result.Success)
-        {
-            // .HasValue, .Value 없이 직접 접근합니다.
-            maxMembers = lobbyInfo.MaxMembers;
-        }
+        // 3. 인원수 가져오기 (EOSLobby의 공용 헬퍼 사용 - ClientLobbyManager의 Quick Join 로직과 중복 제거)
+        uint currentMembers, maxMembers;
+        bool joinable = EOSLobby.IsLobbyJoinable(lobby, out currentMembers, out maxMembers);
 
         // UI 세팅
         if (roomNameText != null) roomNameText.text = roomName;
@@ -65,7 +58,7 @@ public class ClientRoomItemUI : MonoBehaviour
         // 꽉 찬 방은 입장 불가
         if (joinButton != null)
         {
-            joinButton.interactable = (currentMembers < maxMembers);
+            joinButton.interactable = joinable;
         }
     }
 
