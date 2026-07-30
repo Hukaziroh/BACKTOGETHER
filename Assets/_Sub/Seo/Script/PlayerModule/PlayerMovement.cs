@@ -67,7 +67,7 @@ public class PlayerMovement : NetworkBehaviour
     private bool justJumped = false;
     private bool wasGroundedLastFrame = false;
 
-    // 🌟 [추가됨] 숏점프 커팅 권한 상태 변수
+    // 🌟 숏점프 커팅 권한 상태 변수
     private bool canCutJump = false;
 
     [Header("코너 충돌 보정")]
@@ -135,7 +135,6 @@ public class PlayerMovement : NetworkBehaviour
     // 입력 처리 파트
     // ============================================================
 
-    // 🌟 [수정됨] 완벽한 숏점프 방어 로직이 결합된 HandleJumpInput
     private void HandleJumpInput()
     {
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
@@ -161,10 +160,8 @@ public class PlayerMovement : NetworkBehaviour
         bool inverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
         bool isMovingUp = inverted ? (controller.rb.linearVelocity.y < 0f) : (controller.rb.linearVelocity.y > 0f);
 
-        // 🌟 숏점프 강제 커팅 로직
         if (canCutJump && isMovingUp && !controller.knockback.IsStunned)
         {
-            // 네트워크 핑 때문에 Released 버퍼가 증발해도 !isJumpHolding을 통해 칼같이 잡아냄
             if (isJumpReleased || !isJumpHolding)
             {
                 if (controller.syncJumpHandler != null && controller.syncJumpHandler.isInSyncZone)
@@ -175,13 +172,11 @@ public class PlayerMovement : NetworkBehaviour
                 {
                     ApplyShortJump();
                 }
-                // 🌟 한 번 깎았으면 무한 감속을 막기 위해 숏점프 권한 차단
                 canCutJump = false;
             }
         }
         else if (!isMovingUp)
         {
-            // 점프가 정점을 찍고 떨어지기 시작하면 숏점프 권한 해제
             canCutJump = false;
         }
     }
@@ -224,6 +219,7 @@ public class PlayerMovement : NetworkBehaviour
             controller.rb.linearVelocity = new Vector2(slideSpeed, controller.rb.linearVelocity.y);
             return;
         }
+
         if (controller.currentReverseZone != null && !controller.currentReverseZone.isForward)
         {
             float originalInput = rawInput;
@@ -258,9 +254,24 @@ public class PlayerMovement : NetworkBehaviour
         float targetVelocityX = (rawInput * moveSpeed) + windVelocity;
         float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
 
+        // 🌟 [수정된 로프 로직 1] 공중 마찰력 버그 수정 (로프 상태일 때 9999f가 들어가던 것 제거)
         float currentFriction = isGrounded
             ? (isTouchingPlayer ? 15f : normalFriction)
-            : (isTouchingPlayer ? 15f : (isRestrictedByRope ? 0f : 9999f));
+            : (isTouchingPlayer ? 15f : airFriction);
+
+        // 🌟 [수정된 로프 로직 2] 로프가 팽팽할 때의 처리
+        if (isRestrictedByRope)
+        {
+            if (Mathf.Abs(rawInput) > 0.01f)
+            {
+                // 이동 속도를 강제로 덮어쓰지 않고, 당기는 방향으로 힘만 가해줌 (30f는 줄다리기 저항력)
+                float pullForce = rawInput * 30f;
+                controller.rb.AddForce(new Vector2(pullForce, 0f));
+            }
+
+            // 🔥 여기서 return 처리하여, 아래의 속도 강제 주입(new Vector2)을 원천 차단 (속도 폭발 방지)
+            return;
+        }
 
         float newX;
 
@@ -285,29 +296,17 @@ public class PlayerMovement : NetworkBehaviour
         }
         else
         {
-            // 🌟 [핵심 수정 구간] 클라이언트 무조건 승리 버그 원천 차단!
-            if (isRestrictedByRope)
-            {
-                // 로프가 팽팽할 때는 속도를 덮어쓰지 않고, 땀 흘리며 힘(AddForce)만 주도록 만듦
-                float pullForce = targetVelocityX * 80f; // 줄다리기 저항력 (적당히 묵직하게 세팅)
-                controller.rb.AddForce(new Vector2(pullForce, 0f));
-
-                // 속도를 덮어쓰지 않고 로프 매니저가 계산한 현재 속도를 그대로 보존!
-                newX = controller.rb.linearVelocity.x;
-            }
-            else
-            {
-                // 평소에는 기존처럼 빠릿빠릿한 플랫포머 조작감 유지
-                newX = Mathf.MoveTowards(
-                    controller.rb.linearVelocity.x,
-                    targetVelocityX + currentPlatformVelX,
-                    (currentFriction > 100f ? currentFriction : currentFriction * moveSpeed) * Time.fixedDeltaTime
-                );
-            }
+            newX = Mathf.MoveTowards(
+                controller.rb.linearVelocity.x,
+                targetVelocityX + currentPlatformVelX,
+                (currentFriction > 100f ? currentFriction : currentFriction * moveSpeed) * Time.fixedDeltaTime
+            );
         }
 
+        // 평상시 일반 이동 처리 (로프가 팽팽할 때는 위에서 return 되므로 실행 안 됨)
         controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
     }
+
     // ============================================================
     // 기타 물리 및 보조 파트
     // ============================================================
@@ -322,7 +321,6 @@ public class PlayerMovement : NetworkBehaviour
         ckTimer = jumpCk;
         justJumped = true;
 
-        // 🌟 [추가됨] 점프를 뛰는 그 순간 숏점프 커팅용 총알 장전!
         canCutJump = true;
     }
 
@@ -338,14 +336,12 @@ public class PlayerMovement : NetworkBehaviour
         bool isInverted = controller.gravityModule != null && controller.gravityModule.isGravityInverted;
         float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
 
-        // 땅에서는 항상 기본 중력
         if (isGrounded)
         {
             controller.rb.gravityScale = jumpSpeed * mult;
             return;
         }
 
-        // 공중에서만 낙하 여부 판단
         bool isFalling = isInverted
             ? (controller.rb.linearVelocity.y > 0f)
             : (controller.rb.linearVelocity.y < 0f);
