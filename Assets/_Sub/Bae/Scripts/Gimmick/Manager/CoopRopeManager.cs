@@ -83,6 +83,9 @@ public class CoopRopeManager : NetworkBehaviour
             {
                 Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
                 if (rb != null) rb.mass = 1f;
+
+                PlayerMovement mov = player.GetComponent<PlayerMovement>();
+                if (mov != null) mov.isRestrictedByRope = false;
             }
         }
 
