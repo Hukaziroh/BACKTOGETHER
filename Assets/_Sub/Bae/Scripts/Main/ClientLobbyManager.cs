@@ -1,20 +1,21 @@
 using Epic.OnlineServices;
 using Epic.OnlineServices.Lobby;
 using Mirror;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using EpicTransport; // ★ EosTransport 사용을 위해 추가
-using System.Collections; // <--- 이 줄을 반드시 추가해 주세요!
+using EpicTransport;
+
 public class ClientLobbyManager : MonoBehaviour
 {
     [Header("UI 패널 연결")]
     [SerializeField] private GameObject mainPanel;             // 메인 화면
     [SerializeField] private GameObject clientSelectionPanel;  // [Public / Private / Quick Join] 선택 팝업
     [SerializeField] private GameObject clientPublicPanel;     // 퍼블릭 방 리스트 화면
-    [SerializeField] private GameObject clientPrivatePanel;    // 프라이빗 코드 입력 화면 (기존 패널)
+    [SerializeField] private GameObject clientPrivatePanel;    // 프라이빗 코드 입력 화면
 
     [Header("선택 패널 버튼 연결 (Client Selection)")]
     [SerializeField] private Button mainClientButton;          // 메인 화면의 [CLIENT] 버튼
@@ -25,403 +26,399 @@ public class ClientLobbyManager : MonoBehaviour
     [Header("퍼블릭 방 리스트 - 상단 컨트롤")]
     [SerializeField] private TMP_InputField searchInputField;  // 방 이름 검색창
     [SerializeField] private Button researchButton;            // 리서치(새로고침) 버튼
+    [SerializeField] private TextMeshProUGUI filterChapterText;// 챕터 정렬 텍스트 (< Chapter All >)
+    [SerializeField] private Button prevFilterChapterButton;   // 챕터 정렬 <
+    [SerializeField] private Button nextFilterChapterButton;   // 챕터 정렬 >
 
-    [Header("퍼블릭 방 리스트 - 챕터 필터 (좌우 조작)")]
-    [SerializeField] private TextMeshProUGUI chapterFilterText;  // 필터 텍스트 (ALL, Chapter 1...)
-    [SerializeField] private Button prevChapterFilterButton;     // 왼쪽 화살표 <
-    [SerializeField] private Button nextChapterFilterButton;     // 오른쪽 화살표 >
+    [Header("퍼블릭 방 리스트 - 스크롤 및 로비 아이템")]
+    [SerializeField] private Transform roomListContainer;      // 방 목록 아이템들이 배치될 컨테이너
+    [SerializeField] private GameObject roomItemPrefab;        // 방 목록 아이템 프리팹 (ClientRoomItemUI)
+    [SerializeField] private GameObject noRoomFoundText;       // "방이 없습니다" 안내 텍스트
 
-    [Header("퍼블릭 방 리스트 - 화면 및 페이징")]
-    [SerializeField] private Transform roomListParent;         // 8개 방 프리팹이 생성될 부모 Grid
-    [SerializeField] private GameObject clientRoomItemPrefab;  // 방 아이템 프리팹 (ClientRoomItemUI)
-    [SerializeField] private Button prevPageButton;            // < 이전 페이지
-    [SerializeField] private Button nextPageButton;            // > 다음 페이지
-    [SerializeField] private TextMeshProUGUI pageText;         // 페이지 텍스트 (예: 1 / 3)
-    [SerializeField] private GameObject loadingText;           // "검색 중..." 텍스트/이미지
+    [Header("퍼블릭 방 리스트 - 하단 페이지네이션")]
+    [SerializeField] private Button prevPageButton;            // 이전 페이지 <
+    [SerializeField] private Button nextPageButton;            // 다음 페이지 >
+    [SerializeField] private TextMeshProUGUI pageText;         // 페이지 표시 (예: "1 / 3")
 
-    [Header("프라이빗 패널 설정")]
-    [SerializeField] private TMP_InputField shortCodeInputField; // 프라이빗 룸코드 입력창
-    [SerializeField] private Button joinPrivateButton;           // 코드 입력 후 입장 버튼
+    [Header("프라이빗 코드 입력 UI")]
+    [SerializeField] private SixDigitCodeInputUI codeInputUI;  // 6자리 코드 입력 스크립트
+    [SerializeField] private Button joinPrivateButton;         // [JOIN] 버튼
 
-    [Header("에러 팝업")]
-    [SerializeField] private GameObject errorPopupPanel;
-    [SerializeField] private TextMeshProUGUI errorMessageText;
+    [Header("공통 로딩 & 에러 UI")]
+    [SerializeField] private GameObject loadingText;           // 로딩 중 UI
+    [SerializeField] private GameObject errorPopupPanel;       // 에러 팝업
+    [SerializeField] private TextMeshProUGUI errorMessageText;  // 에러 메시지 텍스트
 
     private EOSLobby eosLobby;
-    private List<LobbyDetails> allFetchedLobbies = new List<LobbyDetails>(); // 서버에서 가져온 전체 방
-    private List<LobbyDetails> filteredLobbies = new List<LobbyDetails>();   // 조건에 맞게 걸러진 방
+    private bool isSubscribed = false;
 
-    private const int ROOMS_PER_PAGE = 8;
+    private List<LobbyDetails> allFetchedLobbies = new List<LobbyDetails>();
+    private List<LobbyDetails> filteredLobbies = new List<LobbyDetails>();
+
     private int currentPage = 0;
+    private const int itemsPerPage = 8;
+    private int selectedFilterChapter = 0; // 0 = All
 
-    // 내부 제어 변수
-    private int currentChapterFilter = 0; // 0 = ALL, 1~6 = Chapter 1~6
-    private bool isQuickJoining = false;
-
-    private void Start()
+    private EOSLobby GetEOSLobby()
     {
-        if (mainClientButton != null) mainClientButton.onClick.AddListener(OnClick_OpenClientSelectionPanel);
-
-        if (selectPublicModeButton != null) selectPublicModeButton.onClick.AddListener(OnClick_OpenPublicPanel);
-        if (selectPrivateModeButton != null) selectPrivateModeButton.onClick.AddListener(OnClick_OpenPrivatePanel);
-        if (quickJoinSelectionButton != null) quickJoinSelectionButton.onClick.AddListener(OnClick_QuickJoinSelection);
-
-        if (researchButton != null) researchButton.onClick.AddListener(OnClick_Research);
-        if (prevPageButton != null) prevPageButton.onClick.AddListener(OnClick_PrevPage);
-        if (nextPageButton != null) nextPageButton.onClick.AddListener(OnClick_NextPage);
-
-        if (prevChapterFilterButton != null) prevChapterFilterButton.onClick.AddListener(OnClick_PrevChapterFilter);
-        if (nextChapterFilterButton != null) nextChapterFilterButton.onClick.AddListener(OnClick_NextChapterFilter);
-
-        if (joinPrivateButton != null) joinPrivateButton.onClick.AddListener(OnClick_JoinPrivateRoom);
-
-        if (searchInputField != null) searchInputField.onValueChanged.AddListener(delegate { ApplyFilters(); });
-
-        UpdateChapterFilterUI();
-        CloseAllPanels();
+        if (eosLobby == null && NetworkManager.singleton != null)
+        {
+            eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
+        }
+        return eosLobby;
     }
 
-    private void OnEnable()
+    private void SubscribeEvents()
     {
-        if (NetworkManager.singleton != null)
-            eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
+        if (isSubscribed) return;
 
-        if (eosLobby != null)
+        var lobby = GetEOSLobby();
+        if (lobby != null)
         {
-            eosLobby.FindLobbiesSucceeded += OnFindLobbiesSucceeded;
-            eosLobby.FindLobbiesFailed += OnFindLobbiesFailed;
-
-            // ★ 방 입장 성공/실패 콜백 연결
-            eosLobby.JoinLobbySucceeded += OnJoinLobbySucceeded;
-            eosLobby.JoinLobbyFailed += OnJoinLobbyFailed;
+            lobby.FindLobbiesSucceeded += OnFindLobbiesSucceeded;
+            lobby.FindLobbiesFailed += OnFindLobbiesFailed;
+            lobby.JoinLobbySucceeded += OnJoinLobbySucceeded;
+            lobby.JoinLobbyFailed += OnJoinLobbyFailed;
+            isSubscribed = true;
         }
     }
 
-    private void OnDisable()
+    private void UnsubscribeEvents()
     {
+        if (!isSubscribed) return;
+
         if (eosLobby != null)
         {
             eosLobby.FindLobbiesSucceeded -= OnFindLobbiesSucceeded;
             eosLobby.FindLobbiesFailed -= OnFindLobbiesFailed;
-
-            // ★ 방 입장 성공/실패 콜백 해제
             eosLobby.JoinLobbySucceeded -= OnJoinLobbySucceeded;
             eosLobby.JoinLobbyFailed -= OnJoinLobbyFailed;
         }
+        isSubscribed = false;
     }
 
-    #region --- 패널 전환 제어 ---
-    public void CloseAllPanels()
+    private void OnEnable()
     {
+        SubscribeEvents();
+    }
+
+    private void Start()
+    {
+        SubscribeEvents();
+
         if (clientSelectionPanel != null) clientSelectionPanel.SetActive(false);
         if (clientPublicPanel != null) clientPublicPanel.SetActive(false);
         if (clientPrivatePanel != null) clientPrivatePanel.SetActive(false);
+        if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
+        if (loadingText != null) loadingText.SetActive(false);
+
+        UpdateFilterChapterUI();
     }
 
-    public void OnClick_OpenClientSelectionPanel()
+    private void OnDisable()
     {
-        CloseAllPanels();
+        UnsubscribeEvents();
+    }
+
+    #region Panel Navigation
+
+    public void OnClick_MainClient()
+    {
+        SubscribeEvents();
         if (clientSelectionPanel != null) clientSelectionPanel.SetActive(true);
     }
 
-    public void OnClick_OpenPublicPanel()
+    public void OnClick_SelectPublicMode()
     {
-        CloseAllPanels();
+        SubscribeEvents();
+        if (clientSelectionPanel != null) clientSelectionPanel.SetActive(false);
         if (clientPublicPanel != null) clientPublicPanel.SetActive(true);
-        isQuickJoining = false;
-        RefreshLobbyList();
+
+        OnClick_Research();
     }
 
-    public void OnClick_OpenPrivatePanel()
+    public void OnClick_SelectPrivateMode()
     {
-        CloseAllPanels();
+        SubscribeEvents();
+        if (clientSelectionPanel != null) clientSelectionPanel.SetActive(false);
         if (clientPrivatePanel != null) clientPrivatePanel.SetActive(true);
     }
+
+    public void OnClick_CloseSelectionPanel()
+    {
+        if (clientSelectionPanel != null) clientSelectionPanel.SetActive(false);
+    }
+
+    public void OnClick_ClosePublicPanel()
+    {
+        if (clientPublicPanel != null) clientPublicPanel.SetActive(false);
+    }
+
+    public void OnClick_ClosePrivatePanel()
+    {
+        if (clientPrivatePanel != null) clientPrivatePanel.SetActive(false);
+    }
+
     #endregion
 
-    #region --- 로비 검색 및 퀵 조인(Quick Join) 로직 ---
+    #region Public Room List Logic
 
     public void OnClick_Research()
     {
-        isQuickJoining = false;
-        RefreshLobbyList();
-    }
+        SubscribeEvents();
 
-    public void OnClick_QuickJoinSelection()
-    {
-        isQuickJoining = true;
-        SetInteractableAll(false);
-        RefreshLobbyList();
-    }
-
-    public void RefreshLobbyList()
-    {
-        if (eosLobby == null) return;
-
-        if (loadingText != null) loadingText.SetActive(true);
-        if (!isQuickJoining) ClearRoomListUI();
-
-        LobbySearchSetParameterOptions[] searchOptions = new LobbySearchSetParameterOptions[]
+        var lobby = GetEOSLobby();
+        if (lobby == null)
         {
-            new LobbySearchSetParameterOptions { ComparisonOp = ComparisonOp.Equal, Parameter = new AttributeData { Key = "ROOM_TYPE", Value = "PUBLIC" } }
-        };
+            ShowError("네트워크 시스템이 준비되지 않았습니다.");
+            return;
+        }
 
-        eosLobby.FindLobbies(100, searchOptions);
+        SetInteractableAll(false);
+        if (loadingText != null) loadingText.SetActive(true);
+
+        lobby.FindLobbies(50, null);
     }
 
     private void OnFindLobbiesSucceeded(List<LobbyDetails> lobbies)
     {
+        SetInteractableAll(true);
         if (loadingText != null) loadingText.SetActive(false);
-        allFetchedLobbies = lobbies ?? new List<LobbyDetails>();
 
-        if (isQuickJoining)
-        {
-            ProcessQuickJoin();
-        }
-        else
-        {
-            ApplyFilters();
-        }
+        allFetchedLobbies = lobbies ?? new List<LobbyDetails>();
+        ApplyFiltersAndRefresh();
     }
 
     private void OnFindLobbiesFailed(string error)
     {
-        if (loadingText != null) loadingText.SetActive(false);
-        allFetchedLobbies.Clear();
         SetInteractableAll(true);
+        if (loadingText != null) loadingText.SetActive(false);
 
-        if (isQuickJoining)
+        ShowError("방 목록을 불러오지 못했습니다: " + error);
+    }
+
+    public void OnSearchInputChanged(string input)
+    {
+        ApplyFiltersAndRefresh();
+    }
+
+    public void OnClick_PrevFilterChapter()
+    {
+        selectedFilterChapter--;
+        if (selectedFilterChapter < 0) selectedFilterChapter = 6;
+        UpdateFilterChapterUI();
+        ApplyFiltersAndRefresh();
+    }
+
+    public void OnClick_NextFilterChapter()
+    {
+        selectedFilterChapter++;
+        if (selectedFilterChapter > 6) selectedFilterChapter = 0;
+        UpdateFilterChapterUI();
+        ApplyFiltersAndRefresh();
+    }
+
+    private void UpdateFilterChapterUI()
+    {
+        if (filterChapterText != null)
         {
-            isQuickJoining = false;
-            ShowError("빠른 입장을 위한 방을 찾을 수 없습니다.");
-        }
-        else
-        {
-            ApplyFilters();
-            ShowError("방 목록을 불러오지 못했습니다.");
+            filterChapterText.text = (selectedFilterChapter == 0) ? "Chapter All" : $"Chapter {selectedFilterChapter}";
         }
     }
 
-    private void ProcessQuickJoin()
+    private void ApplyFiltersAndRefresh()
     {
-        isQuickJoining = false;
+        filteredLobbies.Clear();
 
-        var availableRooms = allFetchedLobbies.Where(lobby =>
+        string searchKey = (searchInputField != null) ? searchInputField.text.Trim().ToLower() : "";
+
+        foreach (var lobby in allFetchedLobbies)
         {
-            uint currentMembers = lobby.GetMemberCount(new LobbyDetailsGetMemberCountOptions());
-            uint maxMembers = 4;
+            if (lobby == null) continue;
 
-            LobbyDetailsInfo lobbyInfo;
-            if (lobby.CopyInfo(new LobbyDetailsCopyInfoOptions(), out lobbyInfo) == Result.Success)
+            string roomName = GetLobbyAttribute(lobby, "ROOM_NAME", "");
+            if (!string.IsNullOrEmpty(searchKey) && !roomName.ToLower().Contains(searchKey))
             {
-                maxMembers = lobbyInfo.MaxMembers;
+                continue;
             }
 
-            return currentMembers > 0 && currentMembers < maxMembers;
-        }).ToList();
-
-        if (availableRooms.Count > 0)
-        {
-            int randomIndex = Random.Range(0, availableRooms.Count);
-            JoinRoom(availableRooms[randomIndex]);
-        }
-        else
-        {
-            SetInteractableAll(true);
-            ShowError("현재 입장 가능한 퍼블릭 방이 없습니다.");
-        }
-    }
-
-    #endregion
-
-    #region --- 챕터 필터 ---
-
-    public void OnClick_PrevChapterFilter()
-    {
-        if (currentChapterFilter > 0)
-        {
-            currentChapterFilter--;
-            UpdateChapterFilterUI();
-            ApplyFilters();
-        }
-    }
-
-    public void OnClick_NextChapterFilter()
-    {
-        if (currentChapterFilter < 6)
-        {
-            currentChapterFilter++;
-            UpdateChapterFilterUI();
-            ApplyFilters();
-        }
-    }
-
-    private void UpdateChapterFilterUI()
-    {
-        if (chapterFilterText != null)
-        {
-            chapterFilterText.text = currentChapterFilter == 0 ? "ALL" : $"Chapter {currentChapterFilter}";
-        }
-
-        if (prevChapterFilterButton != null) prevChapterFilterButton.interactable = (currentChapterFilter > 0);
-        if (nextChapterFilterButton != null) nextChapterFilterButton.interactable = (currentChapterFilter < 6);
-    }
-
-    #endregion
-
-    #region --- 퍼블릭 방 리스트 출력 ---
-
-    private void ApplyFilters()
-    {
-        string searchKeyword = searchInputField != null ? searchInputField.text.Trim().ToLower() : "";
-
-        filteredLobbies = allFetchedLobbies.Where(lobby =>
-        {
-            uint currentMembers = lobby.GetMemberCount(new LobbyDetailsGetMemberCountOptions());
-            if (currentMembers == 0)
-                return false;
-
-            string roomName = "";
-            string chapterStr = "";
-
-            Attribute attr;
-            if (lobby.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "ROOM_NAME" }, out attr) == Result.Success)
+            if (selectedFilterChapter > 0)
             {
-                if (attr.Data != null) roomName = attr.Data.Value.AsUtf8.ToLower();
+                string chapterStr = GetLobbyAttribute(lobby, "CHAPTER", "1");
+                if (int.TryParse(chapterStr, out int ch) && ch != selectedFilterChapter)
+                {
+                    continue;
+                }
             }
 
-            if (lobby.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "CHAPTER" }, out attr) == Result.Success)
-            {
-                if (attr.Data != null) chapterStr = attr.Data.Value.AsUtf8;
-            }
-
-            if (!string.IsNullOrEmpty(searchKeyword) && !roomName.Contains(searchKeyword))
-                return false;
-
-            if (currentChapterFilter != 0 && chapterStr != currentChapterFilter.ToString())
-                return false;
-
-            return true;
-        }).ToList();
+            filteredLobbies.Add(lobby);
+        }
 
         currentPage = 0;
-        UpdatePageUI();
+        RefreshUI();
     }
 
-    private void UpdatePageUI()
+    private void RefreshUI()
     {
-        ClearRoomListUI();
+        if (roomListContainer != null)
+        {
+            foreach (Transform child in roomListContainer)
+            {
+                Destroy(child.gameObject);
+            }
+        }
 
-        int totalLobbies = filteredLobbies.Count;
-        int totalPages = Mathf.Max(1, Mathf.CeilToInt((float)totalLobbies / ROOMS_PER_PAGE));
-        currentPage = Mathf.Clamp(currentPage, 0, totalPages - 1);
+        if (filteredLobbies.Count == 0)
+        {
+            if (noRoomFoundText != null) noRoomFoundText.SetActive(true);
+            if (pageText != null) pageText.text = "0 / 0";
+            if (prevPageButton != null) prevPageButton.interactable = false;
+            if (nextPageButton != null) nextPageButton.interactable = false;
+            return;
+        }
 
-        int startIndex = currentPage * ROOMS_PER_PAGE;
-        int endIndex = Mathf.Min(startIndex + ROOMS_PER_PAGE, totalLobbies);
+        if (noRoomFoundText != null) noRoomFoundText.SetActive(false);
+
+        int maxPage = Mathf.CeilToInt((float)filteredLobbies.Count / itemsPerPage);
+        currentPage = Mathf.Clamp(currentPage, 0, maxPage - 1);
+
+        int startIndex = currentPage * itemsPerPage;
+        int endIndex = Mathf.Min(startIndex + itemsPerPage, filteredLobbies.Count);
 
         for (int i = startIndex; i < endIndex; i++)
         {
-            GameObject itemObj = Instantiate(clientRoomItemPrefab, roomListParent);
-            ClientRoomItemUI itemScript = itemObj.GetComponent<ClientRoomItemUI>();
-            if (itemScript != null)
+            var lobby = filteredLobbies[i];
+            if (roomListContainer != null && roomItemPrefab != null)
             {
-                itemScript.Setup(filteredLobbies[i], JoinRoom);
+                GameObject itemObj = Instantiate(roomItemPrefab, roomListContainer);
+                ClientRoomItemUI itemUI = itemObj.GetComponent<ClientRoomItemUI>();
+                if (itemUI != null)
+                {
+                    itemUI.Setup(lobby, JoinRoom);
+                }
             }
         }
 
-        if (pageText != null) pageText.text = $"{currentPage + 1} / {totalPages}";
+        if (pageText != null) pageText.text = $"{currentPage + 1} / {maxPage}";
         if (prevPageButton != null) prevPageButton.interactable = (currentPage > 0);
-        if (nextPageButton != null) nextPageButton.interactable = (currentPage < totalPages - 1);
+        if (nextPageButton != null) nextPageButton.interactable = (currentPage < maxPage - 1);
     }
 
-    private void ClearRoomListUI()
+    public void OnClick_PrevPage()
     {
-        if (roomListParent == null) return;
-        foreach (Transform child in roomListParent) Destroy(child.gameObject);
+        if (currentPage > 0)
+        {
+            currentPage--;
+            RefreshUI();
+        }
     }
 
-    private void OnClick_PrevPage()
+    public void OnClick_NextPage()
     {
-        if (currentPage > 0) { currentPage--; UpdatePageUI(); }
-    }
-
-    private void OnClick_NextPage()
-    {
-        int totalPages = Mathf.CeilToInt((float)filteredLobbies.Count / ROOMS_PER_PAGE);
-        if (currentPage < totalPages - 1) { currentPage++; UpdatePageUI(); }
+        int maxPage = Mathf.CeilToInt((float)filteredLobbies.Count / itemsPerPage);
+        if (currentPage < maxPage - 1)
+        {
+            currentPage++;
+            RefreshUI();
+        }
     }
 
     #endregion
 
-    #region --- 방 입장 (콜백 및 씬 전환) ---
+    #region Join Room Logic
 
-    private void JoinRoom(LobbyDetails lobby)
+    public void JoinRoom(LobbyDetails lobby)
     {
-        if (eosLobby != null)
-        {
-            Debug.Log("[Client] 선택된 방에 EOS 입장을 시도합니다.");
-            SetInteractableAll(false);
-            if (loadingText != null) loadingText.SetActive(true);
+        SubscribeEvents();
 
-            eosLobby.JoinLobby(lobby); // 이 함수가 완료되면 아래 OnJoinLobbySucceeded가 자동 호출됨
+        if (lobby == null) return;
+
+        var eos = GetEOSLobby();
+        if (eos == null)
+        {
+            ShowError("네트워크 시스템을 찾을 수 없습니다.");
+            return;
         }
+
+        SetInteractableAll(false);
+        if (loadingText != null) loadingText.SetActive(true);
+
+        eos.JoinLobby(lobby);
     }
 
-    // ★ 추가된 핵심 로직: EOS 입장 성공 시 Mirror 접속 실행
-    private void OnJoinLobbySucceeded(List<Epic.OnlineServices.Lobby.Attribute> attributes)
+    private void OnJoinLobbySucceeded(List<Attribute> attributes) 
     {
         if (loadingText != null) loadingText.SetActive(false);
-        Debug.Log("[Client] EOS 로비 입장 성공! Mirror 서버로 연결합니다...");
 
-        if (eosLobby.ConnectedLobbyDetails != null)
+        var eos = GetEOSLobby();
+        // ★ 에픽 서버에서 연결된 로비의 상세 정보를 안전하게 가져옴
+        if (eos != null && eos.ConnectedLobbyDetails != null)
         {
-            LobbyDetailsInfo lobbyInfo;
-            if (eosLobby.ConnectedLobbyDetails.CopyInfo(new LobbyDetailsCopyInfoOptions(), out lobbyInfo) == Result.Success)
+            Attribute attr;
+            if (eos.ConnectedLobbyDetails.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = EOSLobby.hostAddressKey }, out attr) == Result.Success)
             {
-                // 방장의 ID를 주소로 사용하여 Mirror 클라이언트 접속 시작
-                string hostAddress = lobbyInfo.LobbyOwnerUserId.ToString();
-                NetworkManager.singleton.networkAddress = hostAddress;
+                string hostAddress = attr.Data?.Value.AsUtf8 ?? "";
+                if (!string.IsNullOrEmpty(hostAddress))
+                {
+                    EosTransport transport = NetworkManager.singleton.transport as EosTransport;
+                    if (transport != null) transport.ResetIgnoreMessagesAtStartUpTimer();
 
-                EosTransport transport = NetworkManager.singleton.transport as EosTransport;
-                if (transport != null) transport.ResetIgnoreMessagesAtStartUpTimer();
-
-                NetworkManager.singleton.StartClient(); // ★ 실제 게임 씬으로 접속 및 이동!
-                return;
+                    NetworkManager.singleton.networkAddress = hostAddress;
+                    NetworkManager.singleton.StartClient();
+                    return;
+                }
             }
         }
 
-        // 실패 시 방어 코드
-        ShowError("방장 연결 정보를 불러올 수 없습니다.");
         SetInteractableAll(true);
-        eosLobby.LeaveLobby(); // 잘못 들어갔으니 다시 나옴
+        ShowError("방장의 주소 정보를 가져오지 못했습니다.");
     }
 
     private void OnJoinLobbyFailed(string error)
     {
-        if (loadingText != null) loadingText.SetActive(false);
-        ShowError("방 입장에 실패했습니다.");
         SetInteractableAll(true);
+        if (loadingText != null) loadingText.SetActive(false);
+
+        ShowError("방 입장에 실패했습니다: " + error);
     }
+
+    #endregion
+
+    #region Private Room Logic
 
     public void OnClick_JoinPrivateRoom()
     {
-        string inputCode = shortCodeInputField != null ? shortCodeInputField.text.Trim() : "";
-        if (string.IsNullOrEmpty(inputCode) || inputCode.Length != 6)
+        SubscribeEvents();
+
+        if (codeInputUI == null) return;
+
+        string inputCode = codeInputUI.GetCode();
+        if (string.IsNullOrEmpty(inputCode) || inputCode.Length < 6)
         {
-            ShowError("6자리 코드를 정확히 입력하세요.");
+            ShowError("6자리 코드를 정확히 입력해주세요.");
             return;
         }
 
-        if (loadingText != null) loadingText.SetActive(true);
+        var lobby = GetEOSLobby();
+        if (lobby == null)
+        {
+            ShowError("네트워크 시스템이 준비되지 않았습니다.");
+            return;
+        }
+
         SetInteractableAll(false);
+        if (loadingText != null) loadingText.SetActive(true);
 
         LobbySearchSetParameterOptions[] searchOptions = new LobbySearchSetParameterOptions[]
-        {
-            new LobbySearchSetParameterOptions { ComparisonOp = ComparisonOp.Equal, Parameter = new AttributeData { Key = "ROOM_TYPE", Value = "PRIVATE" } },
-            new LobbySearchSetParameterOptions { ComparisonOp = ComparisonOp.Equal, Parameter = new AttributeData { Key = "SHORTCODE", Value = inputCode } }
+         {
+            new LobbySearchSetParameterOptions
+            {
+                ComparisonOp = ComparisonOp.Equal,
+                Parameter = new AttributeData { Key = "SHORTCODE", Value = inputCode }
+            }
         };
 
-        eosLobby.FindLobbies(1, searchOptions);
+        lobby.FindLobbies(1, searchOptions);
         StartCoroutine(WaitForPrivateJoinRoutine(inputCode));
     }
 
@@ -429,7 +426,7 @@ public class ClientLobbyManager : MonoBehaviour
     {
         yield return new WaitForSeconds(3f);
 
-        if (allFetchedLobbies.Count > 0)
+        if (allFetchedLobbies != null && allFetchedLobbies.Count > 0)
         {
             JoinRoom(allFetchedLobbies[0]);
         }
@@ -443,6 +440,18 @@ public class ClientLobbyManager : MonoBehaviour
 
     #endregion
 
+    #region Helpers
+
+    private string GetLobbyAttribute(LobbyDetails lobby, string key, string defaultValue)
+    {
+        Attribute attr;
+        if (lobby.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = key }, out attr) == Result.Success)
+        {
+            return attr.Data?.Value.AsUtf8 ?? defaultValue;
+        }
+        return defaultValue;
+    }
+
     private void SetInteractableAll(bool interactable)
     {
         if (selectPublicModeButton != null) selectPublicModeButton.interactable = interactable;
@@ -450,6 +459,8 @@ public class ClientLobbyManager : MonoBehaviour
         if (quickJoinSelectionButton != null) quickJoinSelectionButton.interactable = interactable;
         if (researchButton != null) researchButton.interactable = interactable;
         if (joinPrivateButton != null) joinPrivateButton.interactable = interactable;
+        if (prevPageButton != null) prevPageButton.interactable = interactable;
+        if (nextPageButton != null) nextPageButton.interactable = interactable;
     }
 
     private void ShowError(string msg)
@@ -460,4 +471,11 @@ public class ClientLobbyManager : MonoBehaviour
             errorPopupPanel.SetActive(true);
         }
     }
+
+    public void OnClick_CloseErrorPopup()
+    {
+        if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
+    }
+
+    #endregion
 }

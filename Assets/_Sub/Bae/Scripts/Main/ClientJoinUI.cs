@@ -11,7 +11,7 @@ public class ClientJoinUI : MonoBehaviour
     public SixDigitCodeInputUI? sixDigitUI;
 
     [Header("로딩 UI 연결 (비워두어도 자동 탐색됩니다)")]
-    [SerializeField] private GameObject loadingPanel;
+    [SerializeField] private GameObject? loadingPanel;
 
     private LobbySearch? currentSearchHandle;
     private string foundHostAddress = "";
@@ -19,161 +19,97 @@ public class ClientJoinUI : MonoBehaviour
 
     private void Start()
     {
-        // 시작 시 로딩 패널 자동 확보 및 비활성화
         GameObject? panel = GetLoadingPanel();
         if (panel != null) panel.SetActive(false);
     }
 
-    /// <summary>
-    /// 로딩 패널이 연결되지 않았거나 씬 전환으로 참조가 끊겼을 때 자동으로 찾아주는 함수
-    /// </summary>
     private GameObject? GetLoadingPanel()
     {
-        if (loadingPanel == null)
+        if (loadingPanel != null) return loadingPanel;
+
+        if (WalkingLoadingPanel.Instance != null)
         {
-            // 씬 내의 활성 및 비활성(Inactive) 상태인 모든 WalkingLoadingPanel을 검색
-            WalkingLoadingPanel[] allPanels = Resources.FindObjectsOfTypeAll<WalkingLoadingPanel>();
-
-            foreach (var panel in allPanels)
-            {
-                // 프로젝트 뷰의 프리팹 에셋이 아니라, 현재 씬(Scene)에 실제로 배치된 오브젝트인지 검증
-                if (panel != null && panel.gameObject.scene.IsValid())
-                {
-                    loadingPanel = panel.gameObject;
-                    break;
-                }
-            }
-
-            if (loadingPanel == null)
-            {
-                Debug.LogWarning("[ClientJoinUI] 현재 씬 내에 WalkingLoadingPanel을 찾지 못했습니다.");
-            }
+            loadingPanel = WalkingLoadingPanel.Instance.gameObject;
+            return loadingPanel;
         }
-        return loadingPanel;
+
+        return null;
     }
 
-    public void OnJoinByCodeButtonClicked()
+    public void OnClick_ConnectByCode()
     {
-        if (sixDigitUI == null)
-        {
-            Debug.LogError("SixDigitCodeInputUI가 연결되지 않았습니다!");
-            return;
-        }
-        string roomCode = sixDigitUI.GetCode();
+        if (sixDigitUI == null) return;
 
-        if (string.IsNullOrEmpty(roomCode) || roomCode.Length != 6)
+        // ★ 주의: SixDigitCodeInputUI 스크립트에 문자열을 반환하는 함수 이름을 아래에 맞춰주세요!
+        // (예: GetCode, GetEnteredCode, currentCode 등)
+        string code = sixDigitUI.GetCode();
+        if (string.IsNullOrEmpty(code) || code.Length < 6)
         {
-            Debug.LogWarning("올바른 6자리 방 코드를 입력해주세요!");
+            Debug.LogWarning("6자리 코드를 정확히 입력해주세요.");
             return;
         }
 
-        StartCoroutine(SearchAndJoinRoutine(roomCode));
+        StartCoroutine(SearchAndJoinRoutine(code));
     }
 
-    private IEnumerator SearchAndJoinRoutine(string shortCode)
+    private IEnumerator SearchAndJoinRoutine(string code)
     {
-        // =========================================================
-        // 0. 로딩 패널 켜기 및 초기화 (0.1)
-        // =========================================================
         GameObject? currentPanel = GetLoadingPanel();
-        if (currentPanel != null)
-        {
-            currentPanel.SetActive(true);
-            var panelScript = currentPanel.GetComponent<WalkingLoadingPanel>();
-            if (panelScript != null) panelScript.SetProgress(0.1f);
-        }
+        if (currentPanel != null) currentPanel.SetActive(true);
 
-        Debug.Log("에픽 서버 로그인 상태 확인 중...");
-        while (string.IsNullOrEmpty(EOSSDKComponent.LocalUserProductIdString))
-        {
-            yield return null;
-        }
-
-        currentPanel = GetLoadingPanel();
-        if (currentPanel != null)
-        {
-            var panelScript = currentPanel.GetComponent<WalkingLoadingPanel>();
-            if (panelScript != null) panelScript.SetProgress(0.3f);
-        }
-
-        Debug.Log($"[{shortCode}] 방을 에픽 서버에서 검색합니다...");
         searchFinished = false;
         foundHostAddress = "";
 
         LobbyInterface lobbyInterface = EOSSDKComponent.GetLobbyInterface();
 
-        CreateLobbySearchOptions searchOptions = new CreateLobbySearchOptions();
-        searchOptions.MaxResults = 1;
+        // ★ 수정됨: LobbyInterfaceCreateLobbySearchOptions -> CreateLobbySearchOptions
+        CreateLobbySearchOptions searchOptions = new CreateLobbySearchOptions
+        {
+            MaxResults = 1
+        };
 
+        // ★ 수정됨: ref 키워드 삭제
         lobbyInterface.CreateLobbySearch(searchOptions, out currentSearchHandle);
-
-        AttributeData attrData = new AttributeData();
-        attrData.Key = "SHORTCODE";
-        attrData.Value = new AttributeDataValue() { AsUtf8 = shortCode };
-
-        LobbySearchSetParameterOptions paramOptions = new LobbySearchSetParameterOptions();
-        paramOptions.Parameter = attrData;
-        paramOptions.ComparisonOp = ComparisonOp.Equal;
 
         if (currentSearchHandle != null)
         {
+            LobbySearchSetParameterOptions paramOptions = new LobbySearchSetParameterOptions
+            {
+                ComparisonOp = ComparisonOp.Equal,
+                Parameter = new AttributeData { Key = "SHORTCODE", Value = code }
+            };
+
+            // ★ 수정됨: ref 키워드 삭제
             currentSearchHandle.SetParameter(paramOptions);
 
-            LobbySearchFindOptions findOptions = new LobbySearchFindOptions();
-            findOptions.LocalUserId = EOSSDKComponent.LocalUserProductId;
+            LobbySearchFindOptions findOptions = new LobbySearchFindOptions
+            {
+                LocalUserId = EOSSDKComponent.LocalUserProductId
+            };
 
+            // ★ 수정됨: ref 키워드 삭제
             currentSearchHandle.Find(findOptions, null, OnLobbySearchCompleted);
         }
 
-        currentPanel = GetLoadingPanel();
-        if (currentPanel != null)
+        float timeout = 5f;
+        while (!searchFinished && timeout > 0f)
         {
-            var panelScript = currentPanel.GetComponent<WalkingLoadingPanel>();
-            if (panelScript != null) panelScript.SetProgress(0.6f);
-        }
-
-        float searchTimer = 0f;
-        while (!searchFinished)
-        {
-            searchTimer += Time.unscaledDeltaTime;
-            float currentProg = Mathf.Lerp(0.6f, 0.9f, Mathf.Clamp01(searchTimer / 3f));
-
-            currentPanel = GetLoadingPanel();
-            if (currentPanel != null)
-            {
-                var panelScript = currentPanel.GetComponent<WalkingLoadingPanel>();
-                if (panelScript != null) panelScript.SetProgress(currentProg);
-            }
+            timeout -= Time.unscaledDeltaTime;
             yield return null;
         }
 
-        // =========================================================
-        // 결과 처리 및 씬 전환 (로딩 패널은 새 씬 로드 후 알아서 꺼짐)
-        // =========================================================
         if (!string.IsNullOrEmpty(foundHostAddress))
         {
-            currentPanel = GetLoadingPanel();
-            if (currentPanel != null)
-            {
-                var panelScript = currentPanel.GetComponent<WalkingLoadingPanel>();
-                if (panelScript != null) panelScript.SetProgress(1.0f);
-            }
             yield return new WaitForSecondsRealtime(0.2f);
-
             Debug.Log($"방 검색 성공! 접속합니다. (ID: {foundHostAddress})");
             NetworkManager.singleton.networkAddress = foundHostAddress;
-            NetworkManager.singleton.StartClient(); // 씬 전환 실행
+            NetworkManager.singleton.StartClient();
         }
         else
         {
             Debug.LogError("방을 찾을 수 없거나 코드(대/소문자)를 다시 확인해주세요.");
-
-            // 실패 시에만 즉시 패널 끄기
             currentPanel = GetLoadingPanel();
-            if (currentPanel != null)
-            {
-                currentPanel.SetActive(false);
-            }
+            if (currentPanel != null) currentPanel.SetActive(false);
         }
     }
 
@@ -199,5 +135,11 @@ public class ClientJoinUI : MonoBehaviour
         }
 
         searchFinished = true;
+
+        if (currentSearchHandle != null)
+        {
+            currentSearchHandle.Release();
+            currentSearchHandle = null;
+        }
     }
 }

@@ -433,7 +433,19 @@ MonoBehaviour:
   - eventID: 4
     callback:
       m_PersistentCalls:
-        m_Calls: []
+        m_Calls:
+        - m_Target: {fileID: 700180063}
+          m_TargetAssemblyTypeName: PrivateLobbyManager, Assembly-CSharp
+          m_MethodName: OnClick_NextChapter
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!114 &47099916
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1522,9 +1534,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 153456798}
-        m_TargetAssemblyTypeName: PanelSwitcher, Assembly-CSharp
-        m_MethodName: OnlySwitch
+      - m_Target: {fileID: 1506203215}
+        m_TargetAssemblyTypeName: ClientLobbyManager, Assembly-CSharp
+        m_MethodName: OnClick_SelectPrivateMode
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1980,9 +1992,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 191671499}
-        m_TargetAssemblyTypeName: PanelSwitcher, Assembly-CSharp
-        m_MethodName: Back_to_Image
+      - m_Target: {fileID: 1506203215}
+        m_TargetAssemblyTypeName: ClientLobbyManager, Assembly-CSharp
+        m_MethodName: OnClick_ClosePublicPanel
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3054,9 +3066,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 417850433}
-        m_TargetAssemblyTypeName: PanelSwitcher, Assembly-CSharp
-        m_MethodName: Back_to_Image
+      - m_Target: {fileID: 700180063}
+        m_TargetAssemblyTypeName: PrivateLobbyManager, Assembly-CSharp
+        m_MethodName: OnClick_ReturnToMain
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3458,7 +3470,19 @@ MonoBehaviour:
   - eventID: 4
     callback:
       m_PersistentCalls:
-        m_Calls: []
+        m_Calls:
+        - m_Target: {fileID: 700180063}
+          m_TargetAssemblyTypeName: PrivateLobbyManager, Assembly-CSharp
+          m_MethodName: OnClick_PrevRoomType
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!114 &494922990
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3623,7 +3647,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 525580932}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 700180063}
+        m_TargetAssemblyTypeName: PrivateLobbyManager, Assembly-CSharp
+        m_MethodName: OnClick_MakeRoom
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &525580932
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3956,7 +3992,15 @@ PrefabInstance:
     - target: {fileID: 61552078906226040, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 700180065}
+      objectReference: {fileID: 1506203215}
+    - target: {fileID: 61552078906226040, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnClick_JoinPrivateRoom
+      objectReference: {fileID: 0}
+    - target: {fileID: 61552078906226040, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: ClientLobbyManager, Assembly-CSharp
+      objectReference: {fileID: 0}
     - target: {fileID: 65703918423068661, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -4196,7 +4240,7 @@ PrefabInstance:
     - target: {fileID: 4665141533479455424, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 552944013}
+      objectReference: {fileID: 700180063}
     - target: {fileID: 4665141533479455424, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
@@ -4207,7 +4251,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4665141533479455424, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: SwitchPanel
+      value: OnClick_MainHost
       objectReference: {fileID: 0}
     - target: {fileID: 4665141533479455424, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
@@ -4215,7 +4259,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4665141533479455424, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: PanelSwitcher, Assembly-CSharp
+      value: PrivateLobbyManager, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 4665141533479455424, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
@@ -4268,7 +4312,7 @@ PrefabInstance:
     - target: {fileID: 5526660350761867251, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1440561669}
+      objectReference: {fileID: 1506203215}
     - target: {fileID: 5526660350761867251, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
@@ -4279,7 +4323,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5526660350761867251, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: Back_to_Image
+      value: OnClick_ClosePrivatePanel
       objectReference: {fileID: 0}
     - target: {fileID: 5526660350761867251, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
@@ -4287,7 +4331,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5526660350761867251, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: PanelSwitcher, Assembly-CSharp
+      value: ClientLobbyManager, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 5526660350761867251, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
@@ -4448,7 +4492,7 @@ PrefabInstance:
     - target: {fileID: 7746781122012863704, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1561155938}
+      objectReference: {fileID: 1506203215}
     - target: {fileID: 7746781122012863704, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
@@ -4459,7 +4503,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7746781122012863704, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: SwitchPanel
+      value: OnClick_MainClient
       objectReference: {fileID: 0}
     - target: {fileID: 7746781122012863704, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
@@ -4467,7 +4511,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7746781122012863704, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: PanelSwitcher, Assembly-CSharp
+      value: ClientLobbyManager, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 7746781122012863704, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
@@ -5221,17 +5265,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cf6a68009c01044c894d66bbb5b90ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrivateLobbyManager
---- !u!114 &700180065 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 638033671785360731, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
-  m_PrefabInstance: {fileID: 6526589014550713146}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 895242587}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 974b7f68e19a065459c9db6c3089c56f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ClientJoinUI
 --- !u!1 &705461143
 GameObject:
   m_ObjectHideFlags: 0
@@ -8219,14 +8252,14 @@ PrefabInstance:
     - target: {fileID: 7065405236593066232, guid: 50411db57d672e943a438b2f91986be6, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 700180063}
+      objectReference: {fileID: 1506203215}
     - target: {fileID: 7065405236593066232, guid: 50411db57d672e943a438b2f91986be6, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnClick_ReturnToMain
+      value: OnClick_CloseErrorPopup
       objectReference: {fileID: 0}
     - target: {fileID: 7065405236593066232, guid: 50411db57d672e943a438b2f91986be6, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: PrivateLobbyManager, Assembly-CSharp
+      value: ClientLobbyManager, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 7065405236593066232, guid: 50411db57d672e943a438b2f91986be6, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
@@ -9001,7 +9034,19 @@ MonoBehaviour:
   - eventID: 4
     callback:
       m_PersistentCalls:
-        m_Calls: []
+        m_Calls:
+        - m_Target: {fileID: 700180063}
+          m_TargetAssemblyTypeName: PrivateLobbyManager, Assembly-CSharp
+          m_MethodName: OnClick_PrevChapter
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!114 &1133776672
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11376,7 +11421,19 @@ MonoBehaviour:
   - eventID: 4
     callback:
       m_PersistentCalls:
-        m_Calls: []
+        m_Calls:
+        - m_Target: {fileID: 700180063}
+          m_TargetAssemblyTypeName: PrivateLobbyManager, Assembly-CSharp
+          m_MethodName: OnClick_NextRoomType
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!114 &1499780204
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11567,17 +11624,18 @@ MonoBehaviour:
   quickJoinSelectionButton: {fileID: 858207355}
   searchInputField: {fileID: 5064525642740022609}
   researchButton: {fileID: 8502752096685522496}
-  chapterFilterText: {fileID: 121102590639922179}
-  prevChapterFilterButton: {fileID: 8234879079532356322}
-  nextChapterFilterButton: {fileID: 6594075951928533216}
-  roomListParent: {fileID: 3610458999774307429}
-  clientRoomItemPrefab: {fileID: 3931104095033623730, guid: e76c33481c058cd4d884f18558f91b9c, type: 3}
-  prevPageButton: {fileID: 8234879079532356322}
+  filterChapterText: {fileID: 121102590639922179}
+  prevFilterChapterButton: {fileID: 8234879079532356322}
+  nextFilterChapterButton: {fileID: 6594075951928533216}
+  roomListContainer: {fileID: 0}
+  roomItemPrefab: {fileID: 3931104095033623730, guid: e76c33481c058cd4d884f18558f91b9c, type: 3}
+  noRoomFoundText: {fileID: 0}
+  prevPageButton: {fileID: 8952697576372816901}
   nextPageButton: {fileID: 8822583357537443950}
   pageText: {fileID: 6587160486048868595}
-  loadingText: {fileID: 4690324336998505720}
-  shortCodeInputField: {fileID: 0}
+  codeInputUI: {fileID: 0}
   joinPrivateButton: {fileID: 0}
+  loadingText: {fileID: 4690324336998505720}
   errorPopupPanel: {fileID: 0}
   errorMessageText: {fileID: 0}
 --- !u!1 &1514349945
@@ -13108,9 +13166,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1703287808}
-        m_TargetAssemblyTypeName: PanelSwitcher, Assembly-CSharp
-        m_MethodName: SwitchPanel
+      - m_Target: {fileID: 1506203215}
+        m_TargetAssemblyTypeName: ClientLobbyManager, Assembly-CSharp
+        m_MethodName: OnClick_SelectPublicMode
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -18878,7 +18936,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6594075951928533215}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1506203215}
+        m_TargetAssemblyTypeName: ClientLobbyManager, Assembly-CSharp
+        m_MethodName: OnClick_NextFilterChapter
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!224 &6673533889902646290
 RectTransform:
   m_ObjectHideFlags: 0
@@ -19519,7 +19589,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1078766106163355896}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1506203215}
+        m_TargetAssemblyTypeName: ClientLobbyManager, Assembly-CSharp
+        m_MethodName: OnClick_PrevFilterChapter
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &8365568812682124347
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -19709,7 +19791,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 5007276754547384055}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1506203215}
+        m_TargetAssemblyTypeName: ClientLobbyManager, Assembly-CSharp
+        m_MethodName: OnClick_Research
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &8517644463288429539
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19923,7 +20017,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2495208056127363393}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1506203215}
+        m_TargetAssemblyTypeName: ClientLobbyManager, Assembly-CSharp
+        m_MethodName: OnClick_NextPage
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &8952697576372816900
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19997,7 +20103,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 8952697576372816900}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1506203215}
+        m_TargetAssemblyTypeName: ClientLobbyManager, Assembly-CSharp
+        m_MethodName: OnClick_PrevPage
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &9036610960757792869
 MonoBehaviour:
   m_ObjectHideFlags: 0
