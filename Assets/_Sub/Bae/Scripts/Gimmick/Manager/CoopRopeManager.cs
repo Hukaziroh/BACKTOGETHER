@@ -32,7 +32,8 @@ public class CoopRopeManager : NetworkBehaviour
     [SyncVar(hook = nameof(OnRopeActiveChanged))]
     public bool isRopeActive = false;
 
-    private List<GameObject> connectedPlayers = new List<GameObject>();
+    // PlayerKnockback에서 읽을 수 있게 public으로 변경
+    public List<GameObject> connectedPlayers = new List<GameObject>();
     private List<LineRenderer> lineRenderers = new List<LineRenderer>();
 
     [Server]
@@ -70,7 +71,6 @@ public class CoopRopeManager : NetworkBehaviour
     private void RpcLinkPlayers(GameObject[] playersToLink)
     {
         connectedPlayers = new List<GameObject>(playersToLink);
-
         SetupLineRenderers(connectedPlayers.Count - 1);
     }
 
@@ -142,58 +142,53 @@ public class CoopRopeManager : NetworkBehaviour
 
     void FixedUpdate()
     {
+        // 🌟 1. 이 물리 연산은 절대적으로 '서버'에서만 실행되어야 합니다! (클라이언트 개입 완전 차단)
+        if (!isServer) return;
+
         if (!isRopeActive || connectedPlayers.Count < 2) return;
 
-        GameObject localPlayer = null;
-        int localIndex = -1;
-
-        for (int i = 0; i < connectedPlayers.Count; i++)
+        // 🌟 2. 매 프레임 로프 제한 상태를 일단 false로 풉니다.
+        foreach (var player in connectedPlayers)
         {
-            if (connectedPlayers[i] != null)
+            if (player != null)
             {
-                NetworkIdentity identity = connectedPlayers[i].GetComponent<NetworkIdentity>();
-                if (identity != null && identity.isLocalPlayer)
-                {
-                    localPlayer = connectedPlayers[i];
-                    localIndex = i;
-                    break;
-                }
+                PlayerMovement movement = player.GetComponent<PlayerMovement>();
+                if (movement != null) movement.isRestrictedByRope = false;
             }
         }
 
-        if (localPlayer != null)
+        // 🌟 3. 호스트/클라이언트 차별 없이, 묶인 모든 쌍(0-1, 1-2, 2-3)을 대칭으로 당깁니다.
+        for (int i = 0; i < connectedPlayers.Count - 1; i++)
         {
-            Rigidbody2D rb = localPlayer.GetComponent<Rigidbody2D>();
-            PlayerMovement movement = localPlayer.GetComponent<PlayerMovement>();
+            GameObject p1 = connectedPlayers[i];
+            GameObject p2 = connectedPlayers[i + 1];
 
-            if (rb != null && movement != null)
+            if (p1 != null && p2 != null)
             {
-                rb.mass = movement.isGrounded ? groundedMass : airborneMass;
+                Rigidbody2D rb1 = p1.GetComponent<Rigidbody2D>();
+                Rigidbody2D rb2 = p2.GetComponent<Rigidbody2D>();
+                PlayerMovement mov1 = p1.GetComponent<PlayerMovement>();
+                PlayerMovement mov2 = p2.GetComponent<PlayerMovement>();
 
-                bool isTensionActive = false;
-                if (localIndex > 0 && connectedPlayers[localIndex - 1] != null)
+                if (rb1 != null && rb2 != null && mov1 != null && mov2 != null)
                 {
-                    Rigidbody2D prevRb = connectedPlayers[localIndex - 1].GetComponent<Rigidbody2D>();
-                    if (prevRb != null && ApplyRopeConstraint(rb, prevRb, movement.isGrounded))
-                        isTensionActive = true;
-                }
+                    rb1.mass = mov1.isGrounded ? groundedMass : airborneMass;
+                    rb2.mass = mov2.isGrounded ? groundedMass : airborneMass;
 
-                if (localIndex < connectedPlayers.Count - 1 && connectedPlayers[localIndex + 1] != null)
-                {
-                    Rigidbody2D nextRb = connectedPlayers[localIndex + 1].GetComponent<Rigidbody2D>();
-                    if (nextRb != null && ApplyRopeConstraint(rb, nextRb, movement.isGrounded))
-                        isTensionActive = true;
+                    bool isTensionActive = ApplySymmetricRopeConstraint(rb1, rb2, mov1, mov2);
+                    if (isTensionActive)
+                    {
+                        mov1.isRestrictedByRope = true;
+                        mov2.isRestrictedByRope = true;
+                    }
                 }
-
-                movement.isRestrictedByRope = isTensionActive;
             }
         }
     }
 
-    private bool ApplyRopeConstraint(Rigidbody2D rb, Rigidbody2D targetRb, bool amIGrounded)
+    private bool ApplySymmetricRopeConstraint(Rigidbody2D rb1, Rigidbody2D rb2, PlayerMovement mov1, PlayerMovement mov2)
     {
-        Vector2 targetPos = targetRb.position;
-        Vector2 direction = targetPos - rb.position;
+        Vector2 direction = rb2.position - rb1.position;
         float distance = direction.magnitude;
 
         if (distance > maxRopeLength)
@@ -201,52 +196,52 @@ public class CoopRopeManager : NetworkBehaviour
             Vector2 dirNorm = direction.normalized;
             float stretch = distance - maxRopeLength;
 
-            // 🌟 1. 상대방이 Kinematic(원격 클라이언트)이면 localPlayer가 100% 보정 비율을 가져감
-            float myRatio = 1.0f;
-            if (!targetRb.isKinematic)
-            {
-                float totalMass = rb.mass + targetRb.mass;
-                myRatio = totalMass > 0f ? targetRb.mass / totalMass : 0.5f;
-            }
+            float totalMass = rb1.mass + rb2.mass;
+            if (totalMass <= 0f) totalMass = 1f;
 
-            // 🌟 2. 위치 보정 (늘어난 오차만큼 당김)
-            Vector2 posCorrection = dirNorm * (stretch * myRatio);
-            if (amIGrounded && posCorrection.y < 0)
-            {
-                posCorrection.y = 0;
-            }
-            rb.position += posCorrection;
+            // 질량에 따른 보정 비율 (자신의 질량이 클수록 덜 끌려감)
+            float ratio1 = rb2.mass / totalMass;
+            float ratio2 = rb1.mass / totalMass;
 
-            // 🌟 3. 속도 보정 (상대방 반대 방향으로 나아가려는 속도를 차단)
-            Vector2 targetVel = targetRb.isKinematic ? Vector2.zero : targetRb.linearVelocity;
-            Vector2 relativeVelocity = rb.linearVelocity - targetVel;
+            // 🌟 1. 위치 보정 (서로가 중심을 향해 공평하게 당겨짐)
+            Vector2 posCorrection1 = dirNorm * (stretch * ratio1);
+            Vector2 posCorrection2 = -dirNorm * (stretch * ratio2);
+
+            if (mov1.isGrounded && posCorrection1.y < 0) posCorrection1.y = 0;
+            if (mov2.isGrounded && posCorrection2.y < 0) posCorrection2.y = 0;
+
+            rb1.position += posCorrection1;
+            rb2.position += posCorrection2;
+
+            // 🌟 2. 속도 보정 (서로 멀어지려는 속도 차단)
+            Vector2 relativeVelocity = rb1.linearVelocity - rb2.linearVelocity;
             float relVelAlongRope = Vector2.Dot(relativeVelocity, dirNorm);
 
             if (relVelAlongRope < 0)
             {
                 Vector2 velCorrection = dirNorm * relVelAlongRope;
-                if (amIGrounded && velCorrection.y < 0)
-                {
-                    velCorrection.y = 0;
-                }
-                rb.linearVelocity -= velCorrection * myRatio;
+                Vector2 velCorr1 = velCorrection * ratio1;
+                Vector2 velCorr2 = -velCorrection * ratio2;
+
+                if (mov1.isGrounded && velCorr1.y < 0) velCorr1.y = 0;
+                if (mov2.isGrounded && velCorr2.y < 0) velCorr2.y = 0;
+
+                rb1.linearVelocity -= velCorr1;
+                rb2.linearVelocity -= velCorr2;
             }
 
-            // 🌟 4. [속도 폭발 방지] 최고 속도 제한 (Maximum Speed Cap)
+            // 🌟 3. 속도 폭발 완전 차단 하드 캡
             float maxAllowedSpeed = 20f;
-            if (rb.linearVelocity.sqrMagnitude > maxAllowedSpeed * maxAllowedSpeed)
-            {
-                rb.linearVelocity = rb.linearVelocity.normalized * maxAllowedSpeed;
-            }
+            if (rb1.linearVelocity.sqrMagnitude > maxAllowedSpeed * maxAllowedSpeed)
+                rb1.linearVelocity = rb1.linearVelocity.normalized * maxAllowedSpeed;
+            if (rb2.linearVelocity.sqrMagnitude > maxAllowedSpeed * maxAllowedSpeed)
+                rb2.linearVelocity = rb2.linearVelocity.normalized * maxAllowedSpeed;
 
-            // 🌟 5. [빙판 미끄러짐 방지] 땅에 있을 때 잔여 슬라이딩 감쇠
-            if (amIGrounded)
-            {
-                rb.linearVelocity = new Vector2(
-                    Mathf.Lerp(rb.linearVelocity.x, 0f, Time.fixedDeltaTime * 10f),
-                    rb.linearVelocity.y
-                );
-            }
+            // 🌟 4. 빙판 미끄러짐 방지 (땅에 있을 때만 속도 감쇠)
+            if (mov1.isGrounded)
+                rb1.linearVelocity = new Vector2(Mathf.Lerp(rb1.linearVelocity.x, 0f, Time.fixedDeltaTime * 10f), rb1.linearVelocity.y);
+            if (mov2.isGrounded)
+                rb2.linearVelocity = new Vector2(Mathf.Lerp(rb2.linearVelocity.x, 0f, Time.fixedDeltaTime * 10f), rb2.linearVelocity.y);
 
             return true;
         }
