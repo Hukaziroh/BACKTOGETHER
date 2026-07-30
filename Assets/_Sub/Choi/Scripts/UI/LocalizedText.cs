@@ -14,12 +14,12 @@ public class LocalizedText : MonoBehaviour
     [TextArea] public string russianText;
 
     [Header("가독성 보정 설정 (영어 메인폰트 전용)")]
-    public float englishDilate = 0f;          // 뭉개지지 않도록 기본값 0 기준 조절
-    public float englishOutlineThickness = 0.4f; // 깔끔한 테두리 두께
+    public float englishDilate = 1f;          // 뭉개지지 않도록 기본값 0 기준 조절
+    public float englishOutlineThickness = 1; // 깔끔한 테두리 두께
 
     [Header("기본 가독성 설정 (다국어/폴백폰트용)")]
-    public float defaultDilate = 0f;
-    public float defaultOutlineThickness = 0.1f;
+    public float defaultDilate = 1f;
+    public float defaultOutlineThickness = 1;
 
     void Awake()
     {

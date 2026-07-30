@@ -32,7 +32,7 @@ public class GlobalSceneInputManager : MonoBehaviour
         SceneManager.sceneLoaded += OnSceneLoaded;
 
         // ★ [키보드 전용 설정] 게임 시작 시 마우스 커서 숨기기 및 잠금
-        LockAndHideCursor();
+        //LockAndHideCursor();
     }
 
     private void OnDestroy()
@@ -51,27 +51,27 @@ public class GlobalSceneInputManager : MonoBehaviour
         _temporarilyDisabled.Clear();
 
         // 씬이 넘어갈 때도 마우스 숨김 상태 유지
-        LockAndHideCursor();
+        //LockAndHideCursor();
 
         RefreshAllSelectables();
     }
 
     // ★ [마우스 제어 함수] 마우스를 보이지 않게 하고 화면 중앙에 고정
-    private void LockAndHideCursor()
-    {
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
-    }
+    //private void LockAndHideCursor()
+    //{
+    //    Cursor.visible = false;
+    //    Cursor.lockState = CursorLockMode.Locked;
+    //}
 
     private void Update()
     {
         if (EventSystem.current == null) return;
 
-        // ★ [추가 방어] 사용자가 마우스를 건드려서 마우스 커서가 켜지거나 풀리는 것을 강제로 차단
-        if (Cursor.visible || Cursor.lockState != CursorLockMode.Locked)
-        {
-            LockAndHideCursor();
-        }
+        //// ★ [추가 방어] 사용자가 마우스를 건드려서 마우스 커서가 켜지거나 풀리는 것을 강제로 차단
+        //if (Cursor.visible || Cursor.lockState != CursorLockMode.Locked)
+        //{
+        //    LockAndHideCursor();
+        //}
 
         // ★ [추가] 이모지 메뉴가 열려있는 동안에는 전역 포커스 리셋 로직이 간섭하지 않도록 차단
         if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())

@@ -96,7 +96,14 @@ public class UIManager : MonoBehaviour
         // ★ 씬이 넘어갈 때 옵션 패널이나 퍼즈 패널이 켜져있다면 강제로 닫고 게임 상태 정상화
         if (optionsManager != null && optionsManager.optionsPanel != null && optionsManager.optionsPanel.activeSelf)
         {
-            pauseManager?.CloseOptions();
+            if (scene.name == mainSceneName)
+            {
+                optionsManager.Close();
+            }
+            else
+            {
+                pauseManager?.CloseOptions();
+            }
         }
 
         if (pauseManager != null && pauseManager.isPaused)
@@ -125,19 +132,6 @@ public class UIManager : MonoBehaviour
         if ((Keyboard.current != null && Keyboard.current.tKey.isPressed) ||
             (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen()))
         {
-            return;
-        }
-
-        // 0. 언어 설정 패널이 켜져 있는 경우: 언어 패널을 닫고 옵션 패널을 다시 엶
-        if (LocalizationController.Instance != null &&
-            LocalizationController.Instance.languagePanel != null &&
-            LocalizationController.Instance.languagePanel.activeSelf)
-        {
-            LocalizationController.Instance.CloseLanguagePanel();
-            if (optionsManager != null)
-            {
-                optionsManager.Open();
-            }
             return;
         }
 

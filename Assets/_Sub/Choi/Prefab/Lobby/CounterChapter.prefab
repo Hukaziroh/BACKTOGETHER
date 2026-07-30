@@ -271,8 +271,8 @@ MonoBehaviour:
   japaneseText: "\u30C1\u30E3\u30D7\u30BF\u30FC"
   chineseText: "\u7AE0"
   russianText: "\u0413\u043B\u0430\u0432\u0430"
-  englishDilate: 0
-  englishOutlineThickness: 0.4
+  englishDilate: 1
+  englishOutlineThickness: 1
   defaultDilate: 1
   defaultOutlineThickness: 1
 --- !u!1 &8543456486082391716
