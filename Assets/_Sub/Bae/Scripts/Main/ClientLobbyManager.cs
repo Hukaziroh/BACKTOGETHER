@@ -12,20 +12,24 @@ public class ClientLobbyManager : MonoBehaviour
 {
     [Header("UI 패널 연결")]
     [SerializeField] private GameObject mainPanel;             // 메인 화면
-    [SerializeField] private GameObject clientSelectionPanel;  // [Public / Private] 선택 팝업
+    [SerializeField] private GameObject clientSelectionPanel;  // [Public / Private / Quick Join] 선택 팝업
     [SerializeField] private GameObject clientPublicPanel;     // 퍼블릭 방 리스트 화면
     [SerializeField] private GameObject clientPrivatePanel;    // 프라이빗 코드 입력 화면 (기존 패널)
 
-    [Header("메인 & 패널 버튼 연결")]
+    [Header("선택 패널 버튼 연결 (Client Selection)")]
     [SerializeField] private Button mainClientButton;          // 메인 화면의 [CLIENT] 버튼
-    [SerializeField] private Button selectPublicModeButton;    // 팝업 내 [Public] 버튼
-    [SerializeField] private Button selectPrivateModeButton;   // 팝업 내 [Private] 버튼
+    [SerializeField] private Button selectPublicModeButton;    // 팝업 내 [Public (방 리스트)] 버튼
+    [SerializeField] private Button selectPrivateModeButton;   // 팝업 내 [Private (코드 입력)] 버튼
+    [SerializeField] private Button quickJoinSelectionButton;  // 팝업 내 [Quick Join (빠른 입장)] 버튼
 
     [Header("퍼블릭 방 리스트 - 상단 컨트롤")]
     [SerializeField] private TMP_InputField searchInputField;  // 방 이름 검색창
-    [SerializeField] private TMP_Dropdown chapterFilterDropdown; // 챕터 정렬/필터 (All, 1, 2, 3, 4, 5, 6)
     [SerializeField] private Button researchButton;            // 리서치(새로고침) 버튼
-    [SerializeField] private Button quickJoinButton;           // 빠른 입장 버튼
+
+    [Header("퍼블릭 방 리스트 - 챕터 필터 (좌우 조작)")]
+    [SerializeField] private TextMeshProUGUI chapterFilterText;  // 필터 텍스트 (ALL, Chapter 1...)
+    [SerializeField] private Button prevChapterFilterButton;     // 왼쪽 화살표 <
+    [SerializeField] private Button nextChapterFilterButton;     // 오른쪽 화살표 >
 
     [Header("퍼블릭 방 리스트 - 화면 및 페이징")]
     [SerializeField] private Transform roomListParent;         // 8개 방 프리팹이 생성될 부모 Grid
@@ -50,23 +54,36 @@ public class ClientLobbyManager : MonoBehaviour
     private const int ROOMS_PER_PAGE = 8;
     private int currentPage = 0;
 
+    // 내부 제어 변수
+    private int currentChapterFilter = 0; // 0 = ALL, 1~6 = Chapter 1~6
+    private bool isQuickJoining = false;  // Quick Join을 눌러서 검색 중인지 여부
+
     private void Start()
     {
         // 이벤트 연결
         if (mainClientButton != null) mainClientButton.onClick.AddListener(OnClick_OpenClientSelectionPanel);
+
+        // 선택 패널 3가지 버튼 연결
         if (selectPublicModeButton != null) selectPublicModeButton.onClick.AddListener(OnClick_OpenPublicPanel);
         if (selectPrivateModeButton != null) selectPrivateModeButton.onClick.AddListener(OnClick_OpenPrivatePanel);
+        if (quickJoinSelectionButton != null) quickJoinSelectionButton.onClick.AddListener(OnClick_QuickJoinSelection);
 
-        if (researchButton != null) researchButton.onClick.AddListener(RefreshLobbyList);
-        if (quickJoinButton != null) quickJoinButton.onClick.AddListener(OnClick_QuickJoin);
+        // 퍼블릭 컨트롤 버튼 연결
+        if (researchButton != null) researchButton.onClick.AddListener(OnClick_Research);
         if (prevPageButton != null) prevPageButton.onClick.AddListener(OnClick_PrevPage);
         if (nextPageButton != null) nextPageButton.onClick.AddListener(OnClick_NextPage);
+
+        // 챕터 필터 좌우 버튼 연결
+        if (prevChapterFilterButton != null) prevChapterFilterButton.onClick.AddListener(OnClick_PrevChapterFilter);
+        if (nextChapterFilterButton != null) nextChapterFilterButton.onClick.AddListener(OnClick_NextChapterFilter);
+
+        // 프라이빗 입장 버튼
         if (joinPrivateButton != null) joinPrivateButton.onClick.AddListener(OnClick_JoinPrivateRoom);
 
-        // 검색/필터 값이 바뀔 때마다 즉시 리스트 필터링
+        // 검색어 입력 시 즉시 필터링
         if (searchInputField != null) searchInputField.onValueChanged.AddListener(delegate { ApplyFilters(); });
-        if (chapterFilterDropdown != null) chapterFilterDropdown.onValueChanged.AddListener(delegate { ApplyFilters(); });
 
+        UpdateChapterFilterUI();
         CloseAllPanels();
     }
 
@@ -109,6 +126,7 @@ public class ClientLobbyManager : MonoBehaviour
     {
         CloseAllPanels();
         if (clientPublicPanel != null) clientPublicPanel.SetActive(true);
+        isQuickJoining = false;
         RefreshLobbyList(); // 퍼블릭 패널을 열 때 자동으로 방 검색
     }
 
@@ -119,15 +137,29 @@ public class ClientLobbyManager : MonoBehaviour
     }
     #endregion
 
-    #region --- 퍼블릭 방 리스트 및 검색/필터 로직 ---
+    #region --- 로비 검색 및 퀵 조인(Quick Join) 로직 ---
+
+    public void OnClick_Research()
+    {
+        isQuickJoining = false;
+        RefreshLobbyList();
+    }
+
+    public void OnClick_QuickJoinSelection()
+    {
+        isQuickJoining = true;
+        SetInteractableAll(false);
+        RefreshLobbyList(); // 백그라운드에서 방 리스트 검색 시작
+    }
+
     public void RefreshLobbyList()
     {
         if (eosLobby == null) return;
 
         if (loadingText != null) loadingText.SetActive(true);
-        ClearRoomListUI();
+        if (!isQuickJoining) ClearRoomListUI();
 
-        // 오직 "PUBLIC" 방만 가져옵니다
+        // "PUBLIC" 속성인 방만 서버에 검색 요청
         LobbySearchSetParameterOptions[] searchOptions = new LobbySearchSetParameterOptions[]
         {
             new LobbySearchSetParameterOptions { ComparisonOp = ComparisonOp.Equal, Parameter = new AttributeData { Key = "ROOM_TYPE", Value = "PUBLIC" } }
@@ -140,23 +172,109 @@ public class ClientLobbyManager : MonoBehaviour
     {
         if (loadingText != null) loadingText.SetActive(false);
         allFetchedLobbies = lobbies ?? new List<LobbyDetails>();
-        ApplyFilters(); // 데이터가 들어오면 필터 적용 후 화면 업데이트
+
+        if (isQuickJoining)
+        {
+            ProcessQuickJoin();
+        }
+        else
+        {
+            ApplyFilters(); // 일반 검색이면 리스트 화면 업데이트
+        }
     }
 
     private void OnFindLobbiesFailed(string error)
     {
         if (loadingText != null) loadingText.SetActive(false);
         allFetchedLobbies.Clear();
-        ApplyFilters();
-        ShowError("방 목록을 불러오지 못했습니다.");
+        SetInteractableAll(true);
+
+        if (isQuickJoining)
+        {
+            isQuickJoining = false;
+            ShowError("빠른 입장을 위한 방을 찾을 수 없습니다.");
+        }
+        else
+        {
+            ApplyFilters();
+            ShowError("방 목록을 불러오지 못했습니다.");
+        }
     }
+
+    private void ProcessQuickJoin()
+    {
+        isQuickJoining = false; // 플래그 리셋
+
+        // 인원이 꽉 차지 않은 방만 걸러냄
+        var availableRooms = allFetchedLobbies.Where(lobby =>
+        {
+            uint currentMembers = lobby.GetMemberCount(new LobbyDetailsGetMemberCountOptions());
+            uint maxMembers = 4;
+
+            LobbyDetailsInfo lobbyInfo;
+            if (lobby.CopyInfo(new LobbyDetailsCopyInfoOptions(), out lobbyInfo) == Epic.OnlineServices.Result.Success)
+            {
+                maxMembers = lobbyInfo.MaxMembers;
+            }
+
+            return currentMembers < maxMembers;
+        }).ToList();
+
+        if (availableRooms.Count > 0)
+        {
+            // 빈 방들 중에서 완전히 무작위(Random)로 하나 선택
+            int randomIndex = Random.Range(0, availableRooms.Count);
+            JoinRoom(availableRooms[randomIndex]);
+        }
+        else
+        {
+            SetInteractableAll(true);
+            ShowError("현재 입장 가능한 퍼블릭 방이 없습니다.");
+        }
+    }
+
+    #endregion
+
+    #region --- 챕터 필터 (좌우 버튼 조작) ---
+
+    public void OnClick_PrevChapterFilter()
+    {
+        if (currentChapterFilter > 0)
+        {
+            currentChapterFilter--;
+            UpdateChapterFilterUI();
+            ApplyFilters(); // 값 변경 시 즉시 필터 적용
+        }
+    }
+
+    public void OnClick_NextChapterFilter()
+    {
+        if (currentChapterFilter < 6)
+        {
+            currentChapterFilter++;
+            UpdateChapterFilterUI();
+            ApplyFilters();
+        }
+    }
+
+    private void UpdateChapterFilterUI()
+    {
+        if (chapterFilterText != null)
+        {
+            chapterFilterText.text = currentChapterFilter == 0 ? "ALL" : $"Chapter {currentChapterFilter}";
+        }
+
+        if (prevChapterFilterButton != null) prevChapterFilterButton.interactable = (currentChapterFilter > 0);
+        if (nextChapterFilterButton != null) nextChapterFilterButton.interactable = (currentChapterFilter < 6);
+    }
+
+    #endregion
+
+    #region --- 퍼블릭 방 리스트 출력 (필터 및 페이징) ---
 
     private void ApplyFilters()
     {
         string searchKeyword = searchInputField != null ? searchInputField.text.Trim().ToLower() : "";
-
-        // Dropdown 0번이 "All" 이고, 1번이 "Ch.1" 이라고 가정
-        int targetChapter = chapterFilterDropdown != null ? chapterFilterDropdown.value : 0;
 
         filteredLobbies = allFetchedLobbies.Where(lobby =>
         {
@@ -166,14 +284,12 @@ public class ClientLobbyManager : MonoBehaviour
             Attribute attr;
             if (lobby.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "ROOM_NAME" }, out attr) == Epic.OnlineServices.Result.Success)
             {
-                if (attr.Data != null)
-                    roomName = attr.Data.Value.AsUtf8.ToLower();
+                if (attr.Data != null) roomName = attr.Data.Value.AsUtf8.ToLower();
             }
 
             if (lobby.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "CHAPTER" }, out attr) == Epic.OnlineServices.Result.Success)
             {
-                if (attr.Data != null)
-                    chapterStr = attr.Data.Value.AsUtf8;
+                if (attr.Data != null) chapterStr = attr.Data.Value.AsUtf8;
             }
 
             // 1. 방 이름 검색 (포함되어 있는지)
@@ -181,7 +297,7 @@ public class ClientLobbyManager : MonoBehaviour
                 return false;
 
             // 2. 챕터 필터 (0이면 전체보기, 아니면 해당 챕터만)
-            if (targetChapter != 0 && chapterStr != targetChapter.ToString())
+            if (currentChapterFilter != 0 && chapterStr != currentChapterFilter.ToString())
                 return false;
 
             return true; // 조건 통과
@@ -236,44 +352,16 @@ public class ClientLobbyManager : MonoBehaviour
 
     #endregion
 
-    #region --- 입장 기능 (Quick Join / 선택 입장 / 코드 입장) ---
+    #region --- 방 입장 (선택 입장 / 프라이빗 코드 입장) ---
 
     // 선택된 퍼블릭 방 입장
     private void JoinRoom(LobbyDetails lobby)
     {
         if (eosLobby != null)
         {
-            Debug.Log("[Client] 퍼블릭 방 입장을 시도합니다.");
+            Debug.Log("[Client] 선택된 방에 입장을 시도합니다.");
             SetInteractableAll(false);
             eosLobby.JoinLobby(lobby);
-        }
-    }
-
-    // 빠른 입장 (Quick Join)
-    public void OnClick_QuickJoin()
-    {
-        var availableRoom = filteredLobbies.FirstOrDefault(lobby =>
-        {
-            uint currentMembers = lobby.GetMemberCount(new LobbyDetailsGetMemberCountOptions());
-            uint maxMembers = 4;
-
-            LobbyDetailsInfo lobbyInfo;
-            if (lobby.CopyInfo(new LobbyDetailsCopyInfoOptions(), out lobbyInfo) == Epic.OnlineServices.Result.Success)
-            {
-                // .HasValue, .Value 없이 직접 접근
-                maxMembers = lobbyInfo.MaxMembers;
-            }
-
-            return currentMembers < maxMembers;
-        });
-
-        if (availableRoom != null)
-        {
-            JoinRoom(availableRoom);
-        }
-        else
-        {
-            ShowError("현재 입장 가능한 방이 없습니다.");
         }
     }
 
@@ -321,7 +409,9 @@ public class ClientLobbyManager : MonoBehaviour
 
     private void SetInteractableAll(bool interactable)
     {
-        if (quickJoinButton != null) quickJoinButton.interactable = interactable;
+        if (selectPublicModeButton != null) selectPublicModeButton.interactable = interactable;
+        if (selectPrivateModeButton != null) selectPrivateModeButton.interactable = interactable;
+        if (quickJoinSelectionButton != null) quickJoinSelectionButton.interactable = interactable;
         if (researchButton != null) researchButton.interactable = interactable;
         if (joinPrivateButton != null) joinPrivateButton.interactable = interactable;
     }

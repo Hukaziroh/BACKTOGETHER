@@ -10,21 +10,24 @@ using UnityEngine.InputSystem;
 public class PrivateLobbyManager : MonoBehaviour
 {
     [Header("UI 패널 연결")]
-    [SerializeField] private GameObject mainPanel;             // 메인 화면 패널
-    [SerializeField] private GameObject hostSelectionPanel;    // [Public / Private] 선택 패널
-    [SerializeField] private GameObject publicSettingsPanel;   // Public 방 설정 패널 (방이름, 챕터선택)
+    [SerializeField] private GameObject hostPanel;              // [HOST] 클릭 시 뜨는 설정 패널 (사진 속 패널)
 
-    [Header("메인 & 패널 버튼 연결")]
-    [SerializeField] private Button mainHostButton;            // 메인 화면의 [HOST] 버튼
-    [SerializeField] private Button selectPublicModeButton;    // 패널 내 [Public 방 생성] 선택 버튼
-    [SerializeField] private Button selectPrivateModeButton;   // 패널 내 [Private 방 생성] 선택 버튼
-    [SerializeField] private Button createPublicLobbyButton;   // Public 방 설정 완료 후 [방 생성] 실행 버튼
+    [Header("메인 & 실행 버튼 연결")]
+    [SerializeField] private Button mainHostButton;           // 메인 화면의 [HOST] 버튼
+    [SerializeField] private Button makeRoomButton;            // 패널 안의 [MAKE ROOM] 버튼
 
-    [Header("UI 연결 - 퍼블릭 방 설정")]
-    [SerializeField] private TMP_InputField roomNameInputField;  // 방 이름 입력창
-    [SerializeField] private TextMeshProUGUI chapterDisplayText; // 선택된 챕터 표시 텍스트
-    [SerializeField] private Button prevChapterButton;           // < (이전 챕터) 버튼
-    [SerializeField] private Button nextChapterButton;           // > (다음 챕터) 버튼
+    [Header("UI 연결 - 방 설정 (패널 내부)")]
+    [SerializeField] private TMP_InputField roomNameInputField; // 방 이름 입력창 (ROOM TITLE)
+
+    [Header("챕터 선택 UI (< Chapter 1 >)")]
+    [SerializeField] private TextMeshProUGUI chapterDisplayText; // 선택된 챕터 글자
+    [SerializeField] private Button prevChapterButton;          // 챕터 왼쪽 화살표 <
+    [SerializeField] private Button nextChapterButton;          // 챕터 오른쪽 화살표 >
+
+    [Header("방 타입 선택 UI (< Public / Private >)")]
+    [SerializeField] private TextMeshProUGUI roomTypeDisplayText; // 선택된 타입 글자 ("Public" 또는 "Private")
+    [SerializeField] private Button prevRoomTypeButton;         // 타입 왼쪽 화살표 <
+    [SerializeField] private Button nextRoomTypeButton;         // 타입 오른쪽 화살표 >
 
     [Header("로딩 UI 연결 (비워두어도 자동 탐색됩니다)")]
     [SerializeField] private GameObject loadingPanel;
@@ -41,19 +44,19 @@ public class PrivateLobbyManager : MonoBehaviour
     public static string currentShortCode = "";
     public static string currentRoomName = "";
     public static int currentChapter = 1;
-    public static bool isCurrentLobbyPublic = false;
+    public static bool isCurrentLobbyPublic = true;
 
-    // 내부 챕터 제어 변수
+    // 내부 제어 변수
     private int selectedChapterIndex = 1;
     private const int MAX_CHAPTER = 6;
+    private bool isPublicSelected = true; // true = Public, false = Private
 
     private void Start()
     {
         SetAllButtonsInteractable(false);
 
-        // 패널 초기화 (메인 패널만 켜고 선택 패널들은 끔)
-        if (hostSelectionPanel != null) hostSelectionPanel.SetActive(false);
-        if (publicSettingsPanel != null) publicSettingsPanel.SetActive(false);
+        // 시작 시 설정 패널 비활성화
+        if (hostPanel != null) hostPanel.SetActive(false);
 
         // 로딩 패널 자동 확보 및 비활성화
         GameObject panel = GetLoadingPanel();
@@ -66,16 +69,21 @@ public class PrivateLobbyManager : MonoBehaviour
             errorConfirmButton.onClick.AddListener(OnClick_ReturnToMain);
         }
 
-        // 패널 내 버튼 리스너 자동 연결
-        if (mainHostButton != null) mainHostButton.onClick.AddListener(OnClick_OpenHostSelectionPanel);
-        if (selectPublicModeButton != null) selectPublicModeButton.onClick.AddListener(OnClick_SelectPublicMode);
-        if (selectPrivateModeButton != null) selectPrivateModeButton.onClick.AddListener(OnClick_SelectPrivateMode);
-        if (createPublicLobbyButton != null) createPublicLobbyButton.onClick.AddListener(OnStartPublicHostClicked);
+        // 버튼 리스너 자동 연결
+        if (mainHostButton != null) mainHostButton.onClick.AddListener(OnClick_OpenHostPanel);
+        if (makeRoomButton != null) makeRoomButton.onClick.AddListener(OnClick_MakeRoom);
 
-        // 챕터 좌우 버튼 리스너 연결
+        // 챕터 화살표 버튼 리스너 연결
         if (prevChapterButton != null) prevChapterButton.onClick.AddListener(OnClick_PrevChapter);
         if (nextChapterButton != null) nextChapterButton.onClick.AddListener(OnClick_NextChapter);
+
+        // 방 타입 화살표 버튼 리스너 연결
+        if (prevRoomTypeButton != null) prevRoomTypeButton.onClick.AddListener(ToggleRoomType);
+        if (nextRoomTypeButton != null) nextRoomTypeButton.onClick.AddListener(ToggleRoomType);
+
+        // UI 텍스트 초기화
         UpdateChapterUI();
+        UpdateRoomTypeUI();
 
         StartCoroutine(WaitForEpicLoginRoutine());
     }
@@ -94,13 +102,13 @@ public class PrivateLobbyManager : MonoBehaviour
             return;
         }
 
-        // 2. 키보드 방향키/AD 조작으로 챕터 넘기기
-        // 조건: 방 이름 입력창 입력 중이 아닐 때 && 퍼블릭 설정 패널이 켜져 있을 때
+        // 2. 키보드 방향키/AD 조작 (방 이름 타이핑 중이 아니고, 설정 패널이 켜져 있을 때)
         bool isTyping = roomNameInputField != null && roomNameInputField.isFocused;
-        bool isPublicPanelActive = publicSettingsPanel != null && publicSettingsPanel.activeSelf;
+        bool isHostPanelActive = hostPanel != null && hostPanel.activeSelf;
 
-        if (!isTyping && isPublicPanelActive)
+        if (!isTyping && isHostPanelActive)
         {
+            // A/D 또는 좌우 화살표로 챕터 변경
             if (Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame)
             {
                 OnClick_PrevChapter();
@@ -109,49 +117,54 @@ public class PrivateLobbyManager : MonoBehaviour
             {
                 OnClick_NextChapter();
             }
+
+            // W/S 또는 위아래 화살표로 Public <-> Private 전환
+            if (Keyboard.current.upArrowKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame ||
+                Keyboard.current.downArrowKey.wasPressedThisFrame || Keyboard.current.sKey.wasPressedThisFrame)
+            {
+                ToggleRoomType();
+            }
         }
     }
 
-    #region --- UI 패널 전환 로직 ---
+    #region --- UI 패널 및 토글 제어 ---
 
     /// <summary>
-    /// 메인 화면에서 [HOST] 버튼 클릭 시 호출
+    /// [HOST] 버튼 클릭 시 설정 패널 열기
     /// </summary>
-    public void OnClick_OpenHostSelectionPanel()
+    public void OnClick_OpenHostPanel()
     {
-        if (hostSelectionPanel != null) hostSelectionPanel.SetActive(true);
-        if (publicSettingsPanel != null) publicSettingsPanel.SetActive(false);
+        if (hostPanel != null) hostPanel.SetActive(true);
     }
 
     /// <summary>
-    /// 선택 패널에서 [Public] 버튼 클릭 시 호출
+    /// 패널 닫기 (뒤로가기 버튼 등에 연결)
     /// </summary>
-    public void OnClick_SelectPublicMode()
+    public void OnClick_CloseHostPanel()
     {
-        if (hostSelectionPanel != null) hostSelectionPanel.SetActive(false);
-        if (publicSettingsPanel != null) publicSettingsPanel.SetActive(true);
+        if (hostPanel != null) hostPanel.SetActive(false);
     }
 
     /// <summary>
-    /// 선택 패널에서 [Private] 버튼 클릭 시 호출 -> 바로 프라이빗 방 생성
+    /// Room Type 토글 (Public <-> Private)
     /// </summary>
-    public void OnClick_SelectPrivateMode()
+    public void ToggleRoomType()
     {
-        OnStartPrivateHostClicked();
+        isPublicSelected = !isPublicSelected;
+        UpdateRoomTypeUI();
     }
 
-    /// <summary>
-    /// 뒤로가기 버튼 클릭 시 호출 (패널 닫기)
-    /// </summary>
-    public void OnClick_CloseHostPanels()
+    private void UpdateRoomTypeUI()
     {
-        if (hostSelectionPanel != null) hostSelectionPanel.SetActive(false);
-        if (publicSettingsPanel != null) publicSettingsPanel.SetActive(false);
+        if (roomTypeDisplayText != null)
+        {
+            roomTypeDisplayText.text = isPublicSelected ? "Public" : "Private";
+        }
     }
 
     #endregion
 
-    #region --- 챕터 선택 (좌우 넘기기) 로직 ---
+    #region --- 챕터 선택 (좌우 넘기기) ---
 
     public void OnClick_PrevChapter()
     {
@@ -187,9 +200,7 @@ public class PrivateLobbyManager : MonoBehaviour
     private void SetAllButtonsInteractable(bool interactable)
     {
         if (mainHostButton != null) mainHostButton.interactable = interactable;
-        if (selectPublicModeButton != null) selectPublicModeButton.interactable = interactable;
-        if (selectPrivateModeButton != null) selectPrivateModeButton.interactable = interactable;
-        if (createPublicLobbyButton != null) createPublicLobbyButton.interactable = interactable;
+        if (makeRoomButton != null) makeRoomButton.interactable = interactable;
     }
 
     private GameObject GetLoadingPanel()
@@ -233,9 +244,12 @@ public class PrivateLobbyManager : MonoBehaviour
         SetAllButtonsInteractable(true);
     }
 
-    #region --- EOS 방 생성 트리거 ---
+    #region --- 방 생성 (MAKE ROOM) 실행 ---
 
-    public void OnStartPublicHostClicked()
+    /// <summary>
+    /// [MAKE ROOM] 버튼 클릭 시 실행
+    /// </summary>
+    public void OnClick_MakeRoom()
     {
         string roomTitle = "즐거운 게임 방";
         if (roomNameInputField != null && !string.IsNullOrEmpty(roomNameInputField.text))
@@ -244,13 +258,7 @@ public class PrivateLobbyManager : MonoBehaviour
         }
 
         SetAllButtonsInteractable(false);
-        StartCoroutine(CleanAndCreateLobbyRoutine(isPublic: true, roomName: roomTitle, chapter: selectedChapterIndex));
-    }
-
-    public void OnStartPrivateHostClicked()
-    {
-        SetAllButtonsInteractable(false);
-        StartCoroutine(CleanAndCreateLobbyRoutine(isPublic: false, roomName: "", chapter: 1));
+        StartCoroutine(CleanAndCreateLobbyRoutine(isPublic: isPublicSelected, roomName: roomTitle, chapter: selectedChapterIndex));
     }
 
     #endregion
