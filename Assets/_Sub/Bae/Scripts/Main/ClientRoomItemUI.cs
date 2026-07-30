@@ -69,11 +69,17 @@ public class ClientRoomItemUI : MonoBehaviour
         }
     }
 
+    // ClientRoomItemUI.cs의 OnJoinButtonClicked 내부
     private void OnJoinButtonClicked()
     {
+        Debug.Log("[UI] 방 입장 버튼 클릭됨!");
         if (targetLobby != null)
         {
             onJoinCallback?.Invoke(targetLobby);
+        }
+        else
+        {
+            Debug.LogError("[UI] targetLobby가 null입니다!");
         }
     }
 }
