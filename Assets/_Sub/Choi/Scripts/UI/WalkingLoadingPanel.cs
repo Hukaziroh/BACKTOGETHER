@@ -7,6 +7,9 @@ using System.Collections;
 
 public class WalkingLoadingPanel : MonoBehaviour
 {
+    // ★ 4번 문제 해결을 위해 추가된 싱글톤 인스턴스 (어디서든 즉시 접근 가능)
+    public static WalkingLoadingPanel Instance { get; private set; }
+
     [Header("UI 연결")]
     [Tooltip("로딩바 이미지 (Image Type = Filled, Fill Method = Horizontal 로 설정)")]
     [SerializeField] private Image progressBar;
@@ -49,10 +52,30 @@ public class WalkingLoadingPanel : MonoBehaviour
 
     private void Awake()
     {
+        // ★ 싱글톤 등록 로직 추가
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else if (Instance != this)
+        {
+            Destroy(gameObject); // 이미 존재하면 파괴
+            return;
+        }
+
         // 씬이 넘어가도 파괴되지 않고 유지되도록 설정 (최상단 루트 오브젝트여야 함)
         if (transform.parent == null)
         {
             DontDestroyOnLoad(gameObject);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        // ★ 싱글톤 해제 로직 추가 (파괴될 때)
+        if (Instance == this)
+        {
+            Instance = null;
         }
     }
 

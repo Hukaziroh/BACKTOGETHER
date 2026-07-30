@@ -1,6 +1,10 @@
 using UnityEngine;
 using System.IO;
-using static Stove.PCSDK.Base; 
+
+// ★ STOVE 빌드일 때만 스토브 SDK 네임스페이스를 참조합니다.
+#if STOVE_BUILD
+using static Stove.PCSDK.Base;
+#endif
 
 public class GameSaveManager : MonoBehaviour
 {
@@ -28,31 +32,45 @@ public class GameSaveManager : MonoBehaviour
             return;
         }
 
-        saveFilePath = GetStoveCloudSavePath();
+        saveFilePath = GetSaveFilePath();
 
         LoadGame();
     }
 
     /// <summary>
-    /// 스토브 SDK를 통해 클라우드 경로를 받아오고, 실패 시 기본 경로로 대체합니다.
+    /// 플랫폼 환경에 맞는 세이브 파일 경로를 가져옵니다.
+    /// 스토브 빌드에서는 SDK 클라우드 경로를 받아오고, 실패하거나 스팀 빌드인 경우 기본 LocalLow 경로를 사용합니다.
     /// </summary>
-    private string GetStoveCloudSavePath()
+    private string GetSaveFilePath()
     {
-        string cloudPath = string.Empty;
-        uint length = 512;
+        string saveFileName = "PicoSaveData.json";
 
-        Result result = Base_GetCloudSavingPath(ref cloudPath, length);
-
-        if (result.IsSuccessful() && !string.IsNullOrEmpty(cloudPath))
+#if STOVE_BUILD
+        if (StovePCSDK3Manager.InstanceExists && StovePCSDK3Manager.Instance.isInitialized)
         {
-            Debug.Log("[Stove] 스토브 클라우드 세이브 경로 획득 성공: " + cloudPath);
-            return Path.Combine(cloudPath, "PicoSaveData.json");
+            string cloudPath = string.Empty;
+            uint length = 512;
+
+            Result result = Base_GetCloudSavingPath(ref cloudPath, length);
+
+            if (result.IsSuccessful() && !string.IsNullOrEmpty(cloudPath))
+            {
+                Debug.Log("[Stove] 스토브 클라우드 세이브 경로 획득 성공: " + cloudPath);
+                return Path.Combine(cloudPath, saveFileName);
+            }
+            else
+            {
+                Debug.LogWarning("[Stove] 클라우드 경로 획득 실패. 기본 LocalLow 경로를 사용합니다.");
+            }
         }
         else
         {
-            Debug.LogWarning("[Stove] 클라우드 경로 획득 실패 (에디터 테스트 중이거나 런처 미연동). 기본 LocalLow 경로를 사용합니다.");
-            return Path.Combine(Application.persistentDataPath, "PicoSaveData.json");
+            Debug.LogWarning("[Stove] StovePCSDK3Manager가 초기화되지 않아 기본 LocalLow 경로를 사용합니다.");
         }
+#endif
+
+        // 스팀 빌드(STEAM_BUILD) 또는 스토브 경로 획득 실패 시 기본 LocalLow 경로 반환
+        return Path.Combine(Application.persistentDataPath, saveFileName);
     }
 
     public void ClearChapter(int chapterNumber)
