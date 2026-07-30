@@ -53,8 +53,8 @@ public class ClientLobbyManager : MonoBehaviour
 
     private int currentPage = 0;
     private const int itemsPerPage = 8;
-    private int selectedFilterChapter = 0; // 0 = All
-
+    private int selectedFilterChapter = 0;
+    private bool isQuickJoining = false;
     private EOSLobby GetEOSLobby()
     {
         if (eosLobby == null && NetworkManager.singleton != null)
@@ -102,6 +102,10 @@ public class ClientLobbyManager : MonoBehaviour
         if (clientPrivatePanel != null) clientPrivatePanel.SetActive(false);
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
         if (loadingText != null) loadingText.SetActive(false);
+
+        // 메인 패널은 켜둠
+        if (mainPanel != null) mainPanel.SetActive(true);
+
         UpdateFilterChapterUI();
     }
     private void OnDisable() { UnsubscribeEvents(); }
@@ -111,6 +115,9 @@ public class ClientLobbyManager : MonoBehaviour
     public void OnClick_MainClient()
     {
         SubscribeEvents();
+
+        // ★ 메인화면을 끄고 Client 모드 선택창(Public/Private/QuickJoin)을 켭니다.
+        if (mainPanel != null) mainPanel.SetActive(false);
         if (clientSelectionPanel != null) clientSelectionPanel.SetActive(true);
     }
 
@@ -120,7 +127,7 @@ public class ClientLobbyManager : MonoBehaviour
         if (clientSelectionPanel != null) clientSelectionPanel.SetActive(false);
         if (clientPublicPanel != null) clientPublicPanel.SetActive(true);
 
-        OnClick_Research(); // 퍼블릭 패널 열릴 때 바로 방 검색!
+        OnClick_Research();
     }
 
     public void OnClick_SelectPrivateMode()
@@ -130,9 +137,24 @@ public class ClientLobbyManager : MonoBehaviour
         if (clientPrivatePanel != null) clientPrivatePanel.SetActive(true);
     }
 
-    public void OnClick_CloseSelectionPanel() { if (clientSelectionPanel != null) clientSelectionPanel.SetActive(false); }
-    public void OnClick_ClosePublicPanel() { if (clientPublicPanel != null) clientPublicPanel.SetActive(false); }
-    public void OnClick_ClosePrivatePanel() { if (clientPrivatePanel != null) clientPrivatePanel.SetActive(false); }
+    // ★ 닫기 버튼들 처리: 닫을 때 이전 단계 패널을 다시 켜줍니다.
+    public void OnClick_CloseSelectionPanel()
+    {
+        if (clientSelectionPanel != null) clientSelectionPanel.SetActive(false);
+        if (mainPanel != null) mainPanel.SetActive(true); // 메인화면 복구
+    }
+
+    public void OnClick_ClosePublicPanel()
+    {
+        if (clientPublicPanel != null) clientPublicPanel.SetActive(false);
+        if (clientSelectionPanel != null) clientSelectionPanel.SetActive(true); // 선택창 복구
+    }
+
+    public void OnClick_ClosePrivatePanel()
+    {
+        if (clientPrivatePanel != null) clientPrivatePanel.SetActive(false);
+        if (clientSelectionPanel != null) clientSelectionPanel.SetActive(true); // 선택창 복구
+    }
 
     #endregion
 
@@ -152,7 +174,6 @@ public class ClientLobbyManager : MonoBehaviour
         SetInteractableAll(false);
         if (loadingText != null) loadingText.SetActive(true);
 
-        // ★ 핵심: 퍼블릭 방(IS_PUBLIC = 1)만 검색
         LobbySearchSetParameterOptions[] searchOptions = new LobbySearchSetParameterOptions[]
         {
             new LobbySearchSetParameterOptions
@@ -171,11 +192,36 @@ public class ClientLobbyManager : MonoBehaviour
         if (loadingText != null) loadingText.SetActive(false);
 
         allFetchedLobbies = lobbies ?? new List<LobbyDetails>();
+
+        // ★ 빠른 참가 버튼을 눌렀을 때의 동작
+        if (isQuickJoining)
+        {
+            isQuickJoining = false;
+
+            // 검색된 방 중 인원이 꽉 차지 않은 첫 번째 방 찾기
+            foreach (var lobby in allFetchedLobbies)
+            {
+                if (EOSLobby.IsLobbyJoinable(lobby, out uint currentMembers, out uint maxMembers))
+                {
+                    Debug.Log($"[QuickJoin] 빈 방 발견! ({currentMembers}/{maxMembers}) 즉시 입장합니다.");
+                    JoinRoom(lobby);
+                    return;
+                }
+            }
+
+            // 빈 방이 없다면
+            ShowError("현재 입장 가능한 퍼블릭 방이 없습니다.");
+            return;
+        }
+
+        // 일반 검색일 경우 리스트 새로고침
         ApplyFiltersAndRefresh();
     }
 
     private void OnFindLobbiesFailed(string error)
     {
+        isQuickJoining = false; // ★ 플래그 초기화
+
         SetInteractableAll(true);
         if (loadingText != null) loadingText.SetActive(false);
         ShowError("방 목록을 불러오지 못했습니다: " + error);
@@ -373,5 +419,35 @@ public class ClientLobbyManager : MonoBehaviour
     public void OnClick_CloseErrorPopup()
     {
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
+    }
+
+    public void OnClick_QuickJoin()
+    {
+        SubscribeEvents();
+
+        var lobby = GetEOSLobby();
+        if (lobby == null)
+        {
+            ShowError("네트워크 시스템이 준비되지 않았습니다.");
+            return;
+        }
+
+        SetInteractableAll(false);
+        if (loadingText != null) loadingText.SetActive(true);
+
+        // 1. 퍼블릭 방이면서
+        // 2. 남은 자리가 있는 방만 검색하도록 필터를 걸어 에픽 서버에 요청
+        LobbySearchSetParameterOptions[] searchOptions = new LobbySearchSetParameterOptions[]
+        {
+            new LobbySearchSetParameterOptions
+            {
+                ComparisonOp = ComparisonOp.Equal,
+                Parameter = new AttributeData { Key = "IS_PUBLIC", Value = "1" }
+            }
+        };
+
+        // 빠른 참가를 위해 내부적으로 검색 중임을 표시하는 플래그
+        isQuickJoining = true;
+        lobby.FindLobbies(50, searchOptions);
     }
 }
