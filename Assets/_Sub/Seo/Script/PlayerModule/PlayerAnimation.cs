@@ -21,6 +21,7 @@ public class PlayerAnimation : NetworkBehaviour
     [SyncVar(hook = nameof(OnDirectionChanged))]
     public float syncDirectionX = 1f;
 
+
     void Awake()
     {
         controller = GetComponent<PlayerController>();
@@ -51,6 +52,16 @@ public class PlayerAnimation : NetworkBehaviour
         syncStunned = controller.knockback.IsStunned;
 
         float input = controller.input.HorizontalInput;
+
+        // 🌟 [추가된 부분] 리버스 존(좌우 반전) 기믹 적용
+        // 무브먼트 쪽과 동일하게, 역방향 구역이라면 애니메이션 방향용 입력값도 뒤집어줍니다.
+        if (controller.currentReverseZone != null && !controller.currentReverseZone.isForward)
+        {
+            if (input != 0)
+            {
+                input *= -1f;
+            }
+        }
 
         // 기절 상태가 아니고 입력이 있을 때만 방향 갱신
         if (input != 0 && !controller.knockback.IsStunned)
