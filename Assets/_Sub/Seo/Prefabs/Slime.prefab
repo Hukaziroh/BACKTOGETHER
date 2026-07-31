@@ -178,6 +178,11 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   moveSpeed: 3
+  groundCheckDistance: 0.7
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  rayCheckPoint: {fileID: 0}
 --- !u!61 &4541630980296700560
 BoxCollider2D:
   m_ObjectHideFlags: 0
