@@ -16,14 +16,27 @@ public class ChapterBlocker : NetworkBehaviour
     public bool isOpen = false;
     public override void OnStartServer()
     {
+        int maxCleared = 0;
         if (GameSaveManager.Instance != null)
         {
-            int maxCleared = GameSaveManager.Instance.currentData.maxClearedChapter;
-            if (maxCleared >= targetChapterNumber - 1)
-            {
-                Debug.Log($"[ChapterBlocker] {targetChapterNumber} 챕터 개방 조건 달성!");
-                isOpen = true;
-            }
+            maxCleared = GameSaveManager.Instance.currentData.maxClearedChapter;
+        }
+        int roomSelectedChapter = PrivateLobbyManager.selectedChapter;
+
+        // =========================================================================
+        // 🌟 챕터 벽 개방 조건 (2가지를 모두 만족해야 함):
+        // 1. 방장이 이 챕터 직전까지 클리어한 기록이 있는가? (maxCleared >= targetChapterNumber - 1)
+        // 2. 방장이 이번 방을 설정할 때 이 챕터 이하로 선택했는가? (targetChapterNumber <= roomSelectedChapter)
+        // =========================================================================
+        if (maxCleared >= targetChapterNumber - 1 && targetChapterNumber <= roomSelectedChapter)
+        {
+            Debug.Log($"[ChapterBlocker] {targetChapterNumber} 챕터 개방! (클리어 기록: {maxCleared}, 선택한 챕터: {roomSelectedChapter})");
+            isOpen = true;
+        }
+        else
+        {
+            Debug.Log($"[ChapterBlocker] {targetChapterNumber} 챕터 잠금! (클리어 기록: {maxCleared}, 선택한 챕터: {roomSelectedChapter})");
+            isOpen = false;
         }
     }
 

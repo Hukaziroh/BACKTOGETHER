@@ -56,7 +56,7 @@ public class PrivateLobbyManager : MonoBehaviour
     private bool isSubscribed = false;
 
     public static string currentShortCode = "";
-
+    public static int selectedChapter = 1;
     private int selectedChapterIndex = 1;
     private int maxChapterCount = 6;
     private bool isPublicRoom = true;
@@ -333,6 +333,8 @@ public class PrivateLobbyManager : MonoBehaviour
     {
         SubscribeEvents();
         if (isCreatingLobby) return;
+
+        selectedChapter = selectedChapterIndex;
 
         var lobby = GetEOSLobby();
         if (lobby == null)
