@@ -126,10 +126,24 @@ public class ClientLobbyManager : MonoBehaviour
             }
         }
 
+        // 인풋 필드 작성 완료(엔터/포커스 해제) 시 다시 interactable = false 처리
+        if (searchInputField != null)
+        {
+            searchInputField.onEndEdit.AddListener(OnSearchInputEndEdit);
+        }
+
         UpdateFilterChapterUI();
     }
 
-    private void OnDisable() { UnsubscribeEvents(); }
+    private void OnDisable()
+    {
+        UnsubscribeEvents();
+
+        if (searchInputField != null)
+        {
+            searchInputField.onEndEdit.RemoveListener(OnSearchInputEndEdit);
+        }
+    }
 
     private void Update()
     {
@@ -138,9 +152,10 @@ public class ClientLobbyManager : MonoBehaviour
         GameObject selected = EventSystem.current.currentSelectedGameObject;
         if (selected == null) return;
 
-        // 퍼블릭 로비 패널 활성화 시 챕터 필터 좌우 입력 조작
+        // 퍼블릭 로비 패널 활성화 시
         if (clientPublicPanel != null && clientPublicPanel.activeSelf)
         {
+            // 1. 챕터 필터 좌우 입력 조작
             bool isFilterChapterSelected = (chapterFilterSelectObject != null && selected == chapterFilterSelectObject) ||
                                            (filterChapterText != null && (selected == filterChapterText.gameObject || selected == filterChapterText.transform.parent.gameObject)) ||
                                            (prevFilterChapterButton != null && selected == prevFilterChapterButton.gameObject) ||
@@ -159,7 +174,37 @@ public class ClientLobbyManager : MonoBehaviour
                         OnClick_NextFilterChapter();
                     }
                 }
+                return;
             }
+
+            // ★ 2. 검색 인풋 필드 선택 후 엔터 키 입력 시 활성화
+            if (searchInputField != null)
+            {
+                bool isInputFieldSelected = (selected == searchInputField.gameObject) ||
+                                            (selected == searchInputField.transform.parent?.gameObject);
+
+                if (isInputFieldSelected && Keyboard.current != null)
+                {
+                    if (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.numpadEnterKey.wasPressedThisFrame)
+                    {
+                        if (!searchInputField.interactable)
+                        {
+                            searchInputField.interactable = true;
+                            searchInputField.ActivateInputField();
+                            searchInputField.Select();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void OnSearchInputEndEdit(string text)
+    {
+        // 텍스트 입력 완료 후 비활성화 상태로 복귀
+        if (searchInputField != null)
+        {
+            searchInputField.interactable = false;
         }
     }
 
@@ -184,9 +229,12 @@ public class ClientLobbyManager : MonoBehaviour
     {
         SubscribeEvents();
 
+        // 퍼블릭 모드 진입 시 인풋 필드 기본 interactable = false 및 텍스트 비우기
         if (searchInputField != null)
         {
             searchInputField.text = string.Empty;
+            searchInputField.interactable = false;
+            searchInputField.DeactivateInputField();
         }
         selectedFilterChapter = 0;
         UpdateFilterChapterUI();
