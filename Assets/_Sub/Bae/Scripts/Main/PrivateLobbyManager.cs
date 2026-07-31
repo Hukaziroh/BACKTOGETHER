@@ -15,6 +15,7 @@ public class PrivateLobbyManager : MonoBehaviour
     [Header("UI 패널 연결")]
     [SerializeField] private GameObject mainPanel;
     [SerializeField] private GameObject hostPanel;
+    [SerializeField] private GameObject logo;
 
     [Header("메인 & 실행 버튼 연결")]
     [SerializeField] private Button mainHostButton;
@@ -24,13 +25,15 @@ public class PrivateLobbyManager : MonoBehaviour
     [SerializeField] private TMP_InputField roomNameInputField;
 
     [Header("챕터 선택 UI (< Chapter 1 >)")]
-    [SerializeField] private GameObject chapterSelectObject; // ★ 추가: Chapter Select 부모 오브젝트
+    [SerializeField] private GameObject chapterSelectObject;
     [SerializeField] private TextMeshProUGUI chapterDisplayText;
     [SerializeField] private Button prevChapterButton;
     [SerializeField] private Button nextChapterButton;
+    [SerializeField] private Image chapterPreviewImage;      // 챕터 이미지 UI Component
+    [SerializeField] private Sprite[] chapterSprites;        // 챕터별 Sprite 이미지 배열
 
     [Header("방 타입 선택 UI (< Public / Private >)")]
-    [SerializeField] private GameObject roomTypeSelectObject; // ★ 추가: Room Type Select 부모 오브젝트
+    [SerializeField] private GameObject roomTypeSelectObject;
     [SerializeField] private TextMeshProUGUI roomTypeDisplayText;
     [SerializeField] private Button prevRoomTypeButton;
     [SerializeField] private Button nextRoomTypeButton;
@@ -129,7 +132,7 @@ public class PrivateLobbyManager : MonoBehaviour
         GameObject selected = EventSystem.current.currentSelectedGameObject;
         if (selected == null) return;
 
-        // 1. Chapter Select 오브젝트(부모 오브젝트 또는 텍스트)가 선택되어 있는 경우
+        // 1. Chapter Select 오브젝트가 선택되어 있는 경우
         bool isChapterSelected = (chapterSelectObject != null && selected == chapterSelectObject) ||
                                  (chapterDisplayText != null && (selected == chapterDisplayText.gameObject || selected == chapterDisplayText.transform.parent.gameObject)) ||
                                  (prevChapterButton != null && selected == prevChapterButton.gameObject) ||
@@ -151,7 +154,7 @@ public class PrivateLobbyManager : MonoBehaviour
             return;
         }
 
-        // 2. Room Type Select 오브젝트(부모 오브젝트 또는 텍스트)가 선택되어 있는 경우
+        // 2. Room Type Select 오브젝트가 선택되어 있는 경우
         bool isRoomTypeSelected = (roomTypeSelectObject != null && selected == roomTypeSelectObject) ||
                                   (roomTypeDisplayText != null && (selected == roomTypeDisplayText.gameObject || selected == roomTypeDisplayText.transform.parent.gameObject)) ||
                                   (prevRoomTypeButton != null && selected == prevRoomTypeButton.gameObject) ||
@@ -178,6 +181,7 @@ public class PrivateLobbyManager : MonoBehaviour
         SubscribeEvents();
 
         if (mainPanel != null) mainPanel.SetActive(false);
+        if (logo != null) logo.SetActive(false);
         if (hostPanel != null) hostPanel.SetActive(true);
 
         if (GlobalSceneInputManager.Instance != null)
@@ -203,6 +207,15 @@ public class PrivateLobbyManager : MonoBehaviour
     private void UpdateChapterUI()
     {
         if (chapterDisplayText != null) chapterDisplayText.text = $"Chapter {selectedChapterIndex}";
+
+        if (chapterPreviewImage != null && chapterSprites != null && chapterSprites.Length > 0)
+        {
+            int spriteIndex = selectedChapterIndex - 1;
+            if (spriteIndex >= 0 && spriteIndex < chapterSprites.Length)
+            {
+                chapterPreviewImage.sprite = chapterSprites[spriteIndex];
+            }
+        }
     }
 
     public void OnClick_PrevRoomType()
@@ -220,6 +233,12 @@ public class PrivateLobbyManager : MonoBehaviour
     private void UpdateRoomTypeUI()
     {
         if (roomTypeDisplayText != null) roomTypeDisplayText.text = isPublicRoom ? "Public" : "Private";
+
+        // Public일 때 Interactable = true / Private일 때 Interactable = false
+        if (roomNameInputField != null)
+        {
+            roomNameInputField.interactable = isPublicRoom;
+        }
     }
 
     public void OnClick_MakeRoom()
@@ -385,6 +404,7 @@ public class PrivateLobbyManager : MonoBehaviour
     public void OnClick_ReturnToMain()
     {
         if (hostPanel != null) hostPanel.SetActive(false);
+        if (logo != null) logo.SetActive(true);
         if (mainPanel != null)
         {
             mainPanel.SetActive(true);
