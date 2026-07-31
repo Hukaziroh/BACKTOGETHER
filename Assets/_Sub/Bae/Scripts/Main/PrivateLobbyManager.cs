@@ -31,6 +31,9 @@ public class PrivateLobbyManager : MonoBehaviour
     [SerializeField] private Button nextChapterButton;
     [SerializeField] private Image chapterPreviewImage;      // 챕터 이미지 UI Component
     [SerializeField] private Sprite[] chapterSprites;        // 챕터별 Sprite 이미지 배열
+    
+    [Header("챕터 잠금 UI")]
+    [SerializeField] private GameObject chapterLockObject;
 
     [Header("방 타입 선택 UI (< Public / Private >)")]
     [SerializeField] private GameObject roomTypeSelectObject;
@@ -249,15 +252,56 @@ public class PrivateLobbyManager : MonoBehaviour
 
     private void UpdateChapterUI()
     {
-        if (chapterDisplayText != null) chapterDisplayText.text = $"Chapter {selectedChapterIndex}";
+        // 올려주신 코드의 변수명(selectedChapterIndex)에 맞게 수정했습니다.
+        // selectedChapterIndex는 1~6의 값을 가집니다.
+        int displayChapter = selectedChapterIndex;
+        int arrayIndex = selectedChapterIndex - 1; // 배열 및 세이브 데이터 비교용 (0~5)
 
-        if (chapterPreviewImage != null && chapterSprites != null && chapterSprites.Length > 0)
+        if (chapterDisplayText != null)
         {
-            int spriteIndex = selectedChapterIndex - 1;
-            if (spriteIndex >= 0 && spriteIndex < chapterSprites.Length)
+            chapterDisplayText.text = $"Chapter {displayChapter}";
+        }
+
+        // 챕터 이미지 배열 적용
+        if (chapterPreviewImage != null && chapterSprites != null && chapterSprites.Length > arrayIndex)
+        {
+            chapterPreviewImage.sprite = chapterSprites[arrayIndex];
+        }
+
+        // ==========================================
+        // 🌟 챕터 잠금 여부 확인 로직
+        // ==========================================
+        bool isUnlocked = true;
+
+        if (GameSaveManager.Instance != null)
+        {
+            // maxClearedChapter가 0이면 -> 챕터1(arrayIndex 0)만 플레이 가능
+            // maxClearedChapter가 1이면 -> 챕터2(arrayIndex 1)까지 플레이 가능
+            int maxCleared = GameSaveManager.Instance.currentData.maxClearedChapter;
+
+            // 클리어한 수치보다 현재 보려는 챕터의 인덱스가 더 높으면 잠금 처리
+            if (maxCleared < arrayIndex)
             {
-                chapterPreviewImage.sprite = chapterSprites[spriteIndex];
+                isUnlocked = false;
             }
+        }
+
+        // 1. 자물쇠 UI 켜기/끄기
+        if (chapterLockObject != null)
+        {
+            chapterLockObject.SetActive(!isUnlocked);
+        }
+
+        // 2. 방 만들기 버튼 활성화/비활성화
+        if (makeRoomButton != null)
+        {
+            makeRoomButton.interactable = isUnlocked;
+        }
+
+        // 3. (보너스 연출) 잠겨있을 때 챕터 이미지를 어둡게 처리
+        if (chapterPreviewImage != null)
+        {
+            chapterPreviewImage.color = isUnlocked ? Color.white : new Color(0.3f, 0.3f, 0.3f, 1f);
         }
     }
 
