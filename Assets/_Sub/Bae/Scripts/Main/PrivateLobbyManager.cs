@@ -119,11 +119,24 @@ public class PrivateLobbyManager : MonoBehaviour
             }
         }
 
+        // 인풋 필드 작성 완료(엔터/포커스 해제) 시 다시 interactable = false 처리
+        if (roomNameInputField != null)
+        {
+            roomNameInputField.onEndEdit.AddListener(OnRoomNameEndEdit);
+        }
+
         UpdateChapterUI();
         UpdateRoomTypeUI();
     }
 
-    private void OnDisable() { UnsubscribeEvents(); }
+    private void OnDisable()
+    {
+        UnsubscribeEvents();
+        if (roomNameInputField != null)
+        {
+            roomNameInputField.onEndEdit.RemoveListener(OnRoomNameEndEdit);
+        }
+    }
 
     private void Update()
     {
@@ -173,6 +186,36 @@ public class PrivateLobbyManager : MonoBehaviour
                     OnClick_NextRoomType();
                 }
             }
+            return;
+        }
+
+        // ★ 3. 퍼블릭 방 모드일 때 인풋 필드 선택 후 엔터 키 입력 시 활성화
+        if (isPublicRoom && roomNameInputField != null)
+        {
+            bool isInputFieldSelected = (selected == roomNameInputField.gameObject) ||
+                                        (selected == roomNameInputField.transform.parent?.gameObject);
+
+            if (isInputFieldSelected && Keyboard.current != null)
+            {
+                if (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.numpadEnterKey.wasPressedThisFrame)
+                {
+                    if (!roomNameInputField.interactable)
+                    {
+                        roomNameInputField.interactable = true;
+                        roomNameInputField.ActivateInputField();
+                        roomNameInputField.Select();
+                    }
+                }
+            }
+        }
+    }
+
+    private void OnRoomNameEndEdit(string text)
+    {
+        // 텍스트 입력 완료 후 비활성화 상태로 복귀
+        if (roomNameInputField != null)
+        {
+            roomNameInputField.interactable = false;
         }
     }
 
@@ -234,10 +277,11 @@ public class PrivateLobbyManager : MonoBehaviour
     {
         if (roomTypeDisplayText != null) roomTypeDisplayText.text = isPublicRoom ? "Public" : "Private";
 
-        // Public일 때 Interactable = true / Private일 때 Interactable = false
+        // 퍼블릭/프라이빗 관계없이 기본적으로 interactable = false 설정 (엔터 입력 시 활성화)
         if (roomNameInputField != null)
         {
-            roomNameInputField.interactable = isPublicRoom;
+            roomNameInputField.interactable = false;
+            roomNameInputField.DeactivateInputField();
         }
     }
 
