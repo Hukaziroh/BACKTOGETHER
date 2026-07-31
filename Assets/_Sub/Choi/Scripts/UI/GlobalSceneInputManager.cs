@@ -20,7 +20,7 @@ public class GlobalSceneInputManager : MonoBehaviour
     // 포커스 범위 및 하이라이트 실시간 추적 변수
     private GameObject _currentFocusScope = null;
     private List<Selectable> _temporarilyDisabled = new List<Selectable>();
-    private GameObject _lastSelectedObject = null; // 현재 하이라이트된 오브젝트 추적용
+    private GameObject _lastSelectedObject = null;
 
     private void Awake()
     {
@@ -54,6 +54,7 @@ public class GlobalSceneInputManager : MonoBehaviour
         _temporarilyDisabled.Clear();
 
         LockAndHideCursor();
+        ClearAllHighlights(); // 씬 진입 시 전 하이라이트 초기화
         RefreshAllSelectables();
     }
 
@@ -81,11 +82,8 @@ public class GlobalSceneInputManager : MonoBehaviour
         GameObject currentSelected = EventSystem.current.currentSelectedGameObject;
         if (currentSelected != _lastSelectedObject)
         {
-            if (_lastSelectedObject != null)
-            {
-                Transform lastHighlight = FindHighlightTransform(_lastSelectedObject);
-                if (lastHighlight != null) lastHighlight.gameObject.SetActive(false);
-            }
+            // 포커스가 이동하면 이전/현재 외 전체 하이라이트 잔상까지 안전하게 정리
+            ClearAllHighlights();
 
             if (currentSelected != null && currentSelected.activeInHierarchy)
             {
@@ -185,8 +183,6 @@ public class GlobalSceneInputManager : MonoBehaviour
             }
         }
 
-        ForceClearHighlightsInScope(scopeRoot);
-
         RefreshAllSelectables();
 
         _isTransitioning = false;
@@ -201,11 +197,16 @@ public class GlobalSceneInputManager : MonoBehaviour
             if (sel != null) sel.interactable = true;
         }
         _temporarilyDisabled.Clear();
+
+        ClearAllHighlights(); // Scope 해제 시 씬 전체 하이라이트 초기화
     }
 
     public void RefreshAllSelectables()
     {
         if (EventSystem.current == null) return;
+
+        // 갱신 시점 전체 하이라이트 싹 지우기 (잔상 방지)
+        ClearAllHighlights();
 
         Selectable[] activeSelectables = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude);
         if (activeSelectables == null || activeSelectables.Length == 0) return;
@@ -242,13 +243,30 @@ public class GlobalSceneInputManager : MonoBehaviour
         GameObject firstObj = validList[0].gameObject;
         EventSystem.current.SetSelectedGameObject(firstObj);
 
-        // 첫 번째 선택 오브젝트의 Highlight 직접 활성화
+        // 첫 번째 선택 오브젝트의 Highlight만 활성화
         Transform highlight = FindHighlightTransform(firstObj);
         if (highlight != null)
         {
             highlight.gameObject.SetActive(true);
         }
         _lastSelectedObject = firstObj;
+    }
+
+    // 씬에 존재하는 모든 Selectable의 Highlight 자식 오브젝트를 꺼버리는 함수
+    private void ClearAllHighlights()
+    {
+        Selectable[] allSelectables = FindObjectsByType<Selectable>(FindObjectsInactive.Include);
+        foreach (var sel in allSelectables)
+        {
+            if (sel != null)
+            {
+                Transform highlight = FindHighlightTransform(sel.gameObject);
+                if (highlight != null)
+                {
+                    highlight.gameObject.SetActive(false);
+                }
+            }
+        }
     }
 
     private Transform FindHighlightTransform(GameObject obj)
@@ -263,19 +281,6 @@ public class GlobalSceneInputManager : MonoBehaviour
             }
         }
         return null;
-    }
-
-    private void ForceClearHighlightsInScope(GameObject scopeRoot)
-    {
-        if (scopeRoot == null) return;
-        Transform[] allChildren = scopeRoot.GetComponentsInChildren<Transform>(true);
-        foreach (var child in allChildren)
-        {
-            if (child != null && child.name.Equals("Highlight", System.StringComparison.OrdinalIgnoreCase))
-            {
-                child.gameObject.SetActive(false);
-            }
-        }
     }
 
     private GameObject FindBestRootPanel()
