@@ -1,13 +1,12 @@
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using TMPro;
 using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class WalkingLoadingPanel : MonoBehaviour
 {
-    // ★ 4번 문제 해결을 위해 추가된 싱글톤 인스턴스 (어디서든 즉시 접근 가능)
     public static WalkingLoadingPanel Instance { get; private set; }
 
     [Header("UI 연결")]
@@ -45,25 +44,30 @@ public class WalkingLoadingPanel : MonoBehaviour
     [Tooltip("뒤따라오는 캐릭터들 사이의 간격 (픽셀)")]
     [SerializeField] private float characterSpacing = 35f;
 
+    [Header("진행률 연출 설정")]
+    [Tooltip("대기 중일 때 목표 지점(90%)까지 도달하는 속도")]
+    [SerializeField] private float smoothApproachSpeed = 4.0f;
+    [Tooltip("씬 전환 완료 후 100%까지 채워지는 마무리 속도")]
+    [SerializeField] private float finishFillSpeed = 3.0f;
+
     private float currentProgress = 0f;
     private float animTimer = 0f;
     private int currentFrameIndex = 0;
     private bool isFinished = false;
+    private Coroutine finishCoroutine;
 
     private void Awake()
     {
-        // ★ 싱글톤 등록 로직 추가
         if (Instance == null)
         {
             Instance = this;
         }
         else if (Instance != this)
         {
-            Destroy(gameObject); // 이미 존재하면 파괴
+            Destroy(gameObject);
             return;
         }
 
-        // 씬이 넘어가도 파괴되지 않고 유지되도록 설정 (최상단 루트 오브젝트여야 함)
         if (transform.parent == null)
         {
             DontDestroyOnLoad(gameObject);
@@ -72,7 +76,6 @@ public class WalkingLoadingPanel : MonoBehaviour
 
     private void OnDestroy()
     {
-        // ★ 싱글톤 해제 로직 추가 (파괴될 때)
         if (Instance == this)
         {
             Instance = null;
@@ -86,29 +89,53 @@ public class WalkingLoadingPanel : MonoBehaviour
         ApplyCharacterColors();
         isFinished = false;
 
+        if (finishCoroutine != null)
+        {
+            StopCoroutine(finishCoroutine);
+            finishCoroutine = null;
+        }
+
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
+
+        if (finishCoroutine != null)
+        {
+            StopCoroutine(finishCoroutine);
+            finishCoroutine = null;
+        }
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // 새 씬이 로드되면 100%를 채우고 잠시 뒤 패널을 파괴함
         if (isFinished) return;
         isFinished = true;
 
-        StartCoroutine(FinishAndCloseRoutine());
+        if (finishCoroutine != null) StopCoroutine(finishCoroutine);
+        finishCoroutine = StartCoroutine(FinishAndCloseRoutine());
     }
 
+    // 100% 달성 및 시각적 연출 보장 코루틴
     private IEnumerator FinishAndCloseRoutine()
     {
-        SetProgress(1.0f);
-        yield return new WaitForSecondsRealtime(0.4f); // 새 씬 진입 후 잠시 대기
+        // 1. 현재 진행률에서 정확히 1.0f(100%)까지 완주
+        while (currentProgress < 1.0f)
+        {
+            currentProgress = Mathf.MoveTowards(currentProgress, 1.0f, Time.unscaledDeltaTime * finishFillSpeed);
+            SetProgress(currentProgress);
+            yield return null; // 매 프레임 UI 갱신
+        }
 
-        Destroy(gameObject); // 영구 유지되었던 로딩 패널 파괴
+        // 2. 명시적 100% 고정
+        SetProgress(1.0f);
+
+        // 3. 사용자가 100% 연출을 확인할 수 있도록 최소한의 시간 동안 화면 유지 후 닫기
+        yield return new WaitForSecondsRealtime(0.15f);
+
+        gameObject.SetActive(false);
     }
 
     private void Start()
@@ -131,12 +158,20 @@ public class WalkingLoadingPanel : MonoBehaviour
 
     private void Update()
     {
+        // 1. 걸음마 애니메이션
         animTimer += Time.unscaledDeltaTime;
         if (animTimer >= frameInterval)
         {
             animTimer = 0f;
             currentFrameIndex = (currentFrameIndex + 1) % 3;
             UpdateSpriteFrames();
+        }
+
+        // 2. 씬 전환 완료 전에는 최대 90%까지만 차오르도록 대기
+        if (!isFinished)
+        {
+            currentProgress = Mathf.Lerp(currentProgress, 1f, Time.unscaledDeltaTime * smoothApproachSpeed);
+            SetProgress(currentProgress);
         }
     }
 
