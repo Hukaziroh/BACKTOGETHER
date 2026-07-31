@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using System.Collections;
 using System.Collections.Generic;
 
 public class GlobalSceneInputManager : MonoBehaviour
@@ -10,14 +11,16 @@ public class GlobalSceneInputManager : MonoBehaviour
     public static GlobalSceneInputManager Instance => _instance;
 
     private bool _isResettingFocus = false;
+    private bool _isTransitioning = false;
 
     // 잠금 상태 관리 변수
     private bool _isLocked = false;
     private GameObject _lockedObject = null;
 
-    // 특정 팝업창 내부로만 포커스를 격리하기 위한 변수들
+    // 포커스 범위 및 하이라이트 실시간 추적 변수
     private GameObject _currentFocusScope = null;
     private List<Selectable> _temporarilyDisabled = new List<Selectable>();
+    private GameObject _lastSelectedObject = null; // 현재 하이라이트된 오브젝트 추적용
 
     private void Awake()
     {
@@ -31,8 +34,7 @@ public class GlobalSceneInputManager : MonoBehaviour
 
         SceneManager.sceneLoaded += OnSceneLoaded;
 
-        // ★ [키보드 전용 설정] 게임 시작 시 마우스 커서 숨기기 및 잠금
-        //LockAndHideCursor();
+        LockAndHideCursor();
     }
 
     private void OnDestroy()
@@ -45,38 +47,53 @@ public class GlobalSceneInputManager : MonoBehaviour
         _isLocked = false;
         _lockedObject = null;
         _isResettingFocus = false;
+        _isTransitioning = false;
+        _lastSelectedObject = null;
 
-        // 씬 전환 시 범위 제한 초기화
         _currentFocusScope = null;
         _temporarilyDisabled.Clear();
 
-        // 씬이 넘어갈 때도 마우스 숨김 상태 유지
-        //LockAndHideCursor();
-
+        LockAndHideCursor();
         RefreshAllSelectables();
     }
 
-    // ★ [마우스 제어 함수] 마우스를 보이지 않게 하고 화면 중앙에 고정
-    //private void LockAndHideCursor()
-    //{
-    //    Cursor.visible = false;
-    //    Cursor.lockState = CursorLockMode.Locked;
-    //}
+    private void LockAndHideCursor()
+    {
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+    }
 
     private void Update()
     {
         if (EventSystem.current == null) return;
 
-        //// ★ [추가 방어] 사용자가 마우스를 건드려서 마우스 커서가 켜지거나 풀리는 것을 강제로 차단
-        //if (Cursor.visible || Cursor.lockState != CursorLockMode.Locked)
-        //{
-        //    LockAndHideCursor();
-        //}
+        if (Cursor.visible || Cursor.lockState != CursorLockMode.Locked)
+        {
+            LockAndHideCursor();
+        }
 
-        // ★ [추가] 이모지 메뉴가 열려있는 동안에는 전역 포커스 리셋 로직이 간섭하지 않도록 차단
-        if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())
+        if ((EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen()) || _isTransitioning)
         {
             return;
+        }
+
+        // EventSystem의 선택 상태 변화를 실시간 감지하여 하이라이트 완벽 동기화
+        GameObject currentSelected = EventSystem.current.currentSelectedGameObject;
+        if (currentSelected != _lastSelectedObject)
+        {
+            if (_lastSelectedObject != null)
+            {
+                Transform lastHighlight = FindHighlightTransform(_lastSelectedObject);
+                if (lastHighlight != null) lastHighlight.gameObject.SetActive(false);
+            }
+
+            if (currentSelected != null && currentSelected.activeInHierarchy)
+            {
+                Transform newHighlight = FindHighlightTransform(currentSelected);
+                if (newHighlight != null) newHighlight.gameObject.SetActive(true);
+            }
+
+            _lastSelectedObject = currentSelected;
         }
 
         if (_isLocked)
@@ -94,9 +111,7 @@ public class GlobalSceneInputManager : MonoBehaviour
             return;
         }
 
-        GameObject selected = EventSystem.current.currentSelectedGameObject;
-
-        if (selected == null || !selected.activeInHierarchy)
+        if (currentSelected == null || !currentSelected.activeInHierarchy)
         {
             if (!_isResettingFocus)
             {
@@ -105,14 +120,13 @@ public class GlobalSceneInputManager : MonoBehaviour
         }
     }
 
-    private System.Collections.IEnumerator ResetFocusDelayed()
+    private IEnumerator ResetFocusDelayed()
     {
         _isResettingFocus = true;
         yield return null;
 
         if (EventSystem.current != null)
         {
-            // 리셋 대기 중에도 이모지 메뉴가 열렸다면 취소
             if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())
             {
                 _isResettingFocus = false;
@@ -129,168 +143,41 @@ public class GlobalSceneInputManager : MonoBehaviour
         _isResettingFocus = false;
     }
 
-    public void RefreshAllSelectables()
-    {
-        if (EventSystem.current == null) return;
-
-        Selectable[] activeSelectables = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude);
-
-        if (activeSelectables == null || activeSelectables.Length == 0) return;
-
-        List<Selectable> validList = new List<Selectable>();
-        foreach (var sel in activeSelectables)
-        {
-            if (sel != null && sel.interactable)
-            {
-                // 포커스 범위가 지정되어 있다면 해당 범위 내의 버튼만 유효 목록에 포함
-                if (_currentFocusScope != null && !sel.transform.IsChildOf(_currentFocusScope.transform))
-                {
-                    continue;
-                }
-
-                validList.Add(sel);
-                ConfigureTrigger(sel.gameObject);
-            }
-        }
-
-        if (validList.Count == 0) return;
-
-        // 스마트 정렬 시스템
-        validList.Sort((a, b) => {
-            Canvas canvasA = a.GetComponentInParent<Canvas>();
-            Canvas canvasB = b.GetComponentInParent<Canvas>();
-            int orderA = canvasA != null ? canvasA.sortingOrder : 0;
-            int orderB = canvasB != null ? canvasB.sortingOrder : 0;
-
-            if (orderA != orderB)
-            {
-                return orderB.CompareTo(orderA);
-            }
-
-            if (a.transform.parent != b.transform.parent)
-            {
-                Transform rootA = GetTopLevelPanel(a.transform, canvasA?.transform);
-                Transform rootB = GetTopLevelPanel(b.transform, canvasB?.transform);
-                if (rootA != null && rootB != null && rootA != rootB)
-                {
-                    return rootB.GetSiblingIndex().CompareTo(rootA.GetSiblingIndex());
-                }
-            }
-
-            if (a.transform.parent == b.transform.parent)
-            {
-                return a.transform.GetSiblingIndex().CompareTo(b.transform.GetSiblingIndex());
-            }
-
-            return b.transform.position.y.CompareTo(a.transform.position.y);
-        });
-
-        EventSystem.current.SetSelectedGameObject(null);
-        EventSystem.current.SetSelectedGameObject(validList[0].gameObject);
-
-        UpdateHighlights(activeSelectables);
-    }
-
-    private Transform GetTopLevelPanel(Transform child, Transform limit)
-    {
-        if (child == null) return null;
-        Transform current = child;
-        while (current.parent != null && current.parent != limit)
-        {
-            current = current.parent;
-        }
-        return current;
-    }
-
-    private void ConfigureTrigger(GameObject obj)
-    {
-        EventTrigger trigger = obj.GetComponent<EventTrigger>();
-        if (trigger == null) trigger = obj.AddComponent<EventTrigger>();
-
-        EventTrigger.Entry selectEntry = trigger.triggers.Find(e => e.eventID == EventTriggerType.Select);
-        if (selectEntry == null)
-        {
-            selectEntry = new EventTrigger.Entry { eventID = EventTriggerType.Select };
-            trigger.triggers.Add(selectEntry);
-        }
-
-        selectEntry.callback.RemoveAllListeners();
-        selectEntry.callback.AddListener((data) =>
-        {
-            Selectable[] currentActives = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude);
-            UpdateHighlights(currentActives);
-        });
-    }
-
-    private void UpdateHighlights(Selectable[] selectables)
-    {
-        if (EventSystem.current == null || selectables == null) return;
-
-        GameObject targetObj = (_is_Locked_Inline_Check()) ? _lockedObject : EventSystem.current.currentSelectedGameObject;
-
-        foreach (var sel in selectables)
-        {
-            if (sel == null) continue;
-
-            Transform highlight = sel.transform.Find("Highlight");
-            if (highlight != null)
-            {
-                highlight.gameObject.SetActive(sel.gameObject == targetObj);
-            }
-        }
-    }
-
-    private bool _is_Locked_Inline_Check()
-    {
-        return _isLocked && _lockedObject != null;
-    }
-
-    // 특정 패널(창) 내부로 포커스를 격리하고 배경을 얼리는 함수 (scopeRoot가 없거나 null이면 최상단 패널 자동 탐색)
     public void SetFocusScope(GameObject scopeRoot)
     {
-        // 💡 scopeRoot를 인자로 넘기지 않았거나 null인 경우, 현재 켜져 있는 버튼들 중 가장 최상단 패널을 자동으로 탐색
-        if (scopeRoot == null)
+        StartCoroutine(SetFocusScopeRoutine(scopeRoot));
+    }
+
+    private IEnumerator SetFocusScopeRoutine(GameObject scopeRoot)
+    {
+        _isTransitioning = true;
+
+        yield return null;
+
+        _lastSelectedObject = null;
+        if (EventSystem.current != null)
         {
-            Selectable[] allSelectables = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude);
-            GameObject bestRoot = null;
-            int highestOrder = int.MinValue;
-            int highestSibling = int.MinValue;
-
-            foreach (var sel in allSelectables)
-            {
-                if (sel != null && sel.gameObject.activeInHierarchy)
-                {
-                    Canvas canvas = sel.GetComponentInParent<Canvas>();
-                    int order = canvas != null ? canvas.sortingOrder : 0;
-                    Transform topPanel = GetTopLevelPanel(sel.transform, canvas?.transform);
-
-                    if (topPanel != null)
-                    {
-                        int sibling = topPanel.GetSiblingIndex();
-                        if (order > highestOrder || (order == highestOrder && sibling > highestSibling))
-                        {
-                            highestOrder = order;
-                            highestSibling = sibling;
-                            bestRoot = topPanel.gameObject;
-                        }
-                    }
-                }
-            }
-
-            scopeRoot = bestRoot != null ? bestRoot : (allSelectables.Length > 0 ? allSelectables[0].gameObject : null);
+            EventSystem.current.SetSelectedGameObject(null);
         }
 
-        if (scopeRoot == null) return;
+        ClearFocusScope();
 
-        ClearFocusScope(); // 기존 격리가 있다면 해제
+        if (scopeRoot == null)
+        {
+            scopeRoot = FindBestRootPanel();
+        }
+
+        if (scopeRoot == null)
+        {
+            _isTransitioning = false;
+            yield break;
+        }
 
         _currentFocusScope = scopeRoot;
 
-        // 현재 하이어라키에 켜져 있는 모든 버튼 탐색
         Selectable[] allSelectablesTarget = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude);
         foreach (var sel in allSelectablesTarget)
         {
-            // 지정한 창(scopeRoot)의 자식이 아니면서 현재 켜져 있는 버튼들만 비활성화 대상으로 지정
             if (sel != null && sel.interactable && !sel.transform.IsChildOf(scopeRoot.transform))
             {
                 sel.interactable = false;
@@ -298,22 +185,127 @@ public class GlobalSceneInputManager : MonoBehaviour
             }
         }
 
+        ForceClearHighlightsInScope(scopeRoot);
+
         RefreshAllSelectables();
+
+        _isTransitioning = false;
     }
 
-    // 격리를 해제하고 배경 버튼들을 원래대로 복구하는 함수
     public void ClearFocusScope()
     {
         _currentFocusScope = null;
 
-        // 일시정지 시켜두었던 배경 버튼들을 다시 interactable = true로 복구
         foreach (var sel in _temporarilyDisabled)
         {
             if (sel != null) sel.interactable = true;
         }
         _temporarilyDisabled.Clear();
+    }
 
-        RefreshAllSelectables();
+    public void RefreshAllSelectables()
+    {
+        if (EventSystem.current == null) return;
+
+        Selectable[] activeSelectables = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude);
+        if (activeSelectables == null || activeSelectables.Length == 0) return;
+
+        List<Selectable> validList = new List<Selectable>();
+        foreach (var sel in activeSelectables)
+        {
+            if (sel != null && sel.interactable)
+            {
+                if (_currentFocusScope != null && !sel.transform.IsChildOf(_currentFocusScope.transform))
+                {
+                    continue;
+                }
+
+                validList.Add(sel);
+            }
+        }
+
+        if (validList.Count == 0) return;
+
+        validList.Sort((a, b) => {
+            Canvas canvasA = a.GetComponentInParent<Canvas>();
+            Canvas canvasB = b.GetComponentInParent<Canvas>();
+            int orderA = canvasA != null ? canvasA.sortingOrder : 0;
+            int orderB = canvasB != null ? canvasB.sortingOrder : 0;
+
+            if (orderA != orderB) return orderB.CompareTo(orderA);
+            return CompareHierarchyOrder(a.transform, b.transform);
+        });
+
+        _lastSelectedObject = null;
+        EventSystem.current.SetSelectedGameObject(null);
+
+        GameObject firstObj = validList[0].gameObject;
+        EventSystem.current.SetSelectedGameObject(firstObj);
+
+        // 첫 번째 선택 오브젝트의 Highlight 직접 활성화
+        Transform highlight = FindHighlightTransform(firstObj);
+        if (highlight != null)
+        {
+            highlight.gameObject.SetActive(true);
+        }
+        _lastSelectedObject = firstObj;
+    }
+
+    private Transform FindHighlightTransform(GameObject obj)
+    {
+        if (obj == null) return null;
+        Transform[] transforms = obj.GetComponentsInChildren<Transform>(true);
+        foreach (var t in transforms)
+        {
+            if (t != null && t.name.Equals("Highlight", System.StringComparison.OrdinalIgnoreCase))
+            {
+                return t;
+            }
+        }
+        return null;
+    }
+
+    private void ForceClearHighlightsInScope(GameObject scopeRoot)
+    {
+        if (scopeRoot == null) return;
+        Transform[] allChildren = scopeRoot.GetComponentsInChildren<Transform>(true);
+        foreach (var child in allChildren)
+        {
+            if (child != null && child.name.Equals("Highlight", System.StringComparison.OrdinalIgnoreCase))
+            {
+                child.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    private GameObject FindBestRootPanel()
+    {
+        Selectable[] allSelectables = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude);
+        GameObject bestRoot = null;
+        int highestOrder = int.MinValue;
+        int highestSibling = int.MinValue;
+
+        foreach (var sel in allSelectables)
+        {
+            if (sel != null && sel.gameObject.activeInHierarchy)
+            {
+                Canvas canvas = sel.GetComponentInParent<Canvas>();
+                int order = canvas != null ? canvas.sortingOrder : 0;
+                Transform topPanel = GetTopLevelPanel(sel.transform, canvas?.transform);
+
+                if (topPanel != null)
+                {
+                    int sibling = topPanel.GetSiblingIndex();
+                    if (order > highestOrder || (order == highestOrder && sibling > highestSibling))
+                    {
+                        highestOrder = order;
+                        highestSibling = sibling;
+                        bestRoot = topPanel.gameObject;
+                    }
+                }
+            }
+        }
+        return bestRoot != null ? bestRoot : (allSelectables.Length > 0 ? allSelectables[0].gameObject : null);
     }
 
     public void LockUI(GameObject targetButton)
@@ -325,9 +317,6 @@ public class GlobalSceneInputManager : MonoBehaviour
         {
             EventSystem.current.SetSelectedGameObject(null);
         }
-
-        Selectable[] currentActives = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude);
-        UpdateHighlights(currentActives);
     }
 
     public void UnlockUI()
@@ -335,5 +324,45 @@ public class GlobalSceneInputManager : MonoBehaviour
         _isLocked = false;
         _lockedObject = null;
         RefreshAllSelectables();
+    }
+
+    private int CompareHierarchyOrder(Transform t1, Transform t2)
+    {
+        if (t1 == t2) return 0;
+        List<Transform> path1 = GetPathToRoot(t1);
+        List<Transform> path2 = GetPathToRoot(t2);
+
+        int commonLength = Mathf.Min(path1.Count, path2.Count);
+        for (int i = 0; i < commonLength; i++)
+        {
+            if (path1[i] != path2[i])
+            {
+                return path1[i].GetSiblingIndex().CompareTo(path2[i].GetSiblingIndex());
+            }
+        }
+        return path1.Count.CompareTo(path2.Count);
+    }
+
+    private List<Transform> GetPathToRoot(Transform t)
+    {
+        List<Transform> path = new List<Transform>();
+        Transform current = t;
+        while (current != null)
+        {
+            path.Insert(0, current);
+            current = current.parent;
+        }
+        return path;
+    }
+
+    private Transform GetTopLevelPanel(Transform child, Transform limit)
+    {
+        if (child == null) return null;
+        Transform current = child;
+        while (current.parent != null && current.parent != limit)
+        {
+            current = current.parent;
+        }
+        return current;
     }
 }

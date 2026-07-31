@@ -1,16 +1,17 @@
-using UnityEngine;
-using EpicTransport;
-using Mirror;
 using System.Collections;
 using System.Collections.Generic;
 using Epic.OnlineServices.Lobby;
-using UnityEngine.UI;
+using EpicTransport;
+using Mirror;
 using TMPro;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem; // 신형 입력 시스템
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class PrivateLobbyManager : MonoBehaviour
 {
-    // ★ 추가됨: 뒤로 가려져야 할 메인 화면 패널 연결
     [Header("UI 패널 연결")]
     [SerializeField] private GameObject mainPanel;
     [SerializeField] private GameObject hostPanel;
@@ -23,11 +24,13 @@ public class PrivateLobbyManager : MonoBehaviour
     [SerializeField] private TMP_InputField roomNameInputField;
 
     [Header("챕터 선택 UI (< Chapter 1 >)")]
+    [SerializeField] private GameObject chapterSelectObject; // ★ 추가: Chapter Select 부모 오브젝트
     [SerializeField] private TextMeshProUGUI chapterDisplayText;
     [SerializeField] private Button prevChapterButton;
     [SerializeField] private Button nextChapterButton;
 
     [Header("방 타입 선택 UI (< Public / Private >)")]
+    [SerializeField] private GameObject roomTypeSelectObject; // ★ 추가: Room Type Select 부모 오브젝트
     [SerializeField] private TextMeshProUGUI roomTypeDisplayText;
     [SerializeField] private Button prevRoomTypeButton;
     [SerializeField] private Button nextRoomTypeButton;
@@ -97,27 +100,90 @@ public class PrivateLobbyManager : MonoBehaviour
     }
 
     private void OnEnable() { SubscribeEvents(); }
+
     private void Start()
     {
         SubscribeEvents();
         if (hostPanel != null) hostPanel.SetActive(false);
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
 
-        // 메인 패널은 처음에 켜져 있어야 함
-        if (mainPanel != null) mainPanel.SetActive(true);
+        if (mainPanel != null)
+        {
+            mainPanel.SetActive(true);
+            if (GlobalSceneInputManager.Instance != null)
+            {
+                GlobalSceneInputManager.Instance.SetFocusScope(mainPanel);
+            }
+        }
 
         UpdateChapterUI();
         UpdateRoomTypeUI();
     }
+
     private void OnDisable() { UnsubscribeEvents(); }
+
+    private void Update()
+    {
+        if (EventSystem.current == null) return;
+
+        GameObject selected = EventSystem.current.currentSelectedGameObject;
+        if (selected == null) return;
+
+        // 1. Chapter Select 오브젝트(부모 오브젝트 또는 텍스트)가 선택되어 있는 경우
+        bool isChapterSelected = (chapterSelectObject != null && selected == chapterSelectObject) ||
+                                 (chapterDisplayText != null && (selected == chapterDisplayText.gameObject || selected == chapterDisplayText.transform.parent.gameObject)) ||
+                                 (prevChapterButton != null && selected == prevChapterButton.gameObject) ||
+                                 (nextChapterButton != null && selected == nextChapterButton.gameObject);
+
+        if (isChapterSelected)
+        {
+            if (Keyboard.current != null)
+            {
+                if (Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame)
+                {
+                    OnClick_PrevChapter();
+                }
+                else if (Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame)
+                {
+                    OnClick_NextChapter();
+                }
+            }
+            return;
+        }
+
+        // 2. Room Type Select 오브젝트(부모 오브젝트 또는 텍스트)가 선택되어 있는 경우
+        bool isRoomTypeSelected = (roomTypeSelectObject != null && selected == roomTypeSelectObject) ||
+                                  (roomTypeDisplayText != null && (selected == roomTypeDisplayText.gameObject || selected == roomTypeDisplayText.transform.parent.gameObject)) ||
+                                  (prevRoomTypeButton != null && selected == prevRoomTypeButton.gameObject) ||
+                                  (nextRoomTypeButton != null && selected == nextRoomTypeButton.gameObject);
+
+        if (isRoomTypeSelected)
+        {
+            if (Keyboard.current != null)
+            {
+                if (Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame)
+                {
+                    OnClick_PrevRoomType();
+                }
+                else if (Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame)
+                {
+                    OnClick_NextRoomType();
+                }
+            }
+        }
+    }
 
     public void OnClick_MainHost()
     {
         SubscribeEvents();
 
-        // ★ 메인 화면을 끄고, 호스트 패널을 켭니다.
         if (mainPanel != null) mainPanel.SetActive(false);
         if (hostPanel != null) hostPanel.SetActive(true);
+
+        if (GlobalSceneInputManager.Instance != null)
+        {
+            GlobalSceneInputManager.Instance.SetFocusScope(hostPanel);
+        }
     }
 
     public void OnClick_PrevChapter()
@@ -318,9 +384,16 @@ public class PrivateLobbyManager : MonoBehaviour
 
     public void OnClick_ReturnToMain()
     {
-        // ★ X나 Back 버튼을 누르면 다시 메인화면을 켭니다.
         if (hostPanel != null) hostPanel.SetActive(false);
-        if (mainPanel != null) mainPanel.SetActive(true);
+        if (mainPanel != null)
+        {
+            mainPanel.SetActive(true);
+
+            if (GlobalSceneInputManager.Instance != null)
+            {
+                GlobalSceneInputManager.Instance.SetFocusScope(mainPanel);
+            }
+        }
 
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
     }
