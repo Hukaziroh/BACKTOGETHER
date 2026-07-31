@@ -44,13 +44,18 @@ public class ClientLobbyManager : MonoBehaviour
     [SerializeField] private Button nextPageButton;
     [SerializeField] private TextMeshProUGUI pageText;
 
-    [Header("공통 로딩 & 에러 UI")]
-    [SerializeField] private GameObject loadingText;
+    [Header("로딩 UI 연결 (비워두어도 자동 탐색됩니다)")]
+    [SerializeField] private GameObject loadingPanel;
+
+    [Header("에러 팝업 UI 연결")]
     [SerializeField] private GameObject errorPopupPanel;
     [SerializeField] private TextMeshProUGUI errorMessageText;
 
     private EOSLobby eosLobby;
     private bool isSubscribed = false;
+
+    // 퍼블릭 리스트 검색 요청만 구분하기 위한 플래그
+    private bool isLocalSearchRequest = false;
 
     private List<LobbyDetails> allFetchedLobbies = new List<LobbyDetails>();
     private List<LobbyDetails> filteredLobbies = new List<LobbyDetails>();
@@ -107,7 +112,9 @@ public class ClientLobbyManager : MonoBehaviour
         if (clientPublicPanel != null) clientPublicPanel.SetActive(false);
         if (clientPrivatePanel != null) clientPrivatePanel.SetActive(false);
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
-        if (loadingText != null) loadingText.SetActive(false);
+
+        GameObject panel = GetLoadingPanel();
+        if (panel != null) panel.SetActive(false);
 
         // 메인(커넥트) 패널 활성화
         if (mainPanel != null)
@@ -177,7 +184,6 @@ public class ClientLobbyManager : MonoBehaviour
     {
         SubscribeEvents();
 
-        // ★ 퍼블릭 패널 진입 시 인풋 필드 및 챕터 필터 초기화
         if (searchInputField != null)
         {
             searchInputField.text = string.Empty;
@@ -213,7 +219,6 @@ public class ClientLobbyManager : MonoBehaviour
         }
     }
 
-    // ★ 커넥트(메인) 패널로 한 번에 돌아가는 백 버튼 전용 처리
     public void OnClick_ReturnToConnectPanel()
     {
         if (clientPublicPanel != null) clientPublicPanel.SetActive(false);
@@ -233,7 +238,6 @@ public class ClientLobbyManager : MonoBehaviour
         }
     }
 
-    // 단계별 닫기 버튼들
     public void OnClick_CloseSelectionPanel()
     {
         OnClick_ReturnToConnectPanel();
@@ -282,7 +286,6 @@ public class ClientLobbyManager : MonoBehaviour
         }
 
         SetInteractableAll(false);
-        if (loadingText != null) loadingText.SetActive(true);
 
         LobbySearchSetParameterOptions[] searchOptions = new LobbySearchSetParameterOptions[]
         {
@@ -293,14 +296,16 @@ public class ClientLobbyManager : MonoBehaviour
             }
         };
 
+        isLocalSearchRequest = true; // 퍼블릭 검색 요청 플래그 설정
         lobby.FindLobbies(50, searchOptions);
     }
 
     private void OnFindLobbiesSucceeded(List<LobbyDetails> lobbies)
     {
-        SetInteractableAll(true);
-        if (loadingText != null) loadingText.SetActive(false);
+        if (!isLocalSearchRequest) return; // 프라이빗 코드 검색 요청 등 다른 검색 결과면 무시
+        isLocalSearchRequest = false;
 
+        SetInteractableAll(true);
         allFetchedLobbies = lobbies ?? new List<LobbyDetails>();
 
         if (isQuickJoining)
@@ -326,10 +331,11 @@ public class ClientLobbyManager : MonoBehaviour
 
     private void OnFindLobbiesFailed(string error)
     {
-        isQuickJoining = false;
+        if (!isLocalSearchRequest) return;
+        isLocalSearchRequest = false;
 
+        isQuickJoining = false;
         SetInteractableAll(true);
-        if (loadingText != null) loadingText.SetActive(false);
         ShowError("방 목록을 불러오지 못했습니다: " + error);
     }
 
@@ -452,15 +458,12 @@ public class ClientLobbyManager : MonoBehaviour
         }
 
         SetInteractableAll(false);
-        if (loadingText != null) loadingText.SetActive(true);
-
         eos.JoinLobby(lobby);
     }
 
+    // ★ [핵심 수정] 퍼블릭/프라이빗 가리지 않고 EOSLobby를 통한 방 입장에 성공하면 무조건 화면 전환 및 StartClient 진행
     private void OnJoinLobbySucceeded(List<Epic.OnlineServices.Lobby.Attribute> attributes)
     {
-        if (loadingText != null) loadingText.SetActive(false);
-
         var eos = GetEOSLobby();
         if (eos != null && eos.ConnectedLobbyDetails != null)
         {
@@ -473,6 +476,14 @@ public class ClientLobbyManager : MonoBehaviour
                     EosTransport transport = NetworkManager.singleton.transport as EosTransport;
                     if (transport != null) transport.ResetIgnoreMessagesAtStartUpTimer();
 
+                    // 기존 로비 UI 패널 모두 끄기
+                    HideAllPanels();
+
+                    // 로딩 패널 활성화
+                    GameObject panel = GetLoadingPanel();
+                    if (panel != null) panel.SetActive(true);
+
+                    // Mirror 클라이언트 실행
                     NetworkManager.singleton.networkAddress = hostAddress;
                     NetworkManager.singleton.StartClient();
                     return;
@@ -487,11 +498,23 @@ public class ClientLobbyManager : MonoBehaviour
     private void OnJoinLobbyFailed(string error)
     {
         SetInteractableAll(true);
-        if (loadingText != null) loadingText.SetActive(false);
+
+        GameObject panel = GetLoadingPanel();
+        if (panel != null) panel.SetActive(false);
+
         ShowError("방 입장에 실패했습니다: " + error);
     }
 
     #endregion
+
+    private void HideAllPanels()
+    {
+        if (mainPanel != null) mainPanel.SetActive(false);
+        if (clientSelectionPanel != null) clientSelectionPanel.SetActive(false);
+        if (clientPublicPanel != null) clientPublicPanel.SetActive(false);
+        if (clientPrivatePanel != null) clientPrivatePanel.SetActive(false);
+        if (logo != null) logo.SetActive(false);
+    }
 
     private string GetLobbyAttribute(LobbyDetails lobby, string key, string defaultValue)
     {
@@ -513,6 +536,17 @@ public class ClientLobbyManager : MonoBehaviour
         if (nextPageButton != null) nextPageButton.interactable = interactable;
         if (prevFilterChapterButton != null) prevFilterChapterButton.interactable = interactable;
         if (nextFilterChapterButton != null) nextFilterChapterButton.interactable = interactable;
+    }
+
+    private GameObject GetLoadingPanel()
+    {
+        if (loadingPanel != null) return loadingPanel;
+        if (WalkingLoadingPanel.Instance != null)
+        {
+            loadingPanel = WalkingLoadingPanel.Instance.gameObject;
+            return loadingPanel;
+        }
+        return null;
     }
 
     private void ShowError(string msg)
@@ -541,7 +575,6 @@ public class ClientLobbyManager : MonoBehaviour
         }
 
         SetInteractableAll(false);
-        if (loadingText != null) loadingText.SetActive(true);
 
         LobbySearchSetParameterOptions[] searchOptions = new LobbySearchSetParameterOptions[]
         {
@@ -553,6 +586,7 @@ public class ClientLobbyManager : MonoBehaviour
         };
 
         isQuickJoining = true;
+        isLocalSearchRequest = true;
         lobby.FindLobbies(50, searchOptions);
     }
 }

@@ -20,12 +20,11 @@ public class ClientJoinUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI? errorMessageText;
 
     private LobbySearch? currentSearchHandle;
-    private string foundHostAddress = "";
+    private LobbyDetails? foundLobbyDetails; // 핸들 저장용으로 변경
     private bool searchFinished = false;
 
     private void Start()
     {
-        // 시작 시 로딩 및 에러 패널 비활성화
         GameObject? panel = GetLoadingPanel();
         if (panel != null) panel.SetActive(false);
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
@@ -51,7 +50,6 @@ public class ClientJoinUI : MonoBehaviour
     {
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
 
-        // ★ 핵심 방어: sixDigitUI가 연결 안 되어 있으면 조용히 넘어가지 않고 화면/콘솔에 에러를 박아버립니다!
         if (sixDigitUI == null)
         {
             Debug.LogError("[ClientJoinUI] 인스펙터에 sixDigitUI (SixDigitCodeInputUI)가 할당되지 않았습니다!");
@@ -59,7 +57,6 @@ public class ClientJoinUI : MonoBehaviour
             return;
         }
 
-        // 6자리 조합된 코드 가져오기
         string code = sixDigitUI.GetCode();
         Debug.Log($"[ClientJoinUI] 입력받은 6자리 코드: '{code}'");
 
@@ -69,7 +66,6 @@ public class ClientJoinUI : MonoBehaviour
             return;
         }
 
-        // ★ 클릭 즉시 시각적 반응 제공 (로딩 화면 표시)
         GameObject? currentPanel = GetLoadingPanel();
         if (currentPanel != null)
         {
@@ -82,7 +78,7 @@ public class ClientJoinUI : MonoBehaviour
     private IEnumerator SearchAndJoinRoutine(string code)
     {
         searchFinished = false;
-        foundHostAddress = "";
+        foundLobbyDetails = null;
 
         LobbyInterface lobbyInterface = EOSSDKComponent.GetLobbyInterface();
         if (lobbyInterface == null)
@@ -125,16 +121,28 @@ public class ClientJoinUI : MonoBehaviour
             yield return null;
         }
 
-        // 검색 성공 시 Mirror 연결 실행
-        if (!string.IsNullOrEmpty(foundHostAddress))
+        // 방 발견 시 EOSLobby를 통해 공식 방 참가 실행
+        if (foundLobbyDetails != null)
         {
-            Debug.Log($"[ClientJoinUI] 방 검색 성공! 방장 주소: {foundHostAddress}");
+            Debug.Log($"[ClientJoinUI] 코드 [{code}] 방 발견! EOSLobby를 통해 참가를 진행합니다.");
 
-            EosTransport transport = NetworkManager.singleton.transport as EosTransport;
-            if (transport != null) transport.ResetIgnoreMessagesAtStartUpTimer();
+            EOSLobby eosLobby = FindFirstObjectByType<EOSLobby>();
+            if (eosLobby == null && NetworkManager.singleton != null)
+            {
+                eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
+            }
 
-            NetworkManager.singleton.networkAddress = foundHostAddress;
-            NetworkManager.singleton.StartClient(); // 씬 이동 실행
+            if (eosLobby != null)
+            {
+                // EOSLobby가 참가를 수행하면 ClientLobbyManager.OnJoinLobbySucceeded가 호출되어 Client 실행 및 씬 이동됨
+                eosLobby.JoinLobby(foundLobbyDetails);
+            }
+            else
+            {
+                Debug.LogError("[ClientJoinUI] EOSLobby 인스턴스를 찾을 수 없습니다.");
+                HideLoadingPanel();
+                ShowErrorPopup("네트워크 매니저(EOSLobby)를 찾을 수 없습니다.");
+            }
         }
         else
         {
@@ -156,12 +164,8 @@ public class ClientJoinUI : MonoBehaviour
                 LobbySearchCopySearchResultByIndexOptions copyOptions = new LobbySearchCopySearchResultByIndexOptions();
                 copyOptions.LobbyIndex = 0;
 
-                currentSearchHandle.CopySearchResultByIndex(copyOptions, out LobbyDetails lobbyDetails);
-
-                LobbyDetailsCopyInfoOptions infoOptions = new LobbyDetailsCopyInfoOptions();
-                lobbyDetails.CopyInfo(infoOptions, out var lobbyInfo);
-
-                foundHostAddress = lobbyInfo?.LobbyOwnerUserId.ToString() ?? "";
+                // 문자열 변환 없이 LobbyDetails 핸들을 직접 가져옴
+                currentSearchHandle.CopySearchResultByIndex(copyOptions, out foundLobbyDetails);
             }
         }
 
