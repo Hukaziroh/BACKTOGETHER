@@ -145,8 +145,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2276870956799467199}
-  - component: {fileID: 4001446308423457723}
-  - component: {fileID: 1128741088955287280}
+  - component: {fileID: 2195706901859585142}
+  - component: {fileID: 1510619959960327191}
   m_Layer: 8
   m_Name: OutLine
   m_TagString: Untagged
@@ -169,7 +169,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6667347122069961916}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &4001446308423457723
+--- !u!212 &2195706901859585142
 SpriteRenderer:
   serializedVersion: 3
   m_ObjectHideFlags: 0
@@ -216,20 +216,20 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 20
+  m_SortingOrder: 21
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 4964281355685767970, guid: 4d5e02b84deeead46bcd7c84c1a8879b, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.66, y: 0.92}
+  m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
---- !u!114 &1128741088955287280
+--- !u!114 &1510619959960327191
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

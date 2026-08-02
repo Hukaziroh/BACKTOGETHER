@@ -3,7 +3,7 @@ Shader "Custom/CharacterEcho"
     Properties 
     { 
         _MainTex ("Sprite Texture", 2D) = "white" {}
-        _OutlineColor ("Outline Color", Color) = (1, 1, 1, 1)
+        _OutlineColor ("Outline Color", Color) = (1, 0, 0, 1)
     }
     SubShader
     {
@@ -15,10 +15,15 @@ Shader "Custom/CharacterEcho"
 
         Pass
         {
-            CGPROGRAM                        
-            #pragma vertex vert                        
-            #pragma fragment frag                        
+            CGPROGRAM                                    
+            #pragma vertex vert                                    
+            #pragma fragment frag                                    
             #include "UnityCG.cginc"
+
+            struct appdata {
+                float4 vertex : POSITION;
+                float2 uv : TEXCOORD0;
+            };
 
             struct v2f { 
                 float4 pos : SV_POSITION; 
@@ -28,38 +33,54 @@ Shader "Custom/CharacterEcho"
             sampler2D _MainTex;
             float4 _MainTex_TexelSize;
             float4 _OutlineColor;
-
-            // EchoManager에서 받아올 윤곽선 제어 변수
+            
+            // EchoManager가 보내는 전역 변수를 받기 위한 선언
             float _OutlineEnabled;
 
-            v2f vert (appdata_full v) {
+            v2f vert (appdata v) {
                 v2f o; 
                 o.pos = UnityObjectToClipPos(v.vertex);
-                o.uv = v.texcoord;
+                o.uv = v.uv;
                 return o;
             }
 
+            float isBlack(float4 col) {
+                return (col.r < 0.3 && col.g < 0.3 && col.b < 0.3) ? 1.0 : 0.0;
+            }
+
             fixed4 frag (v2f i) : SV_Target {
-                // [핵심] _OutlineEnabled가 0(꺼짐)이면 윤곽선 로직을 타지 않고 바로 종료
-                if (_OutlineEnabled < 0.5) discard;
+                // EchoManager가 꺼져있을 때(_OutlineEnabled == 0)는 아무것도 안 그리고 날려버림
+                if (_OutlineEnabled < 0.5) {
+                    discard;
+                    return fixed4(0,0,0,0);
+                }
+
+                float4 col = tex2D(_MainTex, i.uv);
+                
+                if (isBlack(col) > 0.5) {
+                    return col;
+                }
 
                 float2 texel = _MainTex_TexelSize.xy;
+                float edgeFound = 0;
                 
-                // 현재 픽셀이 본체인지 확인
-                float alpha = tex2D(_MainTex, i.uv).a;
-                
-                // 이웃 픽셀들 확인
-                float aU = tex2D(_MainTex, i.uv + float2(0, texel.y)).a;
-                float aD = tex2D(_MainTex, i.uv + float2(0, -texel.y)).a;
-                float aL = tex2D(_MainTex, i.uv + float2(-texel.x, 0)).a;
-                float aR = tex2D(_MainTex, i.uv + float2(texel.x, 0)).a;
-                
-                // 윤곽선 그리기 로직 (상시 출력)
-                if (alpha <= 0.1 && (aU > 0.1 || aD > 0.1 || aL > 0.1 || aR > 0.1)) {
+                [unroll]
+                for (int x = -4; x <= 4; x++) {
+                    [unroll]
+                    for (int y = -4; y <= 4; y++) {
+                        float4 neighbor = tex2D(_MainTex, i.uv + float2(x, y) * texel * 1.5);
+                        if (isBlack(neighbor) > 0.5) {
+                            edgeFound = 1.0;
+                            break;
+                        }
+                    }
+                    if (edgeFound > 0.0) break;
+                }
+
+                if (edgeFound > 0.0) {
                     return _OutlineColor;
                 }
-                
-                // 본체 내부나 배경은 그리지 않음
+
                 discard;
                 return fixed4(0,0,0,0);
             }
