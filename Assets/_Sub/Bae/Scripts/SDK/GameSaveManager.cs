@@ -75,10 +75,18 @@ public class GameSaveManager : MonoBehaviour
 
     public void ClearChapter(int chapterNumber)
     {
+        // 1. 내 최고 기록 갱신 및 저장
         if (chapterNumber > currentData.maxClearedChapter)
         {
             currentData.maxClearedChapter = chapterNumber;
             SaveGame();
+        }
+
+        // 🌟 2. 추가된 로직: 현재 파놓은 방의 "선택된 챕터 한계치"도 같이 올려줍니다!
+        // 이렇게 해야 메인으로 나가서 방을 다시 파지 않아도 다음 벽이 자동으로 열립니다.
+        if (PrivateLobbyManager.selectedChapter <= chapterNumber)
+        {
+            PrivateLobbyManager.selectedChapter = chapterNumber + 1;
         }
     }
 
