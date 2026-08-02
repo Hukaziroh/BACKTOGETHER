@@ -101,7 +101,7 @@ public class StageProgressTracker : MonoBehaviour
         }
         foreach (var k in toRemove) playerIcons.Remove(k);
 
-        // 🌟 가장 최근에 찍은 체크포인트 깃발 갱신
+        // 🌟 내 플레이어(또는 관전 중인 대상)의 체크포인트 깃발 갱신
         UpdateActiveCheckpointFlag();
 
         float containerWidth = iconContainer.rect.width;
@@ -153,37 +153,48 @@ public class StageProgressTracker : MonoBehaviour
         }
     }
 
-    // 🌟 가장 최근에 활성화된 체크포인트를 빨간색 깃발 모양으로 프로그래스 바 위에 표시
+    // 🌟 내 플레이어(또는 관전 중인 대상)가 마지막으로 찍은 체크포인트를 빨간색 깃발로 표시
     private void UpdateActiveCheckpointFlag()
     {
-        int highestIndex = -1;
         Vector3 activeCpPos = Vector3.zero;
         bool foundActive = false;
 
-        CoopCheckpoint[] allCheckpoints = Object.FindObjectsByType<CoopCheckpoint>(FindObjectsInactive.Exclude);
+        // 1. 기준이 될 플레이어 찾기 (관전 중이면 관전 타겟, 아니면 내 플레이어)
+        GameObject targetPlayer = null;
 
-        foreach (GameObject player in cachedPlayers)
+        if (spectatorSystem != null && spectatorSystem.CurrentTarget != null)
         {
-            if (player == null) continue;
-            PlayerRespawn respawn = player.GetComponent<PlayerRespawn>();
-            if (respawn == null) continue;
+            targetPlayer = spectatorSystem.CurrentTarget.gameObject;
+        }
+        else
+        {
+            targetPlayer = GetLocalPlayer();
+        }
 
-            int cpIndex = GetPlayerCheckpointIndex(respawn);
-            if (cpIndex > highestIndex)
+        // 2. 해당 플레이어의 체크포인트 인덱스 가져오기
+        if (targetPlayer != null)
+        {
+            PlayerRespawn respawn = targetPlayer.GetComponent<PlayerRespawn>();
+            if (respawn != null)
             {
-                highestIndex = cpIndex;
-                foreach (var cp in allCheckpoints)
+                int cpIndex = GetPlayerCheckpointIndex(respawn);
+                if (cpIndex >= 0)
                 {
-                    if (cp != null && cp.checkpointIndex == cpIndex && cp.spawnLocation != null)
+                    CoopCheckpoint[] allCheckpoints = Object.FindObjectsByType<CoopCheckpoint>(FindObjectsInactive.Exclude);
+                    foreach (var cp in allCheckpoints)
                     {
-                        activeCpPos = cp.spawnLocation.position;
-                        foundActive = true;
-                        break;
+                        if (cp != null && cp.checkpointIndex == cpIndex && cp.spawnLocation != null)
+                        {
+                            activeCpPos = cp.spawnLocation.position;
+                            foundActive = true;
+                            break;
+                        }
                     }
                 }
             }
         }
 
+        // 3. 깃발 UI 생성 및 위치 갱신
         if (foundActive)
         {
             float containerWidth = iconContainer.rect.width;
@@ -274,6 +285,38 @@ public class StageProgressTracker : MonoBehaviour
                 activeCheckpointFlagObj.SetActive(false);
             }
         }
+    }
+
+    // 🌟 로컬 플레이어(내 캐릭터)를 리플렉션으로 안전하게 찾아내는 보조 함수
+    private GameObject GetLocalPlayer()
+    {
+        foreach (var player in cachedPlayers)
+        {
+            if (player == null) continue;
+            CoopPlayerIdentity identity = player.GetComponent<CoopPlayerIdentity>();
+            if (identity != null)
+            {
+                System.Type type = identity.GetType();
+                string[] localNames = { "isLocal", "isLocalPlayer", "isOwner", "isLocalClient" };
+                foreach (var name in localNames)
+                {
+                    var field = type.GetField(name, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    if (field != null && field.FieldType == typeof(bool))
+                    {
+                        if ((bool)field.GetValue(identity)) return player;
+                    }
+                    var prop = type.GetProperty(name, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    if (prop != null && prop.PropertyType == typeof(bool) && prop.CanRead)
+                    {
+                        if ((bool)prop.GetValue(identity, null)) return player;
+                    }
+                }
+            }
+        }
+
+        // 판별 필드를 찾지 못했거나 싱글플레이/테스트 환경인 경우 첫 번째 플레이어 반환
+        if (cachedPlayers.Length > 0) return cachedPlayers[0];
+        return null;
     }
 
     private int GetPlayerCheckpointIndex(PlayerRespawn respawn)
