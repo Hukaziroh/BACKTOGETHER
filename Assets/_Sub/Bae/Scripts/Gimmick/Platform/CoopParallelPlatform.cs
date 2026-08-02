@@ -12,7 +12,8 @@ public class CoopParallelPlatform : CoopPlatformBase
     [Header("속도 및 시간 설정")]
     public float forwardSpeed = 3f;
     public float returnSpeed = 5f;
-    public float waitTimeAtEnd = 5f;
+    [Tooltip("목적지 도착 후 대기 시간 (초)")]
+    public float waitTimeAtEnd = 1f; // 1초 대기로 수정
 
     [Header("필요 인원 설정")]
     public int requiredTop = 1;
@@ -22,6 +23,7 @@ public class CoopParallelPlatform : CoopPlatformBase
     public Rigidbody2D platformRb;
     private Vector2 lastPosition;
     public new Vector2 CurrentVelocity { get; private set; }
+
     [System.NonSerialized]
     public HashSet<GameObject> topPlayers = new HashSet<GameObject>();
     [System.NonSerialized]
@@ -32,19 +34,20 @@ public class CoopParallelPlatform : CoopPlatformBase
     [SyncVar]
     private State currentState = State.Idle;
     private Coroutine waitCoroutine;
-    // 이 함수를 FixedUpdate() 위쪽 빈 공간에 넣어주세요!
+
     void Start()
     {
         lastPosition = transform.position;
     }
-
 
     void FixedUpdate()
     {
         Vector2 currentPos = transform.position;
         CurrentVelocity = (currentPos - lastPosition) / Time.fixedDeltaTime;
         lastPosition = currentPos;
+
         if (!isServer) return;
+
         topPlayers.RemoveWhere(p => p == null || !p.activeInHierarchy);
         bottomPlayers.RemoveWhere(p => p == null || !p.activeInHierarchy);
 
@@ -53,48 +56,32 @@ public class CoopParallelPlatform : CoopPlatformBase
         switch (currentState)
         {
             case State.Idle:
-                syncVelocity = Vector2.zero;
-                if (isReady) currentState = State.MovingForward;
-                break;
-
-            case State.MovingForward:
-                if (!isReady)
-                {
-                    currentState = State.Returning;
-                }
-                else
-                {
-                    MoveTowards(endPoint.position, forwardSpeed);
-                    if (Vector2.Distance(transform.position, endPoint.position) < 0.01f)
-                    {
-                        currentState = State.WaitingAtEnd;
-                        if (waitCoroutine != null) StopCoroutine(waitCoroutine);
-                        waitCoroutine = StartCoroutine(WaitRoutine());
-                    }
-                }
-                break;
-
-            case State.WaitingAtEnd:
-                syncVelocity = Vector2.zero;
-                if (!isReady)
-                {
-                    if (waitCoroutine != null) StopCoroutine(waitCoroutine);
-                    currentState = State.Returning;
-                }
-                break;
-
-            case State.Returning:
                 if (isReady)
                 {
                     currentState = State.MovingForward;
                 }
-                else
+                break;
+
+            case State.MovingForward:
+                MoveTowards(endPoint.position, forwardSpeed);
+
+                if (Vector2.Distance(transform.position, endPoint.position) < 0.01f)
                 {
-                    MoveTowards(startPoint.position, returnSpeed);
-                    if (Vector2.Distance(transform.position, startPoint.position) < 0.01f)
-                    {
-                        currentState = State.Idle;
-                    }
+                    currentState = State.WaitingAtEnd;
+                    if (waitCoroutine != null) StopCoroutine(waitCoroutine);
+                    waitCoroutine = StartCoroutine(WaitRoutine());
+                }
+                break;
+
+            case State.WaitingAtEnd:
+                break;
+
+            case State.Returning:
+                MoveTowards(startPoint.position, returnSpeed);
+
+                if (Vector2.Distance(transform.position, startPoint.position) < 0.01f)
+                {
+                    currentState = State.Idle;
                 }
                 break;
         }
