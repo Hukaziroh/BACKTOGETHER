@@ -1045,6 +1045,11 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   syncDirectionX: 1
+  footstepClip: {fileID: 8300000, guid: 93f43f4569f2b8748ace3574e1132141, type: 3}
+  footstepVolume: 1
+  footstepInterval: 0.15
+  footstepMinDistance: 3
+  footstepMaxDistance: 15
 --- !u!114 &8774977094159864208
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1128,6 +1133,10 @@ MonoBehaviour:
   stunTimer: 0
   criticalUI: {fileID: 5928420892551892794}
   isKnockedBack: 0
+  hitClip: {fileID: 8300000, guid: e4d14916a3eb7fa45a27284a99da1d9f, type: 3}
+  hitVolume: 0.6
+  hitSoundMinDistance: 3
+  hitSoundMaxDistance: 15
 --- !u!114 &4858706675134242407
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1169,6 +1178,10 @@ MonoBehaviour:
   cornerPushEpsilon: 0.02
   overlapPushTolerance: 0.01
   debugLogOverlap: 1
+  jumpClip: {fileID: 8300000, guid: 8c8eeaefe9637994fb358357abf88dcd, type: 3}
+  jumpVolume: 0.6
+  jumpSoundMinDistance: 3
+  jumpSoundMaxDistance: 15
 --- !u!114 &106991141419042085
 MonoBehaviour:
   m_ObjectHideFlags: 0

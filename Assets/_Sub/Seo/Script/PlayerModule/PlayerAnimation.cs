@@ -11,6 +11,12 @@ public class PlayerAnimation : NetworkBehaviour
 
     [SyncVar]
     private bool syncGrounded;
+    public bool IsGroundedSynced => syncGrounded;
+
+    // 코요테 타임 동안은 syncGrounded가 이미 false라서, 점프 사운드 예측 재생용으로
+    // 서버의 coyoteTime을 클라이언트에서도 흉내내서 "아직 점프 가능한 구간"을 판단한다.
+    private float clientCoyoteTimer = 0f;
+    public bool IsJumpableSynced => syncGrounded || clientCoyoteTimer > 0f;
 
     [SyncVar]
     private bool syncStunned;
@@ -20,6 +26,14 @@ public class PlayerAnimation : NetworkBehaviour
 
     [SyncVar(hook = nameof(OnDirectionChanged))]
     public float syncDirectionX = 1f;
+
+    [Header("발소리")]
+    public AudioClip footstepClip;
+    [Range(0f, 1f)] public float footstepVolume = 0.4f;
+    public float footstepInterval = 0.35f;
+    public float footstepMinDistance = 3f;
+    public float footstepMaxDistance = 15f;
+    private float footstepTimer = 0f;
 
 
     void Awake()
@@ -37,6 +51,63 @@ public class PlayerAnimation : NetworkBehaviour
 
         // 2. 모든 클라이언트(서버 포함)는 동기화된 값으로 애니메이션을 재생합니다.
         ApplyAnimation();
+
+        // 3. 걷는 소리도 동기화된 값 기준으로 각자 클라이언트에서 재생합니다.
+        //    (본인/타인 구분 없이 동일 로직 - 입력 전송을 기다리지 않아도 되고, 3D 위치 기반이라 거리감쇠도 자동 적용됨)
+        UpdateFootsteps();
+
+        // 4. 코요테 타임 동안의 점프 사운드 예측 재생을 위한 로컬 타이머 갱신
+        UpdateClientCoyoteTimer();
+    }
+
+    private void UpdateFootsteps()
+    {
+        bool isWalking = syncGrounded && !syncStunned && syncSpeed > 0.1f;
+
+        // 멈춰있어도 타이머를 0으로 리셋하지 않는다.
+        // 방향을 빠르게 전환하거나 입력이 한 프레임 끊기는 것만으로 타이머가 리셋되면
+        // 걷기가 재개되자마자 즉시 재생 -> 짧은 간격으로 계속 재생되어 겹쳐 들리게 된다.
+        if (footstepTimer > 0f)
+        {
+            footstepTimer -= Time.deltaTime;
+        }
+
+        if (isWalking && footstepTimer <= 0f)
+        {
+            PlayFootstepSound();
+            footstepTimer = footstepInterval;
+        }
+    }
+
+    private void UpdateClientCoyoteTimer()
+    {
+        if (syncGrounded)
+        {
+            clientCoyoteTimer = controller.movement.coyoteTime;
+        }
+        else if (clientCoyoteTimer > 0f)
+        {
+            clientCoyoteTimer -= Time.deltaTime;
+        }
+    }
+
+    private void PlayFootstepSound()
+    {
+        if (footstepClip == null) return;
+
+        GameObject soundObj = new GameObject("FootstepSound_Temp");
+        soundObj.transform.position = transform.position;
+
+        AudioSource source = soundObj.AddComponent<AudioSource>();
+        source.clip = footstepClip;
+        source.volume = footstepVolume;
+        source.spatialBlend = 1f;
+        source.rolloffMode = AudioRolloffMode.Linear;
+        source.minDistance = footstepMinDistance;
+        source.maxDistance = footstepMaxDistance;
+        source.Play();
+
+        Destroy(soundObj, footstepClip.length);
     }
 
     [Server]

@@ -115,6 +115,13 @@ public class PlayerInput : NetworkBehaviour
             aPressed = false;
         }
 
+        // 실제로 점프가 가능한 상태(땅에 닿아있거나 코요테 타임 이내)에서 누른 경우에만 예측 재생한다.
+        // 그냥 키를 눌렀다고 무조건 재생하면 공중에서 연타할 때마다 소리가 겹쳐 재생된다.
+        if (jPressed && controller.animationModule != null && controller.animationModule.IsJumpableSynced)
+        {
+            controller.movement.PlayJumpSoundLocal();
+        }
+
         if (rawInput != lastInput || jPressed || jReleased || jHolding != lastJumpHolding || aPressed)
         {
             CmdSendInput(rawInput, jHolding, jPressed, jReleased, aPressed);

@@ -76,6 +76,12 @@ public class PlayerMovement : NetworkBehaviour
     private float lastCommandedVelocityX;
     private bool hasCommandedVelocity;
 
+    [Header("점프 사운드")]
+    public AudioClip jumpClip;
+    [Range(0f, 1f)] public float jumpVolume = 0.6f;
+    public float jumpSoundMinDistance = 3f;
+    public float jumpSoundMaxDistance = 15f;
+
     void Awake()
     {
         controller = GetComponent<PlayerController>();
@@ -338,6 +344,34 @@ public class PlayerMovement : NetworkBehaviour
         justJumped = true;
 
         canCutJump = true;
+
+        RpcPlayJumpSound();
+    }
+
+    // 점프를 누른 본인은 서버 왕복 없이 PlayerInput에서 즉시 재생하므로 본인은 제외하고 전파
+    [ClientRpc(includeOwner = false)]
+    private void RpcPlayJumpSound()
+    {
+        PlayJumpSoundLocal();
+    }
+
+    public void PlayJumpSoundLocal()
+    {
+        if (jumpClip == null) return;
+
+        GameObject soundObj = new GameObject("JumpSound_Temp");
+        soundObj.transform.position = transform.position;
+
+        AudioSource source = soundObj.AddComponent<AudioSource>();
+        source.clip = jumpClip;
+        source.volume = jumpVolume;
+        source.spatialBlend = 1f; // 3D: 거리에 따라 감쇠되도록
+        source.rolloffMode = AudioRolloffMode.Linear;
+        source.minDistance = jumpSoundMinDistance;
+        source.maxDistance = jumpSoundMaxDistance;
+        source.Play();
+
+        Destroy(soundObj, jumpClip.length);
     }
 
     public void ApplyShortJump()
