@@ -62,9 +62,10 @@ public class StageDoor : NetworkBehaviour
         {
             GameSaveManager.Instance.ClearChapter(currentStageNumber);
         }
+
         if (PlatformManager.Instance != null)
         {
-            PlatformManager.Instance.UnlockAchievement($"Clear_CH{currentStageNumber}");
+            PlatformManager.Instance.UnlockAchievement($"CLEAR_CH{currentStageNumber}");
         }
 
         if (countText != null) countText.gameObject.SetActive(false);
