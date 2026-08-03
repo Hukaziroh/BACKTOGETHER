@@ -83,27 +83,26 @@ public class PlatformManager : Singleton<PlatformManager>
     /// 도전과제(업적)를 달성 처리합니다.
     /// 사용 예: PlatformManager.Instance.UnlockAchievement("CLEAR_CHAPTER_1");
     /// </summary>
+    /// <summary>
+    /// 도전과제(업적)를 달성 처리합니다.
+    /// </summary>
     public void UnlockAchievement(string achievementId)
     {
 #if STOVE_BUILD
-        if (StovePCSDK3Manager.InstanceExists && StovePCSDK3Manager.Instance.isInitialized)
-        {
-            // 스토브는 주로 SetStat을 이용해 업적 조건을 충족시킵니다.
-            //StovePCSDK3Manager.Instance.SetStat(achievementId, 1);
-            Debug.Log($"[STOVE] 업적/스탯 달성 요청 전송: {achievementId}");
-        }
+    if (StovePCSDK3Manager.InstanceExists && StovePCSDK3Manager.Instance.isInitialized)
+    {
+        // 👈 방금 만든 스토브 전용 함수 호출!
+        StovePCSDK3Manager.Instance.UnlockAchievement(achievementId);
+        Debug.Log($"[STOVE] 업적/스탯 달성 요청 전송: {achievementId}");
+    }
 
 #elif STEAM_BUILD
-        if (SteamManager.Initialized)
-        {
-            // 스팀 도전과제 달성 및 서버 전송
-            SteamUserStats.SetAchievement(achievementId);
-            SteamUserStats.StoreStats();
-            Debug.Log($"[STEAM] 도전과제 달성 요청 전송: {achievementId}");
-        }
-
-#else
-        Debug.Log($"[Editor] 도전과제 달성 성공 (테스트): {achievementId}");
+    if (SteamManager.Initialized)
+    {
+        Steamworks.SteamUserStats.SetAchievement(achievementId);
+        Steamworks.SteamUserStats.StoreStats();
+        Debug.Log($"[STEAM] 업적 달성: {achievementId}");
+    }
 #endif
     }
 }
