@@ -215,7 +215,6 @@ public class PlayerMovement : NetworkBehaviour
 
     private void HandleMovementPhysics()
     {
-        // (기존 상단 입력 및 넉백 처리 로직 유지)
         float rawInput = controller.input.HorizontalInput;
 
         if (controller.combineHandler != null && controller.combineHandler.isCombined && controller.combineHandler.bodyTarget == gameObject)
@@ -272,11 +271,8 @@ public class PlayerMovement : NetworkBehaviour
             // 1. 공중에 매달린 (아래로 내려간) 1명의 플레이어 처리
             if (!isGrounded)
             {
-                // 입력 완전 차단! (rawInput을 무시하므로 스스로 이동 불가)
-                // 가만히 있어도 좌우로 미친듯이 요동치는 스윙(진자 운동)을 잡기 위해 X축 속도에만 '강제 브레이크(Drag)'를 걸어줍니다.
-                // 이렇게 하면 중력(Y축)에 의해 아래로는 팽팽하게 당겨지면서, 좌우로는 얌전해져 위쪽 3명이 쉽게 조율할 수 있습니다.
-                float dampenX = Mathf.Lerp(controller.rb.linearVelocity.x, 0f, 5f * Time.fixedDeltaTime);
-                controller.rb.linearVelocity = new Vector2(dampenX, controller.rb.linearVelocity.y);
+                // 🔥 진자 운동 완벽 차단: 어설픈 감속 다 빼고 X축 속도를 무조건 0으로 고정!
+                controller.rb.linearVelocity = new Vector2(0f, controller.rb.linearVelocity.y);
                 return; // 여기서 멈춤 (아래 물리 연산 무시)
             }
             // 2. 땅에 남아있는 (위에서 조율하는) 3명의 플레이어 처리
@@ -552,10 +548,13 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
+    // 🌟 버그 8 완벽 해결: 강제로 바닥으로 내리찍는 AddForce를 지우고 중력 반전 기능을 서버에서 직접 호출!
     public void CallCombinedAction()
     {
-        controller.rb.linearVelocity = new Vector2(controller.rb.linearVelocity.x, 0f);
-        controller.rb.AddForce(Vector2.down * 18f, ForceMode2D.Impulse);
+        if (controller.gravityModule != null)
+        {
+            controller.gravityModule.ServerToggleGravity();
+        }
     }
 
     private void LogDebug(string message)
