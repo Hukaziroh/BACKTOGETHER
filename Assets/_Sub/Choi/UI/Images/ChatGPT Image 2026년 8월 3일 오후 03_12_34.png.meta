@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: e07ac1b191970244e91fc415b2d806c5
+guid: 3ecff9c6c3416f441a503d805878374f
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6553714960084530204
-    second: keyboard_tab_outline_0
+      213: 3809030337235395295
+    second: "ChatGPT Image 2026\uB144 8\uC6D4 3\uC77C \uC624\uD6C4 03_12_34_0"
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -40,13 +40,13 @@ TextureImporter:
     filterMode: 1
     aniso: 1
     mipBias: 0
-    wrapU: 1
-    wrapV: 1
-    wrapW: 1
+    wrapU: 0
+    wrapV: 0
+    wrapW: 0
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -113,23 +113,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: keyboard_tab_outline_0
+      name: "ChatGPT Image 2026\uB144 8\uC6D4 3\uC77C \uC624\uD6C4 03_12_34_0"
       rect:
         serializedVersion: 2
-        x: 15
-        y: 27
-        width: 98
-        height: 74
+        x: 191
+        y: 160
+        width: 643
+        height: 726
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 10, y: 10, z: 10, w: 10}
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4eb8ff487f68c05a0800000000000000
-      internalID: -6553714960084530204
+      spriteID: fd22a9d19e46cd430800000000000000
+      internalID: 3809030337235395295
       vertices: []
       indices: 
       edges: []
@@ -138,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 62e59a30ccf598a4399372857acdef4a
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      keyboard_tab_outline_0: -6553714960084530204
+      "ChatGPT Image 2026\uB144 8\uC6D4 3\uC77C \uC624\uD6C4 03_12_34_0": 3809030337235395295
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
