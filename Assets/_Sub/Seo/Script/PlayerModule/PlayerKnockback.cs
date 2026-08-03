@@ -28,8 +28,8 @@ public class PlayerKnockback : NetworkBehaviour
     [Header("피격 사운드")]
     public AudioClip hitClip;
     [Range(0f, 1f)] public float hitVolume = 0.6f;
-    public float hitSoundMinDistance = 3f;
-    public float hitSoundMaxDistance = 15f;
+    public float hitSoundMinDistance = 9f;
+    public float hitSoundMaxDistance = 40f;
 
     public bool IsStunned => isKnockedBack || stunTimer > 0f;
 
