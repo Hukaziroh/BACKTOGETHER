@@ -1,4 +1,5 @@
 using UnityEngine;
+// Mirror 네임스페이스는 MonoBehaviour라 필수까진 아니지만, 구조상 둬도 무방합니다.
 
 public class BlizzardZone : MonoBehaviour
 {
@@ -12,10 +13,7 @@ public class BlizzardZone : MonoBehaviour
         {
             if (other.TryGetComponent<PlayerController>(out var player))
             {
-                if (player.isLocalPlayer)
-                {
-                    player.windVelocity = windStrength;
-                }
+                player.windVelocity = windStrength;
             }
         }
     }
@@ -26,10 +24,7 @@ public class BlizzardZone : MonoBehaviour
         {
             if (other.TryGetComponent<PlayerController>(out var player))
             {
-                if (player.isLocalPlayer)
-                {
-                    player.windVelocity = 0f;
-                }
+                player.windVelocity = 0f;
             }
         }
     }
