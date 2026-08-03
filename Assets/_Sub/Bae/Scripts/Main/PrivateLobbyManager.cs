@@ -31,7 +31,7 @@ public class PrivateLobbyManager : MonoBehaviour
     [SerializeField] private Button nextChapterButton;
     [SerializeField] private Image chapterPreviewImage;      // 챕터 이미지 UI Component
     [SerializeField] private Sprite[] chapterSprites;        // 챕터별 Sprite 이미지 배열
-    
+
     [Header("챕터 잠금 UI")]
     [SerializeField] private GameObject chapterLockObject;
 
@@ -143,6 +143,24 @@ public class PrivateLobbyManager : MonoBehaviour
 
     private void Update()
     {
+        // 🌟 ESC 키 입력 처리 (최우선 순위: 에러 팝업 -> 호스트 패널)
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            // 1. 에러 팝업이 켜져있다면 에러 팝업 닫기
+            if (errorPopupPanel != null && errorPopupPanel.activeSelf)
+            {
+                errorPopupPanel.SetActive(false);
+                return;
+            }
+
+            // 2. 호스트 패널이 켜져있다면 메인 패널로 돌아가기
+            if (hostPanel != null && hostPanel.activeSelf)
+            {
+                OnClick_ReturnToMain();
+                return;
+            }
+        }
+
         if (EventSystem.current == null) return;
 
         GameObject selected = EventSystem.current.currentSelectedGameObject;
@@ -252,8 +270,6 @@ public class PrivateLobbyManager : MonoBehaviour
 
     private void UpdateChapterUI()
     {
-        // 올려주신 코드의 변수명(selectedChapterIndex)에 맞게 수정했습니다.
-        // selectedChapterIndex는 1~6의 값을 가집니다.
         int displayChapter = selectedChapterIndex;
         int arrayIndex = selectedChapterIndex - 1; // 배열 및 세이브 데이터 비교용 (0~5)
 
@@ -275,11 +291,8 @@ public class PrivateLobbyManager : MonoBehaviour
 
         if (GameSaveManager.Instance != null)
         {
-            // maxClearedChapter가 0이면 -> 챕터1(arrayIndex 0)만 플레이 가능
-            // maxClearedChapter가 1이면 -> 챕터2(arrayIndex 1)까지 플레이 가능
             int maxCleared = GameSaveManager.Instance.currentData.maxClearedChapter;
 
-            // 클리어한 수치보다 현재 보려는 챕터의 인덱스가 더 높으면 잠금 처리
             if (maxCleared < arrayIndex)
             {
                 isUnlocked = false;
@@ -321,7 +334,6 @@ public class PrivateLobbyManager : MonoBehaviour
     {
         if (roomTypeDisplayText != null) roomTypeDisplayText.text = isPublicRoom ? "Public" : "Private";
 
-        // 퍼블릭/프라이빗 관계없이 기본적으로 interactable = false 설정 (엔터 입력 시 활성화)
         if (roomNameInputField != null)
         {
             roomNameInputField.interactable = false;
