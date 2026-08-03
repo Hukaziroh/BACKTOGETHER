@@ -8,6 +8,7 @@ using Epic.OnlineServices.Lobby;
 using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem; // 신규 입력 시스템 네임스페이스 추가
 
 public class OptionsManager : MonoBehaviour
 {
@@ -25,6 +26,10 @@ public class OptionsManager : MonoBehaviour
     public GameObject roomCodeUIContainer;
     public TextMeshProUGUI RoomCodeText;
     public Button toggleVisibilityButton;
+
+    [Header("Key Guide Panel")]
+    public GameObject keyGuidePanel;
+    public Button keyGuideToggleButton;
 
     public bool IsCodeVisible => isCodeVisible;
 
@@ -62,11 +67,29 @@ public class OptionsManager : MonoBehaviour
         {
             toggleVisibilityButton.onClick.AddListener(ToggleRoomCodeVisibility);
         }
+
+        if (keyGuideToggleButton != null)
+        {
+            keyGuideToggleButton.onClick.AddListener(ToggleKeyGuide);
+        }
+    }
+
+    void Update()
+    {
+        // 신규 입력 시스템 기반 ESC 키 입력 감지
+        if (keyGuidePanel != null && keyGuidePanel.activeSelf)
+        {
+            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                ToggleKeyGuide();
+            }
+        }
     }
 
     public void Open()
     {
         if (optionsPanel != null) optionsPanel.SetActive(true);
+        if (keyGuidePanel != null) keyGuidePanel.SetActive(false); // 열릴 때는 키 가이드 끄기
         if (PauseManager.instance != null) PauseManager.instance.ClosePause();
 
         UpdateRoomCodeUI();
@@ -77,8 +100,6 @@ public class OptionsManager : MonoBehaviour
             fetchCodeRoutine = StartCoroutine(FetchRoomCodeAsync());
         }
 
-        // GlobalSceneInputManager가 1프레임 대기 후 포커스 범위 설정,
-        // 범위 밖 버튼 차단, 기존 하이라이트 정리 및 첫 번째 선택 가능한 UI 하이라이트를 자동으로 활성화합니다.
         if (GlobalSceneInputManager.Instance != null && optionsPanel != null)
         {
             GlobalSceneInputManager.Instance.SetFocusScope(optionsPanel);
@@ -94,6 +115,7 @@ public class OptionsManager : MonoBehaviour
         }
 
         if (optionsPanel != null) optionsPanel.SetActive(false);
+        if (keyGuidePanel != null) keyGuidePanel.SetActive(false);
 
         bool isMainScene = SceneManager.GetActiveScene().name == "Main";
 
@@ -102,7 +124,6 @@ public class OptionsManager : MonoBehaviour
             PauseManager.instance.pausePanel.SetActive(true);
             if (GlobalSceneInputManager.Instance != null)
             {
-                // 퍼즈창으로 포커스 복구 및 하이라이트 정상 작동 갱신
                 GlobalSceneInputManager.Instance.SetFocusScope(PauseManager.instance.pausePanel);
             }
         }
@@ -123,6 +144,43 @@ public class OptionsManager : MonoBehaviour
         if (LobbySyncManager.instance != null)
         {
             LobbySyncManager.instance.RefreshRoomCodeUIState();
+        }
+    }
+
+    // 키보드 키 가이드 패널 토글 및 포커스 갱신
+    public void ToggleKeyGuide()
+    {
+        if (keyGuidePanel != null)
+        {
+            bool isKeyGuideActive = keyGuidePanel.activeSelf;
+
+            if (!isKeyGuideActive)
+            {
+                // 키 가이드 켜기 -> 옵션 패널 끄기
+                keyGuidePanel.SetActive(true);
+                if (optionsPanel != null) optionsPanel.SetActive(false);
+
+                // 키 가이드 패널로 포커스 범위 전환
+                if (GlobalSceneInputManager.Instance != null)
+                {
+                    GlobalSceneInputManager.Instance.SetFocusScope(keyGuidePanel);
+                }
+            }
+            else
+            {
+                // 키 가이드 끄기 -> 옵션 패널 켜기
+                keyGuidePanel.SetActive(false);
+                if (optionsPanel != null)
+                {
+                    optionsPanel.SetActive(true);
+
+                    // 옵션 패널로 포커스 범위 복구
+                    if (GlobalSceneInputManager.Instance != null)
+                    {
+                        GlobalSceneInputManager.Instance.SetFocusScope(optionsPanel);
+                    }
+                }
+            }
         }
     }
 
