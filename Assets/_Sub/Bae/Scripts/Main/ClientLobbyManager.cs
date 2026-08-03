@@ -147,6 +147,38 @@ public class ClientLobbyManager : MonoBehaviour
 
     private void Update()
     {
+        // 🌟 ESC 키 입력 처리 (최우선 순위: 에러 팝업 -> 퍼블릭/프라이빗 패널 -> 선택 패널)
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            // 1. 에러 팝업이 켜져있다면 에러 팝업 닫기
+            if (errorPopupPanel != null && errorPopupPanel.activeSelf)
+            {
+                OnClick_CloseErrorPopup();
+                return;
+            }
+
+            // 2. 퍼블릭 패널이 켜져있다면 퍼블릭 패널 닫기 (선택 패널로 복귀)
+            if (clientPublicPanel != null && clientPublicPanel.activeSelf)
+            {
+                OnClick_ClosePublicPanel();
+                return;
+            }
+
+            // 3. 프라이빗 패널이 켜져있다면 프라이빗 패널 닫기 (선택 패널로 복귀)
+            if (clientPrivatePanel != null && clientPrivatePanel.activeSelf)
+            {
+                OnClick_ClosePrivatePanel();
+                return;
+            }
+
+            // 4. 클라이언트 선택 패널이 켜져있다면 메인(커넥트) 패널로 돌아가기
+            if (clientSelectionPanel != null && clientSelectionPanel.activeSelf)
+            {
+                OnClick_CloseSelectionPanel();
+                return;
+            }
+        }
+
         if (EventSystem.current == null) return;
 
         GameObject selected = EventSystem.current.currentSelectedGameObject;
@@ -509,7 +541,6 @@ public class ClientLobbyManager : MonoBehaviour
         eos.JoinLobby(lobby);
     }
 
-    // ★ [핵심 수정] 퍼블릭/프라이빗 가리지 않고 EOSLobby를 통한 방 입장에 성공하면 무조건 화면 전환 및 StartClient 진행
     private void OnJoinLobbySucceeded(List<Epic.OnlineServices.Lobby.Attribute> attributes)
     {
         var eos = GetEOSLobby();
@@ -524,14 +555,11 @@ public class ClientLobbyManager : MonoBehaviour
                     EosTransport transport = NetworkManager.singleton.transport as EosTransport;
                     if (transport != null) transport.ResetIgnoreMessagesAtStartUpTimer();
 
-                    // 기존 로비 UI 패널 모두 끄기
                     HideAllPanels();
 
-                    // 로딩 패널 활성화
                     GameObject panel = GetLoadingPanel();
                     if (panel != null) panel.SetActive(true);
 
-                    // Mirror 클라이언트 실행
                     NetworkManager.singleton.networkAddress = hostAddress;
                     NetworkManager.singleton.StartClient();
                     return;
