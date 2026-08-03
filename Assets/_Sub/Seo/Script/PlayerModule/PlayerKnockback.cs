@@ -25,6 +25,12 @@ public class PlayerKnockback : NetworkBehaviour
     private float knockbackTimeoutTimer = 0f;
     private float activeKnockbackX;
 
+    [Header("피격 사운드")]
+    public AudioClip hitClip;
+    [Range(0f, 1f)] public float hitVolume = 0.6f;
+    public float hitSoundMinDistance = 3f;
+    public float hitSoundMaxDistance = 15f;
+
     public bool IsStunned => isKnockedBack || stunTimer > 0f;
 
     void Awake()
@@ -185,6 +191,26 @@ public class PlayerKnockback : NetworkBehaviour
     void RpcPlayHitAnimation()
     {
         if (controller.anim != null) controller.anim.SetTrigger("Hit");
+        PlayHitSoundLocal();
+    }
+
+    private void PlayHitSoundLocal()
+    {
+        if (hitClip == null) return;
+
+        GameObject soundObj = new GameObject("HitSound_Temp");
+        soundObj.transform.position = transform.position;
+
+        AudioSource source = soundObj.AddComponent<AudioSource>();
+        source.clip = hitClip;
+        source.volume = hitVolume;
+        source.spatialBlend = 1f;
+        source.rolloffMode = AudioRolloffMode.Linear;
+        source.minDistance = hitSoundMinDistance;
+        source.maxDistance = hitSoundMaxDistance;
+        source.Play();
+
+        Destroy(soundObj, hitClip.length);
     }
 
     public void ResetKnockback()
