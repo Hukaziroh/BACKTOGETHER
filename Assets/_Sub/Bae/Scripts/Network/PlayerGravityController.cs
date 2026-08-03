@@ -27,6 +27,7 @@ public class PlayerGravityController : NetworkBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
     }
+
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
@@ -41,6 +42,7 @@ public class PlayerGravityController : NetworkBehaviour
     void Update()
     {
         if (!isLocalPlayer) return;
+
         if (canInvertGravity && invertAction.WasPressedThisFrame())
         {
             TriggerGravityInversion();
@@ -58,9 +60,15 @@ public class PlayerGravityController : NetworkBehaviour
     {
         RpcInvertGravity();
     }
-
+    
+    [Server]
+    public void ServerToggleGravity()
+    {
+        RpcInvertGravity();
+    }
+    
     [ClientRpc]
-    void RpcInvertGravity()
+    public void RpcInvertGravity()
     {
         isGravityInverted = !isGravityInverted;
         gravityMultiplier = isGravityInverted ? -1f : 1f;
@@ -75,7 +83,14 @@ public class PlayerGravityController : NetworkBehaviour
     {
         if (isGravityInverted)
         {
-            CmdInvertGravity();
+            if (isServer)
+            {
+                RpcInvertGravity();
+            }
+            else if (isLocalPlayer)
+            {
+                CmdInvertGravity();
+            }
         }
     }
 }
