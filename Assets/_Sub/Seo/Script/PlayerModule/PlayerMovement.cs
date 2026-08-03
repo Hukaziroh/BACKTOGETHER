@@ -67,7 +67,6 @@ public class PlayerMovement : NetworkBehaviour
     private bool justJumped = false;
     private bool wasGroundedLastFrame = false;
 
-    // 🌟 숏점프 커팅 권한 상태 변수
     private bool canCutJump = false;
 
     [Header("코너 충돌 보정")]
@@ -90,7 +89,6 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (!isServer) return;
 
-        // 고스트(팀원)는 스스로 물리 연산을 하지 않고 본체에 합쳐짐
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
             return;
 
@@ -130,10 +128,6 @@ public class PlayerMovement : NetworkBehaviour
             controller.input.ClearInputBuffers();
         }
     }
-
-    // ============================================================
-    // 입력 처리 파트
-    // ============================================================
 
     private void HandleJumpInput()
     {
@@ -192,6 +186,7 @@ public class PlayerMovement : NetworkBehaviour
             canCutJump = false;
         }
     }
+
     private void HandleActionInput()
     {
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
@@ -265,45 +260,36 @@ public class PlayerMovement : NetworkBehaviour
         float targetVelocityX = (rawInput * moveSpeed) + windVelocity;
         float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
 
-        // 🌟 [4스테이지 로프 한정] 유저님의 기획 의도 완벽 반영 🌟
         if (isRestrictedByRope)
         {
-            // 1. 공중에 매달린 (아래로 내려간) 1명의 플레이어 처리
             if (!isGrounded)
             {
-                // 🔥 진자 운동 완벽 차단: 어설픈 감속 다 빼고 X축 속도를 무조건 0으로 고정!
-                controller.rb.linearVelocity = new Vector2(0f, controller.rb.linearVelocity.y);
-                return; // 여기서 멈춤 (아래 물리 연산 무시)
+                float dampenX = Mathf.Lerp(controller.rb.linearVelocity.x, 0f, 3f * Time.fixedDeltaTime);
+                controller.rb.linearVelocity = new Vector2(dampenX, controller.rb.linearVelocity.y);
+                return;
             }
-            // 2. 땅에 남아있는 (위에서 조율하는) 3명의 플레이어 처리
             else
             {
                 if (Mathf.Abs(rawInput) > 0.01f)
                 {
-                    // 땅에서는 무거운 짐을 끌듯 묵직하고 안정적으로 이동하도록 속도를 대폭 줄임
-                    float ropeMoveSpeed = moveSpeed * 0.4f; // 평소 속도의 40%
-                    float targetX = rawInput * ropeMoveSpeed;
+                    float pullPower = moveSpeed * 80f;
+                    controller.rb.AddForce(new Vector2(rawInput * pullPower, 0f));
 
-                    controller.rb.linearVelocity = new Vector2(
-                        Mathf.MoveTowards(controller.rb.linearVelocity.x, targetX, 50f * Time.fixedDeltaTime),
-                        controller.rb.linearVelocity.y
-                    );
+                    float maxRopeSpeed = moveSpeed * 0.4f;
+                    if (Mathf.Abs(controller.rb.linearVelocity.x) > maxRopeSpeed)
+                    {
+                        controller.rb.linearVelocity = new Vector2(Mathf.Sign(controller.rb.linearVelocity.x) * maxRopeSpeed, controller.rb.linearVelocity.y);
+                    }
                 }
                 else
                 {
-                    // 위에서 조율하는 사람들이 키보드에서 손을 떼면 미끄러지지 않고 즉시 멈춰서 닻(Anchor) 역할을 하게 만듦
-                    controller.rb.linearVelocity = new Vector2(
-                        Mathf.MoveTowards(controller.rb.linearVelocity.x, 0f, 50f * Time.fixedDeltaTime),
-                        controller.rb.linearVelocity.y
-                    );
+                    float anchorX = Mathf.Lerp(controller.rb.linearVelocity.x, 0f, 20f * Time.fixedDeltaTime);
+                    controller.rb.linearVelocity = new Vector2(anchorX, controller.rb.linearVelocity.y);
                 }
-                return; // 여기서 멈춤
+                return;
             }
         }
 
-        // ==========================================================
-        // 이 아래는 평소(로프가 없을 때)의 1, 2, 3, 5챕터 이동 물리 연산입니다.
-        // ==========================================================
         float currentFriction = isGrounded
             ? (isTouchingPlayer ? 15f : normalFriction)
             : (isTouchingPlayer ? 15f : (isRestrictedByRope ? 0f : 9999f));
@@ -340,6 +326,7 @@ public class PlayerMovement : NetworkBehaviour
 
         controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
     }
+
     public void Jump()
     {
         if (controller.knockback.isKnockedBack) return;
@@ -548,7 +535,6 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
-    // 🌟 버그 8 완벽 해결: 강제로 바닥으로 내리찍는 AddForce를 지우고 중력 반전 기능을 서버에서 직접 호출!
     public void CallCombinedAction()
     {
         if (controller.gravityModule != null)
