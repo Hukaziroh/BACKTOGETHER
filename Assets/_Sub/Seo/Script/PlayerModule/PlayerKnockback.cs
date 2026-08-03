@@ -148,15 +148,15 @@ public class PlayerKnockback : NetworkBehaviour
         }
     }
 
-    [TargetRpc]
-    private void TargetToggleCriticalUI(NetworkConnection target, bool state)
+    [ClientRpc]
+    private void RpcToggleCriticalUI(bool state)
     {
         if (criticalUI != null) criticalUI.SetActive(state);
     }
 
     private System.Collections.IEnumerator CriticalEscape(float seconds)
     {
-        TargetToggleCriticalUI(connectionToClient, true);
+        RpcToggleCriticalUI(true);
 
         activeKnockbackX = -30f;
         float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
@@ -178,7 +178,7 @@ public class PlayerKnockback : NetworkBehaviour
         yield return new WaitForSeconds(seconds);
         yield return new WaitForSeconds(2f);
 
-        TargetToggleCriticalUI(connectionToClient, false);
+        RpcToggleCriticalUI(false);
     }
 
     [ClientRpc]

@@ -204,7 +204,7 @@ public class PlayerMovement : NetworkBehaviour
 
     private void HandleMovementPhysics()
     {
-        // (상단 입력 처리 및 레이캐스트 차단 로직은 유저님 원본 코드와 완전 동일하므로 생략 없이 그대로 유지)
+        // (기존 상단 입력 및 넉백 처리 로직 유지)
         float rawInput = controller.input.HorizontalInput;
 
         if (controller.combineHandler != null && controller.combineHandler.isCombined && controller.combineHandler.bodyTarget == gameObject)
@@ -255,21 +255,51 @@ public class PlayerMovement : NetworkBehaviour
         float targetVelocityX = (rawInput * moveSpeed) + windVelocity;
         float currentPlatformVelX = isGrounded ? platformVelocity.x : 0f;
 
-        // 🌟 [핵심 원상복구] 유저님의 원본 코드 그대로 복구 (1, 2, 3, 5챕터 점프/공중 조작감 완벽 복원!)
-        float currentFriction = isGrounded
-            ? (isTouchingPlayer ? 15f : normalFriction)
-            : (isTouchingPlayer ? 15f : (isRestrictedByRope ? 0f : 9999f)); // 9999f 다시 살려냈습니다!
-
-        // 🌟 [4스테이지 로프 한정] 다른 곳에 절대 피해 안 주고, 로프가 팽팽할 때만 작동!
+        // 🌟 [4스테이지 로프 한정] 유저님의 기획 의도 완벽 반영 🌟
         if (isRestrictedByRope)
         {
-            if (Mathf.Abs(rawInput) > 0.01f)
+            // 1. 공중에 매달린 (아래로 내려간) 1명의 플레이어 처리
+            if (!isGrounded)
             {
-                float pullForce = rawInput * 30f;
-                controller.rb.AddForce(new Vector2(pullForce, 0f));
+                // 입력 완전 차단! (rawInput을 무시하므로 스스로 이동 불가)
+                // 가만히 있어도 좌우로 미친듯이 요동치는 스윙(진자 운동)을 잡기 위해 X축 속도에만 '강제 브레이크(Drag)'를 걸어줍니다.
+                // 이렇게 하면 중력(Y축)에 의해 아래로는 팽팽하게 당겨지면서, 좌우로는 얌전해져 위쪽 3명이 쉽게 조율할 수 있습니다.
+                float dampenX = Mathf.Lerp(controller.rb.linearVelocity.x, 0f, 5f * Time.fixedDeltaTime);
+                controller.rb.linearVelocity = new Vector2(dampenX, controller.rb.linearVelocity.y);
+                return; // 여기서 멈춤 (아래 물리 연산 무시)
             }
-            return; // 4스테이지에서 줄다리기 중일 때만, 아래의 강제 속도 덮어쓰기를 멈춤
+            // 2. 땅에 남아있는 (위에서 조율하는) 3명의 플레이어 처리
+            else
+            {
+                if (Mathf.Abs(rawInput) > 0.01f)
+                {
+                    // 땅에서는 무거운 짐을 끌듯 묵직하고 안정적으로 이동하도록 속도를 대폭 줄임
+                    float ropeMoveSpeed = moveSpeed * 0.4f; // 평소 속도의 40%
+                    float targetX = rawInput * ropeMoveSpeed;
+
+                    controller.rb.linearVelocity = new Vector2(
+                        Mathf.MoveTowards(controller.rb.linearVelocity.x, targetX, 50f * Time.fixedDeltaTime),
+                        controller.rb.linearVelocity.y
+                    );
+                }
+                else
+                {
+                    // 위에서 조율하는 사람들이 키보드에서 손을 떼면 미끄러지지 않고 즉시 멈춰서 닻(Anchor) 역할을 하게 만듦
+                    controller.rb.linearVelocity = new Vector2(
+                        Mathf.MoveTowards(controller.rb.linearVelocity.x, 0f, 50f * Time.fixedDeltaTime),
+                        controller.rb.linearVelocity.y
+                    );
+                }
+                return; // 여기서 멈춤
+            }
         }
+
+        // ==========================================================
+        // 이 아래는 평소(로프가 없을 때)의 1, 2, 3, 5챕터 이동 물리 연산입니다.
+        // ==========================================================
+        float currentFriction = isGrounded
+            ? (isTouchingPlayer ? 15f : normalFriction)
+            : (isTouchingPlayer ? 15f : (isRestrictedByRope ? 0f : 9999f));
 
         float newX;
 
@@ -301,13 +331,8 @@ public class PlayerMovement : NetworkBehaviour
             );
         }
 
-        // 평소(로프가 없거나 안 팽팽할 때)에는 원래 유저님 코드 방식대로 작동
         controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
     }
-    // ============================================================
-    // 기타 물리 및 보조 파트
-    // ============================================================
-
     public void Jump()
     {
         if (controller.knockback.isKnockedBack) return;
