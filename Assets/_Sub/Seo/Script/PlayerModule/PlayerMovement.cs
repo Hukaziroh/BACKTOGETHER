@@ -162,17 +162,29 @@ public class PlayerMovement : NetworkBehaviour
 
         if (canCutJump && isMovingUp && !controller.knockback.IsStunned)
         {
-            if (isJumpReleased || !isJumpHolding)
+            bool inSyncZone = controller.syncJumpHandler != null && controller.syncJumpHandler.isInSyncZone;
+
+            if (inSyncZone)
             {
-                if (controller.syncJumpHandler != null && controller.syncJumpHandler.isInSyncZone)
-                {
-                    controller.syncJumpHandler.CmdCutSyncJump();
-                }
-                else
+                if (isJumpReleased)
                 {
                     ApplyShortJump();
+
+                    if (controller.syncJumpHandler.serverZone != null)
+                    {
+                        controller.syncJumpHandler.serverZone.BroadcastCutJump(gameObject);
+                    }
+
+                    canCutJump = false;
                 }
-                canCutJump = false;
+            }
+            else
+            {
+                if (isJumpReleased || !isJumpHolding)
+                {
+                    ApplyShortJump();
+                    canCutJump = false;
+                }
             }
         }
         else if (!isMovingUp)
@@ -180,7 +192,6 @@ public class PlayerMovement : NetworkBehaviour
             canCutJump = false;
         }
     }
-
     private void HandleActionInput()
     {
         if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
