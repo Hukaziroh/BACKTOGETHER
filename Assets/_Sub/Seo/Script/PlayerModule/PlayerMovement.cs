@@ -79,8 +79,8 @@ public class PlayerMovement : NetworkBehaviour
     [Header("점프 사운드")]
     public AudioClip jumpClip;
     [Range(0f, 1f)] public float jumpVolume = 0.6f;
-    public float jumpSoundMinDistance = 3f;
-    public float jumpSoundMaxDistance = 15f;
+    public float jumpSoundMinDistance = 9f;
+    public float jumpSoundMaxDistance = 40f;
 
     void Awake()
     {
