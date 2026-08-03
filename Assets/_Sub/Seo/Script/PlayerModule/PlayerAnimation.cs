@@ -31,8 +31,8 @@ public class PlayerAnimation : NetworkBehaviour
     public AudioClip footstepClip;
     [Range(0f, 1f)] public float footstepVolume = 0.4f;
     public float footstepInterval = 0.35f;
-    public float footstepMinDistance = 3f;
-    public float footstepMaxDistance = 15f;
+    public float footstepMinDistance = 9f;
+    public float footstepMaxDistance = 40f;
     private float footstepTimer = 0f;
 
 
