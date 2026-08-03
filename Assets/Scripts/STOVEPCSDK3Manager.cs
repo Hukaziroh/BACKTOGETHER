@@ -3,6 +3,7 @@ using System.Text;
 using System.Collections;
 using UnityEngine;
 using static Stove.PCSDK.Base;
+using static Stove.PCSDK.GameSupport;
 
 public class StovePCSDK3Manager : Singleton<StovePCSDK3Manager>
 {
@@ -87,12 +88,10 @@ public class StovePCSDK3Manager : Singleton<StovePCSDK3Manager>
 
             if (callbackResult.result.IsSuccessful())
             {
-                isInitialized = true;
                 Debug.Log("🎉 STOVE Base SDK 초기화 성공!");
-            }
-            else
-            {
-                Debug.LogError("STOVE Base SDK 초기화 실패");
+                GameSupport_Initialize();
+                Debug.Log("🏆 STOVE GameSupport(도전과제) 모듈 초기화 성공!");
+                isInitialized = true;
             }
         };
     }
@@ -182,5 +181,27 @@ public class StovePCSDK3Manager : Singleton<StovePCSDK3Manager>
         Result result = Base_GetVersion(ref version, strlen);
         PrintResult(result);
         return result.IsSuccessful() ? (true, version) : (false, version);
+    }
+
+    /// <summary>
+    /// 스토브 서버에 스탯을 1 증가시켜 업적을 해금합니다.
+    /// </summary>
+    public void UnlockAchievement(string achievementId)
+    {
+        if (!isInitialized) return;
+
+        // 업적ID, 올릴수치, 콜백 순서로 바로 넘깁니다.
+        GameSupport_ModifyStat(achievementId, 1, (callbackResult, stat) =>
+        {
+            if (callbackResult.result.IsSuccessful())
+            {
+                Debug.Log($"[STOVE] 업적 갱신 성공: {achievementId}");
+            }
+            else
+            {
+                // 👇 바로 이 부분! GetResultCode()를 지우고 resultCode 로 수정했습니다!
+                Debug.LogError($"[STOVE] 업적 갱신 실패: {callbackResult.result.resultCode}");
+            }
+        });
     }
 }
