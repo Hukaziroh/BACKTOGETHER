@@ -471,6 +471,116 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Main_Char_2P_15
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 1270
+        width: 323
+        height: 231
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5ebb883efdf56bf4e8ea5234e74d37f9
+      internalID: -285841098
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Main_Char_2P_16
+      rect:
+        serializedVersion: 2
+        x: 467
+        y: 1268
+        width: 295
+        height: 233
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 230309a20b10b5741be763e8ab22ef44
+      internalID: 1434510429
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Main_Char_2P_17
+      rect:
+        serializedVersion: 2
+        x: 1232
+        y: 1280
+        width: 311
+        height: 213
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d798b4dbc184d074ba3e09a015dc54f4
+      internalID: -466818957
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Main_Char_2P_18
+      rect:
+        serializedVersion: 2
+        x: 413
+        y: 652
+        width: 329
+        height: 211
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6cb8b390f6a7c7846b34b9840a85f117
+      internalID: -1226324929
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Main_Char_2P_19
+      rect:
+        serializedVersion: 2
+        x: 957
+        y: 762
+        width: 301
+        height: 213
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ae4d9d458409ef248b9b5e4b229d0893
+      internalID: -18025104
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -494,6 +604,11 @@ TextureImporter:
       Main_Char_2P_12: -2413524138892976094
       Main_Char_2P_13: -1671326736979023358
       Main_Char_2P_14: 5300992511709572196
+      Main_Char_2P_15: -285841098
+      Main_Char_2P_16: 1434510429
+      Main_Char_2P_17: -466818957
+      Main_Char_2P_18: -1226324929
+      Main_Char_2P_19: -18025104
       Main_Char_2P_2: -7750026884142275880
       Main_Char_2P_3: -4753364240392998533
       Main_Char_2P_4: -181405300319553063
