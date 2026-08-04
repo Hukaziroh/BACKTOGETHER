@@ -8,7 +8,7 @@ using Epic.OnlineServices.Lobby;
 using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
-using UnityEngine.InputSystem; // 신규 입력 시스템 네임스페이스 추가
+using UnityEngine.InputSystem;
 
 public class OptionsManager : MonoBehaviour
 {
@@ -24,7 +24,10 @@ public class OptionsManager : MonoBehaviour
 
     [Header("방 코드 UI (모든 플레이어 공용)")]
     public GameObject roomCodeUIContainer;
-    public TextMeshProUGUI RoomCodeText;
+
+    [Header("★ 다국어 영향 안 받는 완전 독립형 TMPro")]
+    public TextMeshProUGUI independentRoomCodeText;
+
     public Button toggleVisibilityButton;
 
     [Header("Key Guide Panel")]
@@ -33,7 +36,6 @@ public class OptionsManager : MonoBehaviour
 
     public bool IsCodeVisible => isCodeVisible;
 
-    // 시작할 때 코드가 드러난 상태(true)로 설정
     private bool isCodeVisible = true;
     private Coroutine fetchCodeRoutine;
 
@@ -76,7 +78,6 @@ public class OptionsManager : MonoBehaviour
 
     void Update()
     {
-        // 신규 입력 시스템 기반 ESC 키 입력 감지
         if (keyGuidePanel != null && keyGuidePanel.activeSelf)
         {
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
@@ -89,7 +90,7 @@ public class OptionsManager : MonoBehaviour
     public void Open()
     {
         if (optionsPanel != null) optionsPanel.SetActive(true);
-        if (keyGuidePanel != null) keyGuidePanel.SetActive(false); // 열릴 때는 키 가이드 끄기
+        if (keyGuidePanel != null) keyGuidePanel.SetActive(false);
         if (PauseManager.instance != null) PauseManager.instance.ClosePause();
 
         UpdateRoomCodeUI();
@@ -147,7 +148,6 @@ public class OptionsManager : MonoBehaviour
         }
     }
 
-    // 키보드 키 가이드 패널 토글 및 포커스 갱신
     public void ToggleKeyGuide()
     {
         if (keyGuidePanel != null)
@@ -156,11 +156,9 @@ public class OptionsManager : MonoBehaviour
 
             if (!isKeyGuideActive)
             {
-                // 키 가이드 켜기 -> 옵션 패널 끄기
                 keyGuidePanel.SetActive(true);
                 if (optionsPanel != null) optionsPanel.SetActive(false);
 
-                // 키 가이드 패널로 포커스 범위 전환
                 if (GlobalSceneInputManager.Instance != null)
                 {
                     GlobalSceneInputManager.Instance.SetFocusScope(keyGuidePanel);
@@ -168,13 +166,12 @@ public class OptionsManager : MonoBehaviour
             }
             else
             {
-                // 키 가이드 끄기 -> 옵션 패널 켜기
                 keyGuidePanel.SetActive(false);
                 if (optionsPanel != null)
                 {
                     optionsPanel.SetActive(true);
+                    UpdateRoomCodeUI();
 
-                    // 옵션 패널로 포커스 범위 복구
                     if (GlobalSceneInputManager.Instance != null)
                     {
                         GlobalSceneInputManager.Instance.SetFocusScope(optionsPanel);
@@ -231,7 +228,7 @@ public class OptionsManager : MonoBehaviour
 
     public void UpdateRoomCodeUI()
     {
-        if (RoomCodeText == null) return;
+        if (independentRoomCodeText == null) return;
 
         string displayCode = "";
 
@@ -249,31 +246,15 @@ public class OptionsManager : MonoBehaviour
             }
         }
 
-        string prefix = "Code:\n";
-        if (!string.IsNullOrEmpty(RoomCodeText.text))
-        {
-            int splitIndex = RoomCodeText.text.IndexOf('\n');
-            if (splitIndex != -1 && RoomCodeText.text.Length >= splitIndex + 1)
-            {
-                prefix = RoomCodeText.text.Substring(0, splitIndex + 1);
-            }
-            else
-            {
-                int colonIndex = RoomCodeText.text.IndexOf(':');
-                if (colonIndex != -1)
-                {
-                    prefix = RoomCodeText.text.Substring(0, colonIndex + 1) + "\n";
-                }
-            }
-        }
-
+        // 다국어 스크립트가 아예 붙어있지 않은 독립형 TMPro이므로 
+        // 오직 코드 값이나 Empty, 마스킹 처리만 깔끔하게 직관적으로 꽂아넣습니다.
         if (isMainScene || string.IsNullOrEmpty(displayCode))
         {
-            RoomCodeText.text = isCodeVisible ? (prefix + "Empty") : (prefix + "******");
+            independentRoomCodeText.text = isCodeVisible ? "Empty" : "******";
         }
         else
         {
-            RoomCodeText.text = isCodeVisible ? prefix + displayCode : prefix + "******";
+            independentRoomCodeText.text = isCodeVisible ? displayCode : "******";
         }
 
         if (LobbySyncManager.instance != null)
