@@ -2551,7 +2551,6 @@ GameObject:
   - component: {fileID: 2304823993813371790}
   - component: {fileID: 3129407513539713336}
   - component: {fileID: 4388743428759321180}
-  - component: {fileID: 8198696908182708901}
   - component: {fileID: 7919317132384829482}
   m_Layer: 0
   m_Name: UIMaster
@@ -2695,40 +2694,6 @@ MonoBehaviour:
   fadeCanvasGroup: {fileID: 3737877625152094095}
   mainSceneName: Main
   lobbySceneName: Lobby
---- !u!114 &8198696908182708901
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9071347035235099874}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26aaa4f62f122184799c86656d1956c5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EmojiRadialMenu
-  radialPanel: {fileID: 7502138523059334024}
-  menuItemImages:
-  - {fileID: 6102088746334751119}
-  - {fileID: 6202771619944290809}
-  - {fileID: 606662628323317590}
-  - {fileID: 8780063944095178896}
-  - {fileID: 5799895807327535142}
-  - {fileID: 6857101861649921411}
-  - {fileID: 1011597438363377945}
-  - {fileID: 1010411529929947362}
-  emojiIconImages:
-  - {fileID: 5344922575591322789}
-  - {fileID: 5470550688288489225}
-  - {fileID: 7694142681093519327}
-  - {fileID: 5618324933791711927}
-  - {fileID: 9029754593423651617}
-  - {fileID: 2904249597101820964}
-  - {fileID: 5974183123044547843}
-  - {fileID: 7091856984580156472}
-  normalColor: {r: 1, g: 1, b: 1, a: 0}
-  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  holdInterval: 0.2
 --- !u!114 &7919317132384829482
 MonoBehaviour:
   m_ObjectHideFlags: 0
