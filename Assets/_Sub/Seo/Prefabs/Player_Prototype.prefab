@@ -1037,12 +1037,10 @@ MonoBehaviour:
   - {r: 1, g: 0.5, b: 0.5, a: 1}
   - {r: 0.5, g: 0.5, b: 1, a: 1}
   - {r: 0.5, g: 1, b: 0.5, a: 1}
+  combineColors:
+  - {r: 0, g: 0, b: 0, a: 0}
+  - {r: 0, g: 0, b: 0, a: 0}
   playerIndex: -1
-  splitMode: 1
-  color1: -1
-  color2: -1
-  color3: -1
-  color4: -1
   faceSpriteRenderer: {fileID: 1103731208479697864}
   playerFaceGroups:
   - playerLabel: 0
@@ -1065,6 +1063,27 @@ MonoBehaviour:
     walkSprite: {fileID: 1853717296, guid: 0cf10df17455e364b82739bcb30aa102, type: 3}
     jumpSprite: {fileID: 55783722, guid: 0cf10df17455e364b82739bcb30aa102, type: 3}
     hitSprite: {fileID: 46408039, guid: 0cf10df17455e364b82739bcb30aa102, type: 3}
+  combineFaceGroups:
+  - playerLabel: 0
+    idleSprite: {fileID: 903493436, guid: 747837b89761c2e43907a0d3bb4ee8f1, type: 3}
+    walkSprite: {fileID: -310537773, guid: 747837b89761c2e43907a0d3bb4ee8f1, type: 3}
+    jumpSprite: {fileID: -1262241390, guid: 747837b89761c2e43907a0d3bb4ee8f1, type: 3}
+    hitSprite: {fileID: -1444668616, guid: 747837b89761c2e43907a0d3bb4ee8f1, type: 3}
+  - playerLabel: 1
+    idleSprite: {fileID: 672111654, guid: 0cf10df17455e364b82739bcb30aa102, type: 3}
+    walkSprite: {fileID: 1853717296, guid: 0cf10df17455e364b82739bcb30aa102, type: 3}
+    jumpSprite: {fileID: 55783722, guid: 0cf10df17455e364b82739bcb30aa102, type: 3}
+    hitSprite: {fileID: 46408039, guid: 0cf10df17455e364b82739bcb30aa102, type: 3}
+  - playerLabel: 2
+    idleSprite: {fileID: 525253492, guid: 26be3af118e053546bfda3168d186eb1, type: 3}
+    walkSprite: {fileID: -1645472280, guid: 26be3af118e053546bfda3168d186eb1, type: 3}
+    jumpSprite: {fileID: 148091784, guid: 26be3af118e053546bfda3168d186eb1, type: 3}
+    hitSprite: {fileID: 1817499975, guid: 26be3af118e053546bfda3168d186eb1, type: 3}
+  - playerLabel: 3
+    idleSprite: {fileID: -285841098, guid: dedaf8ddeedc7d149b2a38b51b3a4d94, type: 3}
+    walkSprite: {fileID: 1434510429, guid: dedaf8ddeedc7d149b2a38b51b3a4d94, type: 3}
+    jumpSprite: {fileID: -18025104, guid: dedaf8ddeedc7d149b2a38b51b3a4d94, type: 3}
+    hitSprite: {fileID: -1226324929, guid: dedaf8ddeedc7d149b2a38b51b3a4d94, type: 3}
 --- !u!114 &3358145353756136941
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1084,6 +1103,8 @@ MonoBehaviour:
   myRole: 0
   bodyTarget: {fileID: 0}
   canUseAction: 0
+  combineColorIndex: -1
+  combineFaceIndex: -1
   connectedGhosts: []
 --- !u!114 &3475600457935097304
 MonoBehaviour:
@@ -1144,6 +1165,9 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
+  soundMinDistance: 9
+  soundMaxDistance: 40
+  otherPlayerVolumeMultiplier: 0.25
 --- !u!114 &6835071175186218385
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1163,8 +1187,6 @@ MonoBehaviour:
   footstepClip: {fileID: 8300000, guid: 93f43f4569f2b8748ace3574e1132141, type: 3}
   footstepVolume: 1
   footstepInterval: 0.15
-  footstepMinDistance: 9
-  footstepMaxDistance: 40
 --- !u!114 &8774977094159864208
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1250,8 +1272,6 @@ MonoBehaviour:
   isKnockedBack: 0
   hitClip: {fileID: 8300000, guid: e4d14916a3eb7fa45a27284a99da1d9f, type: 3}
   hitVolume: 0.6
-  hitSoundMinDistance: 9
-  hitSoundMaxDistance: 40
 --- !u!114 &4858706675134242407
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1295,8 +1315,6 @@ MonoBehaviour:
   debugLogOverlap: 1
   jumpClip: {fileID: 8300000, guid: 8c8eeaefe9637994fb358357abf88dcd, type: 3}
   jumpVolume: 0.6
-  jumpSoundMinDistance: 9
-  jumpSoundMaxDistance: 40
 --- !u!114 &106991141419042085
 MonoBehaviour:
   m_ObjectHideFlags: 0
