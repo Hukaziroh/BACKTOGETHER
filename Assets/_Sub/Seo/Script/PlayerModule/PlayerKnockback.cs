@@ -28,8 +28,6 @@ public class PlayerKnockback : NetworkBehaviour
     [Header("피격 사운드")]
     public AudioClip hitClip;
     [Range(0f, 1f)] public float hitVolume = 0.6f;
-    public float hitSoundMinDistance = 9f;
-    public float hitSoundMaxDistance = 40f;
 
     public bool IsStunned => isKnockedBack || stunTimer > 0f;
 
@@ -196,21 +194,8 @@ public class PlayerKnockback : NetworkBehaviour
 
     private void PlayHitSoundLocal()
     {
-        if (hitClip == null) return;
-
-        GameObject soundObj = new GameObject("HitSound_Temp");
-        soundObj.transform.position = transform.position;
-
-        AudioSource source = soundObj.AddComponent<AudioSource>();
-        source.clip = hitClip;
-        source.volume = hitVolume;
-        source.spatialBlend = 1f;
-        source.rolloffMode = AudioRolloffMode.Linear;
-        source.minDistance = hitSoundMinDistance;
-        source.maxDistance = hitSoundMaxDistance;
-        source.Play();
-
-        Destroy(soundObj, hitClip.length);
+        float volume = isLocalPlayer ? hitVolume : hitVolume * controller.otherPlayerVolumeMultiplier;
+        PlayerSoundUtility.PlayPositional(transform.position, hitClip, volume, controller.soundMinDistance, controller.soundMaxDistance);
     }
 
     public void ResetKnockback()

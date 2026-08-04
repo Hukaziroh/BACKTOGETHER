@@ -79,8 +79,6 @@ public class PlayerMovement : NetworkBehaviour
     [Header("점프 사운드")]
     public AudioClip jumpClip;
     [Range(0f, 1f)] public float jumpVolume = 0.6f;
-    public float jumpSoundMinDistance = 9f;
-    public float jumpSoundMaxDistance = 40f;
 
     void Awake()
     {
@@ -357,21 +355,8 @@ public class PlayerMovement : NetworkBehaviour
 
     public void PlayJumpSoundLocal()
     {
-        if (jumpClip == null) return;
-
-        GameObject soundObj = new GameObject("JumpSound_Temp");
-        soundObj.transform.position = transform.position;
-
-        AudioSource source = soundObj.AddComponent<AudioSource>();
-        source.clip = jumpClip;
-        source.volume = jumpVolume;
-        source.spatialBlend = 1f; // 3D: 거리에 따라 감쇠되도록
-        source.rolloffMode = AudioRolloffMode.Linear;
-        source.minDistance = jumpSoundMinDistance;
-        source.maxDistance = jumpSoundMaxDistance;
-        source.Play();
-
-        Destroy(soundObj, jumpClip.length);
+        float volume = isLocalPlayer ? jumpVolume : jumpVolume * controller.otherPlayerVolumeMultiplier;
+        PlayerSoundUtility.PlayPositional(transform.position, jumpClip, volume, controller.soundMinDistance, controller.soundMaxDistance);
     }
 
     public void ApplyShortJump()

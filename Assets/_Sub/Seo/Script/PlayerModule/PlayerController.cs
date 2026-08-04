@@ -25,6 +25,14 @@ public class PlayerController : NetworkBehaviour
     [Header("기믹 상태 (리버스 존)")]
     public IntervalTrigger currentReverseZone { get; private set; } // 추가됨
 
+    [Header("사운드 공통 설정 (점프/피격/발소리 공용)")]
+    // 카메라가 항상 (0, 1.5, -10) 오프셋으로 떨어져 있어서(CameraFollow 참고),
+    // 어떤 캐릭터 사운드든 리스너와의 거리 계산 기준은 동일하다. 그래서 사운드별로
+    // 따로 두지 않고 여기 한 곳에서만 관리한다.
+    public float soundMinDistance = 9f;
+    public float soundMaxDistance = 40f;
+    [Range(0f, 1f)] public float otherPlayerVolumeMultiplier = 0.25f;
+
   
     void Awake()
     {
