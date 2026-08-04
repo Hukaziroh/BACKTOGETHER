@@ -55,16 +55,8 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
             playerList[randomIndex] = temp;
         }
 
-        Debug.Log("4인 기믹 발동! (역할 완전 랜덤 배정)");
-
         AssignRole(playerList[0], playerList[1], playerList[2], playerList[3],
-                   CombineRole.Move_Left, CombineRole.Move_Right, CombineRole.Jump, CombineRole.Action);
-
-        int id0 = playerList[0].GetComponent<CoopPlayerIdentity>().playerIndex;
-        int id1 = playerList[1].GetComponent<CoopPlayerIdentity>().playerIndex;
-        int id2 = playerList[2].GetComponent<CoopPlayerIdentity>().playerIndex;
-        int id3 = playerList[3].GetComponent<CoopPlayerIdentity>().playerIndex;
-        playerList[0].GetComponent<CoopPlayerIdentity>().SetCombinedColors(4, id0, id1, id2, id3);
+                   CombineRole.Move, CombineRole.Jump, CombineRole.Action, CombineRole.None);
     }
 
     [Server]
@@ -89,6 +81,6 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
         c.StartCombineMode(roleC, playerA);
         d.StartCombineMode(roleD, playerA);
 
-        Debug.Log($"[4인 1조 합체 완료] 본체:{playerA.name}({roleA}) / 파츠:{playerB.name}({roleB}), {playerC.name}({roleC}), {playerD.name}({roleD})");
+        Debug.Log($"[4인 1조 합체 완료] 본체:{playerA.name}({roleA})");
     }
 }

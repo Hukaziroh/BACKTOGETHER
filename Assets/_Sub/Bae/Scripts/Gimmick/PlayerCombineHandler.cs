@@ -16,7 +16,7 @@ public class PlayerCombineHandler : NetworkBehaviour
 
     [SyncVar] public bool canUseAction = false;
 
-    // 본체(Body)가 자신에게 붙은 고스트들을 기억하는 리스트 (서버 전용 최적화)
+    // 본체(Body)가 자신에게 붙은 고스트들을 기억하는 리스트
     public List<PlayerCombineHandler> connectedGhosts = new List<PlayerCombineHandler>();
 
     private SpriteRenderer spriteRenderer;
@@ -29,13 +29,13 @@ public class PlayerCombineHandler : NetworkBehaviour
         col = GetComponent<Collider2D>();
         rb = GetComponent<Rigidbody2D>();
     }
+
     [Server]
     public void StartCombineMode(CombineRole role, GameObject body)
     {
         isCombined = true;
         myRole = role;
         bodyTarget = body;
-
 
         if (gameObject == body)
         {
@@ -66,149 +66,22 @@ public class PlayerCombineHandler : NetworkBehaviour
             spriteRenderer.enabled = false;
             col.enabled = false;
             if (rb != null) rb.simulated = false;
-        }
 
-        if (isLocalPlayer && body != null)
-        {
-            Camera mainCam = Camera.main;
-            if (mainCam != null)
+            if (isLocalPlayer)
             {
-                CameraFollow cam = mainCam.GetComponent<CameraFollow>();
-                if (cam != null) cam.target = body.transform;
+                Camera mainCam = Camera.main;
+                if (mainCam != null)
+                {
+                    CameraFollow cam = mainCam.GetComponent<CameraFollow>();
+                    if (cam != null) cam.target = body.transform;
+                }
             }
         }
     }
-
-    void LateUpdate()
-    {
-        if (isCombined && bodyTarget != null && gameObject != bodyTarget)
-        {
-            transform.position = bodyTarget.transform.position;
-        }
-    }
-
-    // ====================================================
-    // 서버 최적화 입력 긁어오기 (Move, Jump, Action)
-    // ====================================================
-
-    [Server]
-    public float GetServerCombinedHorizontalInput()
-    {
-        float totalInput = 0f;
-        PlayerInput myInput = GetComponent<PlayerInput>();
-
-        if (myRole == CombineRole.Move_Left && myInput.HorizontalInput < 0) totalInput += myInput.HorizontalInput;
-        else if (myRole == CombineRole.Move_Right && myInput.HorizontalInput > 0) totalInput += myInput.HorizontalInput;
-        else if (myRole == CombineRole.Move) totalInput += myInput.HorizontalInput;
-
-        foreach (var ghost in connectedGhosts)
-        {
-            if (ghost == null) continue;
-            PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
-            if (ghostInput != null)
-            {
-                if (ghost.myRole == CombineRole.Move_Left && ghostInput.HorizontalInput < 0) totalInput += ghostInput.HorizontalInput;
-                else if (ghost.myRole == CombineRole.Move_Right && ghostInput.HorizontalInput > 0) totalInput += ghostInput.HorizontalInput;
-                else if (ghost.myRole == CombineRole.Move) totalInput += ghostInput.HorizontalInput;
-            }
-        }
-        return Mathf.Clamp(totalInput, -1f, 1f);
-    }
-
-    [Server]
-    public bool GetServerCombinedJumpPressed()
-    {
-        PlayerInput myInput = GetComponent<PlayerInput>();
-        if (myRole == CombineRole.Jump && myInput != null && myInput.JumpPressedThisFrame) return true;
-
-        foreach (var ghost in connectedGhosts)
-        {
-            if (ghost != null && ghost.myRole == CombineRole.Jump)
-            {
-                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
-                if (ghostInput != null && ghostInput.JumpPressedThisFrame) return true;
-            }
-        }
-        return false;
-    }
-
-    [Server]
-    public bool GetServerCombinedJumpReleased()
-    {
-        PlayerInput myInput = GetComponent<PlayerInput>();
-        if (myRole == CombineRole.Jump && myInput != null && myInput.JumpReleasedThisFrame) return true;
-
-        foreach (var ghost in connectedGhosts)
-        {
-            if (ghost != null && ghost.myRole == CombineRole.Jump)
-            {
-                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
-                if (ghostInput != null && ghostInput.JumpReleasedThisFrame) return true;
-            }
-        }
-        return false;
-    }
-
-    // 🌟 [에러 해결!] 점프 담당 고스트가 점프 키를 유지(Hold)하고 있는지 확인
-    [Server]
-    public bool GetServerCombinedJumpHolding()
-    {
-        PlayerInput myInput = GetComponent<PlayerInput>();
-        if (myRole == CombineRole.Jump && myInput != null && myInput.JumpHolding) return true;
-
-        foreach (var ghost in connectedGhosts)
-        {
-            if (ghost != null && ghost.myRole == CombineRole.Jump)
-            {
-                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
-                if (ghostInput != null && ghostInput.JumpHolding) return true;
-            }
-        }
-        return false;
-    }
-
-    [Server]
-    public bool GetServerCombinedActionPressed()
-    {
-        PlayerInput myInput = GetComponent<PlayerInput>();
-        if (myRole == CombineRole.Action && myInput != null && myInput.ActionPressedThisFrame) return true;
-
-        foreach (var ghost in connectedGhosts)
-        {
-            if (ghost != null && ghost.myRole == CombineRole.Action)
-            {
-                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
-                if (ghostInput != null && ghostInput.ActionPressedThisFrame) return true;
-            }
-        }
-        return false;
-    }
-
-    // 본체와 고스트(팀원)들의 입력 버퍼를 한 번에 지워주는 함수
-    [Server]
-    public void ClearAllCombinedInputBuffers()
-    {
-        PlayerInput myInput = GetComponent<PlayerInput>();
-        if (myInput != null) myInput.ClearInputBuffers();
-
-        foreach (var ghost in connectedGhosts)
-        {
-            if (ghost != null)
-            {
-                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
-                if (ghostInput != null) ghostInput.ClearInputBuffers();
-            }
-        }
-    }
-
-    // ====================================================
-    // 합체 해제
-    // ====================================================
 
     [Server]
     public void StopCombineMode(Vector3 releasePosition)
     {
-        // 명단 정리
         if (gameObject != bodyTarget && bodyTarget != null)
         {
             PlayerCombineHandler bodyHandler = bodyTarget.GetComponent<PlayerCombineHandler>();
@@ -221,7 +94,6 @@ public class PlayerCombineHandler : NetworkBehaviour
         bodyTarget = null;
         canUseAction = false;
 
-        // 물리 복구
         if (rb != null)
         {
             rb.simulated = true;
@@ -251,6 +123,136 @@ public class PlayerCombineHandler : NetworkBehaviour
                 CameraFollow cam = mainCam.GetComponent<CameraFollow>();
                 if (cam != null) cam.target = transform;
             }
+        }
+    }
+
+    // ====================================================
+    // 🌟 복구 및 추가된 파티원 입력 합산 함수들 (에러 해결)
+    // ====================================================
+
+    [Server]
+    public float GetServerCombinedHorizontalInput()
+    {
+        float totalInput = 0f;
+
+        if (myRole == CombineRole.Move || myRole == CombineRole.Move_Left || myRole == CombineRole.Move_Right)
+        {
+            PlayerInput myInput = GetComponent<PlayerInput>();
+            if (myInput != null) totalInput += myInput.HorizontalInput;
+        }
+
+        foreach (PlayerCombineHandler ghost in connectedGhosts)
+        {
+            if (ghost == null) continue;
+            PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
+            if (ghostInput == null) continue;
+
+            if (ghost.myRole == CombineRole.Move)
+                totalInput += ghostInput.HorizontalInput;
+            else if (ghost.myRole == CombineRole.Move_Left && ghostInput.HorizontalInput < 0)
+                totalInput += ghostInput.HorizontalInput;
+            else if (ghost.myRole == CombineRole.Move_Right && ghostInput.HorizontalInput > 0)
+                totalInput += ghostInput.HorizontalInput;
+        }
+
+        return Mathf.Clamp(totalInput, -1f, 1f);
+    }
+
+    [Server]
+    public bool GetServerCombinedJumpPressed()
+    {
+        if (myRole == CombineRole.Jump)
+        {
+            PlayerInput myInput = GetComponent<PlayerInput>();
+            if (myInput != null && myInput.JumpPressedThisFrame) return true;
+        }
+
+        foreach (var ghost in connectedGhosts)
+        {
+            if (ghost == null) continue;
+            if (ghost.myRole == CombineRole.Jump)
+            {
+                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
+                if (ghostInput != null && ghostInput.JumpPressedThisFrame) return true;
+            }
+        }
+        return false;
+    }
+
+    [Server]
+    public bool GetServerCombinedJumpReleased()
+    {
+        if (myRole == CombineRole.Jump)
+        {
+            PlayerInput myInput = GetComponent<PlayerInput>();
+            if (myInput != null && myInput.JumpReleasedThisFrame) return true;
+        }
+
+        foreach (var ghost in connectedGhosts)
+        {
+            if (ghost == null) continue;
+            if (ghost.myRole == CombineRole.Jump)
+            {
+                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
+                if (ghostInput != null && ghostInput.JumpReleasedThisFrame) return true;
+            }
+        }
+        return false;
+    }
+
+    [Server]
+    public bool GetServerCombinedJumpHolding()
+    {
+        if (myRole == CombineRole.Jump)
+        {
+            PlayerInput myInput = GetComponent<PlayerInput>();
+            if (myInput != null && myInput.JumpHolding) return true;
+        }
+
+        foreach (var ghost in connectedGhosts)
+        {
+            if (ghost == null) continue;
+            if (ghost.myRole == CombineRole.Jump)
+            {
+                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
+                if (ghostInput != null && ghostInput.JumpHolding) return true;
+            }
+        }
+        return false;
+    }
+
+    [Server]
+    public bool GetServerCombinedActionPressed()
+    {
+        if (myRole == CombineRole.Action)
+        {
+            PlayerInput myInput = GetComponent<PlayerInput>();
+            if (myInput != null && myInput.ActionPressedThisFrame) return true;
+        }
+
+        foreach (var ghost in connectedGhosts)
+        {
+            if (ghost == null) continue;
+            if (ghost.myRole == CombineRole.Action)
+            {
+                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
+                if (ghostInput != null && ghostInput.ActionPressedThisFrame) return true;
+            }
+        }
+        return false;
+    }
+
+    [Server]
+    public void ClearAllCombinedInputBuffers()
+    {
+        PlayerInput myInput = GetComponent<PlayerInput>();
+        if (myInput != null) myInput.ClearInputBuffers();
+
+        foreach (var ghost in connectedGhosts)
+        {
+            if (ghost == null) continue;
+            PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
+            if (ghostInput != null) ghostInput.ClearInputBuffers();
         }
     }
 }
