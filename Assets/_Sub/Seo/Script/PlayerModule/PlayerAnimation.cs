@@ -31,8 +31,6 @@ public class PlayerAnimation : NetworkBehaviour
     public AudioClip footstepClip;
     [Range(0f, 1f)] public float footstepVolume = 0.4f;
     public float footstepInterval = 0.35f;
-    public float footstepMinDistance = 9f;
-    public float footstepMaxDistance = 40f;
     private float footstepTimer = 0f;
 
 
@@ -93,21 +91,8 @@ public class PlayerAnimation : NetworkBehaviour
 
     private void PlayFootstepSound()
     {
-        if (footstepClip == null) return;
-
-        GameObject soundObj = new GameObject("FootstepSound_Temp");
-        soundObj.transform.position = transform.position;
-
-        AudioSource source = soundObj.AddComponent<AudioSource>();
-        source.clip = footstepClip;
-        source.volume = footstepVolume;
-        source.spatialBlend = 1f;
-        source.rolloffMode = AudioRolloffMode.Linear;
-        source.minDistance = footstepMinDistance;
-        source.maxDistance = footstepMaxDistance;
-        source.Play();
-
-        Destroy(soundObj, footstepClip.length);
+        float volume = isLocalPlayer ? footstepVolume : footstepVolume * controller.otherPlayerVolumeMultiplier;
+        PlayerSoundUtility.PlayPositional(transform.position, footstepClip, volume, controller.soundMinDistance, controller.soundMaxDistance);
     }
 
     [Server]
