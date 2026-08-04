@@ -73958,9 +73958,6 @@ Tilemap:
   - serializedVersion: 2
     m_RefCount: 3
     m_Data: {fileID: -7102676024549555948, guid: a35f489fe452b664e8aec11dbd6b85dd, type: 3}
-  - serializedVersion: 2
-    m_RefCount: 0
-    m_Data: {fileID: 5902011874768060261, guid: 09e394e2e4a18cb4087edbf79209c5ce, type: 3}
   m_TileMatrixArray:
   - serializedVersion: 2
     m_RefCount: 150
@@ -73983,7 +73980,7 @@ Tilemap:
       e33: 1
   m_TileColorArray:
   - serializedVersion: 2
-    m_RefCount: 157
+    m_RefCount: 150
     m_Data: {r: 1, g: 1, b: 1, a: 1}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
@@ -77825,6 +77822,7 @@ GameObject:
   - component: {fileID: 1321032941}
   - component: {fileID: 1321032940}
   - component: {fileID: 1321032943}
+  - component: {fileID: 1321032944}
   m_Layer: 0
   m_Name: SepartateTriiger
   m_TagString: Untagged
@@ -77866,7 +77864,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -1.2614441, y: 2.960188}
+  m_Offset: {x: 0.8762665, y: 2.960188}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -77876,7 +77874,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 4.7338867, y: 6.920376}
+  m_Size: {x: 4.733856, y: 6.920376}
   m_EdgeRadius: 0
 --- !u!114 &1321032941
 MonoBehaviour:
@@ -77893,6 +77891,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
+  requiredTeams: 2
 --- !u!4 &1321032942
 Transform:
   m_ObjectHideFlags: 0
@@ -77925,6 +77924,43 @@ MonoBehaviour:
   serverOnly: 0
   visibility: 0
   hasSpawned: 0
+--- !u!114 &1321032944
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1321032939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fa616f9d8abea64c9cca3590a76c411, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoopAreaTrigger
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  requiredPlayers: 2
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  OnAllPlayersEntered:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1050331190}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnPlayersDeficit:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1001 &1373809169
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -297219,6 +297255,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
+  requiredTeams: 1
 --- !u!4 &2019069930
 Transform:
   m_ObjectHideFlags: 0
