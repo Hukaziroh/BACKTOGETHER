@@ -15,6 +15,11 @@ public class PlayerCombineHandler : NetworkBehaviour
     [SyncVar] public GameObject bodyTarget;
 
     [SyncVar] public bool canUseAction = false;
+    [SyncVar]
+    public int combineColorIndex = -1;
+
+    [SyncVar]
+    public int combineFaceIndex = -1;
 
     // 본체(Body)가 자신에게 붙은 고스트들을 기억하는 리스트 (서버 전용 최적화)
     public List<PlayerCombineHandler> connectedGhosts = new List<PlayerCombineHandler>();
@@ -220,6 +225,8 @@ public class PlayerCombineHandler : NetworkBehaviour
         myRole = CombineRole.None;
         bodyTarget = null;
         canUseAction = false;
+        combineColorIndex = -1;
+        combineFaceIndex = -1;
 
         // 물리 복구
         if (rb != null)

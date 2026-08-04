@@ -77,6 +77,15 @@ public class CoopDuoCombineTrigger : NetworkBehaviour
             return;
         }
 
+        int color = Random.Range(0, 2);
+        int face = Random.Range(0, 2);
+
+        a.combineColorIndex = color;
+        a.combineFaceIndex = face;
+
+        b.combineColorIndex = color;
+        b.combineFaceIndex = face;
+
         a.StartCombineMode(roleA, playerA);
         b.StartCombineMode(roleB, playerA);
 
