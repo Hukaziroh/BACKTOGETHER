@@ -39,6 +39,7 @@ public class CoopPlayerIdentity : NetworkBehaviour
 
     private PlayerController controller;
     private Animator anim;
+    private PlayerCombineHandler combineHandler; // 합체 상태 확인용
 
     public static Dictionary<int, CoopPlayerIdentity> players = new Dictionary<int, CoopPlayerIdentity>();
     private static readonly Dictionary<int, int> serverConnectionIndexMap = new Dictionary<int, int>();
@@ -50,6 +51,7 @@ public class CoopPlayerIdentity : NetworkBehaviour
         propBlock = new MaterialPropertyBlock();
         controller = GetComponent<PlayerController>();
         anim = GetComponent<Animator>();
+        combineHandler = GetComponent<PlayerCombineHandler>();
 
         if (faceSpriteRenderer == null)
         {
@@ -90,6 +92,17 @@ public class CoopPlayerIdentity : NetworkBehaviour
     void Update()
     {
         if (faceSpriteRenderer == null || playerFaceGroups == null || playerFaceGroups.Length == 0) return;
+
+        // 🌟 [핵심 버그 수정] 합체 상태이고 내가 '본체(Body)'가 아닌 '탑승자(Ghost)'라면 눈을 감춥니다!
+        if (combineHandler != null && combineHandler.isCombined && combineHandler.bodyTarget != gameObject)
+        {
+            faceSpriteRenderer.enabled = false;
+            return;
+        }
+        else
+        {
+            faceSpriteRenderer.enabled = true;
+        }
 
         int validIndex = playerIndex;
         if (validIndex < 0 || validIndex >= playerFaceGroups.Length) validIndex = 0;
@@ -134,14 +147,9 @@ public class CoopPlayerIdentity : NetworkBehaviour
         }
     }
 
-    // =======================================================
-    // 🌟 유저님이 원하셨던 '색상 강제 초기화(안전장치)' 함수 부활
-    // =======================================================
     [Server]
     public void ResetCombinedColors()
     {
-        // 혹시라도 셰이더 설정이 꼬였을 때를 대비해, 
-        // 합체가 풀리면 무조건 자기 고유 번호(playerIndex) 색상으로 덮어씌웁니다.
         RpcResetColor();
     }
 
@@ -150,7 +158,6 @@ public class CoopPlayerIdentity : NetworkBehaviour
     {
         UpdatePlayerVisual();
     }
-    // =======================================================
 
     private void AssignAvailableIndex()
     {
