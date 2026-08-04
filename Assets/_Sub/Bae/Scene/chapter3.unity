@@ -64399,7 +64399,7 @@ Tilemap:
       e33: 1
   m_TileColorArray:
   - serializedVersion: 2
-    m_RefCount: 6065
+    m_RefCount: 5907
     m_Data: {r: 1, g: 1, b: 1, a: 1}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
@@ -71488,6 +71488,10 @@ PrefabInstance:
     - target: {fileID: 3742478716910255884, guid: 500167d921f352344953d87262a30cb8, type: 3}
       propertyPath: m_Name
       value: Moving Platform
+      objectReference: {fileID: 0}
+    - target: {fileID: 3742478716910255884, guid: 500167d921f352344953d87262a30cb8, type: 3}
+      propertyPath: m_Layer
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 3742478716910255884, guid: 500167d921f352344953d87262a30cb8, type: 3}
       propertyPath: m_TagString
@@ -291849,7 +291853,7 @@ Tilemap:
       e33: 1
   m_TileColorArray:
   - serializedVersion: 2
-    m_RefCount: 22011
+    m_RefCount: 21292
     m_Data: {r: 1, g: 1, b: 1, a: 1}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
