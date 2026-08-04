@@ -73,7 +73,17 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
             Debug.LogError("PlayerCombineHandler가 없는 플레이어가 있습니다.");
             return;
         }
+        a.combineColorIndex = 0;
+        a.combineFaceIndex = 0;
 
+        b.combineColorIndex = 0;
+        b.combineFaceIndex = 0;
+
+        c.combineColorIndex = 0;
+        c.combineFaceIndex = 0;
+
+        d.combineColorIndex = 0;
+        d.combineFaceIndex = 0;
         // playerA를 본체로 설정
         a.StartCombineMode(roleA, playerA);
         // 나머지는 playerA를 조종

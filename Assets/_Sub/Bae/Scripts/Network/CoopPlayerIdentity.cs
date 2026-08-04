@@ -29,6 +29,8 @@ public class CoopPlayerIdentity : NetworkBehaviour
         new Color(0.5f, 0.5f, 1f), // Blue
         new Color(0.5f, 1f, 0.5f)  // Green
     };
+    [Header("합체 몸통 색")]
+    public Color[] combineColors = new Color[2];
 
     [SyncVar(hook = nameof(OnPlayerIndexChanged))]
     public int playerIndex = -1;
@@ -36,6 +38,8 @@ public class CoopPlayerIdentity : NetworkBehaviour
     [Header("표정(눈) 설정")]
     public SpriteRenderer faceSpriteRenderer;
     public PlayerFaceGroup[] playerFaceGroups = new PlayerFaceGroup[4];
+    [Header("합체 눈")]
+    public PlayerFaceGroup[] combineFaceGroups = new PlayerFaceGroup[2];
 
     private PlayerController controller;
     private Animator anim;
@@ -122,13 +126,21 @@ public class CoopPlayerIdentity : NetworkBehaviour
         else if (!isGrounded) currentState = FaceState.Jump;
         else if (speed > 0.1f) currentState = FaceState.Walk;
 
-        Sprite targetSprite = GetFaceSprite(playerFaceGroups[validIndex], currentState);
+        PlayerFaceGroup group;
 
-        if (targetSprite == null && validIndex != 0)
+        if (combineHandler != null &&
+            combineHandler.isCombined &&
+            combineHandler.combineFaceIndex >= 0)
         {
-            targetSprite = GetFaceSprite(playerFaceGroups[0], currentState);
+            group = combineFaceGroups[combineHandler.combineFaceIndex];
+        }
+        else
+        {
+            group = playerFaceGroups[validIndex];
         }
 
+        Sprite targetSprite =
+        GetFaceSprite(group, currentState);
         if (targetSprite != null)
         {
             faceSpriteRenderer.sprite = targetSprite;
@@ -201,9 +213,24 @@ public class CoopPlayerIdentity : NetworkBehaviour
     private void UpdatePlayerVisual()
     {
         if (playerSpriteRenderer == null) return;
+
         playerSpriteRenderer.GetPropertyBlock(propBlock);
 
-        Color mainColor = (playerIndex >= 0 && playerIndex < playerColors.Length) ? playerColors[playerIndex] : Color.white;
+        Color mainColor;
+
+        if (combineHandler != null &&
+            combineHandler.isCombined &&
+            combineHandler.combineColorIndex >= 0)
+        {
+            mainColor = combineColors[combineHandler.combineColorIndex];
+        }
+        else
+        {
+            mainColor =
+                (playerIndex >= 0 && playerIndex < playerColors.Length)
+                ? playerColors[playerIndex]
+                : Color.white;
+        }
 
         propBlock.SetFloat("_SplitMode", 1);
         propBlock.SetColor("_Color1", mainColor);
