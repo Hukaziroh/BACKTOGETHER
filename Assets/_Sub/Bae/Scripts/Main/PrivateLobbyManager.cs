@@ -123,7 +123,6 @@ public class PrivateLobbyManager : MonoBehaviour
             }
         }
 
-        // 인풋 필드 작성 완료(엔터/포커스 해제) 시 다시 interactable = false 처리
         if (roomNameInputField != null)
         {
             roomNameInputField.onEndEdit.AddListener(OnRoomNameEndEdit);
@@ -144,30 +143,44 @@ public class PrivateLobbyManager : MonoBehaviour
 
     private void Update()
     {
-        // 🌟 ESC 키 입력 처리 (최우선 순위: 에러 팝업 -> 호스트 패널)
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-        {
-            // 1. 에러 팝업이 켜져있다면 에러 팝업 닫기
-            if (errorPopupPanel != null && errorPopupPanel.activeSelf)
-            {
-                errorPopupPanel.SetActive(false);
-                return;
-            }
+        // ==========================================
+        // 🌟 1. 키보드 및 게임패드 입력 통합 감지
+        // ==========================================
+        bool leftPressed = false;
+        bool rightPressed = false;
+        bool enterOrActionPressed = false;
 
-            // 2. 호스트 패널이 켜져있다면 메인 패널로 돌아가기
-            if (hostPanel != null && hostPanel.activeSelf)
-            {
-                OnClick_ReturnToMain();
-                return;
-            }
+        // 키보드 입력 체크
+        if (Keyboard.current != null)
+        {
+            leftPressed |= Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame;
+            rightPressed |= Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame;
+            enterOrActionPressed |= Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.numpadEnterKey.wasPressedThisFrame;
         }
 
-        if (EventSystem.current == null) return;
+        // 게임패드 입력 체크
+        if (Gamepad.current != null)
+        {
+           
+            leftPressed |= Gamepad.current.dpad.left.wasPressedThisFrame || Gamepad.current.leftStick.left.wasPressedThisFrame;
+            rightPressed |= Gamepad.current.dpad.right.wasPressedThisFrame || Gamepad.current.leftStick.right.wasPressedThisFrame;
+            enterOrActionPressed |= Gamepad.current.buttonSouth.wasPressedThisFrame; // A 버튼
+        }
 
+
+        // ==========================================
+        // 🌟 2. ESC / 패드 B버튼 입력 처리 (최우선 순위)
+        // ==========================================
+       
+
+        if (EventSystem.current == null) return;
         GameObject selected = EventSystem.current.currentSelectedGameObject;
         if (selected == null) return;
 
-        // 1. Chapter Select 오브젝트가 선택되어 있는 경우
+
+        // ==========================================
+        // 🌟 3. 좌우 선택 (챕터 / 방 타입) 넘기기
+        // ==========================================
         bool isChapterSelected = (chapterSelectObject != null && selected == chapterSelectObject) ||
                                  (chapterDisplayText != null && (selected == chapterDisplayText.gameObject || selected == chapterDisplayText.transform.parent.gameObject)) ||
                                  (prevChapterButton != null && selected == prevChapterButton.gameObject) ||
@@ -175,21 +188,11 @@ public class PrivateLobbyManager : MonoBehaviour
 
         if (isChapterSelected)
         {
-            if (Keyboard.current != null)
-            {
-                if (Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame)
-                {
-                    OnClick_PrevChapter();
-                }
-                else if (Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame)
-                {
-                    OnClick_NextChapter();
-                }
-            }
+            if (leftPressed) OnClick_PrevChapter();
+            else if (rightPressed) OnClick_NextChapter();
             return;
         }
 
-        // 2. Room Type Select 오브젝트가 선택되어 있는 경우
         bool isRoomTypeSelected = (roomTypeSelectObject != null && selected == roomTypeSelectObject) ||
                                   (roomTypeDisplayText != null && (selected == roomTypeDisplayText.gameObject || selected == roomTypeDisplayText.transform.parent.gameObject)) ||
                                   (prevRoomTypeButton != null && selected == prevRoomTypeButton.gameObject) ||
@@ -197,36 +200,26 @@ public class PrivateLobbyManager : MonoBehaviour
 
         if (isRoomTypeSelected)
         {
-            if (Keyboard.current != null)
-            {
-                if (Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame)
-                {
-                    OnClick_PrevRoomType();
-                }
-                else if (Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame)
-                {
-                    OnClick_NextRoomType();
-                }
-            }
+            if (leftPressed) OnClick_PrevRoomType();
+            else if (rightPressed) OnClick_NextRoomType();
             return;
         }
 
-        // ★ 3. 퍼블릭 방 모드일 때 인풋 필드 선택 후 엔터 키 입력 시 활성화
+        // ==========================================
+        // 🌟 4. 입력창 선택 시 엔터 / 패드 A버튼 누르면 활성화
+        // ==========================================
         if (isPublicRoom && roomNameInputField != null)
         {
             bool isInputFieldSelected = (selected == roomNameInputField.gameObject) ||
                                         (selected == roomNameInputField.transform.parent?.gameObject);
 
-            if (isInputFieldSelected && Keyboard.current != null)
+            if (isInputFieldSelected && enterOrActionPressed)
             {
-                if (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.numpadEnterKey.wasPressedThisFrame)
+                if (!roomNameInputField.interactable)
                 {
-                    if (!roomNameInputField.interactable)
-                    {
-                        roomNameInputField.interactable = true;
-                        roomNameInputField.ActivateInputField();
-                        roomNameInputField.Select();
-                    }
+                    roomNameInputField.interactable = true;
+                    roomNameInputField.ActivateInputField();
+                    roomNameInputField.Select();
                 }
             }
         }
@@ -234,7 +227,6 @@ public class PrivateLobbyManager : MonoBehaviour
 
     private void OnRoomNameEndEdit(string text)
     {
-        // 텍스트 입력 완료 후 비활성화 상태로 복귀
         if (roomNameInputField != null)
         {
             roomNameInputField.interactable = false;
@@ -272,47 +264,39 @@ public class PrivateLobbyManager : MonoBehaviour
     private void UpdateChapterUI()
     {
         int displayChapter = selectedChapterIndex;
-        int arrayIndex = selectedChapterIndex - 1; // 배열 및 세이브 데이터 비교용 (0~5)
+        int arrayIndex = selectedChapterIndex - 1;
 
         if (chapterDisplayText != null)
         {
             chapterDisplayText.text = $"Chapter {displayChapter}";
         }
 
-        // 챕터 이미지 배열 적용
         if (chapterPreviewImage != null && chapterSprites != null && chapterSprites.Length > arrayIndex)
         {
             chapterPreviewImage.sprite = chapterSprites[arrayIndex];
         }
 
-        // ==========================================
-        // 🌟 챕터 잠금 여부 확인 로직
-        // ==========================================
         bool isUnlocked = true;
 
         if (GameSaveManager.Instance != null)
         {
             int maxCleared = GameSaveManager.Instance.currentData.maxClearedChapter;
-
             if (maxCleared < arrayIndex)
             {
                 isUnlocked = false;
             }
         }
 
-        // 1. 자물쇠 UI 켜기/끄기
         if (chapterLockObject != null)
         {
             chapterLockObject.SetActive(!isUnlocked);
         }
 
-        // 2. 방 만들기 버튼 활성화/비활성화
         if (makeRoomButton != null)
         {
             makeRoomButton.interactable = isUnlocked;
         }
 
-        // 3. (보너스 연출) 잠겨있을 때 챕터 이미지를 어둡게 처리
         if (chapterPreviewImage != null)
         {
             chapterPreviewImage.color = isUnlocked ? Color.white : new Color(0.3f, 0.3f, 0.3f, 1f);
@@ -502,10 +486,9 @@ public class PrivateLobbyManager : MonoBehaviour
             if (errorMessageText != null) errorMessageText.text = message;
             errorPopupPanel.SetActive(true);
 
-            // 🌟 에러 팝업이 뜰 때 포커스를 강제로 잡아줌
             if (EventSystem.current != null)
             {
-                EventSystem.current.SetSelectedGameObject(null); // 기존 포커스 초기화
+                EventSystem.current.SetSelectedGameObject(null);
 
                 if (errorCloseButton != null)
                 {
@@ -513,7 +496,6 @@ public class PrivateLobbyManager : MonoBehaviour
                 }
                 else
                 {
-                    // 확인 버튼 변수를 따로 안 빼뒀다면 팝업 패널 자체나 내부 첫 번째 버튼을 지정
                     EventSystem.current.SetSelectedGameObject(errorPopupPanel);
                 }
             }

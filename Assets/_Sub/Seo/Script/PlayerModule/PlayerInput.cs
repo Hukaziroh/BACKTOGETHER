@@ -1,17 +1,32 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Mirror;
+using PlayerControls; // 자동 생성된 액션 네임스페이스
 
 public class PlayerInput : NetworkBehaviour
 {
     private PlayerController controller;
 
-    [Header("입력 설정")]
-    public InputAction moveAction;
-    public InputAction jumpAction;
-    public InputAction actionAction;
+    // 🌟 New Input System 액션 클래스
+    private PlayerControls.PlayerControls inputControls;
 
-    // 서버용 입력 데이터 (버퍼)
+    // 🌟 [추가] ESC / Pause / Back 연속 이중 입력 방지용 쿨다운 타이머
+    private float pauseCooldownTimer = 0f;
+
+    // ==========================================
+    // 🌟 외부 모듈 연동용 액션 프로퍼티
+    // ==========================================
+    public InputAction jumpAction => inputControls?.GamePlay.Jump;
+    public InputAction actionAction => inputControls?.GamePlay.Action;
+    public InputAction pauseAction => inputControls?.GamePlay.Pause;
+    public InputAction backAction => inputControls?.GamePlay.Back;
+    public InputAction spectatePrevAction => inputControls?.GamePlay.SpectatePrev;
+    public InputAction spectateNextAction => inputControls?.GamePlay.SpectateNext;
+    public InputAction returnToMeAction => inputControls?.GamePlay.ReturnToMe;
+    public InputAction restartAction => inputControls?.GamePlay.Restart;
+    public InputAction emojiAction => inputControls?.GamePlay.Emoji;
+
+    // 서버 동기화용 입력 버퍼
     private float serverHorizontalInput;
     public bool serverJumpHolding { get; private set; }
     public bool serverJumpPressed { get; private set; }
@@ -30,80 +45,112 @@ public class PlayerInput : NetworkBehaviour
     void Awake()
     {
         controller = GetComponent<PlayerController>();
-        InitializeInputs();
-    }
-
-    private void InitializeInputs()
-    {
-        // 🌟 [조이스틱 추가] 방향키(D-Pad)와 아날로그 스틱 좌우 바인딩 추가
-        if (moveAction == null || moveAction.bindings.Count == 0)
-        {
-            moveAction = new InputAction("Move", InputActionType.Value);
-            moveAction.AddCompositeBinding("1DAxis")
-                .With("Negative", "<Keyboard>/a")
-                .With("Negative", "<Keyboard>/leftArrow")
-                .With("Negative", "<Gamepad>/leftStick/left") // 패드 왼쪽 스틱
-                .With("Negative", "<Gamepad>/dpad/left")      // 패드 십자키 왼쪽
-                .With("Positive", "<Keyboard>/d")
-                .With("Positive", "<Keyboard>/rightArrow")
-                .With("Positive", "<Gamepad>/leftStick/right")// 패드 오른쪽 스틱
-                .With("Positive", "<Gamepad>/dpad/right");    // 패드 십자키 오른쪽
-        }
-
-        // 🌟 [조이스틱 추가] 패드의 '아래쪽 버튼' (Xbox: A버튼 / PS: X버튼 / Switch: B버튼)
-        if (jumpAction == null || jumpAction.bindings.Count == 0)
-        {
-            jumpAction = new InputAction("Jump", InputActionType.Button);
-            jumpAction.AddBinding("<Keyboard>/space");
-            jumpAction.AddBinding("<Keyboard>/w");
-            jumpAction.AddBinding("<Keyboard>/upArrow");
-            jumpAction.AddBinding("<Gamepad>/buttonSouth"); // 패드 점프
-        }
-
-        // 🌟 [조이스틱 추가] 패드의 '왼쪽 버튼' (Xbox: X버튼 / PS: 네모버튼 / Switch: Y버튼)
-        if (actionAction == null || actionAction.bindings.Count == 0)
-        {
-            actionAction = new InputAction("Action", InputActionType.Button);
-            actionAction.AddBinding("<Keyboard>/v");
-            actionAction.AddBinding("<Gamepad>/buttonWest"); // 패드 액션 (손전등/합체 등)
-        }
+        inputControls = new PlayerControls.PlayerControls();
     }
 
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
-        moveAction.Enable();
-        jumpAction.Enable();
-        actionAction.Enable();
+        inputControls.GamePlay.Enable();
     }
 
     void OnDisable()
     {
-        moveAction.Disable();
-        jumpAction.Disable();
-        actionAction.Disable();
+        if (inputControls != null)
+        {
+            inputControls.GamePlay.Disable();
+        }
     }
 
     void Update()
     {
+        // 🌟 Time.timeScale 변화(일시정지)에 영향을 받지 않는 쿨다운 차감
+        if (pauseCooldownTimer > 0f)
+        {
+            pauseCooldownTimer -= Time.unscaledDeltaTime;
+        }
+
         if (!isLocalPlayer) return;
 
-        float rawInput = moveAction.ReadValue<float>();
+        // 현재 일시정지 메뉴 열림 여부 확인
+        bool isPaused = PauseManager.instance != null && PauseManager.instance.isPaused;
 
-        // 🌟 [핵심 디테일] 아날로그 스틱 데드존 (Stick Drift 방지)
-        // 스틱을 놓아도 0.05f 처럼 미세하게 값이 들어와서 캐릭터가 스르륵 미끄러지는 현상을 방지합니다.
+        // ==========================================
+        // 🌟 일시정지 및 뒤로가기 (Pause / Back / 패드 B버튼 / ESC) 처리
+        // 🌟 쿨다운(pauseCooldownTimer <= 0) 상태일 때만 입력 수용
+        // ==========================================
+        if (pauseCooldownTimer <= 0f)
+        {
+            if (!isPaused)
+            {
+                // 게임 중 → 메뉴 열기
+                if (inputControls.GamePlay.Pause.WasPressedThisFrame())
+                {
+                    if (PauseManager.instance != null)
+                    {
+                        PauseManager.instance.PauseGame();
+                        pauseCooldownTimer = 0.25f;
+                    }
+                }
+            }
+            else
+            {
+                // 메뉴 안 → 닫기
+                if (inputControls.GamePlay.Pause.WasPressedThisFrame() ||
+                    inputControls.GamePlay.Back.WasPressedThisFrame())
+                {
+                    if (OptionsManager.instance != null &&
+                        OptionsManager.instance.optionsPanel != null &&
+                        OptionsManager.instance.optionsPanel.activeSelf)
+                    {
+                        PauseManager.instance.CloseOptions();
+                    }
+                    else if (PauseManager.instance != null)
+                    {
+                        PauseManager.instance.ResumeGame();
+                    }
+
+                    pauseCooldownTimer = 0.25f;
+                }
+            }
+        }
+
+        // ==========================================
+        // 🌟 이모티콘 휠 메뉴 조작 (LT 홀드 및 릴리즈)
+        // ==========================================
+        if (inputControls.GamePlay.Emoji.WasPressedThisFrame())
+        {
+            if (EmojiRadialMenu.Instance != null && !isPaused)
+            {
+                EmojiRadialMenu.Instance.OpenMenu();
+            }
+        }
+
+        if (inputControls.GamePlay.Emoji.WasReleasedThisFrame())
+        {
+            if (EmojiRadialMenu.Instance != null)
+            {
+                EmojiRadialMenu.Instance.CloseMenu();
+            }
+        }
+
+        // 좌우 이동 값 (아날로그 스틱 / 방향키)
+        float rawInput = inputControls.GamePlay.Move.ReadValue<float>();
+
+        // 스틱 데드존 처리
         if (Mathf.Abs(rawInput) < 0.15f)
         {
             rawInput = 0f;
         }
 
-        bool jHolding = jumpAction.IsPressed();
-        bool jPressed = jumpAction.WasPressedThisFrame();
-        bool jReleased = jumpAction.WasReleasedThisFrame();
-        bool aPressed = actionAction.WasPressedThisFrame();
+        // 버튼 상태 읽기
+        bool jHolding = inputControls.GamePlay.Jump.IsPressed();
+        bool jPressed = inputControls.GamePlay.Jump.WasPressedThisFrame();
+        bool jReleased = inputControls.GamePlay.Jump.WasReleasedThisFrame();
+        bool aPressed = inputControls.GamePlay.Action.WasPressedThisFrame();
 
-        bool isMenuOpen = false;
-        if (PauseManager.instance != null && PauseManager.instance.isPaused) isMenuOpen = true;
+        // UI 메뉴가 열려있을 때 게임 캐릭터 이동 차단
+        bool isMenuOpen = isPaused;
         if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen()) isMenuOpen = true;
 
         if (isMenuOpen)
@@ -115,8 +162,7 @@ public class PlayerInput : NetworkBehaviour
             aPressed = false;
         }
 
-        // 실제로 점프가 가능한 상태(땅에 닿아있거나 코요테 타임 이내)에서 누른 경우에만 예측 재생한다.
-        // 그냥 키를 눌렀다고 무조건 재생하면 공중에서 연타할 때마다 소리가 겹쳐 재생된다.
+        // 점프 사운드 예측 재생
         if (jPressed && controller.animationModule != null && controller.animationModule.IsJumpableSynced)
         {
             controller.movement.PlayJumpSoundLocal();

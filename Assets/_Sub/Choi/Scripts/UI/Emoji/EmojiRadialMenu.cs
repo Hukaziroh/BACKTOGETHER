@@ -1,26 +1,20 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using DG.Tweening;
+using PlayerControls; // 만들어둔 뉴 인풋 네임스페이스 추가
 
 public class EmojiRadialMenu : MonoBehaviour
 {
     public static EmojiRadialMenu Instance { get; private set; }
-
-    // 일반 이모지 선택 이벤트
     public static event Action<int> OnEmojiIndexSelected;
-    // [추가] 애니메이션 이모지 선택 시 발생할 이벤트 (인덱스 전달)
-    public static event Action<int> OnAnimatedEmojiIndexSelected;
 
     [System.Serializable]
     public class MenuItem
     {
-        public Sprite icon;                   // 메뉴에 표시될 대표 아이콘
-        public bool isAnimated;               // 애니메이션 재생 여부
-        public Sprite[] animationFrames;      // 애니메이션일 때 순차적으로 보여줄 스프라이트 배열
+        public Sprite icon;
     }
 
     [Header("Items")]
@@ -49,14 +43,20 @@ public class EmojiRadialMenu : MonoBehaviour
     private bool _isOpen;
     private bool _isBuilt;
 
+    // 🌟 뉴 인풋 시스템용 변수 추가
+    private PlayerControls.PlayerControls _inputControls;
+    private bool _prevMovingLeft;
+    private bool _prevMovingRight;
+
     // 꾹 누름 연속 입력(Hold-to-repeat) 관련 변수
     private float _keyRepeatTimer;
     private bool _isKeyHeld;
-    private const float InitialRepeatDelay = 0.3f;
-    private const float RepeatInterval = 0.15f;
+    private const float InitialRepeatDelay = 0.3f; // 처음 꾹 누를 때 대기 시간
+    private const float RepeatInterval = 0.15f;    // 연속 이동 주기
 
     public int SelectedIndex => _selectedIndex;
     public bool IsOpen() => _isOpen;
+    public event Action<int> OnSelected;
 
     private void Awake()
     {
@@ -70,8 +70,17 @@ public class EmojiRadialMenu : MonoBehaviour
             return;
         }
 
+        // 🌟 뉴 인풋 컨트롤 초기화
+        _inputControls = new PlayerControls.PlayerControls();
+
         Build();
         gameObject.SetActive(false);
+    }
+
+    private void OnDestroy()
+    {
+        // 🌟 메모리 누수 방지
+        _inputControls?.Dispose();
     }
 
     private void Build()
@@ -139,6 +148,11 @@ public class EmojiRadialMenu : MonoBehaviour
         if (_isOpen) return;
         _isOpen = true;
 
+        // 🌟 메뉴가 열릴 때 인풋 감지 활성화 및 상태 초기화
+        _inputControls.GamePlay.Enable();
+        _prevMovingLeft = false;
+        _prevMovingRight = false;
+
         _selectedIndex = (_slotCount > 0) ? 0 : -1;
         _prevSelectedIndex = -1;
         _isKeyHeld = false;
@@ -156,33 +170,18 @@ public class EmojiRadialMenu : MonoBehaviour
         if (!_isOpen) return -1;
         _isOpen = false;
 
+        // 🌟 메뉴가 닫힐 때 인풋 감지 비활성화
+        _inputControls.GamePlay.Disable();
+
         transform.DOKill();
         gameObject.SetActive(false);
         transform.localScale = Vector3.one;
 
         int result = _selectedIndex;
-        if (result >= 0 && result < items.Length)
+        if (result >= 0)
         {
-            var selectedItem = items[result];
-
-            if (selectedItem.isAnimated)
-            {
-                // [수정] 전체 아이템 중 몇 번째 애니메이션 이모지인지 계산 (0부터 시작)
-                int animatedIndex = 0;
-                for (int i = 0; i < result; i++)
-                {
-                    if (items[i].isAnimated)
-                    {
-                        animatedIndex++;
-                    }
-                }
-
-                OnAnimatedEmojiIndexSelected?.Invoke(animatedIndex);
-            }
-            else
-            {
-                OnEmojiIndexSelected?.Invoke(result);
-            }
+            OnSelected?.Invoke(result);
+            OnEmojiIndexSelected?.Invoke(result);
         }
 
         return result;
@@ -199,17 +198,30 @@ public class EmojiRadialMenu : MonoBehaviour
         }
     }
 
+    // 좌우 키(스틱) 순차 이동 및 꾹 누름 반복 입력 처리
     private void UpdateSelection()
     {
-        var keyboard = Keyboard.current;
-        if (keyboard == null || _slotCount == 0) return;
+        if (_slotCount == 0) return;
 
-        bool leftPressed = keyboard.aKey.wasPressedThisFrame || keyboard.leftArrowKey.wasPressedThisFrame;
-        bool rightPressed = keyboard.dKey.wasPressedThisFrame || keyboard.rightArrowKey.wasPressedThisFrame;
+        // 🌟 뉴 인풋 시스템에서 좌우 아날로그/방향키 값 읽어오기
+        float moveInput = _inputControls.GamePlay.Move.ReadValue<float>();
 
-        bool leftHeld = keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed;
-        bool rightHeld = keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed;
+        // 데드존(0.3) 설정: 스틱을 어느 정도 기울여야 인식되도록
+        bool isMovingLeft = moveInput < -0.3f;
+        bool isMovingRight = moveInput > 0.3f;
 
+        // 이전 프레임 상태와 비교하여 "이번 프레임에 막 누름(wasPressed)" 판정 구현
+        bool leftPressed = isMovingLeft && !_prevMovingLeft;
+        bool rightPressed = isMovingRight && !_prevMovingRight;
+
+        bool leftHeld = isMovingLeft;
+        bool rightHeld = isMovingRight;
+
+        // 다음 프레임 비교를 위해 상태 저장
+        _prevMovingLeft = isMovingLeft;
+        _prevMovingRight = isMovingRight;
+
+        // 기존의 이동 및 꾹 누름 로직
         if (leftPressed || rightPressed)
         {
             if (leftPressed && !rightPressed) MoveIndex(-1);
@@ -235,6 +247,7 @@ public class EmojiRadialMenu : MonoBehaviour
         }
     }
 
+    // 인덱스를 순차적으로 증감시키고 끝과 끝을 연결(Loop)
     private void MoveIndex(int direction)
     {
         if (_selectedIndex == -1)
@@ -247,11 +260,11 @@ public class EmojiRadialMenu : MonoBehaviour
 
         if (_selectedIndex < 0)
         {
-            _selectedIndex = _slotCount - 1;
+            _selectedIndex = _slotCount - 1; // 첫 번째에서 왼쪽으로 가면 마지막으로 이동
         }
         else if (_selectedIndex >= _slotCount)
         {
-            _selectedIndex = 0;
+            _selectedIndex = 0;              // 마지막에서 오른쪽으로 가면 첫 번째로 이동
         }
     }
 
@@ -259,5 +272,11 @@ public class EmojiRadialMenu : MonoBehaviour
     {
         for (int i = 0; i < _slices.Count; i++)
             _slices[i].color = (i == _selectedIndex) ? highlightColor : normalColor;
+    }
+
+    private void ResetVisuals()
+    {
+        for (int i = 0; i < _slices.Count; i++)
+            _slices[i].color = normalColor;
     }
 }
