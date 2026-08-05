@@ -183,6 +183,15 @@ namespace PlayerControls
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Maps"",
+                    ""type"": ""Value"",
+                    ""id"": ""4c7f0236-1aec-4478-9fe9-83fb056747f5"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -493,6 +502,39 @@ namespace PlayerControls
                     ""action"": ""Emoji"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""226aeffb-6f15-4894-9eb2-d5e33d300f48"",
+                    ""path"": ""<Gamepad>/dpad"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Maps"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1d947f3d-4cbe-4049-9baf-1ce97e509cd5"",
+                    ""path"": ""<Gamepad>/leftStick"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Maps"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4c261e50-a332-4d38-bf37-d0951f531dd1"",
+                    ""path"": ""<Gamepad>/rightStick"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Maps"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -511,6 +553,7 @@ namespace PlayerControls
             m_GamePlay_ReturnToMe = m_GamePlay.FindAction("ReturnToMe", throwIfNotFound: true);
             m_GamePlay_Restart = m_GamePlay.FindAction("Restart", throwIfNotFound: true);
             m_GamePlay_Emoji = m_GamePlay.FindAction("Emoji", throwIfNotFound: true);
+            m_GamePlay_Maps = m_GamePlay.FindAction("Maps", throwIfNotFound: true);
         }
 
         ~@PlayerControls()
@@ -601,6 +644,7 @@ namespace PlayerControls
         private readonly InputAction m_GamePlay_ReturnToMe;
         private readonly InputAction m_GamePlay_Restart;
         private readonly InputAction m_GamePlay_Emoji;
+        private readonly InputAction m_GamePlay_Maps;
         /// <summary>
         /// Provides access to input actions defined in input action map "GamePlay".
         /// </summary>
@@ -652,6 +696,10 @@ namespace PlayerControls
             /// Provides access to the underlying input action "GamePlay/Emoji".
             /// </summary>
             public InputAction @Emoji => m_Wrapper.m_GamePlay_Emoji;
+            /// <summary>
+            /// Provides access to the underlying input action "GamePlay/Maps".
+            /// </summary>
+            public InputAction @Maps => m_Wrapper.m_GamePlay_Maps;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -708,6 +756,9 @@ namespace PlayerControls
                 @Emoji.started += instance.OnEmoji;
                 @Emoji.performed += instance.OnEmoji;
                 @Emoji.canceled += instance.OnEmoji;
+                @Maps.started += instance.OnMaps;
+                @Maps.performed += instance.OnMaps;
+                @Maps.canceled += instance.OnMaps;
             }
 
             /// <summary>
@@ -749,6 +800,9 @@ namespace PlayerControls
                 @Emoji.started -= instance.OnEmoji;
                 @Emoji.performed -= instance.OnEmoji;
                 @Emoji.canceled -= instance.OnEmoji;
+                @Maps.started -= instance.OnMaps;
+                @Maps.performed -= instance.OnMaps;
+                @Maps.canceled -= instance.OnMaps;
             }
 
             /// <summary>
@@ -859,6 +913,13 @@ namespace PlayerControls
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnEmoji(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Maps" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnMaps(InputAction.CallbackContext context);
         }
     }
 }

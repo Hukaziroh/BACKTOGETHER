@@ -1,5 +1,6 @@
 using UnityEngine;
 using Mirror;
+using UnityEngine.InputSystem; // 1. 뉴 인풋 시스템 네임스페이스 추가
 
 public class PlayerKnockback : NetworkBehaviour
 {
@@ -172,6 +173,7 @@ public class PlayerKnockback : NetworkBehaviour
         knockbackTimeoutTimer = 3.0f;
 
         RpcPlayHitAnimation();
+        PlayGamepadRumble(0.8f, 1.0f, 0.4f); // 🌟 크리티컬 탈출 시 더 강력하고 긴 진동 부여
 
         CoopRopeManager ropeManager = FindAnyObjectByType<CoopRopeManager>();
         if (ropeManager != null && ropeManager.isRopeActive)
@@ -190,6 +192,29 @@ public class PlayerKnockback : NetworkBehaviour
     {
         if (controller.anim != null) controller.anim.SetTrigger("Hit");
         PlayHitSoundLocal();
+        PlayGamepadRumble(0.5f, 1.0f, 0.2f); // 🌟 일반 피격 진동 (0.2초)
+    }
+
+    // 🌟 게임패드 진동 제어 함수 추가
+    private void PlayGamepadRumble(float lowFreq, float highFreq, float duration)
+    {
+        if (!isLocalPlayer) return;
+
+        if (Gamepad.current != null)
+        {
+            Gamepad.current.SetMotorSpeeds(lowFreq, highFreq);
+            StartCoroutine(StopGamepadRumble(duration));
+        }
+    }
+
+    private System.Collections.IEnumerator StopGamepadRumble(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+
+        if (Gamepad.current != null)
+        {
+            Gamepad.current.SetMotorSpeeds(0f, 0f);
+        }
     }
 
     private void PlayHitSoundLocal()
