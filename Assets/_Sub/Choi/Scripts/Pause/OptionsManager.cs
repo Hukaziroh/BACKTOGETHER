@@ -14,6 +14,9 @@ public class OptionsManager : MonoBehaviour
 {
     public static OptionsManager instance;
 
+    // 🌟 Input System 변수 추가
+    private PlayerControls.PlayerControls controls;
+
     [Header("UI Reference")]
     public GameObject optionsPanel;
 
@@ -45,31 +48,91 @@ public class OptionsManager : MonoBehaviour
         {
             instance = this;
             DontDestroyOnLoad(gameObject);
+
+            // 🌟 Input System 인스턴스 초기화
+            controls = new PlayerControls.PlayerControls();
         }
         else
         {
             Destroy(gameObject);
         }
     }
+
+    private void OnEnable()
+    {
+        if (controls != null)
+        {
+            controls.GamePlay.Back.performed += OnBack;
+            controls.GamePlay.Enable();
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (controls != null)
+        {
+            controls.GamePlay.Back.performed -= OnBack;
+            controls.GamePlay.Disable();
+        }
+    }
+
+    private void OnBack(InputAction.CallbackContext ctx)
+    {
+        if (optionsPanel != null && optionsPanel.activeSelf)
+        {
+            Close();
+        }
+    }
+
     void Update()
     {
+        if (optionsPanel != null && optionsPanel.activeSelf)
+        {
+            bool closePressed = false;
+
+            if (Keyboard.current != null &&
+                Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                closePressed = true;
+            }
+
+            if (Gamepad.current != null &&
+                Gamepad.current.buttonEast.wasPressedThisFrame)
+            {
+                closePressed = true;
+            }
+
+
+            if (closePressed)
+            {
+                Close();
+                return;
+            }
+        }
+
+
         if (keyGuidePanel != null && keyGuidePanel.activeSelf)
         {
             bool closePressed = false;
 
-            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            if (Keyboard.current != null &&
+                Keyboard.current.escapeKey.wasPressedThisFrame)
             {
                 closePressed = true;
             }
 
-            if (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame)
+            if (Gamepad.current != null &&
+                Gamepad.current.buttonEast.wasPressedThisFrame)
             {
                 closePressed = true;
             }
-            if (Gamepad.current != null && Gamepad.current.startButton.wasPressedThisFrame)
+
+            if (Gamepad.current != null &&
+                Gamepad.current.startButton.wasPressedThisFrame)
             {
                 closePressed = true;
             }
+
 
             if (closePressed)
             {
@@ -131,25 +194,33 @@ public class OptionsManager : MonoBehaviour
             fetchCodeRoutine = null;
         }
 
-        if (optionsPanel != null) optionsPanel.SetActive(false);
-        if (keyGuidePanel != null) keyGuidePanel.SetActive(false);
+        if (optionsPanel != null)
+            optionsPanel.SetActive(false);
+
+        if (keyGuidePanel != null)
+            keyGuidePanel.SetActive(false);
+
 
         bool isMainScene = SceneManager.GetActiveScene().name == "Main";
+
 
         if (!isMainScene && PauseManager.instance != null && PauseManager.instance.pausePanel != null)
         {
             PauseManager.instance.pausePanel.SetActive(true);
+
             if (GlobalSceneInputManager.Instance != null)
             {
-                GlobalSceneInputManager.Instance.SetFocusScope(PauseManager.instance.pausePanel);
+                GlobalSceneInputManager.Instance.SetFocusScope(
+                    PauseManager.instance.pausePanel
+                );
             }
         }
-        else
+
+
+        // ★ 추가
+        if (EventSystem.current != null)
         {
-            if (GlobalSceneInputManager.Instance != null)
-            {
-                GlobalSceneInputManager.Instance.ClearFocusScope();
-            }
+            EventSystem.current.SetSelectedGameObject(null);
         }
     }
 
