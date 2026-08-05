@@ -20,12 +20,16 @@ public class WalkingLoadingPanel : MonoBehaviour
     [SerializeField] private TextMeshProUGUI loadingText;
 
     [Header("공통 걸음마 스프라이트 (정확히 3장)")]
-    [Tooltip("모든 캐릭터가 공통으로 사용할 걸음마 이미지 3개 (프레임 1, 2, 3)")]
+    [Tooltip("모든 캐릭터가 공통으로 사용할 걸음마 이미지 3개 (프레임 1, 2, 3) - 전체 움직임 애니메이션용")]
     [SerializeField] private Sprite[] sharedFrames = new Sprite[3];
 
-    [Header("캐릭터 이미지 리스트 (총 4명)")]
-    [Tooltip("화면에 배치할 4개의 캐릭터 UI Image 컴포넌트 (맨 앞부터 순서대로)")]
-    [SerializeField] private List<Image> characterImages = new List<Image>();
+    [Header("캐릭터별 아이템 리스트 (총 4명)")]
+    [Tooltip("화면에 배치할 4개의 서로 다른 캐릭터 UI 루트 오브젝트 (내부에 BackIcon과 Icon이 있어야 함)")]
+    [SerializeField] private List<RectTransform> characterItems = new List<RectTransform>();
+
+    [Header("캐릭터 아이콘 표정 스프라이트 설정")]
+    [Tooltip("플레이어 순서(Index)에 따라 Icon에 적용할 표정 스프라이트 리스트입니다. (0번, 1번, 2번, 3번...)")]
+    [SerializeField] private List<Sprite> characterIconSprites = new List<Sprite>();
 
     [Header("캐릭터 색상 (틴트)")]
     [Tooltip("0번(기본 캐릭): 흰색(원본), 1번: 빨강, 2번: 노랑, 3번: 파랑")]
@@ -86,7 +90,7 @@ public class WalkingLoadingPanel : MonoBehaviour
     {
         currentProgress = 0f;
         SetProgress(0f);
-        ApplyCharacterColors();
+        ApplyCharacterVisualSettings();
         isFinished = false;
 
         if (finishCoroutine != null)
@@ -121,18 +125,14 @@ public class WalkingLoadingPanel : MonoBehaviour
     // 100% 달성 및 시각적 연출 보장 코루틴
     private IEnumerator FinishAndCloseRoutine()
     {
-        // 1. 현재 진행률에서 정확히 1.0f(100%)까지 완주
         while (currentProgress < 1.0f)
         {
             currentProgress = Mathf.MoveTowards(currentProgress, 1.0f, Time.unscaledDeltaTime * finishFillSpeed);
             SetProgress(currentProgress);
-            yield return null; // 매 프레임 UI 갱신
+            yield return null;
         }
 
-        // 2. 명시적 100% 고정
         SetProgress(1.0f);
-
-        // 3. 사용자가 100% 연출을 확인할 수 있도록 최소한의 시간 동안 화면 유지 후 닫기
         yield return new WaitForSecondsRealtime(0.15f);
 
         gameObject.SetActive(false);
@@ -140,25 +140,51 @@ public class WalkingLoadingPanel : MonoBehaviour
 
     private void Start()
     {
-        ApplyCharacterColors();
+        ApplyCharacterVisualSettings();
     }
 
-    private void ApplyCharacterColors()
+    private void ApplyCharacterVisualSettings()
     {
-        for (int i = 0; i < characterImages.Count; i++)
+        for (int i = 0; i < characterItems.Count; i++)
         {
-            if (characterImages[i] != null && i < characterColors.Count)
+            if (characterItems[i] == null) continue;
+
+            // 1. BackIcon 색상 적용
+            Transform backIconChild = characterItems[i].Find("BackIcon");
+            if (backIconChild != null)
             {
-                Color col = characterColors[i];
-                col.a = 1f;
-                characterImages[i].color = col;
+                Image backImg = backIconChild.GetComponent<Image>();
+                if (backImg != null && i < characterColors.Count)
+                {
+                    Color col = characterColors[i];
+                    col.a = 1f;
+                    backImg.color = col;
+                }
+            }
+
+            // 2. Icon 표정 스프라이트 적용 (인덱스 기준)
+            Transform iconChild = characterItems[i].Find("Icon");
+            if (iconChild != null)
+            {
+                Image iconImg = iconChild.GetComponent<Image>();
+                if (iconImg != null && characterIconSprites != null && i < characterIconSprites.Count)
+                {
+                    Sprite targetSprite = characterIconSprites[i];
+                    if (targetSprite != null)
+                    {
+                        iconImg.sprite = targetSprite;
+                        Color iconColor = iconImg.color;
+                        iconColor.a = 1f;
+                        iconImg.color = iconColor;
+                    }
+                }
             }
         }
     }
 
     private void Update()
     {
-        // 1. 걸음마 애니메이션
+        // 1. 걸음마 애니메이션 (공통 스프라이트 프레임 전환)
         animTimer += Time.unscaledDeltaTime;
         if (animTimer >= frameInterval)
         {
@@ -193,25 +219,33 @@ public class WalkingLoadingPanel : MonoBehaviour
         UpdateCharacterVisuals(currentProgress);
     }
 
+    // 🌟 수정된 부분: 걸음마 애니메이션 프레임(Shared Frames)을 BackIcon에 반영
     private void UpdateSpriteFrames()
     {
         if (sharedFrames == null || sharedFrames.Length < 3) return;
 
-        foreach (var img in characterImages)
+        foreach (var item in characterItems)
         {
-            if (img != null && sharedFrames[currentFrameIndex] != null)
+            if (item == null) continue;
+
+            Transform backIconChild = item.Find("BackIcon");
+            if (backIconChild != null)
             {
-                img.sprite = sharedFrames[currentFrameIndex];
+                Image backImg = backIconChild.GetComponent<Image>();
+                if (backImg != null && sharedFrames[currentFrameIndex] != null)
+                {
+                    backImg.sprite = sharedFrames[currentFrameIndex];
+                }
             }
         }
     }
 
     private void UpdateCharacterVisuals(float progress)
     {
-        if (barArea == null || characterImages == null || characterImages.Count == 0) return;
+        if (barArea == null || characterItems == null || characterItems.Count == 0) return;
 
         float barWidth = barArea.rect.width;
-        int totalChars = characterImages.Count;
+        int totalChars = characterItems.Count;
 
         float minX = -barWidth * 0.5f;
         float maxX = barWidth * 0.5f;
@@ -219,30 +253,24 @@ public class WalkingLoadingPanel : MonoBehaviour
 
         for (int i = 0; i < totalChars; i++)
         {
-            Image charImg = characterImages[i];
-            if (charImg == null) continue;
+            RectTransform rt = characterItems[i];
+            if (rt == null) continue;
 
             float appearThreshold = (float)i / totalChars;
 
             if (progress >= appearThreshold || (progress > 0f && i == 0))
             {
-                charImg.gameObject.SetActive(true);
+                rt.gameObject.SetActive(true);
 
-                RectTransform rt = charImg.rectTransform;
                 Vector2 anchoredPos = rt.anchoredPosition;
-
                 float targetX = frontX - (i * characterSpacing);
                 targetX = Mathf.Max(minX, targetX);
 
                 rt.anchoredPosition = new Vector2(targetX, anchoredPos.y);
-
-                Color col = (i < characterColors.Count) ? characterColors[i] : Color.white;
-                col.a = 1f;
-                charImg.color = col;
             }
             else
             {
-                charImg.gameObject.SetActive(false);
+                rt.gameObject.SetActive(false);
             }
         }
     }

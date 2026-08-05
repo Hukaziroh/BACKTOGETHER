@@ -13,6 +13,10 @@ public class StageProgressTracker : MonoBehaviour
     [Tooltip("커스텀 깃발 스프라이트가 있다면 여기에 넣으세요. 비워두면 빨간색 기본 깃발로 표시됩니다.")]
     [SerializeField] private Sprite checkpointFlagSprite;
 
+    [Header("플레이어 아이콘 스프라이트 설정")]
+    [Tooltip("플레이어 순서(Index)에 따라 적용할 스프라이트 리스트입니다. (예: 0번 플레이어 표정, 1번 플레이어 표정...)")]
+    [SerializeField] private List<Sprite> playerIconSprites = new List<Sprite>();
+
     [Header("프로그래스 바 보정")]
     [Tooltip("전체 길이 비율을 조절합니다 (밀림 폭이 점점 커지거나 작아질 때 조절)")]
     [SerializeField] private float progressMultiplier = 1f;
@@ -119,18 +123,43 @@ public class StageProgressTracker : MonoBehaviour
             RectTransform iconRect = playerIcons[player];
             if (iconRect == null) continue;
 
+            CoopPlayerIdentity identity = player.GetComponent<CoopPlayerIdentity>();
+
+            // 🌟 1. BackIcon 색상 변경
+            Transform backIconChild = iconRect.Find("BackIcon");
+            if (backIconChild != null)
+            {
+                Image backImageIcon = backIconChild.GetComponent<Image>();
+                if (identity != null && backImageIcon != null && identity.playerIndex >= 0)
+                {
+                    if (identity.playerColors != null && identity.playerIndex < identity.playerColors.Length)
+                    {
+                        Color targetColor = identity.playerColors[identity.playerIndex];
+                        if (backImageIcon.color != targetColor)
+                        {
+                            backImageIcon.color = targetColor;
+                        }
+                    }
+                }
+            }
+
+            // 🌟 2. Icon 스프라이트 변경
             Transform iconChild = iconRect.Find("Icon");
             if (iconChild != null)
             {
                 Image iconImage = iconChild.GetComponent<Image>();
-                CoopPlayerIdentity identity = player.GetComponent<CoopPlayerIdentity>();
-
-                if (identity != null && iconImage != null && identity.playerIndex >= 0 && identity.playerIndex < identity.playerColors.Length)
+                if (identity != null && iconImage != null && identity.playerIndex >= 0)
                 {
-                    Color targetColor = identity.playerColors[identity.playerIndex];
-                    if (iconImage.color != targetColor)
+                    if (playerIconSprites != null && playerIconSprites.Count > 0 && identity.playerIndex < playerIconSprites.Count)
                     {
-                        iconImage.color = targetColor;
+                        Sprite targetSprite = playerIconSprites[identity.playerIndex];
+                        if (targetSprite != null && iconImage.sprite != targetSprite)
+                        {
+                            iconImage.sprite = targetSprite;
+                            Color currentColor = iconImage.color;
+                            currentColor.a = 1f;
+                            iconImage.color = currentColor;
+                        }
                     }
                 }
             }
