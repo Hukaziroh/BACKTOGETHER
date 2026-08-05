@@ -24,10 +24,10 @@ public class CoopPlayerIdentity : NetworkBehaviour
 
     public Color[] playerColors = new Color[]
     {
-        Color.white,
-        new Color(1f, 0.5f, 0.5f), // Red
-        new Color(0.5f, 0.5f, 1f), // Blue
-        new Color(0.5f, 1f, 0.5f)  // Green
+        new Color(1f, 0.5f, 0.5f),
+        new Color(0.5f, 0.5f, 1f), // Red
+        new Color(1f, 0.5f, 1f), // pink
+        Color.yellow
     };
     [Header("합체 몸통 색")]
     public Color[] combineColors = new Color[2];
