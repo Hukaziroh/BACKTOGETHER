@@ -1,11 +1,12 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-using System.Collections;
 
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance;
+    private PlayerControls.PlayerControls controls; 
 
     [Header("기능 매니저 연결")]
     [SerializeField] private PauseManager pauseManager;
@@ -21,12 +22,15 @@ public class UIManager : MonoBehaviour
     [SerializeField] private string mainSceneName = "Main";
     [SerializeField] private string lobbySceneName = "Lobby";
 
+
     private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+
+            controls = new PlayerControls.PlayerControls(); 
         }
         else
         {
@@ -34,28 +38,63 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;
-    private void OnDisable() => SceneManager.sceneLoaded -= OnSceneLoaded;
-
-    private void Update()
+    private void OnEnable()
     {
-        if (Keyboard.current == null) return;
+        SceneManager.sceneLoaded += OnSceneLoaded;
 
-        // 1. ESC 입력 처리
-        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (controls != null)
         {
-            HandleEscapeInput();
+            controls.GamePlay.Back.performed += OnBackPressed;
+            controls.GamePlay.Enable();
+        }
+    }
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+
+        if (controls != null)
+        {
+            controls.GamePlay.Back.performed -= OnBackPressed;
+            controls.GamePlay.Disable();
+        }
+    }
+
+    private void OnBackPressed(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.performed)
+            return;
+
+
+        // 옵션 열려있으면 옵션 닫기
+        if (optionsManager != null &&
+            optionsManager.optionsPanel != null &&
+            optionsManager.optionsPanel.activeSelf)
+        {
+            optionsManager.Close();
+            return;
         }
 
-        // 2. 관전 키 입력 처리 (Q: 관전 종료 / Tab: 다음 타겟 순환 관전)
-        if (spectatorSystem != null)
+
+        HandleEscapeInput();
+    }
+    private void Update()
+    {
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                HandleEscapeInput();
+            }
+        }
+
+
+        if (spectatorSystem != null && Keyboard.current != null)
         {
             if (Keyboard.current.qKey.wasPressedThisFrame)
             {
                 spectatorSystem.StopSpectating();
             }
 
-            // 이모지 메뉴가 열려있지 않을 때만 관전 순환이 작동하도록 예외 처리
             bool isEmojiMenuOpen = EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen();
 
             if (!isEmojiMenuOpen && Keyboard.current.tabKey.wasPressedThisFrame)
@@ -64,16 +103,14 @@ public class UIManager : MonoBehaviour
             }
         }
 
-        // 3. [관제탑 역할] T 키 입력 감지 후 이모티콘 패널(EmojiRadialMenu)에 홀드 방식 신호 전달
         string currentScene = SceneManager.GetActiveScene().name;
-
-        // 퍼즈 상태인지 확인
         bool isPaused = pauseManager != null && pauseManager.isPaused;
 
-        // 메인 씬이 아니고, 퍼즈 상태가 아닐 때만 T 키 이모지 메뉴 작동
-        if (currentScene != mainSceneName && !isPaused && EmojiRadialMenu.Instance != null)
+        if (currentScene != mainSceneName &&
+            !isPaused &&
+            EmojiRadialMenu.Instance != null &&
+            Keyboard.current != null)
         {
-            // T 키를 누르기 시작할 때 열고, 뗄 때 닫기 (홀드 방식)
             if (Keyboard.current.tKey.wasPressedThisFrame)
             {
                 EmojiRadialMenu.Instance.OpenMenu();
@@ -83,7 +120,6 @@ public class UIManager : MonoBehaviour
                 EmojiRadialMenu.Instance.CloseMenu();
             }
 
-            // 메뉴가 열려있는 동안 키보드 조작(A/D, 좌우 화살표 등 연속 이동) 업데이트 처리
             if (EmojiRadialMenu.Instance.IsOpen())
             {
                 EmojiRadialMenu.Instance.OnMenuUpdate();
@@ -93,7 +129,6 @@ public class UIManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // ★ 씬이 넘어갈 때 옵션 패널이나 퍼즈 패널이 켜져있다면 강제로 닫고 게임 상태 정상화
         if (optionsManager != null && optionsManager.optionsPanel != null && optionsManager.optionsPanel.activeSelf)
         {
             if (scene.name == mainSceneName)
@@ -123,16 +158,15 @@ public class UIManager : MonoBehaviour
             }
         }
     }
+
     private void HandleEscapeInput()
     {
         string scene = SceneManager.GetActiveScene().name;
-
 
         if (scene == lobbySceneName)
         {
             return;
         }
-
 
         if (pauseManager != null)
         {
@@ -142,6 +176,7 @@ public class UIManager : MonoBehaviour
                 pauseManager.PauseGame();
         }
     }
+
     public void RequestPause() => pauseManager.PauseGame();
     public void RequestOptions() => optionsManager.Open();
 }

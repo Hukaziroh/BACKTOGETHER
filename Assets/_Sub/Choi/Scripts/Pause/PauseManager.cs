@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using Epic.OnlineServices;
 using Epic.OnlineServices.Lobby;
 using System.Collections;
+// 🌟 InputSystem using문 삭제됨
 
 public class PauseManager : MonoBehaviour
 {
@@ -34,6 +35,8 @@ public class PauseManager : MonoBehaviour
 
     private bool isLeaving = false;
 
+    // 🌟 controls 변수 삭제됨
+
     [Header("UI 패널 할당")]
     public GameObject pausePanel;
 
@@ -44,9 +47,11 @@ public class PauseManager : MonoBehaviour
     void Awake()
     {
         instance = this;
+        // 🌟 controls 초기화 삭제됨
     }
 
-    // 🌟 [추가된 토글 기능] 일시정지 상태에 따라 열기/닫기 전환
+    // 🌟 OnEnable, OnDisable, OnBackPressed 모두 삭제됨
+
     public void TogglePause()
     {
         if (isPaused)
