@@ -1,6 +1,7 @@
-using UnityEngine;
 using Mirror;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 public class CoopQuadCombineTrigger : NetworkBehaviour
 {
@@ -45,18 +46,29 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
     [Server]
     private void ActivateQuadCombine()
     {
-        List<GameObject> playerList = new List<GameObject>(playersInZone);
+        // Linq로 플레이어 섞기 (이건 캡처에 있던 유저님 방식대로 유지)
+        List<GameObject> playerList = playersInZone.OrderBy(x => UnityEngine.Random.value).ToList();
         if (playerList.Count < 4) return;
-        for (int i = 0; i < playerList.Count; i++)
+
+        // 통짜 Move와 잉여 None을 없애고 4명에게 1키씩 공평하게!
+        CombineRole[] roles = new CombineRole[]
         {
-            int randomIndex = UnityEngine.Random.Range(0, playerList.Count);
-            GameObject temp = playerList[i];
-            playerList[i] = playerList[randomIndex];
-            playerList[randomIndex] = temp;
+            CombineRole.Move_Left,
+            CombineRole.Move_Right,
+            CombineRole.Jump,
+            CombineRole.Action
+        };
+
+        // 역할 섞기 (Fisher-Yates Shuffle)
+        for (int i = roles.Length - 1; i > 0; i--)
+        {
+            int r = UnityEngine.Random.Range(0, i + 1);
+            (roles[i], roles[r]) = (roles[r], roles[i]);
         }
 
+        // 섞인 플레이어에게 섞인 역할 부여
         AssignRole(playerList[0], playerList[1], playerList[2], playerList[3],
-                   CombineRole.Move, CombineRole.Jump, CombineRole.Action, CombineRole.None);
+                   roles[0], roles[1], roles[2], roles[3]);
     }
 
     [Server]
