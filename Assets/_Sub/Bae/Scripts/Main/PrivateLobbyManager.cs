@@ -47,6 +47,7 @@ public class PrivateLobbyManager : MonoBehaviour
     [Header("에러 팝업 UI 연결")]
     [SerializeField] private GameObject errorPopupPanel;
     [SerializeField] private TextMeshProUGUI errorMessageText;
+    [SerializeField] private Button errorCloseButton;
 
     [Header("씬 설정")]
     [SerializeField] private string lobbySceneName = "Lobby";
@@ -500,6 +501,22 @@ public class PrivateLobbyManager : MonoBehaviour
         {
             if (errorMessageText != null) errorMessageText.text = message;
             errorPopupPanel.SetActive(true);
+
+            // 🌟 에러 팝업이 뜰 때 포커스를 강제로 잡아줌
+            if (EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null); // 기존 포커스 초기화
+
+                if (errorCloseButton != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(errorCloseButton.gameObject);
+                }
+                else
+                {
+                    // 확인 버튼 변수를 따로 안 빼뒀다면 팝업 패널 자체나 내부 첫 번째 버튼을 지정
+                    EventSystem.current.SetSelectedGameObject(errorPopupPanel);
+                }
+            }
         }
     }
 
