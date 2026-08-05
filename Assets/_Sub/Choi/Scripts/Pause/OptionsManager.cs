@@ -51,6 +51,32 @@ public class OptionsManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+    void Update()
+    {
+        if (keyGuidePanel != null && keyGuidePanel.activeSelf)
+        {
+            bool closePressed = false;
+
+            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                closePressed = true;
+            }
+
+            if (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame)
+            {
+                closePressed = true;
+            }
+            if (Gamepad.current != null && Gamepad.current.startButton.wasPressedThisFrame)
+            {
+                closePressed = true;
+            }
+
+            if (closePressed)
+            {
+                ToggleKeyGuide();
+            }
+        }
+    }
 
     void Start()
     {

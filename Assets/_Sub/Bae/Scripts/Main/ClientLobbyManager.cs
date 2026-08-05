@@ -247,7 +247,8 @@ public class ClientLobbyManager : MonoBehaviour
             {
                 SelectPrivateRoomUp();
             }
-            else if (downPressed)
+
+            if (downPressed)
             {
                 SelectPrivateRoomDown();
             }
@@ -639,40 +640,75 @@ public class ClientLobbyManager : MonoBehaviour
 
     private void SelectPrivateRoomUp()
     {
-        if (EventSystem.current == null) return;
+        if (EventSystem.current == null)
+            return;
 
         GameObject current = EventSystem.current.currentSelectedGameObject;
-        if (current == null) return;
+
+        if (current == null)
+            return;
+
 
         Selectable selectable = current.GetComponent<Selectable>();
-        if (selectable != null)
+
+        if (selectable == null)
+            return;
+
+
+        Navigation nav = selectable.navigation;
+
+
+        if (nav.mode == Navigation.Mode.Explicit && nav.selectOnUp != null)
         {
-            Selectable previous = selectable.FindSelectableOnUp();
-            if (previous != null)
-            {
-                EventSystem.current.SetSelectedGameObject(previous.gameObject);
-            }
+            EventSystem.current.SetSelectedGameObject(nav.selectOnUp.gameObject);
+            return;
+        }
+
+
+        Selectable previous = selectable.FindSelectableOnUp();
+
+        if (previous != null)
+        {
+            EventSystem.current.SetSelectedGameObject(previous.gameObject);
         }
     }
+
 
     private void SelectPrivateRoomDown()
     {
-        if (EventSystem.current == null) return;
+        if (EventSystem.current == null)
+            return;
+
 
         GameObject current = EventSystem.current.currentSelectedGameObject;
-        if (current == null) return;
+
+        if (current == null)
+            return;
+
 
         Selectable selectable = current.GetComponent<Selectable>();
-        if (selectable != null)
+
+        if (selectable == null)
+            return;
+
+
+        Navigation nav = selectable.navigation;
+
+
+        if (nav.mode == Navigation.Mode.Explicit && nav.selectOnDown != null)
         {
-            Selectable next = selectable.FindSelectableOnDown();
-            if (next != null)
-            {
-                EventSystem.current.SetSelectedGameObject(next.gameObject);
-            }
+            EventSystem.current.SetSelectedGameObject(nav.selectOnDown.gameObject);
+            return;
+        }
+
+
+        Selectable next = selectable.FindSelectableOnDown();
+
+        if (next != null)
+        {
+            EventSystem.current.SetSelectedGameObject(next.gameObject);
         }
     }
-
     private GameObject GetLoadingPanel()
     {
         if (loadingPanel != null) return loadingPanel;
