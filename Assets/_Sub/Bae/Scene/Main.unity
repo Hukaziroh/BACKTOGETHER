@@ -370,6 +370,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &195401111 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7617702705034676879, guid: d391139454a53e341889149a36646d1d, type: 3}
+  m_PrefabInstance: {fileID: 6870475135527063537}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!1 &218687036
 GameObject:
   m_ObjectHideFlags: 0
@@ -743,6 +754,17 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &349375972 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6861492556534220538, guid: d391139454a53e341889149a36646d1d, type: 3}
+  m_PrefabInstance: {fileID: 6870475135527063537}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1 &442051481
 GameObject:
   m_ObjectHideFlags: 0
@@ -963,6 +985,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1506203215}
+    - target: {fileID: 637397424832637213, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 907504176520563714, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -1243,6 +1269,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1506203215}
+    - target: {fileID: 8174244883068152816, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8174633215607526533, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_SizeDelta.x
       value: 0
@@ -1544,6 +1574,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+--- !u!1 &863833062 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5751890398702285289, guid: d391139454a53e341889149a36646d1d, type: 3}
+  m_PrefabInstance: {fileID: 6870475135527063537}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &895242587 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8422485441135400866, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
@@ -2660,8 +2695,9 @@ MonoBehaviour:
   nextPageButton: {fileID: 8822583357537443950}
   pageText: {fileID: 6587160486048868595}
   loadingPanel: {fileID: 36201770}
-  errorPopupPanel: {fileID: 0}
-  errorMessageText: {fileID: 0}
+  errorPopupPanel: {fileID: 863833062}
+  errorMessageText: {fileID: 195401111}
+  errorCloseButton: {fileID: 349375972}
 --- !u!1 &1514349945
 GameObject:
   m_ObjectHideFlags: 0
@@ -3949,6 +3985,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1035984737}
     - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
+      propertyPath: errorCloseButton
+      value: 
+      objectReference: {fileID: 1035984736}
+    - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
       propertyPath: errorMessageText
       value: 
       objectReference: {fileID: 1035984735}
@@ -4183,6 +4223,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2062628588668692640, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2304823993813371790, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4896347604975632680, guid: d391139454a53e341889149a36646d1d, type: 3}

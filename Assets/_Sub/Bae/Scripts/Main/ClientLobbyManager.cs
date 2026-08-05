@@ -50,6 +50,7 @@ public class ClientLobbyManager : MonoBehaviour
     [Header("에러 팝업 UI 연결")]
     [SerializeField] private GameObject errorPopupPanel;
     [SerializeField] private TextMeshProUGUI errorMessageText;
+    [SerializeField] private Button errorCloseButton;
 
     private EOSLobby eosLobby;
     private bool isSubscribed = false;
@@ -631,12 +632,48 @@ public class ClientLobbyManager : MonoBehaviour
         {
             if (errorMessageText != null) errorMessageText.text = msg;
             errorPopupPanel.SetActive(true);
+
+            // 🌟 에러 팝업이 뜰 때 포커스를 강제로 잡아줌
+            if (EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null); // 기존 포커스 초기화
+
+                if (errorCloseButton != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(errorCloseButton.gameObject);
+                }
+                else
+                {
+                    EventSystem.current.SetSelectedGameObject(errorPopupPanel);
+                }
+            }
         }
     }
 
     public void OnClick_CloseErrorPopup()
     {
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
+
+        // 🌟 에러 팝업이 닫힐 때 현재 켜져 있는 패널에 맞춰 포커스 복구
+        if (GlobalSceneInputManager.Instance != null)
+        {
+            if (clientPublicPanel != null && clientPublicPanel.activeSelf)
+            {
+                GlobalSceneInputManager.Instance.SetFocusScope(clientPublicPanel);
+            }
+            else if (clientPrivatePanel != null && clientPrivatePanel.activeSelf)
+            {
+                GlobalSceneInputManager.Instance.SetFocusScope(clientPrivatePanel);
+            }
+            else if (clientSelectionPanel != null && clientSelectionPanel.activeSelf)
+            {
+                GlobalSceneInputManager.Instance.SetFocusScope(clientSelectionPanel);
+            }
+            else if (mainPanel != null && mainPanel.activeSelf)
+            {
+                GlobalSceneInputManager.Instance.SetFocusScope(mainPanel);
+            }
+        }
     }
 
     public void OnClick_QuickJoin()
