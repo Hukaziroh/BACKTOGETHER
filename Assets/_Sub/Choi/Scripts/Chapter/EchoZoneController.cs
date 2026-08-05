@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using Mirror;
 
-public class EchoZoneController : MonoBehaviour
+public class EchoZoneController : NetworkBehaviour
 {
     // 이 프로젝트 라이팅 셋업 특성: Global Light 2D는 꺼져있으면 전체가 기본으로 밝고,
     // 켜지면 그 라이트가 비추는 범위만 밝아지고 나머지는 어두워진다.
@@ -13,8 +13,19 @@ public class EchoZoneController : MonoBehaviour
     [Header("존에 들어가면 켤 에코 매니저")]
     public GameObject echoManager;
 
-    // 버튼 4개를 다 눌러서 해결되면 true로 고정 -> 존을 다시 드나들어도 어두워지지 않음
+    // 버튼 4개를 다 눌러서 해결되면 true로 고정 -> 존을 다시 드나들어도 반응 안 함
     private bool isSolved = false;
+
+    // 0 = 아직 아무도 배정 안 됨. 서버가 가장 먼저 들어온 사람의 netId로 딱 한 번만 채운다.
+    // 파동이 "누구" 위치에서 나갈지 정하는 용도.
+    [SyncVar(hook = nameof(OnFirstEntrantChanged))]
+    private uint firstEntrantNetId = 0;
+
+    // 내(로컬 플레이어) 캐릭터가 지금 이 존 콜라이더 안에 있는지 -> 라이트는 개인별로 이걸로만 판단
+    private bool isLocalPlayerInside = false;
+
+    // 지금 이 존 안에 (누구든) 몇 명이나 있는지 -> 파동은 이게 0보다 크면 전원에게 보임
+    private int playersInsideCount = 0;
 
     void Start()
     {
@@ -23,40 +34,90 @@ public class EchoZoneController : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
+        NetworkIdentity identity = GetPlayerIdentity(other);
+        if (identity == null) return;
         if (isSolved) return;
-        if (!IsLocalPlayer(other)) return;
 
-        SetDark(true);
+        if (isServer && firstEntrantNetId == 0)
+        {
+            firstEntrantNetId = identity.netId;
+        }
+
+        // 파동은 원본 ZoneTrigger.cs처럼 "누구든" 들어가면 켜짐.
+        // 4명의 콜라이더가 전부 각 클라이언트에 동일하게 시뮬레이션되므로,
+        // 이 이벤트는 전원의 클라이언트에서 동시에 일어나 자동으로 전원에게 보인다.
+        playersInsideCount++;
+        UpdateEchoVisibility();
+
+        // 라이트(어둠)는 본인이 들어갔을 때만 개인별로.
+        if (identity.isLocalPlayer)
+        {
+            isLocalPlayerInside = true;
+            UpdateLocalLight();
+        }
     }
 
     void OnTriggerExit2D(Collider2D other)
     {
+        NetworkIdentity identity = GetPlayerIdentity(other);
+        if (identity == null) return;
         if (isSolved) return;
-        if (!IsLocalPlayer(other)) return;
 
-        SetDark(false);
+        playersInsideCount = Mathf.Max(0, playersInsideCount - 1);
+        UpdateEchoVisibility();
+
+        if (identity.isLocalPlayer)
+        {
+            isLocalPlayerInside = false;
+            UpdateLocalLight();
+        }
     }
 
-    private bool IsLocalPlayer(Collider2D other)
+    private NetworkIdentity GetPlayerIdentity(Collider2D other)
     {
-        if (!other.CompareTag("Player")) return false;
-
-        NetworkIdentity identity = other.GetComponentInParent<NetworkIdentity>();
-        return identity != null && identity.isLocalPlayer;
+        if (!other.CompareTag("Player")) return null;
+        return other.GetComponentInParent<NetworkIdentity>();
     }
 
-    private void SetDark(bool dark)
+    // firstEntrantNetId가 서버에서 정해져서 뒤늦게 전파되는 경우를 대비.
+    // (파동이 이미 켜진 상태에서 원점 정보만 나중에 도착하는 경우 여기서 갱신)
+    private void OnFirstEntrantChanged(uint oldId, uint newId)
     {
-        // globalLight.enabled만 바꾸면, 오브젝트 자체가 비활성 상태일 때 아무 효과가 없다.
-        // 오브젝트 자체를 켜고 꺼야 확실히 반영된다.
-        if (globalLight != null) globalLight.gameObject.SetActive(dark);
-        if (echoManager != null) echoManager.SetActive(dark);
+        UpdateEchoWaveOrigin();
+    }
+
+    private void UpdateLocalLight()
+    {
+        if (isSolved) return;
+        if (globalLight != null) globalLight.gameObject.SetActive(isLocalPlayerInside);
+    }
+
+    private void UpdateEchoVisibility()
+    {
+        if (echoManager == null) return;
+
+        bool shouldShow = playersInsideCount > 0;
+        echoManager.SetActive(shouldShow);
+
+        if (shouldShow) UpdateEchoWaveOrigin();
+    }
+
+    // 파동은 항상 "선두로 배정된 1명"의 위치를 중심으로 나가야 한다.
+    private void UpdateEchoWaveOrigin()
+    {
+        if (echoManager == null) return;
+        if (firstEntrantNetId == 0) return;
+        if (!NetworkClient.spawned.TryGetValue(firstEntrantNetId, out NetworkIdentity chosenIdentity)) return;
+
+        EchoManager manager = echoManager.GetComponent<EchoManager>();
+        if (manager != null) manager.SetWaveOrigin(chosenIdentity.transform);
     }
 
     // EchoLightButtonManager가 전원 버튼을 다 눌렀을 때 모든 클라이언트에서 호출
     public void ForceLightsOn()
     {
         isSolved = true;
-        SetDark(false);
+        if (globalLight != null) globalLight.gameObject.SetActive(false);
+        if (echoManager != null) echoManager.SetActive(false);
     }
 }
