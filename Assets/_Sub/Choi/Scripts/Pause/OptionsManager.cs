@@ -76,16 +76,6 @@ public class OptionsManager : MonoBehaviour
         }
     }
 
-    void Update()
-    {
-        if (keyGuidePanel != null && keyGuidePanel.activeSelf)
-        {
-            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-            {
-                ToggleKeyGuide();
-            }
-        }
-    }
 
     public void Open()
     {

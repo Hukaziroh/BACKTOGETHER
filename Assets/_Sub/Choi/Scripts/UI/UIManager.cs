@@ -123,51 +123,25 @@ public class UIManager : MonoBehaviour
             }
         }
     }
-
     private void HandleEscapeInput()
     {
-        string currentScene = SceneManager.GetActiveScene().name;
+        string scene = SceneManager.GetActiveScene().name;
 
-        // T 키를 누르고 있거나 이모지 메뉴가 열려있는 상태라면 ESC 입력 무시
-        if ((Keyboard.current != null && Keyboard.current.tKey.isPressed) ||
-            (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen()))
+
+        if (scene == lobbySceneName)
         {
             return;
         }
 
-        // 1. 옵션창이 켜져 있는 경우
-        if (optionsManager?.optionsPanel != null && optionsManager.optionsPanel.activeSelf)
+
+        if (pauseManager != null)
         {
-            if (currentScene == mainSceneName)
-            {
-                // 메인 씬에서는 퍼즈창이 없으므로 오직 옵션 페이지만 끔 (퍼즈 켜짐 방지)
-                optionsManager.Close();
-            }
+            if (pauseManager.isPaused)
+                pauseManager.ResumeGame();
             else
-            {
-                // 메인 씬이 아닐 때는 기존처럼 옵션을 닫고 퍼즈창으로 복귀
-                pauseManager?.CloseOptions();
-            }
-            return;
-        }
-
-        // 2. 메인 씬인 경우: 옵션이 꺼져있다면 ESC를 눌러도 아무 일도 안 함 (퍼즈 차단)
-        if (currentScene == mainSceneName)
-        {
-            return;
-        }
-
-        // 3. 메인 씬이 아닐 경우: 퍼즈 껐다 켰다 로직 수행
-        if (pauseManager != null && pauseManager.isPaused)
-        {
-            pauseManager.ResumeGame();
-        }
-        else if (pauseManager != null)
-        {
-            pauseManager.PauseGame();
+                pauseManager.PauseGame();
         }
     }
-
     public void RequestPause() => pauseManager.PauseGame();
     public void RequestOptions() => optionsManager.Open();
 }

@@ -66,6 +66,7 @@ public class ClientLobbyManager : MonoBehaviour
     private int selectedFilterChapter = 0; // 0: All, 1~6: Chapter 1~6
     private bool isQuickJoining = false;
 
+
     private EOSLobby GetEOSLobby()
     {
         if (eosLobby == null && NetworkManager.singleton != null)
@@ -148,47 +149,57 @@ public class ClientLobbyManager : MonoBehaviour
 
     private void Update()
     {
-        // 🌟 ESC 키 입력 처리 (최우선 순위: 에러 팝업 -> 퍼블릭/프라이빗 패널 -> 선택 패널)
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        bool leftPressed = false;
+        bool rightPressed = false;
+        bool upPressed = false;
+        bool downPressed = false;
+        bool enterPressed = false;
+
+        // 키보드
+        if (Keyboard.current != null)
         {
-            // 1. 에러 팝업이 켜져있다면 에러 팝업 닫기
-            if (errorPopupPanel != null && errorPopupPanel.activeSelf)
-            {
-                OnClick_CloseErrorPopup();
-                return;
-            }
+            leftPressed |= Keyboard.current.leftArrowKey.wasPressedThisFrame ||
+                           Keyboard.current.aKey.wasPressedThisFrame;
 
-            // 2. 퍼블릭 패널이 켜져있다면 퍼블릭 패널 닫기 (선택 패널로 복귀)
-            if (clientPublicPanel != null && clientPublicPanel.activeSelf)
-            {
-                OnClick_ClosePublicPanel();
-                return;
-            }
+            rightPressed |= Keyboard.current.rightArrowKey.wasPressedThisFrame ||
+                            Keyboard.current.dKey.wasPressedThisFrame;
 
-            // 3. 프라이빗 패널이 켜져있다면 프라이빗 패널 닫기 (선택 패널로 복귀)
-            if (clientPrivatePanel != null && clientPrivatePanel.activeSelf)
-            {
-                OnClick_ClosePrivatePanel();
-                return;
-            }
+            enterPressed |= Keyboard.current.enterKey.wasPressedThisFrame ||
+                            Keyboard.current.numpadEnterKey.wasPressedThisFrame;
+            upPressed |= Keyboard.current.upArrowKey.wasPressedThisFrame ||
+               Keyboard.current.wKey.wasPressedThisFrame;
 
-            // 4. 클라이언트 선택 패널이 켜져있다면 메인(커넥트) 패널로 돌아가기
-            if (clientSelectionPanel != null && clientSelectionPanel.activeSelf)
-            {
-                OnClick_CloseSelectionPanel();
-                return;
-            }
+            downPressed |= Keyboard.current.downArrowKey.wasPressedThisFrame ||
+                           Keyboard.current.sKey.wasPressedThisFrame;
+        }
+
+        // 게임패드
+        if (Gamepad.current != null)
+        {
+            leftPressed |= Gamepad.current.dpad.left.wasPressedThisFrame ||
+                           Gamepad.current.leftStick.left.wasPressedThisFrame;
+
+            rightPressed |= Gamepad.current.dpad.right.wasPressedThisFrame ||
+                            Gamepad.current.leftStick.right.wasPressedThisFrame;
+
+            enterPressed |= Gamepad.current.buttonSouth.wasPressedThisFrame;
+            upPressed |= Gamepad.current.dpad.up.wasPressedThisFrame ||
+               Gamepad.current.leftStick.up.wasPressedThisFrame;
+
+            downPressed |= Gamepad.current.dpad.down.wasPressedThisFrame ||
+                           Gamepad.current.leftStick.down.wasPressedThisFrame;
         }
 
         if (EventSystem.current == null) return;
 
         GameObject selected = EventSystem.current.currentSelectedGameObject;
-        if (selected == null) return;
 
-        // 퍼블릭 로비 패널 활성화 시
+        // 🌟 1. 퍼블릭 로비 패널 활성화 시
         if (clientPublicPanel != null && clientPublicPanel.activeSelf)
         {
-            // 1. 챕터 필터 좌우 입력 조작
+            if (selected == null) return;
+
+            // 챕터 필터 좌우 입력 조작
             bool isFilterChapterSelected = (chapterFilterSelectObject != null && selected == chapterFilterSelectObject) ||
                                            (filterChapterText != null && (selected == filterChapterText.gameObject || selected == filterChapterText.transform.parent.gameObject)) ||
                                            (prevFilterChapterButton != null && selected == prevFilterChapterButton.gameObject) ||
@@ -196,21 +207,19 @@ public class ClientLobbyManager : MonoBehaviour
 
             if (isFilterChapterSelected)
             {
-                if (Keyboard.current != null)
+                if (leftPressed)
                 {
-                    if (Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame)
-                    {
-                        OnClick_PrevFilterChapter();
-                    }
-                    else if (Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame)
-                    {
-                        OnClick_NextFilterChapter();
-                    }
+                    OnClick_PrevFilterChapter();
                 }
+                else if (rightPressed)
+                {
+                    OnClick_NextFilterChapter();
+                }
+
                 return;
             }
 
-            // ★ 2. 검색 인풋 필드 선택 후 엔터 키 입력 시 활성화
+            // ★ 검색 인풋 필드 선택 후 엔터 키 입력 시 활성화
             if (searchInputField != null)
             {
                 bool isInputFieldSelected = (selected == searchInputField.gameObject) ||
@@ -218,7 +227,7 @@ public class ClientLobbyManager : MonoBehaviour
 
                 if (isInputFieldSelected && Keyboard.current != null)
                 {
-                    if (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.numpadEnterKey.wasPressedThisFrame)
+                    if (enterPressed)
                     {
                         if (!searchInputField.interactable)
                         {
@@ -228,6 +237,19 @@ public class ClientLobbyManager : MonoBehaviour
                         }
                     }
                 }
+            }
+        }
+
+        // 🌟 2. 프라이빗 룸 패널 활성화 시 (selected가 null이어도 상하 입력으로 포커스를 잡을 수 있도록 분리됨)
+        if (clientPrivatePanel != null && clientPrivatePanel.activeSelf)
+        {
+            if (upPressed)
+            {
+                SelectPrivateRoomUp();
+            }
+            else if (downPressed)
+            {
+                SelectPrivateRoomDown();
             }
         }
     }
@@ -615,6 +637,42 @@ public class ClientLobbyManager : MonoBehaviour
         if (nextFilterChapterButton != null) nextFilterChapterButton.interactable = interactable;
     }
 
+    private void SelectPrivateRoomUp()
+    {
+        if (EventSystem.current == null) return;
+
+        GameObject current = EventSystem.current.currentSelectedGameObject;
+        if (current == null) return;
+
+        Selectable selectable = current.GetComponent<Selectable>();
+        if (selectable != null)
+        {
+            Selectable previous = selectable.FindSelectableOnUp();
+            if (previous != null)
+            {
+                EventSystem.current.SetSelectedGameObject(previous.gameObject);
+            }
+        }
+    }
+
+    private void SelectPrivateRoomDown()
+    {
+        if (EventSystem.current == null) return;
+
+        GameObject current = EventSystem.current.currentSelectedGameObject;
+        if (current == null) return;
+
+        Selectable selectable = current.GetComponent<Selectable>();
+        if (selectable != null)
+        {
+            Selectable next = selectable.FindSelectableOnDown();
+            if (next != null)
+            {
+                EventSystem.current.SetSelectedGameObject(next.gameObject);
+            }
+        }
+    }
+
     private GameObject GetLoadingPanel()
     {
         if (loadingPanel != null) return loadingPanel;
@@ -633,10 +691,9 @@ public class ClientLobbyManager : MonoBehaviour
             if (errorMessageText != null) errorMessageText.text = msg;
             errorPopupPanel.SetActive(true);
 
-            // 🌟 에러 팝업이 뜰 때 포커스를 강제로 잡아줌
             if (EventSystem.current != null)
             {
-                EventSystem.current.SetSelectedGameObject(null); // 기존 포커스 초기화
+                EventSystem.current.SetSelectedGameObject(null); 
 
                 if (errorCloseButton != null)
                 {
