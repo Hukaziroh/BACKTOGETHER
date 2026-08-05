@@ -77941,7 +77941,7 @@ MonoBehaviour:
   requiredPlayers: 2
   playerLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 256
   OnAllPlayersEntered:
     m_PersistentCalls:
       m_Calls:
