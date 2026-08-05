@@ -3297,6 +3297,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+--- !u!224 &1957566877 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 5371148367015617674, guid: d391139454a53e341889149a36646d1d, type: 3}
+  m_PrefabInstance: {fileID: 6870475135527063537}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1959270816
 GameObject:
   m_ObjectHideFlags: 0
@@ -4201,6 +4206,90 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.size
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: animationSpawnParent
+      value: 
+      objectReference: {fileID: 1957566877}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[0].icon
+      value: 
+      objectReference: {fileID: 2453225149448660891, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[1].icon
+      value: 
+      objectReference: {fileID: 8466565502762357432, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[2].icon
+      value: 
+      objectReference: {fileID: -4855082346359090717, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[3].icon
+      value: 
+      objectReference: {fileID: -4573851567144314647, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[4].icon
+      value: 
+      objectReference: {fileID: -7866977358523287424, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[5].icon
+      value: 
+      objectReference: {fileID: 6162069267118594589, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[6].icon
+      value: 
+      objectReference: {fileID: 1664003977717168982, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[7].icon
+      value: 
+      objectReference: {fileID: -3068238926824723033, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[8].icon
+      value: 
+      objectReference: {fileID: 1458036559636054859, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: countdownSprites.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: 'countdownSprites.Array.data[0]'
+      value: 
+      objectReference: {fileID: 1458036559636054859, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: 'countdownSprites.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2856023600122083782, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: 'countdownSprites.Array.data[2]'
+      value: 
+      objectReference: {fileID: 5783837810845549781, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[8].isAnimated
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[8].animationFrames.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: 'items.Array.data[8].animationFrames.Array.data[0]'
+      value: 
+      objectReference: {fileID: 1458036559636054859, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: 'items.Array.data[8].animationFrames.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2856023600122083782, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: 'items.Array.data[8].animationFrames.Array.data[2]'
+      value: 
+      objectReference: {fileID: 5783837810845549781, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: 'items.Array.data[8].animationFrames.Array.data[3]'
+      value: 
+      objectReference: {fileID: 2453225149448660891, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
     - target: {fileID: 2062628588668692640, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1241.181

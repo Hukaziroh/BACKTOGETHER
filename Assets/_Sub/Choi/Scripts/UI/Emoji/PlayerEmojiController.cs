@@ -8,8 +8,17 @@ public class PlayerEmojiController : NetworkBehaviour
     [Tooltip("플레이어 머리 위에 이모지를 보여줄 SpriteRenderer 오브젝트")]
     [SerializeField] private SpriteRenderer emojiSpriteRenderer;
 
-    [Header("이모지 스프라이트 리스트")]
+    [Header("일반 이모지 스프라이트 리스트")]
     [SerializeField] private Sprite[] emojiSprites;
+
+
+    [System.Serializable]
+    public class AnimatedEmojiData
+    {
+        public Sprite[] frames; // 순차적으로 보여줄 스프라이트들 (예: 3 -> 2 -> 1)
+    }
+    [SerializeField] private AnimatedEmojiData[] animatedEmojis;
+    [SerializeField] private float frameInterval = 0.8f; // 프레임 간 전환 시간
 
     [Header("크기 및 위치 설정")]
     [SerializeField] private float targetSize = 0.5f;
@@ -18,16 +27,18 @@ public class PlayerEmojiController : NetworkBehaviour
 
     private Transform parentTransform;
     private Transform emojiTransform;
-    private Coroutine hideCoroutine;
+    private Coroutine activeEmojiCoroutine;
 
     private void OnEnable()
     {
         EmojiRadialMenu.OnEmojiIndexSelected += HandleLocalEmojiIndexSelected;
+        EmojiRadialMenu.OnAnimatedEmojiIndexSelected += HandleLocalAnimatedEmojiIndexSelected;
     }
 
     private void OnDisable()
     {
         EmojiRadialMenu.OnEmojiIndexSelected -= HandleLocalEmojiIndexSelected;
+        EmojiRadialMenu.OnAnimatedEmojiIndexSelected -= HandleLocalAnimatedEmojiIndexSelected;
     }
 
     private void Awake()
@@ -72,78 +83,108 @@ public class PlayerEmojiController : NetworkBehaviour
         }
     }
 
-    // 1단계: 메뉴에서 이모지를 골랐을 때
+    // --- 일반 이모지 처리 ---
     private void HandleLocalEmojiIndexSelected(int emojiIndex)
     {
-        Debug.Log($"[디버그 1] 이벤트 수신됨! Index: {emojiIndex} | 내 캐릭터인가? ({isLocalPlayer})");
-
         if (!isLocalPlayer) return;
-
-        Debug.Log($"[디버그 2] 내 캐릭터 확인 완료. Cmd 바둑판(서버)으로 전송 시도...");
         CmdShowEmoji(emojiIndex);
     }
 
-    // 2단계: 서버로 명령 전달
     [Command]
     private void CmdShowEmoji(int emojiIndex)
     {
-        Debug.Log($"[디버그 3] 서버(Cmd) 도착! 모든 클라이언트에게 Rpc 명령 방송 중... Index: {emojiIndex}");
         RpcShowEmoji(emojiIndex);
     }
 
-    // 3단계: 모든 클라이언트 화면에 명령 하달
     [ClientRpc]
     private void RpcShowEmoji(int emojiIndex)
     {
-        Debug.Log($"[디버그 4] 클라이언트(Rpc) 수신 완료! 오브젝트 이름: {gameObject.name}, Index: {emojiIndex}");
-        ShowEmojiByIndex(emojiIndex);
+        ShowSingleEmoji(emojiIndex);
     }
 
-    // 4단계: 실제 화면에 띄우기
-    private void ShowEmojiByIndex(int emojiIndex)
+    // --- 애니메이션 이모지 처리 ---
+    private void HandleLocalAnimatedEmojiIndexSelected(int emojiIndex)
     {
-        if (emojiSpriteRenderer == null)
-        {
-            Debug.LogError($"[{gameObject.name}] emojiSpriteRenderer가 null입니다! 프리팹 연결을 확인하세요.");
-            return;
-        }
+        if (!isLocalPlayer) return;
+        CmdShowAnimatedEmoji(emojiIndex);
+    }
 
-        if (emojiSprites == null || emojiIndex < 0 || emojiIndex >= emojiSprites.Length)
-        {
-            Debug.LogError($"[{gameObject.name}] 이모지 스프라이트 배열이 비었거나 인덱스가 범위를 벗어났습니다. (Index: {emojiIndex})");
-            return;
-        }
+    [Command]
+    private void CmdShowAnimatedEmoji(int emojiIndex)
+    {
+        RpcShowAnimatedEmoji(emojiIndex);
+    }
 
-        if (emojiSprites[emojiIndex] == null)
-        {
-            Debug.LogError($"[{gameObject.name}] {emojiIndex}번 이모지 스프라이트 슬롯이 비어있습니다(None).");
-            return;
-        }
+    [ClientRpc]
+    private void RpcShowAnimatedEmoji(int emojiIndex)
+    {
+        ShowAnimatedEmoji(emojiIndex);
+    }
 
-        if (hideCoroutine != null)
-        {
-            StopCoroutine(hideCoroutine);
-        }
+    // 실제 단일 이모지 띄우기
+    private void ShowSingleEmoji(int emojiIndex)
+    {
+        if (emojiSpriteRenderer == null || emojiSprites == null || emojiIndex < 0 || emojiIndex >= emojiSprites.Length) return;
+        if (emojiSprites[emojiIndex] == null) return;
+
+        if (activeEmojiCoroutine != null) StopCoroutine(activeEmojiCoroutine);
 
         emojiSpriteRenderer.sprite = emojiSprites[emojiIndex];
-
-        float scaleX = Mathf.Abs(targetSize);
-        float scaleY = Mathf.Abs(targetSize);
-        emojiTransform.localScale = new Vector3(scaleX, scaleY, 1f);
+        SetEmojiScale();
 
         emojiSpriteRenderer.gameObject.SetActive(true);
-        Debug.Log($"[디버그 성공] {gameObject.name} 머리 위에 이모지 켜기 완료!");
-
-        hideCoroutine = StartCoroutine(HideEmojiRoutine());
+        activeEmojiCoroutine = StartCoroutine(HideEmojiRoutine(displayDuration));
     }
 
-    private IEnumerator HideEmojiRoutine()
+    // 실제 애니메이션(다중 프레임) 이모지 띄우기
+    private void ShowAnimatedEmoji(int emojiIndex)
     {
+        if (emojiSpriteRenderer == null || animatedEmojis == null || emojiIndex < 0 || emojiIndex >= animatedEmojis.Length) return;
+        var animData = animatedEmojis[emojiIndex];
+        if (animData.frames == null || animData.frames.Length == 0) return;
+
+        if (activeEmojiCoroutine != null) StopCoroutine(activeEmojiCoroutine);
+
+        SetEmojiScale();
+        emojiSpriteRenderer.gameObject.SetActive(true);
+
+        activeEmojiCoroutine = StartCoroutine(PlayAnimationRoutine(animData.frames));
+    }
+
+    private IEnumerator PlayAnimationRoutine(Sprite[] frames)
+    {
+        foreach (var frame in frames)
+        {
+            if (frame != null)
+            {
+                emojiSpriteRenderer.sprite = frame;
+            }
+            yield return new WaitForSeconds(frameInterval);
+        }
+
+        // 애니메이션 재생이 모두 끝난 후 일정 시간 유지하다가 끔 (혹은 바로 끄려면 frameInterval만 유지)
         yield return new WaitForSeconds(displayDuration);
 
         if (emojiSpriteRenderer != null)
         {
             emojiSpriteRenderer.gameObject.SetActive(false);
         }
+    }
+
+    private IEnumerator HideEmojiRoutine(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+
+        if (emojiSpriteRenderer != null)
+        {
+            emojiSpriteRenderer.gameObject.SetActive(false);
+        }
+    }
+
+    private void SetEmojiScale()
+    {
+        float scaleX = Mathf.Abs(targetSize);
+        float scaleY = Mathf.Abs(targetSize);
+        emojiTransform.localScale = new Vector3(scaleX, scaleY, 1f);
     }
 }

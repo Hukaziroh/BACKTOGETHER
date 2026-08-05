@@ -1397,14 +1397,22 @@ MonoBehaviour:
   syncInterval: 0
   emojiSpriteRenderer: {fileID: 2018865092427533078}
   emojiSprites:
-  - {fileID: 21300000, guid: e8dfd748d00e48b41b5e15f0eb44fb60, type: 3}
-  - {fileID: 21300000, guid: 362e5b6ef18487f4caef82b105bd2a20, type: 3}
-  - {fileID: 21300000, guid: d343dda583f458d4099433f4a78d3e7b, type: 3}
-  - {fileID: 21300000, guid: 860817cfca823524797a785974c0367a, type: 3}
-  - {fileID: 21300000, guid: c352c806a16123240929781a3b1178e6, type: 3}
-  - {fileID: 21300000, guid: f5ca039255bd00d4fb364dacb978a8c5, type: 3}
-  - {fileID: 21300000, guid: 1514580c9f35f4248a8153614e0f84cc, type: 3}
-  - {fileID: 21300000, guid: 165f6f2ef2bdb0b4e9befec648369368, type: 3}
+  - {fileID: 2453225149448660891, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+  - {fileID: 8466565502762357432, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+  - {fileID: -4855082346359090717, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+  - {fileID: -4573851567144314647, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+  - {fileID: -7866977358523287424, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+  - {fileID: 6162069267118594589, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+  - {fileID: 1664003977717168982, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+  - {fileID: -3068238926824723033, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+  - {fileID: 1458036559636054859, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+  animatedEmojis:
+  - frames:
+    - {fileID: 1458036559636054859, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - {fileID: 2856023600122083782, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - {fileID: 5783837810845549781, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - {fileID: 2453225149448660891, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+  frameInterval: 0.8
   targetSize: 0.5
   headOffset: {x: 0, y: 2, z: 0}
   displayDuration: 2
