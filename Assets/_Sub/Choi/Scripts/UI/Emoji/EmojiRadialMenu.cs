@@ -10,11 +10,14 @@ public class EmojiRadialMenu : MonoBehaviour
 {
     public static EmojiRadialMenu Instance { get; private set; }
     public static event Action<int> OnEmojiIndexSelected;
+    public static event Action<int> OnAnimatedEmojiIndexSelected; // 애니메이션 이모지 선택 이벤트 추가
 
     [System.Serializable]
     public class MenuItem
     {
-        public Sprite icon;
+        public Sprite icon;                   // 메뉴에 표시될 대표 아이콘
+        public bool isAnimated;               // 애니메이션 재생 여부
+        public Sprite[] animationFrames;      // 애니메이션일 때 순차적으로 보여줄 스프라이트 배열
     }
 
     [Header("Items")]
@@ -43,7 +46,7 @@ public class EmojiRadialMenu : MonoBehaviour
     private bool _isOpen;
     private bool _isBuilt;
 
-    // 🌟 뉴 인풋 시스템용 변수 추가
+    // 🌟 뉴 인풋 시스템용 변수
     private PlayerControls.PlayerControls _inputControls;
     private bool _prevMovingLeft;
     private bool _prevMovingRight;
@@ -178,10 +181,29 @@ public class EmojiRadialMenu : MonoBehaviour
         transform.localScale = Vector3.one;
 
         int result = _selectedIndex;
-        if (result >= 0)
+        if (result >= 0 && result < items.Length)
         {
-            OnSelected?.Invoke(result);
-            OnEmojiIndexSelected?.Invoke(result);
+            var selectedItem = items[result];
+
+            // 애니메이션 이모지인지 일반 이모지인지 판별 후 적절한 이벤트 호출
+            if (selectedItem.isAnimated)
+            {
+                // 전체 아이템 중 몇 번째 애니메이션 이모지인지 계산 (PlayerEmojiController의 Animated Emojis 인덱스와 맞춤)
+                int animatedIndex = 0;
+                for (int i = 0; i < result; i++)
+                {
+                    if (items[i].isAnimated)
+                    {
+                        animatedIndex++;
+                    }
+                }
+                OnAnimatedEmojiIndexSelected?.Invoke(animatedIndex);
+            }
+            else
+            {
+                OnSelected?.Invoke(result);
+                OnEmojiIndexSelected?.Invoke(result);
+            }
         }
 
         return result;
