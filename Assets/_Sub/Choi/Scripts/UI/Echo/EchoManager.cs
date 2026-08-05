@@ -9,6 +9,7 @@ public class EchoManager : MonoBehaviour
     public float waveSpeed = 20f;
     public float maxRadius = 30f;
     public float waveWidth = 3f;
+    public float waveCooldown = 1.5f;
 
     // 3개의 파동 상태 관리
     private float[] radii = new float[3] { -1f, -1f, -1f };
@@ -39,6 +40,14 @@ public class EchoManager : MonoBehaviour
         if (p != null) player = p.transform;
     }
 
+    // 외부(EchoZoneController 등)에서 파동 중심을 특정 플레이어로 고정하고 싶을 때 사용.
+    // 호출하지 않으면 기존 방식(FindHostPlayer) 그대로 동작 - 기존 로직은 안 건드림.
+    // OnEnable()의 FindHostPlayer() 호출 이후에 불러야 덮어써지지 않는다.
+    public void SetWaveOrigin(Transform target)
+    {
+        if (target != null) player = target;
+    }
+
     void Update()
     {
         if (player == null) { FindHostPlayer(); return; }
@@ -64,7 +73,7 @@ public class EchoManager : MonoBehaviour
             if (burstCount >= 3) { isCooldown = true; timer = 0f; }
         }
         // --- 쿨다운 로직 ---
-        else if (timer >= 3.0f)
+        else if (timer >= waveCooldown)
         {
             // 3초 지나면 리셋
             isCooldown = false;
