@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using DG.Tweening;
+using PlayerControls; // 만들어둔 뉴 인풋 네임스페이스 추가
 
 public class EmojiRadialMenu : MonoBehaviour
 {
@@ -42,6 +43,11 @@ public class EmojiRadialMenu : MonoBehaviour
     private bool _isOpen;
     private bool _isBuilt;
 
+    // 🌟 뉴 인풋 시스템용 변수 추가
+    private PlayerControls.PlayerControls _inputControls;
+    private bool _prevMovingLeft;
+    private bool _prevMovingRight;
+
     // 꾹 누름 연속 입력(Hold-to-repeat) 관련 변수
     private float _keyRepeatTimer;
     private bool _isKeyHeld;
@@ -64,8 +70,17 @@ public class EmojiRadialMenu : MonoBehaviour
             return;
         }
 
+        // 🌟 뉴 인풋 컨트롤 초기화
+        _inputControls = new PlayerControls.PlayerControls();
+
         Build();
         gameObject.SetActive(false);
+    }
+
+    private void OnDestroy()
+    {
+        // 🌟 메모리 누수 방지
+        _inputControls?.Dispose();
     }
 
     private void Build()
@@ -133,7 +148,11 @@ public class EmojiRadialMenu : MonoBehaviour
         if (_isOpen) return;
         _isOpen = true;
 
-        // 메뉴가 열릴 때 첫 번째 항목(0번)을 기본 선택 상태로 지정
+        // 🌟 메뉴가 열릴 때 인풋 감지 활성화 및 상태 초기화
+        _inputControls.GamePlay.Enable();
+        _prevMovingLeft = false;
+        _prevMovingRight = false;
+
         _selectedIndex = (_slotCount > 0) ? 0 : -1;
         _prevSelectedIndex = -1;
         _isKeyHeld = false;
@@ -150,6 +169,9 @@ public class EmojiRadialMenu : MonoBehaviour
     {
         if (!_isOpen) return -1;
         _isOpen = false;
+
+        // 🌟 메뉴가 닫힐 때 인풋 감지 비활성화
+        _inputControls.GamePlay.Disable();
 
         transform.DOKill();
         gameObject.SetActive(false);
@@ -176,18 +198,30 @@ public class EmojiRadialMenu : MonoBehaviour
         }
     }
 
-    // 좌우 키 순차 이동 및 꾹 누름 반복 입력 처리
+    // 좌우 키(스틱) 순차 이동 및 꾹 누름 반복 입력 처리
     private void UpdateSelection()
     {
-        var keyboard = Keyboard.current;
-        if (keyboard == null || _slotCount == 0) return;
+        if (_slotCount == 0) return;
 
-        bool leftPressed = keyboard.aKey.wasPressedThisFrame || keyboard.leftArrowKey.wasPressedThisFrame;
-        bool rightPressed = keyboard.dKey.wasPressedThisFrame || keyboard.rightArrowKey.wasPressedThisFrame;
+        // 🌟 뉴 인풋 시스템에서 좌우 아날로그/방향키 값 읽어오기
+        float moveInput = _inputControls.GamePlay.Move.ReadValue<float>();
 
-        bool leftHeld = keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed;
-        bool rightHeld = keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed;
+        // 데드존(0.3) 설정: 스틱을 어느 정도 기울여야 인식되도록
+        bool isMovingLeft = moveInput < -0.3f;
+        bool isMovingRight = moveInput > 0.3f;
 
+        // 이전 프레임 상태와 비교하여 "이번 프레임에 막 누름(wasPressed)" 판정 구현
+        bool leftPressed = isMovingLeft && !_prevMovingLeft;
+        bool rightPressed = isMovingRight && !_prevMovingRight;
+
+        bool leftHeld = isMovingLeft;
+        bool rightHeld = isMovingRight;
+
+        // 다음 프레임 비교를 위해 상태 저장
+        _prevMovingLeft = isMovingLeft;
+        _prevMovingRight = isMovingRight;
+
+        // 기존의 이동 및 꾹 누름 로직
         if (leftPressed || rightPressed)
         {
             if (leftPressed && !rightPressed) MoveIndex(-1);
@@ -230,7 +264,7 @@ public class EmojiRadialMenu : MonoBehaviour
         }
         else if (_selectedIndex >= _slotCount)
         {
-            _selectedIndex = 0;             // 마지막에서 오른쪽으로 가면 첫 번째로 이동
+            _selectedIndex = 0;              // 마지막에서 오른쪽으로 가면 첫 번째로 이동
         }
     }
 
