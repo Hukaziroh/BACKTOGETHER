@@ -8,7 +8,7 @@ using Mirror;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem; // 신형 입력 시스템
+using UnityEngine.InputSystem; 
 using UnityEngine.UI;
 
 public class ClientLobbyManager : MonoBehaviour
@@ -29,7 +29,7 @@ public class ClientLobbyManager : MonoBehaviour
     [Header("퍼블릭 방 리스트 - 상단 컨트롤")]
     [SerializeField] private TMP_InputField searchInputField;
     [SerializeField] private Button researchButton;
-    [SerializeField] private GameObject chapterFilterSelectObject; // 챕터 필터 UI 오브젝트 (포커스용)
+    [SerializeField] private GameObject chapterFilterSelectObject; 
     [SerializeField] private TextMeshProUGUI filterChapterText;
     [SerializeField] private Button prevFilterChapterButton;
     [SerializeField] private Button nextFilterChapterButton;
@@ -55,7 +55,6 @@ public class ClientLobbyManager : MonoBehaviour
     private EOSLobby eosLobby;
     private bool isSubscribed = false;
 
-    // 퍼블릭 리스트 검색 요청만 구분하기 위한 플래그
     private bool isLocalSearchRequest = false;
 
     private List<LobbyDetails> allFetchedLobbies = new List<LobbyDetails>();
@@ -65,6 +64,8 @@ public class ClientLobbyManager : MonoBehaviour
     private const int itemsPerPage = 8;
     private int selectedFilterChapter = 0; // 0: All, 1~6: Chapter 1~6
     private bool isQuickJoining = false;
+
+    private Coroutine connectionTimeoutCoroutine;
 
 
     private EOSLobby GetEOSLobby()
@@ -118,7 +119,6 @@ public class ClientLobbyManager : MonoBehaviour
         GameObject panel = GetLoadingPanel();
         if (panel != null) panel.SetActive(false);
 
-        // 메인(커넥트) 패널 활성화
         if (mainPanel != null)
         {
             mainPanel.SetActive(true);
@@ -128,7 +128,6 @@ public class ClientLobbyManager : MonoBehaviour
             }
         }
 
-        // 인풋 필드 작성 완료(엔터/포커스 해제) 시 다시 interactable = false 처리
         if (searchInputField != null)
         {
             searchInputField.onEndEdit.AddListener(OnSearchInputEndEdit);
@@ -155,7 +154,6 @@ public class ClientLobbyManager : MonoBehaviour
         bool downPressed = false;
         bool enterPressed = false;
 
-        // 키보드
         if (Keyboard.current != null)
         {
             leftPressed |= Keyboard.current.leftArrowKey.wasPressedThisFrame ||
@@ -173,7 +171,6 @@ public class ClientLobbyManager : MonoBehaviour
                            Keyboard.current.sKey.wasPressedThisFrame;
         }
 
-        // 게임패드
         if (Gamepad.current != null)
         {
             leftPressed |= Gamepad.current.dpad.left.wasPressedThisFrame ||
@@ -189,13 +186,9 @@ public class ClientLobbyManager : MonoBehaviour
         if (EventSystem.current == null) return;
 
         GameObject selected = EventSystem.current.currentSelectedGameObject;
-
-        // 🌟 1. 퍼블릭 로비 패널 활성화 시
         if (clientPublicPanel != null && clientPublicPanel.activeSelf)
         {
             if (selected == null) return;
-
-            // 챕터 필터 좌우 입력 조작
             bool isFilterChapterSelected = (chapterFilterSelectObject != null && selected == chapterFilterSelectObject) ||
                                            (filterChapterText != null && (selected == filterChapterText.gameObject || selected == filterChapterText.transform.parent.gameObject)) ||
                                            (prevFilterChapterButton != null && selected == prevFilterChapterButton.gameObject) ||
@@ -214,8 +207,6 @@ public class ClientLobbyManager : MonoBehaviour
 
                 return;
             }
-
-            // ★ 검색 인풋 필드 선택 후 엔터 키 입력 시 활성화
             if (searchInputField != null)
             {
                 bool isInputFieldSelected = (selected == searchInputField.gameObject) ||
@@ -236,7 +227,6 @@ public class ClientLobbyManager : MonoBehaviour
             }
         }
 
-        // 🌟 2. 프라이빗 룸 패널 활성화 시 (selected가 null이어도 상하 입력으로 포커스를 잡을 수 있도록 분리됨)
         if (clientPrivatePanel != null && clientPrivatePanel.activeSelf)
         {
             if (upPressed)
@@ -253,7 +243,6 @@ public class ClientLobbyManager : MonoBehaviour
 
     private void OnSearchInputEndEdit(string text)
     {
-        // 텍스트 입력 완료 후 비활성화 상태로 복귀
         if (searchInputField != null)
         {
             searchInputField.interactable = false;
@@ -582,6 +571,12 @@ public class ClientLobbyManager : MonoBehaviour
 
                     NetworkManager.singleton.networkAddress = hostAddress;
                     NetworkManager.singleton.StartClient();
+
+                    if (connectionTimeoutCoroutine != null)
+                        StopCoroutine(connectionTimeoutCoroutine);
+
+                    connectionTimeoutCoroutine = StartCoroutine(CheckConnectionTimeout());
+
                     return;
                 }
             }
@@ -743,7 +738,6 @@ public class ClientLobbyManager : MonoBehaviour
     {
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
 
-        // 🌟 에러 팝업이 닫힐 때 현재 켜져 있는 패널에 맞춰 포커스 복구
         if (GlobalSceneInputManager.Instance != null)
         {
             if (clientPublicPanel != null && clientPublicPanel.activeSelf)
@@ -790,5 +784,44 @@ public class ClientLobbyManager : MonoBehaviour
         isQuickJoining = true;
         isLocalSearchRequest = true;
         lobby.FindLobbies(50, searchOptions);
+    }
+
+    private IEnumerator CheckConnectionTimeout()
+    {
+        float timeoutDuration = 10f; 
+        float timer = 0f;
+
+        while (timer < timeoutDuration)
+        {
+            if (NetworkClient.isConnected)
+            {
+                yield break;
+            }
+
+            if (!NetworkClient.active)
+            {
+                break;
+            }
+
+            timer += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        Debug.LogWarning("[ClientLobbyManager] 호스트와의 P2P 연결 시간 초과 또는 실패");
+
+        if (NetworkManager.singleton != null)
+        {
+            NetworkManager.singleton.StopClient();
+        }
+
+        GameObject panel = GetLoadingPanel();
+        if (panel != null) panel.SetActive(false);
+
+        if (clientSelectionPanel != null) clientSelectionPanel.SetActive(true);
+        if (logo != null) logo.SetActive(true);
+
+        SetInteractableAll(true);
+
+        ShowError("호스트와의 연결에 실패했습니다.\n방이 폭파되었거나 네트워크 상태가 불안정합니다.");
     }
 }
