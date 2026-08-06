@@ -33,6 +33,9 @@ public class PlayerInput : NetworkBehaviour
     private float lastInput = -999f;
     private bool lastJumpHolding = false;
 
+    // 🌟 [추가됨] 메뉴 닫힘 인풋 누수 방지용 타이머
+    private float menuCloseGraceTimer = 0f;
+
     void Awake()
     {
         controller = GetComponent<PlayerController>();
@@ -57,6 +60,7 @@ public class PlayerInput : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
+        // 이모지 휠 조작
         if (inputControls.GamePlay.Emoji.WasPressedThisFrame())
         {
             bool isPaused = PauseManager.instance != null && PauseManager.instance.isPaused;
@@ -74,6 +78,7 @@ public class PlayerInput : NetworkBehaviour
             }
         }
 
+        // 이동 및 액션 키 읽기
         float rawInput = inputControls.GamePlay.Move.ReadValue<float>();
 
         if (Mathf.Abs(rawInput) < 0.15f)
@@ -86,6 +91,9 @@ public class PlayerInput : NetworkBehaviour
         bool jReleased = inputControls.GamePlay.Jump.WasReleasedThisFrame();
         bool aPressed = inputControls.GamePlay.Action.WasPressedThisFrame();
 
+        // ==========================================
+        // 🌟 메뉴 열림 감지 및 0.15초 유예 시간(Grace Time) 적용
+        // ==========================================
         bool isMenuOpen =
             (PauseManager.instance != null && PauseManager.instance.isPaused)
             ||
@@ -99,7 +107,19 @@ public class PlayerInput : NetworkBehaviour
             ||
             (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen());
 
+        // 메뉴가 켜져 있으면 차단 타이머를 계속 0.15초로 꽉 채움
         if (isMenuOpen)
+        {
+            menuCloseGraceTimer = 0.15f;
+        }
+        else if (menuCloseGraceTimer > 0f)
+        {
+            // 메뉴가 꺼지더라도 0.15초 동안은 서서히 줄어들며 입력을 계속 차단함
+            menuCloseGraceTimer -= Time.unscaledDeltaTime;
+        }
+
+        // 🌟 isMenuOpen이 아니라 "타이머가 남아있는지"를 기준으로 입력 차단!
+        if (menuCloseGraceTimer > 0f)
         {
             rawInput = 0f;
             jHolding = false;
@@ -108,11 +128,13 @@ public class PlayerInput : NetworkBehaviour
             aPressed = false;
         }
 
+        // 점프 사운드 예측 재생
         if (jPressed && controller.animationModule != null && controller.animationModule.IsJumpableSynced)
         {
             controller.movement.PlayJumpSoundLocal();
         }
 
+        // 서버 전송
         if (rawInput != lastInput || jPressed || jReleased || jHolding != lastJumpHolding || aPressed)
         {
             CmdSendInput(rawInput, jHolding, jPressed, jReleased, aPressed);
