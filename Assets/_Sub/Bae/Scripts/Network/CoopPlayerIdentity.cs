@@ -97,7 +97,6 @@ public class CoopPlayerIdentity : NetworkBehaviour
     {
         if (faceSpriteRenderer == null || playerFaceGroups == null || playerFaceGroups.Length == 0) return;
 
-        // 🌟 [핵심 버그 수정] 합체 상태이고 내가 '본체(Body)'가 아닌 '탑승자(Ghost)'라면 눈을 감춥니다!
         if (combineHandler != null && combineHandler.isCombined && combineHandler.bodyTarget != gameObject)
         {
             faceSpriteRenderer.enabled = false;
@@ -139,8 +138,7 @@ public class CoopPlayerIdentity : NetworkBehaviour
             group = playerFaceGroups[validIndex];
         }
 
-        Sprite targetSprite =
-        GetFaceSprite(group, currentState);
+        Sprite targetSprite = GetFaceSprite(group, currentState);
         if (targetSprite != null)
         {
             faceSpriteRenderer.sprite = targetSprite;
@@ -168,6 +166,27 @@ public class CoopPlayerIdentity : NetworkBehaviour
     [ClientRpc]
     private void RpcResetColor()
     {
+        UpdatePlayerVisual();
+    }
+
+    public void ForceUpdateVisual()
+    {
+        UpdatePlayerVisual();
+    }
+
+    public void ResetFaceVisual()
+    {
+        if (faceSpriteRenderer != null)
+        {
+            faceSpriteRenderer.enabled = true;
+
+            if (playerIndex >= 0 && playerIndex < playerFaceGroups.Length)
+            {
+                faceSpriteRenderer.sprite =
+                    playerFaceGroups[playerIndex].idleSprite;
+            }
+        }
+
         UpdatePlayerVisual();
     }
 
