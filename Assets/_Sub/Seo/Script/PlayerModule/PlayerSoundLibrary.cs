@@ -15,4 +15,7 @@ public class PlayerSoundLibrary : ScriptableObject
     [Header("버튼")]
     public AudioClip buttonPressSound;
     public AudioClip buttonReleaseSound;
+
+    [Header("체크포인트 팡파레")]
+    public AudioClip checkpointFanfare;
 }

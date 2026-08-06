@@ -200,6 +200,10 @@ MonoBehaviour:
   raisedFlagSprite: {fileID: 7988532127753490847, guid: 6cfcb766a53a2224dade203a204dc67a, type: 3}
   clearFanfareTransform: {fileID: 54600412964153840}
   fanfareDuration: 0.2
+  soundLibrary: {fileID: 11400000, guid: 06f50f015f6cd11428375f4055f6186e, type: 2}
+  fanfareVolume: 0.7
+  soundMinDistance: 9
+  soundMaxDistance: 40
 --- !u!61 &8127923415173957886
 BoxCollider2D:
   m_ObjectHideFlags: 0
