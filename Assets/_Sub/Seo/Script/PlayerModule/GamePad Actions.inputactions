@@ -52,15 +52,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "SpectatePrev",
-                    "type": "Button",
-                    "id": "5bf5e437-07dc-41de-abea-4742313d7dbf",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "SpectateNext",
                     "type": "Button",
                     "id": "2d8c8627-bd07-4d82-b74c-1f92d4ae0980",
@@ -97,13 +88,13 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Maps",
-                    "type": "Value",
-                    "id": "4c7f0236-1aec-4478-9fe9-83fb056747f5",
-                    "expectedControlType": "Vector2",
+                    "name": "Select",
+                    "type": "Button",
+                    "id": "8a47dac3-0025-44b0-9413-4a17ef1f425b",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": true
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -307,30 +298,8 @@
                 },
                 {
                     "name": "",
-                    "id": "42b96ecf-17bc-43bf-8f5f-a1b9c2b7e20c",
-                    "path": "<Gamepad>/buttonEast",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Back",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "395c3540-ca9d-4cf5-aca6-843e88583832",
-                    "path": "<Gamepad>/leftShoulder",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "SpectatePrev",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "d7b1b8c4-a249-45c1-8d62-799e331e60db",
-                    "path": "<Gamepad>/rightShoulder",
+                    "path": "<Gamepad>/leftShoulder",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -351,17 +320,6 @@
                 },
                 {
                     "name": "",
-                    "id": "d3e54c70-71ca-484b-abfe-ff81bc1bc770",
-                    "path": "<Gamepad>/buttonNorth",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "ReturnToMe",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "1ff0cd9e-6e79-44fd-b9f3-1f67ccdd7036",
                     "path": "<Keyboard>/tab",
                     "interactions": "",
@@ -373,8 +331,19 @@
                 },
                 {
                     "name": "",
+                    "id": "5f891aa6-120b-4db2-9c23-3f767679b1ec",
+                    "path": "<Gamepad>/rightShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ReturnToMe",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "6f58ede2-e30c-4ba6-a144-5f5f8605bf63",
-                    "path": "<Gamepad>/rightTrigger",
+                    "path": "<Gamepad>/leftTrigger",
                     "interactions": "Hold(duration=3)",
                     "processors": "",
                     "groups": "",
@@ -396,7 +365,7 @@
                 {
                     "name": "",
                     "id": "17dad76d-587d-43e2-b44d-ff7bc4f01197",
-                    "path": "<Gamepad>/leftTrigger",
+                    "path": "<Gamepad>/rightTrigger",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -417,34 +386,78 @@
                 },
                 {
                     "name": "",
-                    "id": "226aeffb-6f15-4894-9eb2-d5e33d300f48",
-                    "path": "<Gamepad>/dpad",
+                    "id": "aa352207-24ac-44a4-860d-59d2214dc21e",
+                    "path": "<XInputController>/buttonEast",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Maps",
+                    "action": "Back",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
-                    "id": "1d947f3d-4cbe-4049-9baf-1ce97e509cd5",
-                    "path": "<Gamepad>/leftStick",
+                    "id": "04719806-475f-4f2c-b3f0-47a5447675d4",
+                    "path": "<DualShockGamepad>/buttonNorth",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Maps",
+                    "action": "Back",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
-                    "id": "4c261e50-a332-4d38-bf37-d0951f531dd1",
-                    "path": "<Gamepad>/rightStick",
+                    "id": "0bfab388-94fc-49ae-87f8-4a422f192633",
+                    "path": "<SwitchProControllerHID>/buttonSouth",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Maps",
+                    "action": "Back",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b1025bd9-1082-47b3-9891-ca1aa7aac3a7",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Select",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "241db16b-d874-4a7a-8ef7-aee7aa6b5306",
+                    "path": "<XInputController>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Select",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7da78074-db01-472e-be53-7bf2231cd6dd",
+                    "path": "<DualShockGamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Select",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "90cbe6a0-b55e-4af3-a7f6-46bded15ca1c",
+                    "path": "<SwitchProControllerHID>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Select",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

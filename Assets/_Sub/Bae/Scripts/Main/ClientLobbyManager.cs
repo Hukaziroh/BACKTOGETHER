@@ -182,10 +182,6 @@ public class ClientLobbyManager : MonoBehaviour
             rightPressed |= Gamepad.current.dpad.right.wasPressedThisFrame ||
                             Gamepad.current.leftStick.right.wasPressedThisFrame;
 
-            enterPressed |= Gamepad.current.buttonSouth.wasPressedThisFrame;
-            upPressed |= Gamepad.current.dpad.up.wasPressedThisFrame ||
-               Gamepad.current.leftStick.up.wasPressedThisFrame;
-
             downPressed |= Gamepad.current.dpad.down.wasPressedThisFrame ||
                            Gamepad.current.leftStick.down.wasPressedThisFrame;
         }
