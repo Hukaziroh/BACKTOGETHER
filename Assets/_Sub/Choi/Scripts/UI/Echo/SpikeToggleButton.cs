@@ -22,6 +22,12 @@ public class SpikeToggleButton : NetworkBehaviour
     [Header("에코 관리 매니저")]
     public SpikeEchoParentManager echoManager; // 가시 에코 매니저
 
+    [Header("버튼 사운드")]
+    public PlayerSoundLibrary soundLibrary;
+    [Range(0f, 1f)] public float buttonVolume = 0.6f;
+    public float soundMinDistance = 9f;
+    public float soundMaxDistance = 40f;
+
     private HashSet<GameObject> playersOnButton = new HashSet<GameObject>();
 
     [SyncVar(hook = nameof(OnButtonStateChanged))]
@@ -79,6 +85,14 @@ public class SpikeToggleButton : NetworkBehaviour
     private void OnButtonStateChanged(bool oldState, bool newState)
     {
         UpdateState(newState, false);
+        PlayButtonSound(newState);
+    }
+
+    private void PlayButtonSound(bool pressed)
+    {
+        AudioClip clip = null;
+        if (soundLibrary != null) clip = pressed ? soundLibrary.buttonPressSound : soundLibrary.buttonReleaseSound;
+        PlayerSoundUtility.PlayPositional(transform.position, clip, buttonVolume, soundMinDistance, soundMaxDistance);
     }
 
     private void UpdateState(bool pressed, bool instant)

@@ -32,6 +32,8 @@ public class PlayerController : NetworkBehaviour
     public float soundMinDistance = 9f;
     public float soundMaxDistance = 40f;
     [Range(0f, 1f)] public float otherPlayerVolumeMultiplier = 0.25f;
+    // 클립 자체는 여기 한 군데(에셋)에서만 관리 - 어떤 프리팹도 따로 안 들고 있음
+    public PlayerSoundLibrary soundLibrary;
 
   
     void Awake()

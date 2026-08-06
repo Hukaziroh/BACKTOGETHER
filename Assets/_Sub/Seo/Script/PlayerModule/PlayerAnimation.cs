@@ -28,7 +28,6 @@ public class PlayerAnimation : NetworkBehaviour
     public float syncDirectionX = 1f;
 
     [Header("발소리")]
-    public AudioClip footstepClip;
     [Range(0f, 1f)] public float footstepVolume = 0.4f;
     public float footstepInterval = 0.35f;
     private float footstepTimer = 0f;
@@ -91,8 +90,9 @@ public class PlayerAnimation : NetworkBehaviour
 
     private void PlayFootstepSound()
     {
+        AudioClip clip = controller.soundLibrary != null ? controller.soundLibrary.footstepClip : null;
         float volume = isLocalPlayer ? footstepVolume : footstepVolume * controller.otherPlayerVolumeMultiplier;
-        PlayerSoundUtility.PlayPositional(transform.position, footstepClip, volume, controller.soundMinDistance, controller.soundMaxDistance);
+        PlayerSoundUtility.PlayPositional(transform.position, clip, volume, controller.soundMinDistance, controller.soundMaxDistance);
     }
 
     [Server]

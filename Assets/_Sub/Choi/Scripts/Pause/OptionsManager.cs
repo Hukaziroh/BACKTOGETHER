@@ -47,6 +47,14 @@ public class OptionsManager : MonoBehaviour
         {
             instance = this;
             DontDestroyOnLoad(gameObject);
+
+            // 플레이어 사운드(점프/피격/발소리/버튼 등)가 이 볼륨 슬라이더의 영향을 받도록
+            // Master 그룹을 PlayerSoundUtility에 등록해둔다.
+            if (audioMixer != null)
+            {
+                AudioMixerGroup[] groups = audioMixer.FindMatchingGroups("Master");
+                if (groups.Length > 0) PlayerSoundUtility.DefaultSfxGroup = groups[0];
+            }
         }
         else
         {
@@ -66,6 +74,13 @@ public class OptionsManager : MonoBehaviour
 
         if (volumeSlider != null)
         {
+            // 슬라이더 초기 위치를 현재 실제 믹서 볼륨값에 맞춰 동기화 (안 하면 실제 소리는 안 작은데 바만 0에 있는 것처럼 보임)
+            if (audioMixer != null && audioMixer.GetFloat("Volume", out float currentDb))
+            {
+                float currentVolume = Mathf.Pow(10f, currentDb / 20f);
+                volumeSlider.SetValueWithoutNotify(currentVolume);
+            }
+
             volumeSlider.onValueChanged.AddListener(SetVolume);
         }
 
