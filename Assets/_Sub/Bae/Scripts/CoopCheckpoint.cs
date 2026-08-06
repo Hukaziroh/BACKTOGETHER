@@ -25,6 +25,12 @@ public class CoopCheckpoint : NetworkBehaviour
     public Transform clearFanfareTransform;
     public float fanfareDuration = 0.2f;
 
+    [Header("팡파레 사운드")]
+    public PlayerSoundLibrary soundLibrary;
+    [Range(0f, 1f)] public float fanfareVolume = 0.7f;
+    public float soundMinDistance = 9f;
+    public float soundMaxDistance = 40f;
+
     [SyncVar(hook = nameof(OnActivatedForAllChanged))]
     private bool isActivatedForAll = false;
 
@@ -55,9 +61,17 @@ public class CoopCheckpoint : NetworkBehaviour
 
     private void PlayFanfare()
     {
+        PlayFanfareSound();
+
         if (clearFanfareTransform == null) return;
         StopAllCoroutines();
         StartCoroutine(FanfareBlinkRoutine());
+    }
+
+    private void PlayFanfareSound()
+    {
+        AudioClip clip = soundLibrary != null ? soundLibrary.checkpointFanfare : null;
+        PlayerSoundUtility.PlayPositional(transform.position, clip, fanfareVolume, soundMinDistance, soundMaxDistance);
     }
 
     private IEnumerator FanfareBlinkRoutine()
