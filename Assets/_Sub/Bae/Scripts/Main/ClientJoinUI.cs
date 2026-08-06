@@ -19,9 +19,14 @@ public class ClientJoinUI : MonoBehaviour
     [SerializeField] private GameObject? errorPopupPanel;
     [SerializeField] private TextMeshProUGUI? errorMessageText;
 
+    [Header("타임아웃 설정")]
+    [Tooltip("방 접속 시도 후 무한 로딩 방지 제한 시간 (초)")]
+    [SerializeField] private float joinTimeout = 10f;
+
     private LobbySearch? currentSearchHandle;
-    private LobbyDetails? foundLobbyDetails; // 핸들 저장용으로 변경
+    private LobbyDetails? foundLobbyDetails;
     private bool searchFinished = false;
+    private Coroutine? timeoutCoroutine;
 
     private void Start()
     {
@@ -72,7 +77,43 @@ public class ClientJoinUI : MonoBehaviour
             currentPanel.SetActive(true);
         }
 
+        // 기존 타임아웃 타이머 초기화 후 무한 로딩 감지 코루틴 시작
+        CancelTimeout();
+        timeoutCoroutine = StartCoroutine(JoinTimeoutRoutine());
+
         StartCoroutine(SearchAndJoinRoutine(code));
+    }
+
+    /// <summary>
+    /// 무한 로딩 감지 및 타임아웃 처리 코루틴 (추가됨)
+    /// </summary>
+    private IEnumerator JoinTimeoutRoutine()
+    {
+        // 설정한 시간(기본 10초)만큼 대기
+        yield return new WaitForSeconds(joinTimeout);
+
+        // 시간이 지났는데도 로딩 창이 켜져 있다면 접속 실패로 간주!
+        GameObject? panel = GetLoadingPanel();
+        if (panel != null && panel.activeSelf)
+        {
+            Debug.LogWarning($"[ClientJoinUI] 방 진입 타임아웃 ({joinTimeout}초 초과) -> 접속 시도를 강제 중단합니다.");
+
+            // 검색 중이었다면 핸들 강제 해제
+            if (currentSearchHandle != null)
+            {
+                currentSearchHandle.Release();
+                currentSearchHandle = null;
+            }
+
+            // Mirror 클라이언트 연결 강제 종료
+            if (NetworkManager.singleton != null && NetworkManager.singleton.isNetworkActive)
+            {
+                NetworkManager.singleton.StopClient();
+            }
+
+            HideLoadingPanel();
+            ShowErrorPopup("방 접속 시간이 초과되었습니다.\n(서버 응답이 없거나 네트워크가 불안정합니다.)");
+        }
     }
 
     private IEnumerator SearchAndJoinRoutine(string code)
@@ -83,6 +124,7 @@ public class ClientJoinUI : MonoBehaviour
         LobbyInterface lobbyInterface = EOSSDKComponent.GetLobbyInterface();
         if (lobbyInterface == null)
         {
+            CancelTimeout();
             ShowErrorPopup("EOS 네트워크 시스템이 준비되지 않았습니다.");
             HideLoadingPanel();
             yield break;
@@ -113,12 +155,22 @@ public class ClientJoinUI : MonoBehaviour
             currentSearchHandle.Find(findOptions, null, OnLobbySearchCompleted);
         }
 
-        // 5초 타임아웃
+        // 기존 방 검색 5초 타임아웃 유지
         float timeout = 5f;
         while (!searchFinished && timeout > 0f)
         {
             timeout -= Time.unscaledDeltaTime;
             yield return null;
+        }
+
+        // 방 검색을 5초 동안 못 한 경우
+        if (timeout <= 0f && !searchFinished)
+        {
+            Debug.LogWarning($"[ClientJoinUI] 코드 검색 5초 초과.");
+            CancelTimeout();
+            HideLoadingPanel();
+            ShowErrorPopup("방 검색에 실패했습니다. 코드를 다시 확인해 주세요.");
+            yield break;
         }
 
         // 방 발견 시 EOSLobby를 통해 공식 방 참가 실행
@@ -134,12 +186,14 @@ public class ClientJoinUI : MonoBehaviour
 
             if (eosLobby != null)
             {
-                // EOSLobby가 참가를 수행하면 ClientLobbyManager.OnJoinLobbySucceeded가 호출되어 Client 실행 및 씬 이동됨
+                // 정상적으로 씬이 넘어가면 이 오브젝트가 파괴되면서 로딩창도 사라지고 타임아웃도 자동 취소됨.
+                // 만약 씬이 넘어가지 않고 100%에서 멈춰있다면 위에서 실행한 JoinTimeoutRoutine이 작동함.
                 eosLobby.JoinLobby(foundLobbyDetails);
             }
             else
             {
                 Debug.LogError("[ClientJoinUI] EOSLobby 인스턴스를 찾을 수 없습니다.");
+                CancelTimeout();
                 HideLoadingPanel();
                 ShowErrorPopup("네트워크 매니저(EOSLobby)를 찾을 수 없습니다.");
             }
@@ -147,6 +201,7 @@ public class ClientJoinUI : MonoBehaviour
         else
         {
             Debug.LogWarning($"[ClientJoinUI] 코드 '{code}'에 해당하는 방을 찾을 수 없습니다.");
+            CancelTimeout();
             HideLoadingPanel();
             ShowErrorPopup($"코드 [{code}] 방을 찾을 수 없습니다.\n코드를 다시 확인해 주세요.");
         }
@@ -164,7 +219,6 @@ public class ClientJoinUI : MonoBehaviour
                 LobbySearchCopySearchResultByIndexOptions copyOptions = new LobbySearchCopySearchResultByIndexOptions();
                 copyOptions.LobbyIndex = 0;
 
-                // 문자열 변환 없이 LobbyDetails 핸들을 직접 가져옴
                 currentSearchHandle.CopySearchResultByIndex(copyOptions, out foundLobbyDetails);
             }
         }
@@ -175,6 +229,15 @@ public class ClientJoinUI : MonoBehaviour
         {
             currentSearchHandle.Release();
             currentSearchHandle = null;
+        }
+    }
+
+    private void CancelTimeout()
+    {
+        if (timeoutCoroutine != null)
+        {
+            StopCoroutine(timeoutCoroutine);
+            timeoutCoroutine = null;
         }
     }
 
