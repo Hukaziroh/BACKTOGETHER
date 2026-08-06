@@ -94,7 +94,7 @@ public class PlayerRespawn : NetworkBehaviour
 
     private IEnumerator RespawnAllPlayersRoutine()
     {
-        PlayerRespawn[] allPlayers = FindObjectsByType<PlayerRespawn>(FindObjectsSortMode.None);
+        PlayerRespawn[] allPlayers = FindObjectsByType<PlayerRespawn>();
 
         foreach (var p in allPlayers)
         {

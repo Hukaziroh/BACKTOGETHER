@@ -178,7 +178,7 @@ public class ClientJoinUI : MonoBehaviour
         {
             Debug.Log($"[ClientJoinUI] 코드 [{code}] 방 발견! EOSLobby를 통해 참가를 진행합니다.");
 
-            EOSLobby eosLobby = FindFirstObjectByType<EOSLobby>();
+            EOSLobby eosLobby = FindAnyObjectByType<EOSLobby>();
             if (eosLobby == null && NetworkManager.singleton != null)
             {
                 eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
