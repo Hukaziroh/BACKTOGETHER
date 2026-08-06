@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86aa73ff9e78ee44787459f7183676d7, type: 3}
+  m_Name: PlayerSoundLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSoundLibrary
+  jumpClip: {fileID: 8300000, guid: 8c8eeaefe9637994fb358357abf88dcd, type: 3}
+  hitClip: {fileID: 8300000, guid: e4d14916a3eb7fa45a27284a99da1d9f, type: 3}
+  footstepClip: {fileID: 8300000, guid: 93f43f4569f2b8748ace3574e1132141, type: 3}
+  buttonPressSound: {fileID: 8300000, guid: 97fe3c6779de0494bb64cff2f33726aa, type: 3}
+  buttonReleaseSound: {fileID: 8300000, guid: 77fc2087d2f8f4b449c34e0aae4603f5, type: 3}

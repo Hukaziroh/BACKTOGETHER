@@ -14,6 +14,13 @@ public class CoopButton : NetworkBehaviour
     [SyncVar(hook = nameof(OnButtonStateChanged))]
     public bool isPressed = false;
 
+    [Header("버튼 사운드")]
+    // 클립 자체는 PlayerSoundLibrary 애셋 한 곳에서만 관리 (프리팹마다 따로 안 넣음)
+    public PlayerSoundLibrary soundLibrary;
+    [Range(0f, 1f)] public float buttonVolume = 0.6f;
+    public float soundMinDistance = 9f;
+    public float soundMaxDistance = 40f;
+
     private HashSet<GameObject> playersOnButton = new HashSet<GameObject>();
     public Action<CoopButton> OnButtonStateChangedEvent;
 
@@ -60,11 +67,19 @@ public class CoopButton : NetworkBehaviour
     private void OnButtonStateChanged(bool oldState, bool newState)
     {
         UpdateVisual(newState);
+        PlayButtonSound(newState);
     }
 
     private void UpdateVisual(bool pressed)
     {
         if (unpressedVisual != null) unpressedVisual.SetActive(!pressed);
         if (pressedVisual != null) pressedVisual.SetActive(pressed);
+    }
+
+    private void PlayButtonSound(bool pressed)
+    {
+        AudioClip clip = null;
+        if (soundLibrary != null) clip = pressed ? soundLibrary.buttonPressSound : soundLibrary.buttonReleaseSound;
+        PlayerSoundUtility.PlayPositional(transform.position, clip, buttonVolume, soundMinDistance, soundMaxDistance);
     }
 }
