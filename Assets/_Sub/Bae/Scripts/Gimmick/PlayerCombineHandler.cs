@@ -1,3 +1,4 @@
+// PlayerCombineHandler.cs
 using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
@@ -16,13 +17,11 @@ public class PlayerCombineHandler : NetworkBehaviour
 
     [SyncVar] public bool canUseAction = false;
 
-
     [SyncVar]
     public int combineColorIndex = -1;
 
     [SyncVar]
     public int combineFaceIndex = -1;
-
 
     // 본체(Body)가 자신에게 붙은 고스트들을 기억하는 리스트 (서버 전용 최적화)
     public List<PlayerCombineHandler> connectedGhosts = new List<PlayerCombineHandler>();
@@ -66,7 +65,6 @@ public class PlayerCombineHandler : NetworkBehaviour
 
         RpcApplyCombineVisual(body);
     }
-
 
     [ClientRpc]
     private void RpcApplyCombineVisual(GameObject body)
@@ -216,6 +214,16 @@ public class PlayerCombineHandler : NetworkBehaviour
     [Server]
     public void StopCombineMode(Vector3 releasePosition)
     {
+        if (combineColorIndex >= 0)
+        {
+            CoopDuoCombineTrigger.ReleaseColor(combineColorIndex);
+        }
+
+        if (combineFaceIndex >= 0)
+        {
+            CoopDuoCombineTrigger.ReleaseFace(combineFaceIndex);
+        }
+
         // 명단 정리
         if (gameObject != bodyTarget && bodyTarget != null)
         {
@@ -244,18 +252,6 @@ public class PlayerCombineHandler : NetworkBehaviour
         Physics2D.SyncTransforms();
 
         RpcApplySeparateVisual(releasePosition);
-        RpcResetIdentity();
-    }
-    [ClientRpc]
-    private void RpcResetIdentity()
-    {
-        CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
-
-        if (identity != null)
-        {
-            identity.ResetFaceVisual();
-            identity.ForceUpdateVisual();
-        }
     }
 
     [ClientRpc]
@@ -269,7 +265,7 @@ public class PlayerCombineHandler : NetworkBehaviour
         CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
         if (identity != null)
         {
-            identity.ForceUpdateVisual();
+            identity.ResetFaceVisual();
         }
 
         if (isLocalPlayer)

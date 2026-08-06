@@ -1,3 +1,4 @@
+// CoopDuoCombineTrigger.cs
 using UnityEngine;
 using Mirror;
 using System.Collections.Generic;

@@ -1,3 +1,4 @@
+// CoopPlayerIdentity.cs
 using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
@@ -239,7 +240,8 @@ public class CoopPlayerIdentity : NetworkBehaviour
 
         if (combineHandler != null &&
             combineHandler.isCombined &&
-            combineHandler.combineColorIndex >= 0)
+            combineHandler.combineColorIndex >= 0 &&
+            combineHandler.bodyTarget != null)
         {
             mainColor = combineColors[combineHandler.combineColorIndex];
         }
