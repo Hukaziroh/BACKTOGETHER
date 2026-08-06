@@ -120,6 +120,10 @@ MonoBehaviour:
   unpressedVisual: {fileID: 6726880837041513093}
   pressedVisual: {fileID: 4294708416402711514}
   echoManager: {fileID: 0}
+  soundLibrary: {fileID: 11400000, guid: 06f50f015f6cd11428375f4055f6186e, type: 2}
+  buttonVolume: 0.1
+  soundMinDistance: 9
+  soundMaxDistance: 40
 --- !u!1 &4294708416402711514
 GameObject:
   m_ObjectHideFlags: 0

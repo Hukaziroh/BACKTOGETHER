@@ -77,7 +77,6 @@ public class PlayerMovement : NetworkBehaviour
     private bool hasCommandedVelocity;
 
     [Header("점프 사운드")]
-    public AudioClip jumpClip;
     [Range(0f, 1f)] public float jumpVolume = 0.6f;
 
     void Awake()
@@ -355,8 +354,9 @@ public class PlayerMovement : NetworkBehaviour
 
     public void PlayJumpSoundLocal()
     {
+        AudioClip clip = controller.soundLibrary != null ? controller.soundLibrary.jumpClip : null;
         float volume = isLocalPlayer ? jumpVolume : jumpVolume * controller.otherPlayerVolumeMultiplier;
-        PlayerSoundUtility.PlayPositional(transform.position, jumpClip, volume, controller.soundMinDistance, controller.soundMaxDistance);
+        PlayerSoundUtility.PlayPositional(transform.position, clip, volume, controller.soundMinDistance, controller.soundMaxDistance);
     }
 
     public void ApplyShortJump()
