@@ -190,6 +190,23 @@ public class CoopPlayerIdentity : NetworkBehaviour
 
         UpdatePlayerVisual();
     }
+    public void ResetPlayerColor()
+    {
+        if (playerSpriteRenderer == null)
+            return;
+
+        Color originalColor = (playerIndex >= 0 && playerIndex < playerColors.Length)
+            ? playerColors[playerIndex]
+            : Color.white;
+
+        playerSpriteRenderer.GetPropertyBlock(propBlock);
+
+        propBlock.SetFloat("_SplitMode", 0);
+        propBlock.SetColor("_Color1", originalColor);
+
+        playerSpriteRenderer.color = originalColor;
+        playerSpriteRenderer.SetPropertyBlock(propBlock);
+    }
 
     private void AssignAvailableIndex()
     {

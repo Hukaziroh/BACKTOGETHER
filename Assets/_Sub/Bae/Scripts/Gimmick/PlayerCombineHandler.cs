@@ -251,6 +251,7 @@ public class PlayerCombineHandler : NetworkBehaviour
         transform.position = releasePosition;
         Physics2D.SyncTransforms();
 
+        // RpcResetToPlayerColor는 삭제하고 RpcApplySeparateVisual 내부로 통합
         RpcApplySeparateVisual(releasePosition);
     }
 
@@ -266,6 +267,7 @@ public class PlayerCombineHandler : NetworkBehaviour
         if (identity != null)
         {
             identity.ResetFaceVisual();
+            identity.ResetPlayerColor(); // 여기서 확실하게 원래 색상 및 SplitMode 복구
         }
 
         if (isLocalPlayer)
