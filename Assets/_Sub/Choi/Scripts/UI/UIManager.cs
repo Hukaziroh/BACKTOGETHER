@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance;
-    private PlayerControls.PlayerControls controls; 
+    private PlayerControls.PlayerControls controls;
 
     [Header("기능 매니저 연결")]
     [SerializeField] private PauseManager pauseManager;
@@ -22,6 +22,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private string mainSceneName = "Main";
     [SerializeField] private string lobbySceneName = "Lobby";
 
+    private float inputCooldown = 0f;
 
     private void Awake()
     {
@@ -30,7 +31,7 @@ public class UIManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            controls = new PlayerControls.PlayerControls(); 
+            controls = new PlayerControls.PlayerControls();
         }
         else
         {
@@ -41,92 +42,100 @@ public class UIManager : MonoBehaviour
     private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
-
-        if (controls != null)
-        {
-            controls.GamePlay.Back.performed += OnBackPressed;
-            controls.GamePlay.Enable();
-        }
+        if (controls != null) controls.GamePlay.Enable();
     }
+
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
-
-        if (controls != null)
-        {
-            controls.GamePlay.Back.performed -= OnBackPressed;
-            controls.GamePlay.Disable();
-        }
+        if (controls != null) controls.GamePlay.Disable();
     }
 
-    private void OnBackPressed(InputAction.CallbackContext ctx)
-    {
-        if (!ctx.performed)
-            return;
-
-
-        // 옵션 열려있으면 옵션 닫기
-        if (optionsManager != null &&
-            optionsManager.optionsPanel != null &&
-            optionsManager.optionsPanel.activeSelf)
-        {
-            optionsManager.Close();
-            return;
-        }
-
-
-        HandleEscapeInput();
-    }
     private void Update()
     {
-        if (Keyboard.current != null)
+      
+        if (inputCooldown > 0f) inputCooldown -= Time.unscaledDeltaTime;
+
+        if (controls == null) return;
+
+        if (inputCooldown <= 0f)
         {
-            if (Keyboard.current.escapeKey.wasPressedThisFrame)
+            bool pausePressed = controls.GamePlay.Pause.WasPressedThisFrame();
+            bool backPressed = controls.GamePlay.Back.WasPressedThisFrame();
+
+            if (pausePressed || backPressed)
             {
-                HandleEscapeInput();
+                HandleMenuInput(pausePressed, backPressed);
             }
         }
 
-
-        if (spectatorSystem != null && Keyboard.current != null)
+        if (spectatorSystem != null)
         {
-            if (Keyboard.current.qKey.wasPressedThisFrame)
+            if (controls.GamePlay.ReturnToMe.WasPressedThisFrame())
             {
                 spectatorSystem.StopSpectating();
             }
 
             bool isEmojiMenuOpen = EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen();
-
-            if (!isEmojiMenuOpen && Keyboard.current.tabKey.wasPressedThisFrame)
+            if (!isEmojiMenuOpen && controls.GamePlay.SpectateNext.WasPressedThisFrame())
             {
                 spectatorSystem.CycleNextTarget();
             }
-        }
 
-        string currentScene = SceneManager.GetActiveScene().name;
-        bool isPaused = pauseManager != null && pauseManager.isPaused;
 
-        if (currentScene != mainSceneName &&
-            !isPaused &&
-            EmojiRadialMenu.Instance != null &&
-            Keyboard.current != null)
-        {
-            if (Keyboard.current.tKey.wasPressedThisFrame)
-            {
-                EmojiRadialMenu.Instance.OpenMenu();
-            }
-            else if (Keyboard.current.tKey.wasReleasedThisFrame)
-            {
-                EmojiRadialMenu.Instance.CloseMenu();
-            }
-
-            if (EmojiRadialMenu.Instance.IsOpen())
+            if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())
             {
                 EmojiRadialMenu.Instance.OnMenuUpdate();
             }
         }
     }
 
+    private void HandleMenuInput(bool pausePressed, bool cancelPressed)
+    {
+        string scene = SceneManager.GetActiveScene().name;
+
+        if (optionsManager != null &&
+            optionsManager.keyGuidePanel != null &&
+            optionsManager.keyGuidePanel.activeSelf)
+        {
+            if (cancelPressed || pausePressed) 
+            {
+                optionsManager.ToggleKeyGuide(); 
+                inputCooldown = 0.2f;
+            }
+            return;
+        }
+
+        if (optionsManager != null)
+        {
+            bool isOptionsOpen = optionsManager.optionsPanel != null && optionsManager.optionsPanel.activeSelf;
+            if (isOptionsOpen)
+            {
+                optionsManager.Close(); 
+                inputCooldown = 0.2f;
+                return;
+            }
+        }
+
+        if (scene == mainSceneName) return;
+
+        if (pauseManager != null)
+        {
+            if (pauseManager.isPaused)
+            {
+                pauseManager.ResumeGame();
+                inputCooldown = 0.2f;
+            }
+            else
+            {
+                if (pausePressed)
+                {
+                    pauseManager.PauseGame();
+                    inputCooldown = 0.2f;
+                }
+            }
+        }
+    }
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (optionsManager != null && optionsManager.optionsPanel != null && optionsManager.optionsPanel.activeSelf)
@@ -156,24 +165,6 @@ public class UIManager : MonoBehaviour
             {
                 mainCam.AddComponent<SpectatorCamera>();
             }
-        }
-    }
-
-    private void HandleEscapeInput()
-    {
-        string scene = SceneManager.GetActiveScene().name;
-
-        if (scene == lobbySceneName)
-        {
-            return;
-        }
-
-        if (pauseManager != null)
-        {
-            if (pauseManager.isPaused)
-                pauseManager.ResumeGame();
-            else
-                pauseManager.PauseGame();
         }
     }
 

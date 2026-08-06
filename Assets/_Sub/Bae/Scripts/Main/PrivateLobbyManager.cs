@@ -164,7 +164,7 @@ public class PrivateLobbyManager : MonoBehaviour
            
             leftPressed |= Gamepad.current.dpad.left.wasPressedThisFrame || Gamepad.current.leftStick.left.wasPressedThisFrame;
             rightPressed |= Gamepad.current.dpad.right.wasPressedThisFrame || Gamepad.current.leftStick.right.wasPressedThisFrame;
-            enterOrActionPressed |= Gamepad.current.buttonSouth.wasPressedThisFrame; // A 버튼
+            
         }
 
 

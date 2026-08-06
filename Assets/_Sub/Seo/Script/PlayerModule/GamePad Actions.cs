@@ -140,15 +140,6 @@ namespace PlayerControls
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""SpectatePrev"",
-                    ""type"": ""Button"",
-                    ""id"": ""5bf5e437-07dc-41de-abea-4742313d7dbf"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
                     ""name"": ""SpectateNext"",
                     ""type"": ""Button"",
                     ""id"": ""2d8c8627-bd07-4d82-b74c-1f92d4ae0980"",
@@ -185,13 +176,13 @@ namespace PlayerControls
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Maps"",
-                    ""type"": ""Value"",
-                    ""id"": ""4c7f0236-1aec-4478-9fe9-83fb056747f5"",
-                    ""expectedControlType"": ""Vector2"",
+                    ""name"": ""Select"",
+                    ""type"": ""Button"",
+                    ""id"": ""8a47dac3-0025-44b0-9413-4a17ef1f425b"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
-                    ""initialStateCheck"": true
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -395,30 +386,8 @@ namespace PlayerControls
                 },
                 {
                     ""name"": """",
-                    ""id"": ""42b96ecf-17bc-43bf-8f5f-a1b9c2b7e20c"",
-                    ""path"": ""<Gamepad>/buttonEast"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Back"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""395c3540-ca9d-4cf5-aca6-843e88583832"",
-                    ""path"": ""<Gamepad>/leftShoulder"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""SpectatePrev"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""d7b1b8c4-a249-45c1-8d62-799e331e60db"",
-                    ""path"": ""<Gamepad>/rightShoulder"",
+                    ""path"": ""<Gamepad>/leftShoulder"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -439,17 +408,6 @@ namespace PlayerControls
                 },
                 {
                     ""name"": """",
-                    ""id"": ""d3e54c70-71ca-484b-abfe-ff81bc1bc770"",
-                    ""path"": ""<Gamepad>/buttonNorth"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""ReturnToMe"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""1ff0cd9e-6e79-44fd-b9f3-1f67ccdd7036"",
                     ""path"": ""<Keyboard>/tab"",
                     ""interactions"": """",
@@ -461,8 +419,19 @@ namespace PlayerControls
                 },
                 {
                     ""name"": """",
+                    ""id"": ""5f891aa6-120b-4db2-9c23-3f767679b1ec"",
+                    ""path"": ""<Gamepad>/rightShoulder"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ReturnToMe"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""6f58ede2-e30c-4ba6-a144-5f5f8605bf63"",
-                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""path"": ""<Gamepad>/leftTrigger"",
                     ""interactions"": ""Hold(duration=3)"",
                     ""processors"": """",
                     ""groups"": """",
@@ -484,7 +453,7 @@ namespace PlayerControls
                 {
                     ""name"": """",
                     ""id"": ""17dad76d-587d-43e2-b44d-ff7bc4f01197"",
-                    ""path"": ""<Gamepad>/leftTrigger"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -505,34 +474,78 @@ namespace PlayerControls
                 },
                 {
                     ""name"": """",
-                    ""id"": ""226aeffb-6f15-4894-9eb2-d5e33d300f48"",
-                    ""path"": ""<Gamepad>/dpad"",
+                    ""id"": ""aa352207-24ac-44a4-860d-59d2214dc21e"",
+                    ""path"": ""<XInputController>/buttonEast"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Maps"",
+                    ""action"": ""Back"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
                 {
                     ""name"": """",
-                    ""id"": ""1d947f3d-4cbe-4049-9baf-1ce97e509cd5"",
-                    ""path"": ""<Gamepad>/leftStick"",
+                    ""id"": ""04719806-475f-4f2c-b3f0-47a5447675d4"",
+                    ""path"": ""<DualShockGamepad>/buttonNorth"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Maps"",
+                    ""action"": ""Back"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
                 {
                     ""name"": """",
-                    ""id"": ""4c261e50-a332-4d38-bf37-d0951f531dd1"",
-                    ""path"": ""<Gamepad>/rightStick"",
+                    ""id"": ""0bfab388-94fc-49ae-87f8-4a422f192633"",
+                    ""path"": ""<SwitchProControllerHID>/buttonSouth"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Maps"",
+                    ""action"": ""Back"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b1025bd9-1082-47b3-9891-ca1aa7aac3a7"",
+                    ""path"": ""<Keyboard>/enter"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Select"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""241db16b-d874-4a7a-8ef7-aee7aa6b5306"",
+                    ""path"": ""<XInputController>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Select"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7da78074-db01-472e-be53-7bf2231cd6dd"",
+                    ""path"": ""<DualShockGamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Select"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""90cbe6a0-b55e-4af3-a7f6-46bded15ca1c"",
+                    ""path"": ""<SwitchProControllerHID>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Select"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -548,12 +561,11 @@ namespace PlayerControls
             m_GamePlay_Action = m_GamePlay.FindAction("Action", throwIfNotFound: true);
             m_GamePlay_Pause = m_GamePlay.FindAction("Pause", throwIfNotFound: true);
             m_GamePlay_Back = m_GamePlay.FindAction("Back", throwIfNotFound: true);
-            m_GamePlay_SpectatePrev = m_GamePlay.FindAction("SpectatePrev", throwIfNotFound: true);
             m_GamePlay_SpectateNext = m_GamePlay.FindAction("SpectateNext", throwIfNotFound: true);
             m_GamePlay_ReturnToMe = m_GamePlay.FindAction("ReturnToMe", throwIfNotFound: true);
             m_GamePlay_Restart = m_GamePlay.FindAction("Restart", throwIfNotFound: true);
             m_GamePlay_Emoji = m_GamePlay.FindAction("Emoji", throwIfNotFound: true);
-            m_GamePlay_Maps = m_GamePlay.FindAction("Maps", throwIfNotFound: true);
+            m_GamePlay_Select = m_GamePlay.FindAction("Select", throwIfNotFound: true);
         }
 
         ~@PlayerControls()
@@ -639,12 +651,11 @@ namespace PlayerControls
         private readonly InputAction m_GamePlay_Action;
         private readonly InputAction m_GamePlay_Pause;
         private readonly InputAction m_GamePlay_Back;
-        private readonly InputAction m_GamePlay_SpectatePrev;
         private readonly InputAction m_GamePlay_SpectateNext;
         private readonly InputAction m_GamePlay_ReturnToMe;
         private readonly InputAction m_GamePlay_Restart;
         private readonly InputAction m_GamePlay_Emoji;
-        private readonly InputAction m_GamePlay_Maps;
+        private readonly InputAction m_GamePlay_Select;
         /// <summary>
         /// Provides access to input actions defined in input action map "GamePlay".
         /// </summary>
@@ -677,10 +688,6 @@ namespace PlayerControls
             /// </summary>
             public InputAction @Back => m_Wrapper.m_GamePlay_Back;
             /// <summary>
-            /// Provides access to the underlying input action "GamePlay/SpectatePrev".
-            /// </summary>
-            public InputAction @SpectatePrev => m_Wrapper.m_GamePlay_SpectatePrev;
-            /// <summary>
             /// Provides access to the underlying input action "GamePlay/SpectateNext".
             /// </summary>
             public InputAction @SpectateNext => m_Wrapper.m_GamePlay_SpectateNext;
@@ -697,9 +704,9 @@ namespace PlayerControls
             /// </summary>
             public InputAction @Emoji => m_Wrapper.m_GamePlay_Emoji;
             /// <summary>
-            /// Provides access to the underlying input action "GamePlay/Maps".
+            /// Provides access to the underlying input action "GamePlay/Select".
             /// </summary>
-            public InputAction @Maps => m_Wrapper.m_GamePlay_Maps;
+            public InputAction @Select => m_Wrapper.m_GamePlay_Select;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -741,9 +748,6 @@ namespace PlayerControls
                 @Back.started += instance.OnBack;
                 @Back.performed += instance.OnBack;
                 @Back.canceled += instance.OnBack;
-                @SpectatePrev.started += instance.OnSpectatePrev;
-                @SpectatePrev.performed += instance.OnSpectatePrev;
-                @SpectatePrev.canceled += instance.OnSpectatePrev;
                 @SpectateNext.started += instance.OnSpectateNext;
                 @SpectateNext.performed += instance.OnSpectateNext;
                 @SpectateNext.canceled += instance.OnSpectateNext;
@@ -756,9 +760,9 @@ namespace PlayerControls
                 @Emoji.started += instance.OnEmoji;
                 @Emoji.performed += instance.OnEmoji;
                 @Emoji.canceled += instance.OnEmoji;
-                @Maps.started += instance.OnMaps;
-                @Maps.performed += instance.OnMaps;
-                @Maps.canceled += instance.OnMaps;
+                @Select.started += instance.OnSelect;
+                @Select.performed += instance.OnSelect;
+                @Select.canceled += instance.OnSelect;
             }
 
             /// <summary>
@@ -785,9 +789,6 @@ namespace PlayerControls
                 @Back.started -= instance.OnBack;
                 @Back.performed -= instance.OnBack;
                 @Back.canceled -= instance.OnBack;
-                @SpectatePrev.started -= instance.OnSpectatePrev;
-                @SpectatePrev.performed -= instance.OnSpectatePrev;
-                @SpectatePrev.canceled -= instance.OnSpectatePrev;
                 @SpectateNext.started -= instance.OnSpectateNext;
                 @SpectateNext.performed -= instance.OnSpectateNext;
                 @SpectateNext.canceled -= instance.OnSpectateNext;
@@ -800,9 +801,9 @@ namespace PlayerControls
                 @Emoji.started -= instance.OnEmoji;
                 @Emoji.performed -= instance.OnEmoji;
                 @Emoji.canceled -= instance.OnEmoji;
-                @Maps.started -= instance.OnMaps;
-                @Maps.performed -= instance.OnMaps;
-                @Maps.canceled -= instance.OnMaps;
+                @Select.started -= instance.OnSelect;
+                @Select.performed -= instance.OnSelect;
+                @Select.canceled -= instance.OnSelect;
             }
 
             /// <summary>
@@ -879,13 +880,6 @@ namespace PlayerControls
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnBack(InputAction.CallbackContext context);
             /// <summary>
-            /// Method invoked when associated input action "SpectatePrev" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-            /// </summary>
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-            void OnSpectatePrev(InputAction.CallbackContext context);
-            /// <summary>
             /// Method invoked when associated input action "SpectateNext" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
             /// </summary>
             /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
@@ -914,12 +908,12 @@ namespace PlayerControls
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnEmoji(InputAction.CallbackContext context);
             /// <summary>
-            /// Method invoked when associated input action "Maps" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// Method invoked when associated input action "Select" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
             /// </summary>
             /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-            void OnMaps(InputAction.CallbackContext context);
+            void OnSelect(InputAction.CallbackContext context);
         }
     }
 }

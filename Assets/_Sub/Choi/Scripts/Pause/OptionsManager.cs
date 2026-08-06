@@ -1,21 +1,20 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Audio;
-using TMPro;
-using Mirror;
 using Epic.OnlineServices;
 using Epic.OnlineServices.Lobby;
+using Mirror;
 using System.Collections;
+using TMPro;
+using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
-using UnityEngine.InputSystem;
+using UnityEngine.UI;
+// ❌ using UnityEngine.InputSystem; 삭제 완료!
 
 public class OptionsManager : MonoBehaviour
 {
     public static OptionsManager instance;
 
-    // 🌟 Input System 변수 추가
-    private PlayerControls.PlayerControls controls;
+    // ❌ private PlayerControls.PlayerControls controls; 삭제 완료!
 
     [Header("UI Reference")]
     public GameObject optionsPanel;
@@ -48,9 +47,6 @@ public class OptionsManager : MonoBehaviour
         {
             instance = this;
             DontDestroyOnLoad(gameObject);
-
-            // 🌟 Input System 인스턴스 초기화
-            controls = new PlayerControls.PlayerControls();
         }
         else
         {
@@ -58,88 +54,7 @@ public class OptionsManager : MonoBehaviour
         }
     }
 
-    private void OnEnable()
-    {
-        if (controls != null)
-        {
-            controls.GamePlay.Back.performed += OnBack;
-            controls.GamePlay.Enable();
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (controls != null)
-        {
-            controls.GamePlay.Back.performed -= OnBack;
-            controls.GamePlay.Disable();
-        }
-    }
-
-    private void OnBack(InputAction.CallbackContext ctx)
-    {
-        if (optionsPanel != null && optionsPanel.activeSelf)
-        {
-            Close();
-        }
-    }
-
-    void Update()
-    {
-        if (optionsPanel != null && optionsPanel.activeSelf)
-        {
-            bool closePressed = false;
-
-            if (Keyboard.current != null &&
-                Keyboard.current.escapeKey.wasPressedThisFrame)
-            {
-                closePressed = true;
-            }
-
-            if (Gamepad.current != null &&
-                Gamepad.current.buttonEast.wasPressedThisFrame)
-            {
-                closePressed = true;
-            }
-
-
-            if (closePressed)
-            {
-                Close();
-                return;
-            }
-        }
-
-
-        if (keyGuidePanel != null && keyGuidePanel.activeSelf)
-        {
-            bool closePressed = false;
-
-            if (Keyboard.current != null &&
-                Keyboard.current.escapeKey.wasPressedThisFrame)
-            {
-                closePressed = true;
-            }
-
-            if (Gamepad.current != null &&
-                Gamepad.current.buttonEast.wasPressedThisFrame)
-            {
-                closePressed = true;
-            }
-
-            if (Gamepad.current != null &&
-                Gamepad.current.startButton.wasPressedThisFrame)
-            {
-                closePressed = true;
-            }
-
-
-            if (closePressed)
-            {
-                ToggleKeyGuide();
-            }
-        }
-    }
+    // ❌ OnEnable, OnDisable, OnBack, Update 함수 모조리 삭제 완료!
 
     void Start()
     {
@@ -165,12 +80,16 @@ public class OptionsManager : MonoBehaviour
         }
     }
 
-
     public void Open()
     {
         if (optionsPanel != null) optionsPanel.SetActive(true);
         if (keyGuidePanel != null) keyGuidePanel.SetActive(false);
-        if (PauseManager.instance != null) PauseManager.instance.ClosePause();
+
+        // 🌟 [핵심 수정] ClosePause()를 호출해서 퍼즈를 풀어버리지 않고, 퍼즈 패널만 잠시 숨김!
+        if (PauseManager.instance != null && PauseManager.instance.pausePanel != null)
+        {
+            PauseManager.instance.pausePanel.SetActive(false);
+        }
 
         UpdateRoomCodeUI();
 
@@ -200,27 +119,36 @@ public class OptionsManager : MonoBehaviour
         if (keyGuidePanel != null)
             keyGuidePanel.SetActive(false);
 
-
         bool isMainScene = SceneManager.GetActiveScene().name == "Main";
 
-
-        if (!isMainScene && PauseManager.instance != null && PauseManager.instance.pausePanel != null)
+        if (!isMainScene && PauseManager.instance != null)
         {
-            PauseManager.instance.pausePanel.SetActive(true);
+            PauseManager.instance.isPaused = true;
 
-            if (GlobalSceneInputManager.Instance != null)
+            if (PauseManager.instance.pausePanel != null)
             {
-                GlobalSceneInputManager.Instance.SetFocusScope(
-                    PauseManager.instance.pausePanel
-                );
+                PauseManager.instance.pausePanel.SetActive(true);
+
+                if (GlobalSceneInputManager.Instance != null)
+                {
+                    GlobalSceneInputManager.Instance.SetFocusScope(
+                        PauseManager.instance.pausePanel
+                    );
+                }
+
+                Button firstButton = PauseManager.instance.pausePanel.GetComponentInChildren<Button>();
+                if (firstButton != null && EventSystem.current != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(firstButton.gameObject);
+                }
             }
         }
-
-
-        // ★ 추가
-        if (EventSystem.current != null)
+        else
         {
-            EventSystem.current.SetSelectedGameObject(null);
+            if (GlobalSceneInputManager.Instance != null)
+            {
+                GlobalSceneInputManager.Instance.ClearFocusScope();
+            }
         }
     }
 
@@ -262,6 +190,12 @@ public class OptionsManager : MonoBehaviour
                     if (GlobalSceneInputManager.Instance != null)
                     {
                         GlobalSceneInputManager.Instance.SetFocusScope(optionsPanel);
+                    }
+
+                    Button firstButton = optionsPanel.GetComponentInChildren<Button>();
+                    if (firstButton != null && EventSystem.current != null)
+                    {
+                        EventSystem.current.SetSelectedGameObject(firstButton.gameObject);
                     }
                 }
             }
@@ -333,8 +267,6 @@ public class OptionsManager : MonoBehaviour
             }
         }
 
-        // 다국어 스크립트가 아예 붙어있지 않은 독립형 TMPro이므로 
-        // 오직 코드 값이나 Empty, 마스킹 처리만 깔끔하게 직관적으로 꽂아넣습니다.
         if (isMainScene || string.IsNullOrEmpty(displayCode))
         {
             independentRoomCodeText.text = isCodeVisible ? "Empty" : "******";
