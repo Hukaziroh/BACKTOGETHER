@@ -1,4 +1,3 @@
-// PlayerCombineHandler.cs
 using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
@@ -94,10 +93,6 @@ public class PlayerCombineHandler : NetworkBehaviour
             transform.position = bodyTarget.transform.position;
         }
     }
-
-    // ====================================================
-    // 서버 최적화 입력 긁어오기 (Move, Jump, Action)
-    // ====================================================
 
     [Server]
     public float GetServerCombinedHorizontalInput()
@@ -214,6 +209,17 @@ public class PlayerCombineHandler : NetworkBehaviour
     [Server]
     public void StopCombineMode(Vector3 releasePosition)
     {
+        if (connectedGhosts.Count > 0)
+        {
+            foreach (var ghost in connectedGhosts.ToArray())
+            {
+                if (ghost != null && ghost != this)
+                {
+                    ghost.StopCombineMode(releasePosition);
+                }
+            }
+        }
+
         if (combineColorIndex >= 0)
         {
             CoopDuoCombineTrigger.ReleaseColor(combineColorIndex);
@@ -251,7 +257,6 @@ public class PlayerCombineHandler : NetworkBehaviour
         transform.position = releasePosition;
         Physics2D.SyncTransforms();
 
-        // RpcResetToPlayerColor는 삭제하고 RpcApplySeparateVisual 내부로 통합
         RpcApplySeparateVisual(releasePosition);
     }
 
@@ -267,7 +272,7 @@ public class PlayerCombineHandler : NetworkBehaviour
         if (identity != null)
         {
             identity.ResetFaceVisual();
-            identity.ResetPlayerColor(); // 여기서 확실하게 원래 색상 및 SplitMode 복구
+            identity.ResetPlayerColor();
         }
 
         if (isLocalPlayer)

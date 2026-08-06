@@ -92,9 +92,24 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
         d.combineColorIndex = color;
         d.combineFaceIndex = face;
 
-        a.StartCombineMode(CombineRole.Move, playerA);
-        b.StartCombineMode(CombineRole.Move_Left, playerA);
-        c.StartCombineMode(CombineRole.Move_Right, playerA);
-        d.StartCombineMode(CombineRole.Jump, playerA);
+        List<CombineRole> roles = new List<CombineRole> {
+            CombineRole.Move_Left,
+            CombineRole.Move_Right,
+            CombineRole.Jump,
+            CombineRole.Action
+        };
+
+        for (int i = 0; i < roles.Count; i++)
+        {
+            int rand = Random.Range(i, roles.Count);
+            CombineRole temp = roles[i];
+            roles[i] = roles[rand];
+            roles[rand] = temp;
+        }
+
+        a.StartCombineMode(roles[0], playerA);
+        b.StartCombineMode(roles[1], playerA);
+        c.StartCombineMode(roles[2], playerA);
+        d.StartCombineMode(roles[3], playerA);
     }
 }
