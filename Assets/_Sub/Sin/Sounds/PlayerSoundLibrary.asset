@@ -17,3 +17,4 @@ MonoBehaviour:
   footstepClip: {fileID: 8300000, guid: 93f43f4569f2b8748ace3574e1132141, type: 3}
   buttonPressSound: {fileID: 8300000, guid: 97fe3c6779de0494bb64cff2f33726aa, type: 3}
   buttonReleaseSound: {fileID: 8300000, guid: 77fc2087d2f8f4b449c34e0aae4603f5, type: 3}
+  checkpointFanfare: {fileID: 8300000, guid: dc3cd537146d08445b1e39fb7a176595, type: 3}
