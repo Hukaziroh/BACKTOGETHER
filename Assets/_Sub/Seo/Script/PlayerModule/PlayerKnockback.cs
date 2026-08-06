@@ -29,6 +29,8 @@ public class PlayerKnockback : NetworkBehaviour
     [Header("피격 사운드")]
     public AudioClip hitClip;
     [Range(0f, 1f)] public float hitVolume = 0.6f;
+    public float hitSoundCooldown = 0.3f; // 가시 덩어리 구간에서 너무 자주 겹쳐 재생되는 것 방지
+    private float lastHitSoundTime = -999f;
 
     public bool IsStunned => isKnockedBack || stunTimer > 0f;
 
@@ -219,6 +221,9 @@ public class PlayerKnockback : NetworkBehaviour
 
     private void PlayHitSoundLocal()
     {
+        if (Time.time - lastHitSoundTime < hitSoundCooldown) return;
+        lastHitSoundTime = Time.time;
+
         float volume = isLocalPlayer ? hitVolume : hitVolume * controller.otherPlayerVolumeMultiplier;
         PlayerSoundUtility.PlayPositional(transform.position, hitClip, volume, controller.soundMinDistance, controller.soundMaxDistance);
     }
