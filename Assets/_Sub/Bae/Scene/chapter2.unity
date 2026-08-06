@@ -13334,6 +13334,79 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2944407200565554235, guid: b0e2c15edfb075d4385f813e96ca0454, type: 3}
   m_PrefabInstance: {fileID: 1374787008}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1388982974
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1388982975}
+  - component: {fileID: 1388982976}
+  - component: {fileID: 1388982977}
+  m_Layer: 0
+  m_Name: PermanentSpikeButton
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1388982975
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1388982974}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1811623665}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1388982976
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1388982974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5ab52f3a3a95c54da50d465d26014d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PermanentSpikeButton
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  requiredButtons:
+  - {fileID: 2133734413}
+  - {fileID: 480539605}
+  - {fileID: 1985479187}
+  - {fileID: 321033231}
+  targetSpikes: {fileID: 453268020}
+  moveDistance: 1.5
+  moveSpeed: 5
+--- !u!114 &1388982977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1388982974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 1442912782
+  _assetId: 0
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1001 &1410249298
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15073,8 +15146,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1811623665}
-  - component: {fileID: 1811623666}
-  - component: {fileID: 1811623667}
   m_Layer: 0
   m_Name: 2-7
   m_TagString: Untagged
@@ -15100,48 +15171,9 @@ Transform:
   - {fileID: 1623562284}
   - {fileID: 1314228370}
   - {fileID: 453268020}
+  - {fileID: 1388982975}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1811623666
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1811623664}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a5ab52f3a3a95c54da50d465d26014d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PermanentSpikeButton
-  syncDirection: 0
-  syncMode: 0
-  syncInterval: 0
-  requiredButtons:
-  - {fileID: 2133734413}
-  - {fileID: 480539605}
-  - {fileID: 1985479187}
-  - {fileID: 321033231}
-  targetSpikes: {fileID: 453268020}
-  moveDistance: 1.5
-  moveSpeed: 5
---- !u!114 &1811623667
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1811623664}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
-  sceneId: 1348605047
-  _assetId: 0
-  serverOnly: 0
-  visibility: 0
-  hasSpawned: 0
 --- !u!1001 &1816717646
 PrefabInstance:
   m_ObjectHideFlags: 0
