@@ -1,13 +1,10 @@
 fileFormatVersion: 2
-guid: 7016a304354c53b44ba6bf5764a4d4c1
+guid: 58dc4f9b82677ee47b081dc217c76a4d
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 7877496642147825795
-    second: xbox_stick_l_up_0
-  - first:
-      213: 4110474653136097389
-    second: xbox_stick_l_up_1
+      213: -8214574731468943847
+    second: Arrow_Left_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -49,7 +46,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -116,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: xbox_stick_l_up_0
+      name: Arrow_Left_0
       rect:
         serializedVersion: 2
-        x: 15
-        y: 15
-        width: 98
-        height: 94
+        x: 0
+        y: 1
+        width: 531
+        height: 432
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -131,30 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 388bd82957d725d60800000000000000
-      internalID: 7877496642147825795
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: xbox_stick_l_up_1
-      rect:
-        serializedVersion: 2
-        x: 47
-        y: 103
-        width: 34
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: d609c663be65b0930800000000000000
-      internalID: 4110474653136097389
+      spriteID: 91ec4ededc7fffd80800000000000000
+      internalID: -8214574731468943847
       vertices: []
       indices: 
       edges: []
@@ -163,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -173,8 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      xbox_stick_l_up_0: 7877496642147825795
-      xbox_stick_l_up_1: 4110474653136097389
+      Arrow_Left_0: -8214574731468943847
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
