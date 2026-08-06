@@ -15,11 +15,14 @@ public class PlayerCombineHandler : NetworkBehaviour
     [SyncVar] public GameObject bodyTarget;
 
     [SyncVar] public bool canUseAction = false;
+
+
     [SyncVar]
     public int combineColorIndex = -1;
 
     [SyncVar]
     public int combineFaceIndex = -1;
+
 
     // 본체(Body)가 자신에게 붙은 고스트들을 기억하는 리스트 (서버 전용 최적화)
     public List<PlayerCombineHandler> connectedGhosts = new List<PlayerCombineHandler>();
@@ -34,6 +37,7 @@ public class PlayerCombineHandler : NetworkBehaviour
         col = GetComponent<Collider2D>();
         rb = GetComponent<Rigidbody2D>();
     }
+
     [Server]
     public void StartCombineMode(CombineRole role, GameObject body)
     {
@@ -41,27 +45,28 @@ public class PlayerCombineHandler : NetworkBehaviour
         myRole = role;
         bodyTarget = body;
 
-
         if (gameObject == body)
         {
             connectedGhosts.Clear();
-            canUseAction = true;
         }
 
-        if (gameObject != body && rb != null)
+        if (gameObject != body)
         {
             rb.simulated = false;
             rb.linearVelocity = Vector2.zero;
 
             PlayerCombineHandler bodyHandler = body.GetComponent<PlayerCombineHandler>();
-            if (bodyHandler != null && !bodyHandler.connectedGhosts.Contains(this))
+
+            if (bodyHandler != null)
             {
+                bodyHandler.connectedGhosts.Remove(this);
                 bodyHandler.connectedGhosts.Add(this);
             }
         }
 
         RpcApplyCombineVisual(body);
     }
+
 
     [ClientRpc]
     private void RpcApplyCombineVisual(GameObject body)
@@ -154,7 +159,6 @@ public class PlayerCombineHandler : NetworkBehaviour
         return false;
     }
 
-    // 🌟 [에러 해결!] 점프 담당 고스트가 점프 키를 유지(Hold)하고 있는지 확인
     [Server]
     public bool GetServerCombinedJumpHolding()
     {
@@ -189,7 +193,6 @@ public class PlayerCombineHandler : NetworkBehaviour
         return false;
     }
 
-    // 본체와 고스트(팀원)들의 입력 버퍼를 한 번에 지워주는 함수
     [Server]
     public void ClearAllCombinedInputBuffers()
     {
@@ -225,6 +228,7 @@ public class PlayerCombineHandler : NetworkBehaviour
         myRole = CombineRole.None;
         bodyTarget = null;
         canUseAction = false;
+
         combineColorIndex = -1;
         combineFaceIndex = -1;
 
@@ -240,6 +244,18 @@ public class PlayerCombineHandler : NetworkBehaviour
         Physics2D.SyncTransforms();
 
         RpcApplySeparateVisual(releasePosition);
+        RpcResetIdentity();
+    }
+    [ClientRpc]
+    private void RpcResetIdentity()
+    {
+        CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
+
+        if (identity != null)
+        {
+            identity.ResetFaceVisual();
+            identity.ForceUpdateVisual();
+        }
     }
 
     [ClientRpc]
@@ -247,7 +263,14 @@ public class PlayerCombineHandler : NetworkBehaviour
     {
         spriteRenderer.enabled = true;
         col.enabled = true;
-        if (rb != null) rb.simulated = true;
+        if (rb != null)
+            rb.simulated = true;
+
+        CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
+        if (identity != null)
+        {
+            identity.ForceUpdateVisual();
+        }
 
         if (isLocalPlayer)
         {

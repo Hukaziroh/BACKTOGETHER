@@ -1,33 +1,32 @@
+using UnityEngine;
 using Mirror;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 public class CoopQuadCombineTrigger : NetworkBehaviour
 {
-    [Header("4인 1조 합체 기믹 설정")]
+    [Header("4인 합체 기믹 설정")]
     public int requiredPlayers = 4;
-
-    [SyncVar]
-    private bool isTriggered = false;
 
     private HashSet<GameObject> playersInZone = new HashSet<GameObject>();
 
     [ServerCallback]
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (isTriggered) return;
-
         if (other.CompareTag("Player") && other.gameObject == other.transform.root.gameObject)
         {
-            playersInZone.RemoveWhere(p => p == null || !p.activeInHierarchy);
+            PlayerCombineHandler combine = other.GetComponent<PlayerCombineHandler>();
+
+            if (combine != null && combine.isCombined) return;
+
+            playersInZone.RemoveWhere(p => p == null || !p.activeInHierarchy ||
+                (p.GetComponent<PlayerCombineHandler>() != null && p.GetComponent<PlayerCombineHandler>().isCombined));
 
             playersInZone.Add(other.gameObject);
 
-            if (playersInZone.Count >= requiredPlayers)
+            while (playersInZone.Count >= requiredPlayers)
             {
-                isTriggered = true;
-                ActivateQuadCombine();
+                ActivateQuadGroup();
             }
         }
     }
@@ -35,8 +34,6 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
     [ServerCallback]
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (isTriggered) return;
-
         if (other.CompareTag("Player") && other.gameObject == other.transform.root.gameObject)
         {
             playersInZone.Remove(other.gameObject);
@@ -44,65 +41,60 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
     }
 
     [Server]
-    private void ActivateQuadCombine()
+    private void ActivateQuadGroup()
     {
-        // Linq로 플레이어 섞기 (이건 캡처에 있던 유저님 방식대로 유지)
-        List<GameObject> playerList = playersInZone.OrderBy(x => UnityEngine.Random.value).ToList();
-        if (playerList.Count < 4) return;
+        List<GameObject> validPlayers = playersInZone.Where(p => !p.GetComponent<PlayerCombineHandler>().isCombined).ToList();
 
-        // 통짜 Move와 잉여 None을 없애고 4명에게 1키씩 공평하게!
-        CombineRole[] roles = new CombineRole[]
-        {
-            CombineRole.Move_Left,
-            CombineRole.Move_Right,
-            CombineRole.Jump,
-            CombineRole.Action
-        };
+        if (validPlayers.Count < 4) return;
 
-        // 역할 섞기 (Fisher-Yates Shuffle)
-        for (int i = roles.Length - 1; i > 0; i--)
+        GameObject p1 = validPlayers[0];
+        GameObject p2 = validPlayers[1];
+        GameObject p3 = validPlayers[2];
+        GameObject p4 = validPlayers[3];
+
+        for (int i = 0; i < 4; i++)
         {
-            int r = UnityEngine.Random.Range(0, i + 1);
-            (roles[i], roles[r]) = (roles[r], roles[i]);
+            playersInZone.Remove(validPlayers[i]);
         }
 
-        // 섞인 플레이어에게 섞인 역할 부여
-        AssignRole(playerList[0], playerList[1], playerList[2], playerList[3],
-                   roles[0], roles[1], roles[2], roles[3]);
+        Debug.Log("4인 진입 완료 -> 쿼드 기믹 발동!");
+        AssignRole(p1, p2, p3, p4);
     }
 
     [Server]
-    private void AssignRole(GameObject playerA, GameObject playerB, GameObject playerC, GameObject playerD,
-                            CombineRole roleA, CombineRole roleB, CombineRole roleC, CombineRole roleD)
+    private void AssignRole(GameObject playerA, GameObject playerB, GameObject playerC, GameObject playerD)
     {
         PlayerCombineHandler a = playerA.GetComponent<PlayerCombineHandler>();
         PlayerCombineHandler b = playerB.GetComponent<PlayerCombineHandler>();
         PlayerCombineHandler c = playerC.GetComponent<PlayerCombineHandler>();
         PlayerCombineHandler d = playerD.GetComponent<PlayerCombineHandler>();
 
+        a.connectedGhosts.Clear();
+        b.connectedGhosts.Clear();
+        c.connectedGhosts.Clear();
+        d.connectedGhosts.Clear();
+
         if (a == null || b == null || c == null || d == null)
         {
             Debug.LogError("PlayerCombineHandler가 없는 플레이어가 있습니다.");
             return;
         }
-        a.combineColorIndex = 0;
-        a.combineFaceIndex = 0;
 
-        b.combineColorIndex = 0;
-        b.combineFaceIndex = 0;
+        int color = Random.Range(0, 2);
+        int face = Random.Range(0, 2);
 
-        c.combineColorIndex = 0;
-        c.combineFaceIndex = 0;
+        a.combineColorIndex = color;
+        a.combineFaceIndex = face;
+        b.combineColorIndex = color;
+        b.combineFaceIndex = face;
+        c.combineColorIndex = color;
+        c.combineFaceIndex = face;
+        d.combineColorIndex = color;
+        d.combineFaceIndex = face;
 
-        d.combineColorIndex = 0;
-        d.combineFaceIndex = 0;
-        // playerA를 본체로 설정
-        a.StartCombineMode(roleA, playerA);
-        // 나머지는 playerA를 조종
-        b.StartCombineMode(roleB, playerA);
-        c.StartCombineMode(roleC, playerA);
-        d.StartCombineMode(roleD, playerA);
-
-        Debug.Log($"[4인 1조 합체 완료] 본체:{playerA.name}({roleA})");
+        a.StartCombineMode(CombineRole.Move, playerA);
+        b.StartCombineMode(CombineRole.Move_Left, playerA);
+        c.StartCombineMode(CombineRole.Move_Right, playerA);
+        d.StartCombineMode(CombineRole.Jump, playerA);
     }
 }

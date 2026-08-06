@@ -11,6 +11,36 @@ public class CoopDuoCombineTrigger : NetworkBehaviour
 
     private HashSet<GameObject> playersInZone = new HashSet<GameObject>();
 
+    // 딕셔너리로 듀오별 색상 및 눈 관리
+    private static Dictionary<GameObject, int> activeDuoColors = new();
+    private static Dictionary<GameObject, int> activeDuoFaces = new();
+
+    public static void ReleaseColor(int index)
+    {
+        var keys = activeDuoColors
+            .Where(x => x.Value == index)
+            .Select(x => x.Key)
+            .ToList();
+
+        foreach (var key in keys)
+        {
+            activeDuoColors.Remove(key);
+        }
+    }
+
+    public static void ReleaseFace(int index)
+    {
+        var keys = activeDuoFaces
+            .Where(x => x.Value == index)
+            .Select(x => x.Key)
+            .ToList();
+
+        foreach (var key in keys)
+        {
+            activeDuoFaces.Remove(key);
+        }
+    }
+
     [ServerCallback]
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -63,8 +93,8 @@ public class CoopDuoCombineTrigger : NetworkBehaviour
 
         Debug.Log($"2인 진입 완료 -> 듀오 기믹 발동! 본체:{p1.name} / 탑승:{p2.name}");
         AssignRole(p1, p2, CombineRole.Move, CombineRole.Jump);
-
     }
+
     [Server]
     private void AssignRole(GameObject playerA, GameObject playerB, CombineRole roleA, CombineRole roleB)
     {
@@ -77,8 +107,25 @@ public class CoopDuoCombineTrigger : NetworkBehaviour
             return;
         }
 
-        int color = Random.Range(0, 2);
-        int face = Random.Range(0, 2);
+        // 색상 중복 방지 (Dictionary values 기반 필터링)
+        List<int> colors = new List<int>() { 0, 1 };
+        foreach (int used in activeDuoColors.Values)
+        {
+            colors.Remove(used);
+        }
+        int color = colors.Count > 0 ? colors[Random.Range(0, colors.Count)] : Random.Range(0, 2);
+
+        // 눈 모양 중복 방지 (Dictionary values 기반 필터링)
+        List<int> faces = new List<int>() { 0, 1 };
+        foreach (int used in activeDuoFaces.Values)
+        {
+            faces.Remove(used);
+        }
+        int face = faces.Count > 0 ? faces[Random.Range(0, faces.Count)] : Random.Range(0, 2);
+
+        // 현재 듀오 정보 등록
+        activeDuoColors[playerA] = color;
+        activeDuoFaces[playerA] = face;
 
         a.combineColorIndex = color;
         a.combineFaceIndex = face;
@@ -88,6 +135,5 @@ public class CoopDuoCombineTrigger : NetworkBehaviour
 
         a.StartCombineMode(roleA, playerA);
         b.StartCombineMode(roleB, playerA);
-
     }
 }
