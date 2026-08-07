@@ -84,11 +84,25 @@ public class CoopPlayerIdentity : NetworkBehaviour
         }
     }
 
+    public override void OnStopServer()
+    {
+        base.OnStopServer();
+        int connId = connectionToClient != null ? connectionToClient.connectionId : -1;
+        if (connId != -1 && serverConnectionIndexMap.ContainsKey(connId))
+        {
+            serverConnectionIndexMap.Remove(connId);
+            Debug.Log($"[서버] 커넥션 ID {connId} 퇴장. 인덱스 맵에서 삭제합니다.");
+        }
+        if (players.ContainsKey(playerIndex) && players[playerIndex] == this)
+        {
+            players.Remove(playerIndex);
+        }
+    }
+
     public override void OnStopClient()
     {
         base.OnStopClient();
-        CoopPlayerManager.UnregisterPlayer(gameObject);
-        if (players.ContainsKey(playerIndex))
+        if (players.ContainsKey(playerIndex) && players[playerIndex] == this)
         {
             players.Remove(playerIndex);
         }
@@ -278,4 +292,6 @@ public class CoopPlayerIdentity : NetworkBehaviour
         playerSpriteRenderer.color = mainColor;
         playerSpriteRenderer.SetPropertyBlock(propBlock);
     }
+
+
 }
