@@ -43,27 +43,15 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
     [Server]
     private void ActivateQuadGroup()
     {
-        List<GameObject> validPlayers = playersInZone.Where(p => !p.GetComponent<PlayerCombineHandler>().isCombined).ToList();
+        List<GameObject> validPlayers = playersInZone.Where(p => p != null && !p.GetComponent<PlayerCombineHandler>().isCombined).ToList();
 
         if (validPlayers.Count < 4) return;
 
-        GameObject p1 = validPlayers[0];
-        GameObject p2 = validPlayers[1];
-        GameObject p3 = validPlayers[2];
-        GameObject p4 = validPlayers[3];
+        GameObject playerA = validPlayers[0];
+        GameObject playerB = validPlayers[1];
+        GameObject playerC = validPlayers[2];
+        GameObject playerD = validPlayers[3];
 
-        for (int i = 0; i < 4; i++)
-        {
-            playersInZone.Remove(validPlayers[i]);
-        }
-
-        Debug.Log("4인 진입 완료 -> 쿼드 기믹 발동!");
-        AssignRole(p1, p2, p3, p4);
-    }
-
-    [Server]
-    private void AssignRole(GameObject playerA, GameObject playerB, GameObject playerC, GameObject playerD)
-    {
         PlayerCombineHandler a = playerA.GetComponent<PlayerCombineHandler>();
         PlayerCombineHandler b = playerB.GetComponent<PlayerCombineHandler>();
         PlayerCombineHandler c = playerC.GetComponent<PlayerCombineHandler>();
@@ -74,23 +62,13 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
         c.connectedGhosts.Clear();
         d.connectedGhosts.Clear();
 
-        if (a == null || b == null || c == null || d == null)
-        {
-            Debug.LogError("PlayerCombineHandler가 없는 플레이어가 있습니다.");
-            return;
-        }
-
         int color = Random.Range(0, 2);
         int face = Random.Range(0, 2);
 
-        a.combineColorIndex = color;
-        a.combineFaceIndex = face;
-        b.combineColorIndex = color;
-        b.combineFaceIndex = face;
-        c.combineColorIndex = color;
-        c.combineFaceIndex = face;
-        d.combineColorIndex = color;
-        d.combineFaceIndex = face;
+        a.combineColorIndex = color; a.combineFaceIndex = face;
+        b.combineColorIndex = color; b.combineFaceIndex = face;
+        c.combineColorIndex = color; c.combineFaceIndex = face;
+        d.combineColorIndex = color; d.combineFaceIndex = face;
 
         List<CombineRole> roles = new List<CombineRole> {
             CombineRole.Move_Left,
@@ -111,5 +89,16 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
         b.StartCombineMode(roles[1], playerA);
         c.StartCombineMode(roles[2], playerA);
         d.StartCombineMode(roles[3], playerA);
+
+        Debug.Log($"[4인 합체 배정 완료] 본체({playerA.name}) -> {roles[0]}");
+        Debug.Log($"[4인 합체 배정 완료] 탑승({playerB.name}) -> {roles[1]}");
+        Debug.Log($"[4인 합체 배정 완료] 탑승({playerC.name}) -> {roles[2]}");
+        Debug.Log($"[4인 합체 배정 완료] 탑승({playerD.name}) -> {roles[3]}");
+
+        playersInZone.Remove(playerA);
+        playersInZone.Remove(playerB);
+        playersInZone.Remove(playerC);
+        playersInZone.Remove(playerD);
     }
 }
+   
