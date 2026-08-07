@@ -22,7 +22,6 @@ public class PlayerCombineHandler : NetworkBehaviour
     [SyncVar]
     public int combineFaceIndex = -1;
 
-    // 본체(Body)가 자신에게 붙은 고스트들을 기억하는 리스트 (서버 전용 최적화)
     public List<PlayerCombineHandler> connectedGhosts = new List<PlayerCombineHandler>();
 
     private SpriteRenderer spriteRenderer;
@@ -47,8 +46,7 @@ public class PlayerCombineHandler : NetworkBehaviour
         {
             connectedGhosts.Clear();
         }
-
-        if (gameObject != body)
+        else // gameObject != body
         {
             rb.simulated = false;
             rb.linearVelocity = Vector2.zero;
@@ -57,31 +55,41 @@ public class PlayerCombineHandler : NetworkBehaviour
 
             if (bodyHandler != null)
             {
-                bodyHandler.connectedGhosts.Remove(this);
-                bodyHandler.connectedGhosts.Add(this);
+                if (!bodyHandler.connectedGhosts.Contains(this))
+                {
+                    bodyHandler.connectedGhosts.Add(this);
+                }
             }
         }
 
-        RpcApplyCombineVisual(body);
+        NetworkIdentity bodyNetId = body.GetComponent<NetworkIdentity>();
+        RpcApplyCombineVisual(bodyNetId);
     }
 
     [ClientRpc]
-    private void RpcApplyCombineVisual(GameObject body)
+    private void RpcApplyCombineVisual(NetworkIdentity bodyNetId)
     {
-        if (gameObject != body)
+        if (bodyNetId == null || netIdentity.netId != bodyNetId.netId)
         {
             spriteRenderer.enabled = false;
             col.enabled = false;
             if (rb != null) rb.simulated = false;
         }
+        else
+        {
+            spriteRenderer.enabled = true; 
+        }
 
-        if (isLocalPlayer && body != null)
+        CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
+        if (identity != null) identity.ForceUpdateVisual();
+
+        if (isLocalPlayer && bodyNetId != null)
         {
             Camera mainCam = Camera.main;
             if (mainCam != null)
             {
                 CameraFollow cam = mainCam.GetComponent<CameraFollow>();
-                if (cam != null) cam.target = body.transform;
+                if (cam != null) cam.target = bodyNetId.transform;
             }
         }
     }
@@ -202,9 +210,6 @@ public class PlayerCombineHandler : NetworkBehaviour
         }
     }
 
-    // ====================================================
-    // 합체 해제
-    // ====================================================
 
     [Server]
     public void StopCombineMode(Vector3 releasePosition)
@@ -220,21 +225,16 @@ public class PlayerCombineHandler : NetworkBehaviour
             }
         }
 
-        if (combineColorIndex >= 0)
-        {
-            CoopDuoCombineTrigger.ReleaseColor(combineColorIndex);
-        }
+        if (combineColorIndex >= 0) CoopDuoCombineTrigger.ReleaseColor(combineColorIndex);
+        if (combineFaceIndex >= 0) CoopDuoCombineTrigger.ReleaseFace(combineFaceIndex);
 
-        if (combineFaceIndex >= 0)
-        {
-            CoopDuoCombineTrigger.ReleaseFace(combineFaceIndex);
-        }
-
-        // 명단 정리
         if (gameObject != bodyTarget && bodyTarget != null)
         {
             PlayerCombineHandler bodyHandler = bodyTarget.GetComponent<PlayerCombineHandler>();
-            if (bodyHandler != null) bodyHandler.connectedGhosts.Remove(this);
+            if (bodyHandler != null && bodyHandler.connectedGhosts.Contains(this))
+            {
+                bodyHandler.connectedGhosts.Remove(this);
+            }
         }
         connectedGhosts.Clear();
 
@@ -242,11 +242,9 @@ public class PlayerCombineHandler : NetworkBehaviour
         myRole = CombineRole.None;
         bodyTarget = null;
         canUseAction = false;
-
         combineColorIndex = -1;
         combineFaceIndex = -1;
 
-        // 물리 복구
         if (rb != null)
         {
             rb.simulated = true;
@@ -265,14 +263,14 @@ public class PlayerCombineHandler : NetworkBehaviour
     {
         spriteRenderer.enabled = true;
         col.enabled = true;
-        if (rb != null)
-            rb.simulated = true;
+        if (rb != null) rb.simulated = true;
 
         CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
         if (identity != null)
         {
             identity.ResetFaceVisual();
             identity.ResetPlayerColor();
+            identity.ForceUpdateVisual();
         }
 
         if (isLocalPlayer)

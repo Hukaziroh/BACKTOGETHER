@@ -61,7 +61,6 @@ public class EyeGimmick : NetworkBehaviour
             yield return new WaitForSeconds(offDuration);
         }
     }
-
     [ServerCallback]
     private void OnTriggerStay2D(Collider2D other)
     {
@@ -75,42 +74,22 @@ public class EyeGimmick : NetworkBehaviour
             RaycastHit2D hit = Physics2D.Raycast(transform.position, directionToPlayer.normalized, distanceToPlayer, obstacleLayer);
 
             Debug.DrawRay(
-           transform.position,
-           directionToPlayer.normalized * distanceToPlayer,
-           hit.collider == null ? Color.green : Color.red
-       );
+                transform.position,
+                directionToPlayer.normalized * distanceToPlayer,
+                hit.collider == null ? Color.green : Color.red
+            );
 
-            Debug.Log(
-            $"[EyeGimmick] 플레이어: {other.name} | " +
-            $"눈 위치: {transform.position} | " +
-            $"플레이어 위치: {other.transform.position} | " +
-            $"Raycast 결과: {(hit.collider != null ? hit.collider.name : "없음")} | " +
-            $"Layer: {(hit.collider != null ? LayerMask.LayerToName(hit.collider.gameObject.layer) : "없음")}"
-        );
-
-            if (hit.collider == null) 
+            if (hit.collider == null)
             {
-                NetworkIdentity identity = other.GetComponent<NetworkIdentity>();
-                if (identity != null)
+                PlayerKnockback knockback = other.GetComponent<PlayerKnockback>();
+                if (knockback != null)
                 {
-                    TargetTriggerKnockback(identity.connectionToClient, other.gameObject);
+                    knockback.ApplyKnockbackFromEye(transform.position);
                 }
             }
         }
     }
 
-    [TargetRpc]
-    private void TargetTriggerKnockback(NetworkConnection target, GameObject playerObj)
-    {
-        if (playerObj != null)
-        {
-            PlayerKnockback knockback = playerObj.GetComponent<NetworkIdentity>().GetComponent<PlayerKnockback>();
-            if (knockback != null)
-            {
-                knockback.ApplyKnockbackFromEye(transform.position);
-            }
-        }
-    }
 
     private void OnGimmickActiveChanged(bool oldVal, bool newVal) { UpdateVisuals(); }
     private void OnEyeOnChanged(bool oldVal, bool newVal) { UpdateVisuals(); }
