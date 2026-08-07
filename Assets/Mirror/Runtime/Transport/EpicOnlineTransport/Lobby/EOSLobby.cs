@@ -404,65 +404,35 @@ public class EOSLobby : MonoBehaviour
     /// </summary>
     public void LeaveLobby()
     {
-        Debug.Log(
-            $"[EOSLobby] ① LeaveLobby() 호출 | " +
-            $"ConnectedToLobby = {ConnectedToLobby} | " +
-            $"LobbyID = {currentLobbyId}"
-        );
-
-        if (!EOSSDKComponent.IsEOSReady())
-        {
-            Debug.LogWarning(
-                "[EOSLobby] ② EOS SDK가 준비되지 않았습니다."
-            );
-
-            return;
-        }
+        if (!EOSSDKComponent.IsEOSReady()) return;
 
         if (IsLeavingLobby)
         {
-            Debug.LogWarning(
-                "[EOSLobby] 이미 Lobby 퇴장 요청 중입니다."
-            );
-
+            Debug.LogWarning("[EOSLobby] 이미 Lobby 퇴장 요청 중입니다.");
             return;
         }
 
         if (!ConnectedToLobby || string.IsNullOrEmpty(currentLobbyId))
         {
-            Debug.LogWarning(
-                "[EOSLobby] 현재 Lobby에 연결되어 있지 않습니다."
-            );
-
             ConnectedToLobby = false;
             ConnectedLobbyDetails = null;
             currentLobbyId = string.Empty;
             isLobbyOwner = false;
-
             return;
         }
 
         IsLeavingLobby = true;
-
-        string leavingLobbyId = currentLobbyId;
-
         LeaveLobbyOptions options = new LeaveLobbyOptions()
         {
-            LobbyId = leavingLobbyId,
+            LobbyId = currentLobbyId,
             LocalUserId = EOSSDKComponent.LocalUserProductId
         };
 
-        Debug.Log(
-            $"[EOSLobby] ② EOS LeaveLobby API 호출 | " +
-            $"LobbyID = {leavingLobbyId}"
-        );
-
-        EOSSDKComponent.GetLobbyInterface().LeaveLobby(
-            options,
-            null,
-            OnLeaveLobbyCompleted
-        );
+        // 🌟 콜백 함수로 OnLeaveLobbyCompleted를 직접 연결!
+        EOSSDKComponent.GetLobbyInterface().LeaveLobby(options, null, OnLeaveLobbyCompleted);
     }
+
+   
     private void OnLeaveLobbyCompleted(
     LeaveLobbyCallbackInfo data
 )
@@ -641,12 +611,12 @@ public class EOSLobby : MonoBehaviour
     /// ★ 추가됨: 방장이 에픽 서버에서 로비를 완전히 파괴/삭제합니다.
     /// (구버전 호환 코드로 작성됨)
     /// </summary>
+    /// <summary>
+    /// 방장이 에픽 서버에서 로비를 완전히 파괴/삭제합니다.
+    /// </summary>
     public void DestroyLobby()
     {
-        if (string.IsNullOrEmpty(currentLobbyId))
-        {
-            return;
-        }
+        if (string.IsNullOrEmpty(currentLobbyId)) return;
 
         LobbyInterface lobbyInterface = EOSSDKComponent.GetLobbyInterface();
         DestroyLobbyOptions destroyLobbyOptions = new DestroyLobbyOptions
@@ -659,7 +629,7 @@ public class EOSLobby : MonoBehaviour
             if (callback.ResultCode != Result.Success)
             {
                 Debug.LogWarning("[EOSLobby] DestroyLobby failed: " + callback.ResultCode);
-                LeaveLobby(); // 파괴 실패 시 일반 퇴장이라도 수행
+                LeaveLobby(); // 파괴 실패 시 일반 퇴장이라도 수행하여 찌꺼기 방지
                 return;
             }
 
@@ -669,5 +639,21 @@ public class EOSLobby : MonoBehaviour
             ConnectedLobbyDetails = null;
             isLobbyOwner = false;
         });
+    }
+
+    private void OnDestroy()
+    {
+        // 🌟 오브젝트가 파괴될 때 남아있는 로비 연결이 있다면 정해진 규격에 따라 자동 정제
+        if (ConnectedToLobby && !string.IsNullOrEmpty(currentLobbyId))
+        {
+            if (isLobbyOwner)
+            {
+                DestroyLobby();
+            }
+            else
+            {
+                LeaveLobby();
+            }
+        }
     }
 }

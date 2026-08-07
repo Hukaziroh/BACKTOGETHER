@@ -161,25 +161,16 @@ public class PrivateLobbyManager : MonoBehaviour
         // 게임패드 입력 체크
         if (Gamepad.current != null)
         {
-           
             leftPressed |= Gamepad.current.dpad.left.wasPressedThisFrame || Gamepad.current.leftStick.left.wasPressedThisFrame;
             rightPressed |= Gamepad.current.dpad.right.wasPressedThisFrame || Gamepad.current.leftStick.right.wasPressedThisFrame;
-            
         }
-
-
-        // ==========================================
-        // 🌟 2. ESC / 패드 B버튼 입력 처리 (최우선 순위)
-        // ==========================================
-       
 
         if (EventSystem.current == null) return;
         GameObject selected = EventSystem.current.currentSelectedGameObject;
         if (selected == null) return;
 
-
         // ==========================================
-        // 🌟 3. 좌우 선택 (챕터 / 방 타입) 넘기기
+        // 🌟 2. 좌우 선택 (챕터 / 방 타입) 넘기기
         // ==========================================
         bool isChapterSelected = (chapterSelectObject != null && selected == chapterSelectObject) ||
                                  (chapterDisplayText != null && (selected == chapterDisplayText.gameObject || selected == chapterDisplayText.transform.parent.gameObject)) ||
@@ -206,7 +197,7 @@ public class PrivateLobbyManager : MonoBehaviour
         }
 
         // ==========================================
-        // 🌟 4. 입력창 선택 시 엔터 / 패드 A버튼 누르면 활성화
+        // 🌟 3. 입력창 선택 시 엔터 / 패드 A버튼 누르면 활성화
         // ==========================================
         if (isPublicRoom && roomNameInputField != null)
         {
@@ -434,6 +425,12 @@ public class PrivateLobbyManager : MonoBehaviour
 
         if (attributeUpdateFailed || attributeTimeout <= 0f)
         {
+            // 🌟 예외 처리: 방 정보 설정 실패 시 생성된 EOS 로비를 완전히 파괴하여 유령방 방지
+            if (lobby != null && lobby.ConnectedToLobby)
+            {
+                lobby.DestroyLobby();
+            }
+
             SetAllButtonsInteractable(true);
             if (currentPanel != null) currentPanel.SetActive(false);
             ShowErrorPopup("방 정보를 설정하지 못했습니다. 다시 시도해주세요.");
@@ -504,6 +501,42 @@ public class PrivateLobbyManager : MonoBehaviour
 
     public void OnClick_ReturnToMain()
     {
+        // =========================================================================
+        // 🌟 [핵심 수정] 메인 메뉴로 돌아갈 때 EOS 로비 삭제 및 Mirror 네트워크 정리
+        // =========================================================================
+        var lobby = GetEOSLobby();
+        if (lobby != null && lobby.ConnectedToLobby)
+        {
+            if (NetworkServer.active && NetworkClient.active)
+            {
+                // 방장(Host)인 경우 에픽 서버에서 로비를 완전히 파괴
+                Debug.Log("[PrivateLobbyManager] 메인 복귀: 방장 로비 파괴(DestroyLobby) 및 Host 정지");
+                lobby.DestroyLobby();
+
+                if (NetworkManager.singleton != null)
+                {
+                    NetworkManager.singleton.StopHost();
+                }
+            }
+            else if (NetworkClient.active)
+            {
+                // 일반 클라이언트인 경우 로비 퇴장
+                Debug.Log("[PrivateLobbyManager] 메인 복귀: 클라이언트 로비 퇴장(LeaveLobby) 및 Client 정지");
+                lobby.LeaveLobby();
+
+                if (NetworkManager.singleton != null)
+                {
+                    NetworkManager.singleton.StopClient();
+                }
+            }
+            else
+            {
+                // Mirror 네트워킹은 시작 전이지만 EOS 로비만 생성된 상태인 경우
+                Debug.Log("[PrivateLobbyManager] 메인 복귀: 대기 중인 EOS 로비 파괴");
+                lobby.DestroyLobby();
+            }
+        }
+
         if (hostPanel != null) hostPanel.SetActive(false);
         if (logo != null) logo.SetActive(true);
         if (mainPanel != null)
