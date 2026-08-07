@@ -71815,6 +71815,7 @@ MonoBehaviour:
   goSpeed: 3
   returnSpeed: 10
   requiredPlayers: 1
+  waitTimeAtEnd: 0
   platformRigidbody: {fileID: 943868643}
 --- !u!1001 &944020765
 PrefabInstance:
@@ -74058,7 +74059,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 14.476128, y: 2.8027606}
+  m_Offset: {x: 14.294174, y: 2.8027606}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -74068,7 +74069,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 38.73616, y: 13.886933}
+  m_Size: {x: 39.100067, y: 13.886933}
   m_EdgeRadius: 0
 --- !u!114 &1051177058
 MonoBehaviour:
@@ -74871,6 +74872,7 @@ MonoBehaviour:
   goSpeed: 2
   returnSpeed: 6
   requiredPlayers: 4
+  waitTimeAtEnd: 0
   platformRigidbody: {fileID: 1170841063}
 --- !u!61 &1170841065
 BoxCollider2D:
@@ -254105,7 +254107,7 @@ Tilemap:
     second:
       serializedVersion: 2
       m_TileIndex: 0
-      m_TileSpriteIndex: 0
+      m_TileSpriteIndex: 1
       m_TileMatrixIndex: 0
       m_TileColorIndex: 0
       m_TileObjectToInstantiateIndex: 65535
@@ -293661,10 +293663,10 @@ Tilemap:
     m_Data: {fileID: 11400000, guid: d9cbf02071f21c245826e87b2362eb80, type: 2}
   m_TileSpriteArray:
   - serializedVersion: 2
-    m_RefCount: 20642
+    m_RefCount: 20641
     m_Data: {fileID: -6767677795364863348, guid: dcbe08d8cb3efdf4189853e323c06e56, type: 3}
   - serializedVersion: 2
-    m_RefCount: 655
+    m_RefCount: 656
     m_Data: {fileID: -7102676024549555948, guid: a35f489fe452b664e8aec11dbd6b85dd, type: 3}
   - serializedVersion: 2
     m_RefCount: 3
@@ -295530,6 +295532,7 @@ MonoBehaviour:
   goSpeed: 2
   returnSpeed: 6
   requiredPlayers: 4
+  waitTimeAtEnd: 0
   platformRigidbody: {fileID: 1741664188}
 --- !u!61 &1741664190
 BoxCollider2D:
@@ -296453,7 +296456,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -13.330444, y: 1.0198154}
+  m_Offset: {x: -12.147797, y: 1.0198154}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -296463,7 +296466,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 144.5028, y: 17.317074}
+  m_Size: {x: 142.13751, y: 17.317074}
   m_EdgeRadius: 0
 --- !u!114 &1902580363
 MonoBehaviour:
@@ -297807,6 +297810,7 @@ MonoBehaviour:
   goSpeed: 2
   returnSpeed: 6
   requiredPlayers: 2
+  waitTimeAtEnd: 0
   platformRigidbody: {fileID: 2136700252}
 --- !u!114 &2136700254
 MonoBehaviour:
