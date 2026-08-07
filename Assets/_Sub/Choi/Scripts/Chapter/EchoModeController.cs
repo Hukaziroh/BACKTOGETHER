@@ -2,39 +2,88 @@ using UnityEngine;
 
 public class EchoModeController : MonoBehaviour
 {
-    // 이제 여기에는 어떤 타이머나 페이드 계산도 필요 없습니다.
-    // 셰이더가 EchoManager가 보낸 전역 변수를 알아서 가져옵니다.
-
     private SpriteRenderer parentSpriteRenderer;
     private SpriteRenderer outlineSpriteRenderer;
 
+    // Face 관련 변수 추가
+    private SpriteRenderer parentFaceSpriteRenderer;
+    private SpriteRenderer faceOutlineSpriteRenderer;
+
     void Start()
     {
-        // 혹시라도 SpriteRenderer가 꺼져있다면 켜주는 역할만 합니다.
+        // 1. 바디 Outline SpriteRenderer 설정
         outlineSpriteRenderer = GetComponent<SpriteRenderer>();
         if (outlineSpriteRenderer != null)
         {
             outlineSpriteRenderer.enabled = true;
         }
 
-        // 부모 오브젝트의 SpriteRenderer를 가져옵니다.
+        // 2. 부모 오브젝트 및 FaceSprite 찾기
         if (transform.parent != null)
         {
             parentSpriteRenderer = transform.parent.GetComponent<SpriteRenderer>();
+
+            // 부모 하위에 있는 FaceSprite 찾기
+            Transform faceChild = transform.parent.Find("FaceSprite");
+            if (faceChild != null)
+            {
+                parentFaceSpriteRenderer = faceChild.GetComponent<SpriteRenderer>();
+            }
+        }
+
+        // 3. 자식으로 FaceOutline 오브젝트가 없다면 자동으로 생성
+        Transform faceOutlineChild = transform.Find("FaceOutline");
+        if (faceOutlineChild == null)
+        {
+            GameObject faceOutlineObj = new GameObject("FaceOutline");
+            faceOutlineObj.transform.SetParent(transform);
+            faceOutlineObj.transform.localPosition = Vector3.zero;
+            faceOutlineObj.transform.localRotation = Quaternion.identity;
+            faceOutlineObj.transform.localScale = Vector3.one;
+
+            faceOutlineSpriteRenderer = faceOutlineObj.AddComponent<SpriteRenderer>();
+        }
+        else
+        {
+            faceOutlineSpriteRenderer = faceOutlineChild.GetComponent<SpriteRenderer>();
+        }
+
+        // 바디 외곽선과 동일한 셰이더(마테리얼) 공유
+        if (outlineSpriteRenderer != null && faceOutlineSpriteRenderer != null)
+        {
+            faceOutlineSpriteRenderer.sharedMaterial = outlineSpriteRenderer.sharedMaterial;
         }
     }
 
     void LateUpdate()
     {
+        // 1. 바디(몸통) 외곽선 동기화
         if (parentSpriteRenderer != null && outlineSpriteRenderer != null)
         {
-            // 부모의 애니메이션 스프라이트, 반전(Flip), 레이어 순서를 실시간으로 동기화합니다.
-            // (보이는 표시는 셰이더와 EchoManager가 전역 변수로 알아서 처리합니다)
             outlineSpriteRenderer.sprite = parentSpriteRenderer.sprite;
             outlineSpriteRenderer.flipX = parentSpriteRenderer.flipX;
             outlineSpriteRenderer.flipY = parentSpriteRenderer.flipY;
             outlineSpriteRenderer.sortingLayerID = parentSpriteRenderer.sortingLayerID;
             outlineSpriteRenderer.sortingOrder = parentSpriteRenderer.sortingOrder + 1;
+            outlineSpriteRenderer.enabled = parentSpriteRenderer.enabled;
+        }
+
+        // 2. Face(표정) 외곽선 동기화
+        if (parentFaceSpriteRenderer != null && faceOutlineSpriteRenderer != null)
+        {
+            faceOutlineSpriteRenderer.sprite = parentFaceSpriteRenderer.sprite;
+            faceOutlineSpriteRenderer.flipX = parentFaceSpriteRenderer.flipX;
+            faceOutlineSpriteRenderer.flipY = parentFaceSpriteRenderer.flipY;
+            faceOutlineSpriteRenderer.sortingLayerID = parentFaceSpriteRenderer.sortingLayerID;
+
+            // 표정 외곽선은 몸통 외곽선보다 살짝 위에 그려지도록 설정
+            if (outlineSpriteRenderer != null)
+            {
+                faceOutlineSpriteRenderer.sortingOrder = outlineSpriteRenderer.sortingOrder + 1;
+            }
+
+            // 합체 등으로 인해 본체 FaceSprite가 꺼졌을 때(enabled = false) 외곽선도 같이 꺼지도록 동기화
+            faceOutlineSpriteRenderer.enabled = parentFaceSpriteRenderer.enabled && (parentSpriteRenderer != null && parentSpriteRenderer.enabled);
         }
     }
 }

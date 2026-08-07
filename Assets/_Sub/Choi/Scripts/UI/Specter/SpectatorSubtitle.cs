@@ -6,7 +6,6 @@ public class SpectatorSubtitle : MonoBehaviour
 {
     [SerializeField] private GameObject uiContainer; // 자막을 감싸고 있는 UI 패널이나 오브젝트
     [SerializeField] private TextMeshProUGUI subtitleText;      // 일반 Text일 경우
-                                                     // [SerializeField] private TextMeshProUGUI subtitleText; // TMPro 사용 시
 
     private SpectatorSystem spectatorSystem;
 
@@ -33,6 +32,16 @@ public class SpectatorSubtitle : MonoBehaviour
             if (identity != null)
             {
                 subtitleText.text = $"[Specting] {identity.playerIndex + 1}P Player Specting...";
+
+                // 플레이어 인덱스에 해당하는 색상을 가져와서 텍스트 색상에 적용
+                if (identity.playerIndex >= 0 && identity.playerIndex < identity.playerColors.Length)
+                {
+                    subtitleText.color = identity.playerColors[identity.playerIndex];
+                }
+                else
+                {
+                    subtitleText.color = Color.white; // 예외 처리 (기본 흰색)
+                }
             }
         }
     }
