@@ -42,7 +42,7 @@ public class PlayerRespawn : NetworkBehaviour
         if (!isLocalPlayer || isRespawning)
             return;
 
-        // New Input System의 restartAction(패드 RT 홀드 등) 상태 감지
+        // 🌟 New Input System의 restartAction(패드 RT 홀드 등) 상태 감지
         bool isHoldingRestart = controller.input != null &&
                                 controller.input.restartAction != null &&
                                 controller.input.restartAction.IsPressed();
@@ -84,8 +84,8 @@ public class PlayerRespawn : NetworkBehaviour
     {
         isRespawning = true;
 
-        // 클라이언트 RPC를 호출하여 각 클라이언트에서 위치 갱신
-        RpcTeleport(currentSpawnPoint);
+        transform.position = currentSpawnPoint;
+        Physics2D.SyncTransforms();
 
         yield return new WaitForSeconds(0.2f);
 
@@ -94,7 +94,7 @@ public class PlayerRespawn : NetworkBehaviour
 
     private IEnumerator RespawnAllPlayersRoutine()
     {
-        PlayerRespawn[] allPlayers = FindObjectsByType<PlayerRespawn>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        PlayerRespawn[] allPlayers = FindObjectsByType<PlayerRespawn>();
 
         foreach (var p in allPlayers)
         {
@@ -123,8 +123,8 @@ public class PlayerRespawn : NetworkBehaviour
 
                 Vector3 finalSpawnPos = centerSpawnPoint + new Vector3(myOffset, 0, 0);
 
-                // 각 플레이어 오브젝트마다 RpcTeleport 호출
-                p.RpcTeleport(finalSpawnPos);
+                p.transform.position = finalSpawnPos;
+                Physics2D.SyncTransforms();
             }
         }
 
@@ -137,14 +137,6 @@ public class PlayerRespawn : NetworkBehaviour
                 p.isRespawning = false;
             }
         }
-    }
-
-    // 클라이언트의 위치를 직접 동기화하는 RPC
-    [ClientRpc]
-    public void RpcTeleport(Vector3 targetPosition)
-    {
-        transform.position = targetPosition;
-        Physics2D.SyncTransforms();
     }
 
     [Server]
