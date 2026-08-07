@@ -220,7 +220,17 @@ public class PrivateLobbyManager : MonoBehaviour
     {
         if (roomNameInputField != null)
         {
+            // 🌟 interactable = false 처리를 하기 전에 네비게이션 상 다음 요소를 미리 탐색
+            Selectable nextSelectable = roomNameInputField.FindSelectableOnDown();
+
             roomNameInputField.interactable = false;
+            roomNameInputField.DeactivateInputField();
+
+            // 네비게이션에 등록된 다음 UI 요소로 포커스 이동
+            if (nextSelectable != null && EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(nextSelectable.gameObject);
+            }
         }
     }
 
@@ -425,7 +435,6 @@ public class PrivateLobbyManager : MonoBehaviour
 
         if (attributeUpdateFailed || attributeTimeout <= 0f)
         {
-            // 🌟 예외 처리: 방 정보 설정 실패 시 생성된 EOS 로비를 완전히 파괴하여 유령방 방지
             if (lobby != null && lobby.ConnectedToLobby)
             {
                 lobby.DestroyLobby();
@@ -501,15 +510,11 @@ public class PrivateLobbyManager : MonoBehaviour
 
     public void OnClick_ReturnToMain()
     {
-        // =========================================================================
-        // 🌟 [핵심 수정] 메인 메뉴로 돌아갈 때 EOS 로비 삭제 및 Mirror 네트워크 정리
-        // =========================================================================
         var lobby = GetEOSLobby();
         if (lobby != null && lobby.ConnectedToLobby)
         {
             if (NetworkServer.active && NetworkClient.active)
             {
-                // 방장(Host)인 경우 에픽 서버에서 로비를 완전히 파괴
                 Debug.Log("[PrivateLobbyManager] 메인 복귀: 방장 로비 파괴(DestroyLobby) 및 Host 정지");
                 lobby.DestroyLobby();
 
@@ -520,7 +525,6 @@ public class PrivateLobbyManager : MonoBehaviour
             }
             else if (NetworkClient.active)
             {
-                // 일반 클라이언트인 경우 로비 퇴장
                 Debug.Log("[PrivateLobbyManager] 메인 복귀: 클라이언트 로비 퇴장(LeaveLobby) 및 Client 정지");
                 lobby.LeaveLobby();
 
@@ -531,7 +535,6 @@ public class PrivateLobbyManager : MonoBehaviour
             }
             else
             {
-                // Mirror 네트워킹은 시작 전이지만 EOS 로비만 생성된 상태인 경우
                 Debug.Log("[PrivateLobbyManager] 메인 복귀: 대기 중인 EOS 로비 파괴");
                 lobby.DestroyLobby();
             }
