@@ -278091,7 +278091,7 @@ Transform:
   m_GameObject: {fileID: 1203330522331561983}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 6.396698, y: -0.18733025, z: 0}
+  m_LocalPosition: {x: 6.396698, y: -0.21, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -278121,6 +278121,7 @@ MonoBehaviour:
   goSpeed: 2
   returnSpeed: 6
   requiredPlayers: 4
+  waitTimeAtEnd: 0
   platformRigidbody: {fileID: 177455104}
 --- !u!1 &1986221230968725364
 GameObject:
@@ -278891,6 +278892,7 @@ MonoBehaviour:
   goSpeed: 2
   returnSpeed: 6
   requiredPlayers: 4
+  waitTimeAtEnd: 0
   platformRigidbody: {fileID: 6253726046169652271}
 --- !u!4 &6426469386292725457
 Transform:
