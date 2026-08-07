@@ -8,7 +8,7 @@ using Mirror;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem; 
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class ClientLobbyManager : MonoBehaviour
@@ -29,7 +29,7 @@ public class ClientLobbyManager : MonoBehaviour
     [Header("퍼블릭 방 리스트 - 상단 컨트롤")]
     [SerializeField] private TMP_InputField searchInputField;
     [SerializeField] private Button researchButton;
-    [SerializeField] private GameObject chapterFilterSelectObject; 
+    [SerializeField] private GameObject chapterFilterSelectObject;
     [SerializeField] private TextMeshProUGUI filterChapterText;
     [SerializeField] private Button prevFilterChapterButton;
     [SerializeField] private Button nextFilterChapterButton;
@@ -37,7 +37,10 @@ public class ClientLobbyManager : MonoBehaviour
     [Header("퍼블릭 방 리스트 - 스크롤 및 로비 아이템")]
     [SerializeField] private Transform roomListContainer;
     [SerializeField] private GameObject roomItemPrefab;
-    [SerializeField] private GameObject noRoomFoundText;
+    [SerializeField] private GameObject publicRoomNoRoomText; // 퍼블릭 방 리스트 전용 텍스트
+
+    [Header("퀵 조인 관련")]
+    [SerializeField] private GameObject quickJoinNoRoomText; // 퀵 조인 전용 텍스트 (3초 뒤 자동 꺼짐)
 
     [Header("퍼블릭 방 리스트 - 하단 페이지네이션")]
     [SerializeField] private Button prevPageButton;
@@ -66,6 +69,7 @@ public class ClientLobbyManager : MonoBehaviour
     private bool isQuickJoining = false;
 
     private Coroutine connectionTimeoutCoroutine;
+    private Coroutine hideQuickJoinNoRoomCoroutine;
 
 
     private EOSLobby GetEOSLobby()
@@ -115,6 +119,7 @@ public class ClientLobbyManager : MonoBehaviour
         if (clientPublicPanel != null) clientPublicPanel.SetActive(false);
         if (clientPrivatePanel != null) clientPrivatePanel.SetActive(false);
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
+        if (quickJoinNoRoomText != null) quickJoinNoRoomText.SetActive(false);
 
         GameObject panel = GetLoadingPanel();
         if (panel != null) panel.SetActive(false);
@@ -157,7 +162,7 @@ public class ClientLobbyManager : MonoBehaviour
         if (Keyboard.current != null)
         {
             leftPressed |= Keyboard.current.leftArrowKey.wasPressedThisFrame ||
-                           Keyboard.current.aKey.wasPressedThisFrame;
+                            Keyboard.current.aKey.wasPressedThisFrame;
 
             rightPressed |= Keyboard.current.rightArrowKey.wasPressedThisFrame ||
                             Keyboard.current.dKey.wasPressedThisFrame;
@@ -270,7 +275,6 @@ public class ClientLobbyManager : MonoBehaviour
     {
         SubscribeEvents();
 
-        // 퍼블릭 모드 진입 시 인풋 필드 기본 interactable = false 및 텍스트 비우기
         if (searchInputField != null)
         {
             searchInputField.text = string.Empty;
@@ -385,13 +389,13 @@ public class ClientLobbyManager : MonoBehaviour
             }
         };
 
-        isLocalSearchRequest = true; // 퍼블릭 검색 요청 플래그 설정
+        isLocalSearchRequest = true;
         lobby.FindLobbies(50, searchOptions);
     }
 
     private void OnFindLobbiesSucceeded(List<LobbyDetails> lobbies)
     {
-        if (!isLocalSearchRequest) return; // 프라이빗 코드 검색 요청 등 다른 검색 결과면 무시
+        if (!isLocalSearchRequest) return;
         isLocalSearchRequest = false;
 
         SetInteractableAll(true);
@@ -411,11 +415,26 @@ public class ClientLobbyManager : MonoBehaviour
                 }
             }
 
-            ShowError("현재 입장 가능한 퍼블릭 방이 없습니다.");
+            // 퀵 조인 시 방이 없으면 quickJoinNoRoomText를 3초간 띄웠다 끔
+            if (quickJoinNoRoomText != null)
+            {
+                if (hideQuickJoinNoRoomCoroutine != null)
+                    StopCoroutine(hideQuickJoinNoRoomCoroutine);
+
+                hideQuickJoinNoRoomCoroutine = StartCoroutine(ShowAndHideQuickJoinNoRoomText());
+            }
             return;
         }
 
         ApplyFiltersAndRefresh();
+    }
+
+    private IEnumerator ShowAndHideQuickJoinNoRoomText()
+    {
+        quickJoinNoRoomText.SetActive(true);
+        yield return new WaitForSeconds(3f);
+        quickJoinNoRoomText.SetActive(false);
+        hideQuickJoinNoRoomCoroutine = null;
     }
 
     private void OnFindLobbiesFailed(string error)
@@ -488,14 +507,14 @@ public class ClientLobbyManager : MonoBehaviour
 
         if (filteredLobbies.Count == 0)
         {
-            if (noRoomFoundText != null) noRoomFoundText.SetActive(true);
+            if (publicRoomNoRoomText != null) publicRoomNoRoomText.SetActive(true);
             if (pageText != null) pageText.text = "0 / 0";
             if (prevPageButton != null) prevPageButton.interactable = false;
             if (nextPageButton != null) nextPageButton.interactable = false;
             return;
         }
 
-        if (noRoomFoundText != null) noRoomFoundText.SetActive(false);
+        if (publicRoomNoRoomText != null) publicRoomNoRoomText.SetActive(false);
 
         int maxPage = Mathf.CeilToInt((float)filteredLobbies.Count / itemsPerPage);
         currentPage = Mathf.Clamp(currentPage, 0, maxPage - 1);
@@ -720,7 +739,7 @@ public class ClientLobbyManager : MonoBehaviour
 
             if (EventSystem.current != null)
             {
-                EventSystem.current.SetSelectedGameObject(null); 
+                EventSystem.current.SetSelectedGameObject(null);
 
                 if (errorCloseButton != null)
                 {
@@ -788,7 +807,7 @@ public class ClientLobbyManager : MonoBehaviour
 
     private IEnumerator CheckConnectionTimeout()
     {
-        float timeoutDuration = 10f; 
+        float timeoutDuration = 10f;
         float timer = 0f;
 
         while (timer < timeoutDuration)
