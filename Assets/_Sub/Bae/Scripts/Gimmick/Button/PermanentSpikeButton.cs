@@ -43,7 +43,17 @@ public class PermanentSpikeButton : NetworkBehaviour
     private void CheckAllButtons(CoopButton changedButton)
     {
         if (isSpikesHidden) return;
-        if (CoopButtonUtility.IsAnyPressed(requiredButtons))
+        bool isAllPressed = true;
+
+        foreach (CoopButton btn in requiredButtons)
+        {
+            if (btn != null && !btn.isPressed)
+            {
+                isAllPressed = false; 
+                break;         
+            }
+        }
+        if (isAllPressed)
         {
             isSpikesHidden = true;
         }
