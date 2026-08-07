@@ -1305,7 +1305,7 @@ MonoBehaviour:
   currentSpawnPoint: {x: 0, y: 30, z: 0}
   currentCheckpointIndex: -1
   teamRespawnScenes:
-  - Chapter4
+  - chapter4
 --- !u!61 &1312891903968155803
 BoxCollider2D:
   m_ObjectHideFlags: 0
