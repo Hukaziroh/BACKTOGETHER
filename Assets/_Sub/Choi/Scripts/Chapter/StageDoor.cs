@@ -7,7 +7,7 @@ using TMPro;
 public class StageDoor : NetworkBehaviour
 {
     [Header("설정")]
-    public int currentStageNumber = 1;  
+    public int currentStageNumber = 1;
     public GameObject fanfarePrefab;
     public string lobbySceneName = "Lobby";
     public float floatSpeed = 2f;
@@ -33,10 +33,30 @@ public class StageDoor : NetworkBehaviour
             if (!arrivedPlayers.Contains(identity.netId))
             {
                 arrivedPlayers.Add(identity.netId);
+                int totalPlayers = CoopPlayerIdentity.players.Count;
 
-                RpcUpdateCount(arrivedPlayers.Count, NetworkServer.connections.Count);
+                int displayTargetCount = (currentStageNumber == 3) ? 1 : NetworkServer.connections.Count;
+                RpcUpdateCount(arrivedPlayers.Count, displayTargetCount);
 
-                if (arrivedPlayers.Count >= CoopPlayerIdentity.players.Count)
+                bool isClearConditionMet = false;
+
+                if (currentStageNumber == 3)
+                {
+                    if (arrivedPlayers.Count >= 1)
+                    {
+                        isClearConditionMet = true;
+                        Debug.Log("[서버] 3스테이지 특수 조건 발동: 1명 도착으로 즉시 클리어!");
+                    }
+                }
+                else
+                {
+                    if (arrivedPlayers.Count >= totalPlayers)
+                    {
+                        isClearConditionMet = true;
+                    }
+                }
+
+                if (isClearConditionMet)
                 {
                     RpcTriggerClearEffect();
                     StartCoroutine(WaitAndLoadScene());
