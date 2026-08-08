@@ -264,6 +264,10 @@ public class PlayerCombineHandler : NetworkBehaviour
         spriteRenderer.enabled = true;
         col.enabled = true;
         if (rb != null) rb.simulated = true;
+        isCombined = false;
+        combineColorIndex = -1;
+        bodyTarget = null;
+
 
         CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
         if (identity != null)
