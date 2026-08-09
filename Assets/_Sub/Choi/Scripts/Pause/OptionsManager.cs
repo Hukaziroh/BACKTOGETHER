@@ -8,13 +8,10 @@ using UnityEngine.Audio;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-// ❌ using UnityEngine.InputSystem; 삭제 완료!
 
 public class OptionsManager : MonoBehaviour
 {
     public static OptionsManager instance;
-
-    // ❌ private PlayerControls.PlayerControls controls; 삭제 완료!
 
     [Header("UI Reference")]
     public GameObject optionsPanel;
@@ -32,6 +29,9 @@ public class OptionsManager : MonoBehaviour
 
     public Button toggleVisibilityButton;
 
+    [Header("★ 방 코드 가리기 토글용 이미지 슬롯 (인스펙터에서 드래그)")]
+    public GameObject visibilityIconObject;
+
     [Header("Key Guide Panel")]
     public GameObject keyGuidePanel;
     public Button keyGuideToggleButton;
@@ -48,8 +48,6 @@ public class OptionsManager : MonoBehaviour
             instance = this;
             DontDestroyOnLoad(gameObject);
 
-            // 플레이어 사운드(점프/피격/발소리/버튼 등)가 이 볼륨 슬라이더의 영향을 받도록
-            // Master 그룹을 PlayerSoundUtility에 등록해둔다.
             if (audioMixer != null)
             {
                 AudioMixerGroup[] groups = audioMixer.FindMatchingGroups("Master");
@@ -62,8 +60,6 @@ public class OptionsManager : MonoBehaviour
         }
     }
 
-    // ❌ OnEnable, OnDisable, OnBack, Update 함수 모조리 삭제 완료!
-
     void Start()
     {
         if (fullscreenToggle != null)
@@ -74,7 +70,6 @@ public class OptionsManager : MonoBehaviour
 
         if (volumeSlider != null)
         {
-            // 슬라이더 초기 위치를 현재 실제 믹서 볼륨값에 맞춰 동기화 (안 하면 실제 소리는 안 작은데 바만 0에 있는 것처럼 보임)
             if (audioMixer != null && audioMixer.GetFloat("Volume", out float currentDb))
             {
                 float currentVolume = Mathf.Pow(10f, currentDb / 20f);
@@ -93,6 +88,8 @@ public class OptionsManager : MonoBehaviour
         {
             keyGuideToggleButton.onClick.AddListener(ToggleKeyGuide);
         }
+
+        UpdateVisibilityButtonGraphic();
     }
 
     public void Open()
@@ -100,7 +97,6 @@ public class OptionsManager : MonoBehaviour
         if (optionsPanel != null) optionsPanel.SetActive(true);
         if (keyGuidePanel != null) keyGuidePanel.SetActive(false);
 
-        // 🌟 [핵심 수정] ClosePause()를 호출해서 퍼즈를 풀어버리지 않고, 퍼즈 패널만 잠시 숨김!
         if (PauseManager.instance != null && PauseManager.instance.pausePanel != null)
         {
             PauseManager.instance.pausePanel.SetActive(false);
@@ -171,10 +167,19 @@ public class OptionsManager : MonoBehaviour
     {
         isCodeVisible = !isCodeVisible;
         UpdateRoomCodeUI();
+        UpdateVisibilityButtonGraphic();
 
         if (LobbySyncManager.instance != null)
         {
             LobbySyncManager.instance.RefreshRoomCodeUIState();
+        }
+    }
+
+    private void UpdateVisibilityButtonGraphic()
+    {
+        if (visibilityIconObject != null)
+        {
+            visibilityIconObject.SetActive(!isCodeVisible);
         }
     }
 
@@ -267,13 +272,20 @@ public class OptionsManager : MonoBehaviour
         if (independentRoomCodeText == null) return;
 
         string displayCode = "";
-
         bool isMainScene = SceneManager.GetActiveScene().name == "Main";
+
         if (!isMainScene)
         {
             if (LobbySyncManager.instance != null)
             {
-                displayCode = LobbySyncManager.instance.roomCode;
+                if (string.IsNullOrEmpty(LobbySyncManager.instance.roomCode))
+                {
+                    displayCode = string.IsNullOrEmpty(LobbySyncManager.instance.roomName) ? "Public Room" : LobbySyncManager.instance.roomName;
+                }
+                else
+                {
+                    displayCode = LobbySyncManager.instance.roomCode;
+                }
             }
 
             if (string.IsNullOrEmpty(displayCode))
@@ -288,6 +300,7 @@ public class OptionsManager : MonoBehaviour
         }
         else
         {
+            // 🌟 수정: 공개방이든 비공개방이든 구분 없이 isCodeVisible 상태에 따라 가려지도록 변경
             independentRoomCodeText.text = isCodeVisible ? displayCode : "******";
         }
 

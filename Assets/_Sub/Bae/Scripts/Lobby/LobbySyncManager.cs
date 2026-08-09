@@ -19,7 +19,7 @@ public class LobbySyncManager : NetworkBehaviour
     public string roomCode = "";
 
     [SyncVar(hook = nameof(OnRoomNameUpdated))]
-    public string roomName = ""; // <--- 추가: 방 이름 SyncVar
+    public string roomName = ""; // 방 이름 SyncVar
 
     void Awake()
     {
@@ -74,7 +74,7 @@ public class LobbySyncManager : NetworkBehaviour
         UpdateRoomCodeUI(newValue);
     }
 
-    void OnRoomNameUpdated(string oldValue, string newValue) // <--- 추가: 방 이름 업데이트 감지
+    void OnRoomNameUpdated(string oldValue, string newValue)
     {
         UpdateRoomCodeUI(roomCode);
     }
@@ -98,18 +98,18 @@ public class LobbySyncManager : NetworkBehaviour
 
         bool isMainScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Main";
 
-        // --- 수정된 부분: 공개방(code가 비어있음)일 때 방 이름 사용 ---
+        // 공개방(code가 비어있음)일 때 방 이름 사용, 아니면 코드 사용
         string formattedCode = (isMainScene) ? "Empty" : (string.IsNullOrEmpty(code) ? roomName : code);
 
-        // 스트리머 모드 적용 여부 확인
+        // 스트리머 모드(가리기) 적용 여부 확인
         bool isCodeVisible = true;
         if (OptionsManager.instance != null)
         {
             isCodeVisible = OptionsManager.instance.IsCodeVisible;
         }
 
-        // 비공개방(code가 있고)이고 마스킹 옵션이 켜져있을 때만 마스킹
-        if (!isMainScene && !string.IsNullOrEmpty(code) && !isCodeVisible)
+        // 🌟 수정된 부분: 비공개방/공개방 구분 없이 가리기 옵션이 켜져있지 않으면(isCodeVisible이 false면) 무조건 마스킹 처리
+        if (!isMainScene && !isCodeVisible)
         {
             formattedCode = "******";
         }
