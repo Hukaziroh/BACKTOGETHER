@@ -18,10 +18,20 @@ public class LobbySyncManager : NetworkBehaviour
     [SyncVar(hook = nameof(OnRoomCodeUpdated))]
     public string roomCode = "";
 
+    [SyncVar(hook = nameof(OnRoomNameUpdated))]
+    public string roomName = ""; // <--- 추가: 방 이름 SyncVar
+
     void Awake()
     {
         if (instance == null) instance = this;
         else Destroy(gameObject);
+    }
+
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        // 방 생성시 저장된 이름을 가져와 동기화
+        roomName = PrivateLobbyManager.lastCreatedRoomName;
     }
 
     void Update()
@@ -64,6 +74,11 @@ public class LobbySyncManager : NetworkBehaviour
         UpdateRoomCodeUI(newValue);
     }
 
+    void OnRoomNameUpdated(string oldValue, string newValue) // <--- 추가: 방 이름 업데이트 감지
+    {
+        UpdateRoomCodeUI(roomCode);
+    }
+
     private void UpdatePlayerCountUI(int count)
     {
         if (playerCountText != null)
@@ -82,15 +97,18 @@ public class LobbySyncManager : NetworkBehaviour
         if (roomCodeText == null) return;
 
         bool isMainScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Main";
-        string formattedCode = (isMainScene || string.IsNullOrEmpty(code)) ? "Empty" : code;
 
-        // 스트리머 모드 적용 여부 확인 (OptionsManager가 존재하고 IsCodeVisible이 false이면 마스킹 처리)
+        // --- 수정된 부분: 공개방(code가 비어있음)일 때 방 이름 사용 ---
+        string formattedCode = (isMainScene) ? "Empty" : (string.IsNullOrEmpty(code) ? roomName : code);
+
+        // 스트리머 모드 적용 여부 확인
         bool isCodeVisible = true;
         if (OptionsManager.instance != null)
         {
             isCodeVisible = OptionsManager.instance.IsCodeVisible;
         }
 
+        // 비공개방(code가 있고)이고 마스킹 옵션이 켜져있을 때만 마스킹
         if (!isMainScene && !string.IsNullOrEmpty(code) && !isCodeVisible)
         {
             formattedCode = "******";

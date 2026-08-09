@@ -34,6 +34,9 @@ public class ClientLobbyManager : MonoBehaviour
     [SerializeField] private Button prevFilterChapterButton;
     [SerializeField] private Button nextFilterChapterButton;
 
+    [Header("비공개 방 관련")]
+    [SerializeField] private TMP_InputField privateRoomInputField; // 비공개 방 코드/비밀번호 입력용 인풋필드
+
     [Header("퍼블릭 방 리스트 - 스크롤 및 로비 아이템")]
     [SerializeField] private Transform roomListContainer;
     [SerializeField] private GameObject roomItemPrefab;
@@ -136,6 +139,13 @@ public class ClientLobbyManager : MonoBehaviour
         if (searchInputField != null)
         {
             searchInputField.onEndEdit.AddListener(OnSearchInputEndEdit);
+            searchInputField.interactable = false;
+        }
+
+        if (privateRoomInputField != null)
+        {
+            privateRoomInputField.onEndEdit.AddListener(OnPrivateRoomInputEndEdit);
+            privateRoomInputField.interactable = false;
         }
 
         UpdateFilterChapterUI();
@@ -148,6 +158,11 @@ public class ClientLobbyManager : MonoBehaviour
         if (searchInputField != null)
         {
             searchInputField.onEndEdit.RemoveListener(OnSearchInputEndEdit);
+        }
+
+        if (privateRoomInputField != null)
+        {
+            privateRoomInputField.onEndEdit.RemoveListener(OnPrivateRoomInputEndEdit);
         }
     }
 
@@ -162,13 +177,13 @@ public class ClientLobbyManager : MonoBehaviour
         if (Keyboard.current != null)
         {
             leftPressed |= Keyboard.current.leftArrowKey.wasPressedThisFrame ||
-                            Keyboard.current.aKey.wasPressedThisFrame;
+                          Keyboard.current.aKey.wasPressedThisFrame;
 
             rightPressed |= Keyboard.current.rightArrowKey.wasPressedThisFrame ||
-                            Keyboard.current.dKey.wasPressedThisFrame;
+                          Keyboard.current.dKey.wasPressedThisFrame;
 
             enterPressed |= Keyboard.current.enterKey.wasPressedThisFrame ||
-                            Keyboard.current.numpadEnterKey.wasPressedThisFrame;
+                          Keyboard.current.numpadEnterKey.wasPressedThisFrame;
             upPressed |= Keyboard.current.upArrowKey.wasPressedThisFrame ||
                Keyboard.current.wKey.wasPressedThisFrame;
 
@@ -191,6 +206,8 @@ public class ClientLobbyManager : MonoBehaviour
         if (EventSystem.current == null) return;
 
         GameObject selected = EventSystem.current.currentSelectedGameObject;
+
+        // 퍼블릭 패널 입력필드 처리
         if (clientPublicPanel != null && clientPublicPanel.activeSelf)
         {
             if (selected == null) return;
@@ -232,8 +249,28 @@ public class ClientLobbyManager : MonoBehaviour
             }
         }
 
+        // 비공개 패널 입력필드 및 네비게이션 처리
         if (clientPrivatePanel != null && clientPrivatePanel.activeSelf)
         {
+            if (privateRoomInputField != null)
+            {
+                bool isPrivateInputFieldSelected = (selected == privateRoomInputField.gameObject) ||
+                                            (selected == privateRoomInputField.transform.parent?.gameObject);
+
+                if (isPrivateInputFieldSelected && Keyboard.current != null)
+                {
+                    if (enterPressed)
+                    {
+                        if (!privateRoomInputField.interactable)
+                        {
+                            privateRoomInputField.interactable = true;
+                            privateRoomInputField.ActivateInputField();
+                            privateRoomInputField.Select();
+                        }
+                    }
+                }
+            }
+
             if (upPressed)
             {
                 SelectPrivateRoomUp();
@@ -251,6 +288,28 @@ public class ClientLobbyManager : MonoBehaviour
         if (searchInputField != null)
         {
             searchInputField.interactable = false;
+
+            // 엔터 등으로 입력이 끝났을 때 다음 네비게이션(아래쪽) 요소로 포커스 이동
+            Selectable nextSelectable = searchInputField.FindSelectableOnDown();
+            if (nextSelectable != null && EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(nextSelectable.gameObject);
+            }
+        }
+    }
+
+    private void OnPrivateRoomInputEndEdit(string text)
+    {
+        if (privateRoomInputField != null)
+        {
+            privateRoomInputField.interactable = false;
+
+            // 엔터 등으로 입력이 끝났을 때 다음 네비게이션(아래쪽) 요소로 포커스 이동
+            Selectable nextSelectable = privateRoomInputField.FindSelectableOnDown();
+            if (nextSelectable != null && EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(nextSelectable.gameObject);
+            }
         }
     }
 
@@ -301,6 +360,14 @@ public class ClientLobbyManager : MonoBehaviour
     public void OnClick_SelectPrivateMode()
     {
         SubscribeEvents();
+
+        if (privateRoomInputField != null)
+        {
+            privateRoomInputField.text = string.Empty;
+            privateRoomInputField.interactable = false;
+            privateRoomInputField.DeactivateInputField();
+        }
+
         if (clientSelectionPanel != null) clientSelectionPanel.SetActive(false);
         if (clientPrivatePanel != null)
         {
@@ -415,7 +482,6 @@ public class ClientLobbyManager : MonoBehaviour
                 }
             }
 
-            // 퀵 조인 시 방이 없으면 quickJoinNoRoomText를 3초간 띄웠다 끔
             if (quickJoinNoRoomText != null)
             {
                 if (hideQuickJoinNoRoomCoroutine != null)
@@ -719,6 +785,7 @@ public class ClientLobbyManager : MonoBehaviour
             EventSystem.current.SetSelectedGameObject(next.gameObject);
         }
     }
+
     private GameObject GetLoadingPanel()
     {
         if (loadingPanel != null) return loadingPanel;
