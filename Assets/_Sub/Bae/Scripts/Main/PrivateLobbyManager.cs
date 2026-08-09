@@ -23,6 +23,18 @@ public class PrivateLobbyManager : MonoBehaviour
 
     [Header("UI 연결 - 방 설정 (패널 내부)")]
     [SerializeField] private TMP_InputField roomNameInputField;
+    
+    [Header("기본 방 이름 목록 (미입력 시 랜덤 선택)")]
+    [SerializeField]
+    private string[] defaultRoomNames = new string[]
+    {
+        "Better Together!",
+        "Don't Step on My Head",
+        "Teamwork Makes the Dream Work",
+        "Back Together: Assemble!",
+        "Chaos Incoming...",
+        "One Mind, Four Bodies"
+    };
 
     [Header("챕터 선택 UI (< Chapter 1 >)")]
     [SerializeField] private GameObject chapterSelectObject;
@@ -290,9 +302,10 @@ public class PrivateLobbyManager : MonoBehaviour
         if (lobby == null) { ShowErrorPopup("네트워크 시스템이 준비되지 않았습니다."); return; }
 
         string roomTitle = (roomNameInputField != null && !string.IsNullOrEmpty(roomNameInputField.text))
-            ? roomNameInputField.text : "Pico Room";
+     ? roomNameInputField.text
+     : GetRandomDefaultRoomName();
 
-        lastCreatedRoomName = roomTitle; // <--- 추가: 방 생성 시 이름 저장
+        lastCreatedRoomName = roomTitle; 
 
         if (isPublicRoom) currentShortCode = "";
         else currentShortCode = GenerateShortCode();
@@ -421,5 +434,15 @@ public class PrivateLobbyManager : MonoBehaviour
             if (GlobalSceneInputManager.Instance != null) GlobalSceneInputManager.Instance.SetFocusScope(mainPanel);
         }
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
+    }
+
+    private string GetRandomDefaultRoomName()
+    {
+        if (defaultRoomNames != null && defaultRoomNames.Length > 0)
+        {
+            int randomIndex = Random.Range(0, defaultRoomNames.Length);
+            return defaultRoomNames[randomIndex];
+        }
+        return "Back Together!"; 
     }
 }
