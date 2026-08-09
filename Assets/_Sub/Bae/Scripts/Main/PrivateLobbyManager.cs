@@ -6,7 +6,7 @@ using Mirror;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem; // 신형 입력 시스템
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -29,8 +29,8 @@ public class PrivateLobbyManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI chapterDisplayText;
     [SerializeField] private Button prevChapterButton;
     [SerializeField] private Button nextChapterButton;
-    [SerializeField] private Image chapterPreviewImage;      // 챕터 이미지 UI Component
-    [SerializeField] private Sprite[] chapterSprites;        // 챕터별 Sprite 이미지 배열
+    [SerializeField] private Image chapterPreviewImage;
+    [SerializeField] private Sprite[] chapterSprites;
 
     [Header("챕터 잠금 UI")]
     [SerializeField] private GameObject chapterLockObject;
@@ -57,6 +57,7 @@ public class PrivateLobbyManager : MonoBehaviour
     private bool isSubscribed = false;
 
     public static string currentShortCode = "";
+    public static string lastCreatedRoomName = ""; // <--- 추가: 방 이름 저장용 변수
     public static int selectedChapter = 1;
     private int selectedChapterIndex = 1;
     private int maxChapterCount = 6;
@@ -143,14 +144,10 @@ public class PrivateLobbyManager : MonoBehaviour
 
     private void Update()
     {
-        // ==========================================
-        // 🌟 1. 키보드 및 게임패드 입력 통합 감지
-        // ==========================================
         bool leftPressed = false;
         bool rightPressed = false;
         bool enterOrActionPressed = false;
 
-        // 키보드 입력 체크
         if (Keyboard.current != null)
         {
             leftPressed |= Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame;
@@ -158,7 +155,6 @@ public class PrivateLobbyManager : MonoBehaviour
             enterOrActionPressed |= Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.numpadEnterKey.wasPressedThisFrame;
         }
 
-        // 게임패드 입력 체크
         if (Gamepad.current != null)
         {
             leftPressed |= Gamepad.current.dpad.left.wasPressedThisFrame || Gamepad.current.leftStick.left.wasPressedThisFrame;
@@ -169,9 +165,6 @@ public class PrivateLobbyManager : MonoBehaviour
         GameObject selected = EventSystem.current.currentSelectedGameObject;
         if (selected == null) return;
 
-        // ==========================================
-        // 🌟 2. 좌우 선택 (챕터 / 방 타입) 넘기기
-        // ==========================================
         bool isChapterSelected = (chapterSelectObject != null && selected == chapterSelectObject) ||
                                  (chapterDisplayText != null && (selected == chapterDisplayText.gameObject || selected == chapterDisplayText.transform.parent.gameObject)) ||
                                  (prevChapterButton != null && selected == prevChapterButton.gameObject) ||
@@ -196,9 +189,6 @@ public class PrivateLobbyManager : MonoBehaviour
             return;
         }
 
-        // ==========================================
-        // 🌟 3. 입력창 선택 시 엔터 / 패드 A버튼 누르면 활성화
-        // ==========================================
         if (isPublicRoom && roomNameInputField != null)
         {
             bool isInputFieldSelected = (selected == roomNameInputField.gameObject) ||
@@ -220,13 +210,9 @@ public class PrivateLobbyManager : MonoBehaviour
     {
         if (roomNameInputField != null)
         {
-            // 🌟 interactable = false 처리를 하기 전에 네비게이션 상 다음 요소를 미리 탐색
             Selectable nextSelectable = roomNameInputField.FindSelectableOnDown();
-
             roomNameInputField.interactable = false;
             roomNameInputField.DeactivateInputField();
-
-            // 네비게이션에 등록된 다음 UI 요소로 포커스 이동
             if (nextSelectable != null && EventSystem.current != null)
             {
                 EventSystem.current.SetSelectedGameObject(nextSelectable.gameObject);
@@ -237,7 +223,6 @@ public class PrivateLobbyManager : MonoBehaviour
     public void OnClick_MainHost()
     {
         SubscribeEvents();
-
         if (mainPanel != null) mainPanel.SetActive(false);
         if (logo != null) logo.SetActive(false);
         if (hostPanel != null) hostPanel.SetActive(true);
@@ -267,59 +252,27 @@ public class PrivateLobbyManager : MonoBehaviour
         int displayChapter = selectedChapterIndex;
         int arrayIndex = selectedChapterIndex - 1;
 
-        if (chapterDisplayText != null)
-        {
-            chapterDisplayText.text = $"Chapter {displayChapter}";
-        }
-
-        if (chapterPreviewImage != null && chapterSprites != null && chapterSprites.Length > arrayIndex)
-        {
-            chapterPreviewImage.sprite = chapterSprites[arrayIndex];
-        }
+        if (chapterDisplayText != null) chapterDisplayText.text = $"Chapter {displayChapter}";
+        if (chapterPreviewImage != null && chapterSprites != null && chapterSprites.Length > arrayIndex) chapterPreviewImage.sprite = chapterSprites[arrayIndex];
 
         bool isUnlocked = true;
-
         if (GameSaveManager.Instance != null)
         {
             int maxCleared = GameSaveManager.Instance.currentData.maxClearedChapter;
-            if (maxCleared < arrayIndex)
-            {
-                isUnlocked = false;
-            }
+            if (maxCleared < arrayIndex) isUnlocked = false;
         }
 
-        if (chapterLockObject != null)
-        {
-            chapterLockObject.SetActive(!isUnlocked);
-        }
-
-        if (makeRoomButton != null)
-        {
-            makeRoomButton.interactable = isUnlocked;
-        }
-
-        if (chapterPreviewImage != null)
-        {
-            chapterPreviewImage.color = isUnlocked ? Color.white : new Color(0.3f, 0.3f, 0.3f, 1f);
-        }
+        if (chapterLockObject != null) chapterLockObject.SetActive(!isUnlocked);
+        if (makeRoomButton != null) makeRoomButton.interactable = isUnlocked;
+        if (chapterPreviewImage != null) chapterPreviewImage.color = isUnlocked ? Color.white : new Color(0.3f, 0.3f, 0.3f, 1f);
     }
 
-    public void OnClick_PrevRoomType()
-    {
-        isPublicRoom = !isPublicRoom;
-        UpdateRoomTypeUI();
-    }
-
-    public void OnClick_NextRoomType()
-    {
-        isPublicRoom = !isPublicRoom;
-        UpdateRoomTypeUI();
-    }
+    public void OnClick_PrevRoomType() { isPublicRoom = !isPublicRoom; UpdateRoomTypeUI(); }
+    public void OnClick_NextRoomType() { isPublicRoom = !isPublicRoom; UpdateRoomTypeUI(); }
 
     private void UpdateRoomTypeUI()
     {
         if (roomTypeDisplayText != null) roomTypeDisplayText.text = isPublicRoom ? "Public" : "Private";
-
         if (roomNameInputField != null)
         {
             roomNameInputField.interactable = false;
@@ -333,42 +286,27 @@ public class PrivateLobbyManager : MonoBehaviour
         if (isCreatingLobby) return;
 
         selectedChapter = selectedChapterIndex;
-
         var lobby = GetEOSLobby();
-        if (lobby == null)
-        {
-            ShowErrorPopup("네트워크 시스템이 준비되지 않았습니다.");
-            return;
-        }
+        if (lobby == null) { ShowErrorPopup("네트워크 시스템이 준비되지 않았습니다."); return; }
 
         string roomTitle = (roomNameInputField != null && !string.IsNullOrEmpty(roomNameInputField.text))
             ? roomNameInputField.text : "Pico Room";
 
-        if (isPublicRoom)
-        {
-            currentShortCode = "";
-        }
-        else
-        {
-            currentShortCode = GenerateShortCode();
-        }
+        lastCreatedRoomName = roomTitle; // <--- 추가: 방 생성 시 이름 저장
+
+        if (isPublicRoom) currentShortCode = "";
+        else currentShortCode = GenerateShortCode();
 
         isCreatingLobby = true;
         SetAllButtonsInteractable(false);
-
         currentPanel = GetLoadingPanel();
         if (currentPanel != null) currentPanel.SetActive(true);
 
         lobby.CreateLobby(4, LobbyPermissionLevel.Publicadvertised, false, null);
-
         StartCoroutine(CreateLobbyAndSetAttributesRoutine(roomTitle));
     }
 
-    private void OnCreateLobbySucceeded(List<Epic.OnlineServices.Lobby.Attribute> attributes)
-    {
-        isCreatingLobby = false;
-    }
-
+    private void OnCreateLobbySucceeded(List<Epic.OnlineServices.Lobby.Attribute> attributes) { isCreatingLobby = false; }
     private void OnCreateLobbyFailed(string errorMessage)
     {
         isCreatingLobby = false;
@@ -376,27 +314,13 @@ public class PrivateLobbyManager : MonoBehaviour
         if (currentPanel != null) currentPanel.SetActive(false);
         ShowErrorPopup("방 생성 실패: " + errorMessage);
     }
-
-    private void OnLobbyAttributesUpdateSucceeded()
-    {
-        attributeUpdateDone = true;
-        attributeUpdateFailed = false;
-    }
-
-    private void OnLobbyAttributesUpdateFailed(string errorMessage)
-    {
-        attributeUpdateDone = true;
-        attributeUpdateFailed = true;
-    }
+    private void OnLobbyAttributesUpdateSucceeded() { attributeUpdateDone = true; attributeUpdateFailed = false; }
+    private void OnLobbyAttributesUpdateFailed(string errorMessage) { attributeUpdateDone = true; attributeUpdateFailed = true; }
 
     private IEnumerator CreateLobbyAndSetAttributesRoutine(string roomTitle)
     {
         float timeout = 5f;
-        while (isCreatingLobby && timeout > 0f)
-        {
-            timeout -= Time.unscaledDeltaTime;
-            yield return null;
-        }
+        while (isCreatingLobby && timeout > 0f) { timeout -= Time.unscaledDeltaTime; yield return null; }
 
         if (isCreatingLobby)
         {
@@ -406,40 +330,23 @@ public class PrivateLobbyManager : MonoBehaviour
             yield break;
         }
 
-        attributeUpdateDone = false;
-        attributeUpdateFailed = false;
-
+        attributeUpdateDone = false; attributeUpdateFailed = false;
         List<AttributeData> attrDataList = new List<AttributeData>();
-
         attrDataList.Add(new AttributeData { Key = "ROOM_NAME", Value = roomTitle });
         attrDataList.Add(new AttributeData { Key = "CHAPTER", Value = selectedChapterIndex.ToString() });
         attrDataList.Add(new AttributeData { Key = "IS_PUBLIC", Value = isPublicRoom ? "1" : "0" });
 
-        if (!isPublicRoom)
-        {
-            attrDataList.Add(new AttributeData { Key = "SHORTCODE", Value = currentShortCode });
-        }
+        if (!isPublicRoom) attrDataList.Add(new AttributeData { Key = "SHORTCODE", Value = currentShortCode });
 
         var lobby = GetEOSLobby();
-        if (lobby != null)
-        {
-            lobby.UpdateLobbyAttributes(attrDataList.ToArray());
-        }
+        if (lobby != null) lobby.UpdateLobbyAttributes(attrDataList.ToArray());
 
         float attributeTimeout = 5f;
-        while (!attributeUpdateDone && attributeTimeout > 0f)
-        {
-            attributeTimeout -= Time.unscaledDeltaTime;
-            yield return null;
-        }
+        while (!attributeUpdateDone && attributeTimeout > 0f) { attributeTimeout -= Time.unscaledDeltaTime; yield return null; }
 
         if (attributeUpdateFailed || attributeTimeout <= 0f)
         {
-            if (lobby != null && lobby.ConnectedToLobby)
-            {
-                lobby.DestroyLobby();
-            }
-
+            if (lobby != null && lobby.ConnectedToLobby) lobby.DestroyLobby();
             SetAllButtonsInteractable(true);
             if (currentPanel != null) currentPanel.SetActive(false);
             ShowErrorPopup("방 정보를 설정하지 못했습니다. 다시 시도해주세요.");
@@ -448,7 +355,6 @@ public class PrivateLobbyManager : MonoBehaviour
 
         EosTransport transport = NetworkManager.singleton.transport as EosTransport;
         if (transport != null) transport.ResetIgnoreMessagesAtStartUpTimer();
-
         NetworkManager.singleton.StartHost();
 
         yield return new WaitForSecondsRealtime(0.2f);
@@ -469,11 +375,7 @@ public class PrivateLobbyManager : MonoBehaviour
     private GameObject GetLoadingPanel()
     {
         if (loadingPanel != null) return loadingPanel;
-        if (WalkingLoadingPanel.Instance != null)
-        {
-            loadingPanel = WalkingLoadingPanel.Instance.gameObject;
-            return loadingPanel;
-        }
+        if (WalkingLoadingPanel.Instance != null) { loadingPanel = WalkingLoadingPanel.Instance.gameObject; return loadingPanel; }
         return null;
     }
 
@@ -491,19 +393,11 @@ public class PrivateLobbyManager : MonoBehaviour
         {
             if (errorMessageText != null) errorMessageText.text = message;
             errorPopupPanel.SetActive(true);
-
             if (EventSystem.current != null)
             {
                 EventSystem.current.SetSelectedGameObject(null);
-
-                if (errorCloseButton != null)
-                {
-                    EventSystem.current.SetSelectedGameObject(errorCloseButton.gameObject);
-                }
-                else
-                {
-                    EventSystem.current.SetSelectedGameObject(errorPopupPanel);
-                }
+                if (errorCloseButton != null) EventSystem.current.SetSelectedGameObject(errorCloseButton.gameObject);
+                else EventSystem.current.SetSelectedGameObject(errorPopupPanel);
             }
         }
     }
@@ -513,31 +407,10 @@ public class PrivateLobbyManager : MonoBehaviour
         var lobby = GetEOSLobby();
         if (lobby != null && lobby.ConnectedToLobby)
         {
-            if (NetworkServer.active && NetworkClient.active)
-            {
-                Debug.Log("[PrivateLobbyManager] 메인 복귀: 방장 로비 파괴(DestroyLobby) 및 Host 정지");
-                lobby.DestroyLobby();
-
-                if (NetworkManager.singleton != null)
-                {
-                    NetworkManager.singleton.StopHost();
-                }
-            }
-            else if (NetworkClient.active)
-            {
-                Debug.Log("[PrivateLobbyManager] 메인 복귀: 클라이언트 로비 퇴장(LeaveLobby) 및 Client 정지");
-                lobby.LeaveLobby();
-
-                if (NetworkManager.singleton != null)
-                {
-                    NetworkManager.singleton.StopClient();
-                }
-            }
-            else
-            {
-                Debug.Log("[PrivateLobbyManager] 메인 복귀: 대기 중인 EOS 로비 파괴");
-                lobby.DestroyLobby();
-            }
+            if (NetworkServer.active && NetworkClient.active) lobby.DestroyLobby();
+            else if (NetworkClient.active) lobby.LeaveLobby();
+            else lobby.DestroyLobby();
+            if (NetworkManager.singleton != null) NetworkManager.singleton.StopHost();
         }
 
         if (hostPanel != null) hostPanel.SetActive(false);
@@ -545,13 +418,8 @@ public class PrivateLobbyManager : MonoBehaviour
         if (mainPanel != null)
         {
             mainPanel.SetActive(true);
-
-            if (GlobalSceneInputManager.Instance != null)
-            {
-                GlobalSceneInputManager.Instance.SetFocusScope(mainPanel);
-            }
+            if (GlobalSceneInputManager.Instance != null) GlobalSceneInputManager.Instance.SetFocusScope(mainPanel);
         }
-
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
     }
 }
