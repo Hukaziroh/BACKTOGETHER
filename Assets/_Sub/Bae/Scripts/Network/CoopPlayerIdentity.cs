@@ -283,13 +283,15 @@ public class CoopPlayerIdentity : NetworkBehaviour
         if (isCombinedState)
         {
             mainColor = combineColors[combineHandler.combineColorIndex];
-            propBlock.SetFloat("_SplitMode", 1);
+
+            propBlock.SetFloat("_SplitMode", 0);
         }
         else
         {
             mainColor = (playerIndex >= 0 && playerIndex < playerColors.Length)
                 ? playerColors[playerIndex]
                 : Color.white;
+
             propBlock.SetFloat("_SplitMode", 0);
         }
 

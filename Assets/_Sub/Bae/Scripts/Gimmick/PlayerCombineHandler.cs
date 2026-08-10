@@ -35,30 +35,31 @@ public class PlayerCombineHandler : NetworkBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
-    // --- 🌟 새로 추가된 SyncVar Hook 함수들 🌟 ---
     private void OnCombineStateChanged(bool oldVal, bool newVal)
     {
+        isCombined = newVal; 
         CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
         if (identity != null) identity.ForceUpdateVisual();
     }
 
     private void OnBodyTargetChanged(GameObject oldVal, GameObject newVal)
     {
+        bodyTarget = newVal; // 필수!
         CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
         if (identity != null) identity.ForceUpdateVisual();
     }
 
     private void OnCombineColorChanged(int oldVal, int newVal)
     {
+        combineColorIndex = newVal; // 필수!
         CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
         if (identity != null) identity.ForceUpdateVisual();
     }
 
     private void OnCombineFaceChanged(int oldVal, int newVal)
     {
-        // 얼굴(눈)은 Update문에서 매 프레임 반영되므로 빈 칸으로 두어도 무방합니다.
+        combineFaceIndex = newVal; 
     }
-    // ---------------------------------------------
 
     [Server]
     public void StartCombineMode(CombineRole role, GameObject body)
@@ -95,27 +96,22 @@ public class PlayerCombineHandler : NetworkBehaviour
         CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
         if (identity != null) identity.ForceUpdateVisual();
 
-        NetworkIdentity bodyNetId = body.GetComponent<NetworkIdentity>();
-
-        // 🌟 수정됨: 컬러와 표정 인덱스도 함께 RPC로 넘겨줍니다.
-        RpcApplyCombineVisual(bodyNetId, combineColorIndex, combineFaceIndex);
+        RpcApplyCombineVisual(body, combineColorIndex, combineFaceIndex);
     }
 
-    // 🌟 수정됨: 매개변수(colorIdx, faceIdx)를 받고 내부에서 강제로 값을 동기화합니다.
     [ClientRpc]
-    private void RpcApplyCombineVisual(NetworkIdentity bodyNetId, int colorIdx, int faceIdx)
+    private void RpcApplyCombineVisual(GameObject bodyObj, int colorIdx, int faceIdx)
     {
-        if (bodyNetId != null)
+        if (bodyObj != null)
         {
-            bodyTarget = bodyNetId.gameObject;
+            bodyTarget = bodyObj;
         }
 
-        // RPC 도달 즉시 상태 변수를 강제로 동일하게 맞춰줍니다. (타이밍 꼬임 방지)
         isCombined = true;
         combineColorIndex = colorIdx;
         combineFaceIndex = faceIdx;
 
-        bool isBody = (bodyNetId != null && netIdentity.netId == bodyNetId.netId);
+        bool isBody = (bodyObj != null && gameObject == bodyObj);
 
         if (isBody)
         {
@@ -132,13 +128,13 @@ public class PlayerCombineHandler : NetworkBehaviour
         CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
         if (identity != null) identity.ForceUpdateVisual();
 
-        if (isLocalPlayer && bodyNetId != null)
+        if (isLocalPlayer && bodyObj != null)
         {
             Camera mainCam = Camera.main;
             if (mainCam != null)
             {
                 CameraFollow cam = mainCam.GetComponent<CameraFollow>();
-                if (cam != null) cam.target = bodyNetId.transform;
+                if (cam != null) cam.target = bodyObj.transform;
             }
         }
     }
