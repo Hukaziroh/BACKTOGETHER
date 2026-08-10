@@ -376,6 +376,18 @@ public class CoopPlayerIdentity : NetworkBehaviour
         UpdatePlayerVisual(playerIndex);
     }
 
+    [Server]
+    public void ResetCombinedColors()
+    {
+        RpcResetColor();
+    }
+
+    [ClientRpc]
+    private void RpcResetColor()
+    {
+        UpdatePlayerVisual(playerIndex);
+    }
+
     public void ResetFaceVisual()
     {
         if (faceSpriteRenderer == null)
