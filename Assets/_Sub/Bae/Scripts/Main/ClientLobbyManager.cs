@@ -219,6 +219,26 @@ public class ClientLobbyManager : MonoBehaviour
                       Gamepad.current.leftStick.down.wasPressedThisFrame;
         }
 
+        // 엔터 입력 처리 (팝업이 열려 있는 경우 엔터로 닫기 수행)
+        if (enterPressed)
+        {
+            if (timeoutPopupPanel != null && timeoutPopupPanel.activeSelf)
+            {
+                OnClick_CloseTimeoutPopup();
+                return;
+            }
+            else if (disconnectPopupPanel != null && disconnectPopupPanel.activeSelf)
+            {
+                OnClick_CloseDisconnectPopup();
+                return;
+            }
+            else if (errorPopupPanel != null && errorPopupPanel.activeSelf)
+            {
+                OnClick_CloseErrorPopup();
+                return;
+            }
+        }
+
         // ESC 입력 처리 (열려 있는 패널 계층에 따라 역순으로 닫기)
         if (escPressed)
         {
@@ -907,11 +927,11 @@ public class ClientLobbyManager : MonoBehaviour
         RestoreInputScopeAfterPopup();
     }
 
-    private void ShowTimeoutPopup(string msg)
+    // 타임아웃 패널은 에디터에 세팅된 텍스트를 그대로 사용하도록 변경함
+    private void ShowTimeoutPopup()
     {
         if (timeoutPopupPanel != null)
         {
-            if (timeoutMessageText != null) timeoutMessageText.text = msg;
             timeoutPopupPanel.SetActive(true);
 
             if (EventSystem.current != null)
@@ -927,10 +947,6 @@ public class ClientLobbyManager : MonoBehaviour
                 }
             }
         }
-        else
-        {
-            ShowError(msg); // 타임아웃 패널 미할당 시 일반 에러 팝업 사용
-        }
     }
 
     public void OnClick_CloseTimeoutPopup()
@@ -939,11 +955,11 @@ public class ClientLobbyManager : MonoBehaviour
         RestoreInputScopeAfterPopup();
     }
 
-    private void ShowDisconnectPopup(string msg)
+    // 디스커넥트 패널은 에디터에 세팅된 텍스트를 그대로 사용하도록 변경함
+    private void ShowDisconnectPopup()
     {
         if (disconnectPopupPanel != null)
         {
-            if (disconnectMessageText != null) disconnectMessageText.text = msg;
             disconnectPopupPanel.SetActive(true);
 
             if (EventSystem.current != null)
@@ -958,10 +974,6 @@ public class ClientLobbyManager : MonoBehaviour
                     EventSystem.current.SetSelectedGameObject(disconnectPopupPanel);
                 }
             }
-        }
-        else
-        {
-            ShowError(msg); // 디스커넥트 패널 미할당 시 일반 에러 팝업 사용
         }
     }
 
@@ -1088,8 +1100,8 @@ public class ClientLobbyManager : MonoBehaviour
 
         SetInteractableAll(true);
 
-        // 타임아웃 전용 패널 호출
-        ShowTimeoutPopup("호스트와의 연결에 시간 초과되었습니다.\n네트워크 상태가 불안정합니다.");
+        // 타임아웃 전용 패널 호출 (기본 TMP 텍스트 사용)
+        ShowTimeoutPopup();
     }
 
     private void HandleHostDisconnected()
@@ -1118,7 +1130,7 @@ public class ClientLobbyManager : MonoBehaviour
 
         SetInteractableAll(true);
 
-        // 디스커넥트 전용 패널 호출
-        ShowDisconnectPopup("호스트가 방을 폭파하였거나 연결이 끊어졌습니다.");
+        // 디스커넥트 전용 패널 호출 (기본 TMP 텍스트 사용)
+        ShowDisconnectPopup();
     }
 }
