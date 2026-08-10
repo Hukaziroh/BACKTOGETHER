@@ -398,7 +398,7 @@ namespace PlayerControls
                 {
                     ""name"": """",
                     ""id"": ""60acf384-3793-4cd8-8dd7-c5d282910a5b"",
-                    ""path"": ""<Keyboard>/q"",
+                    ""path"": ""<Keyboard>/tab"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -409,7 +409,7 @@ namespace PlayerControls
                 {
                     ""name"": """",
                     ""id"": ""1ff0cd9e-6e79-44fd-b9f3-1f67ccdd7036"",
-                    ""path"": ""<Keyboard>/tab"",
+                    ""path"": ""<Keyboard>/q"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
