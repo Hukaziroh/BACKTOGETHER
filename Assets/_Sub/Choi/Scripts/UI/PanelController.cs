@@ -61,18 +61,29 @@ public class PanelController : MonoBehaviour
     private void Update()
     {
         if (isTransitioning) return;
-        if (Keyboard.current == null) return;
 
-        // ESC 키 처리
-        if (useEscapeKey && Keyboard.current.escapeKey.wasPressedThisFrame && escapeTargetPanel != null)
+        // 1. ESC 키 / 게임패드 B(O) 버튼 처리
+        bool escapePressed = false;
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) escapePressed = true;
+        if (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame) escapePressed = true;
+
+        if (useEscapeKey && escapePressed && escapeTargetPanel != null)
         {
             TransitionToEscapePanel();
             return;
         }
 
-        bool rightPressed = Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame;
-        bool leftPressed = Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame;
+        // 2. 우측 넘기기 (키보드: 방향키/D키 | 패드: 십자키 우측/RB/왼쪽 스틱 우측)
+        bool rightPressed = false;
+        if (Keyboard.current != null && (Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame)) rightPressed = true;
+        if (Gamepad.current != null && (Gamepad.current.dpad.right.wasPressedThisFrame || Gamepad.current.rightShoulder.wasPressedThisFrame || Gamepad.current.leftStick.right.wasPressedThisFrame)) rightPressed = true;
 
+        // 3. 좌측 넘기기 (키보드: 방향키/A키 | 패드: 십자키 좌측/LB/왼쪽 스틱 좌측)
+        bool leftPressed = false;
+        if (Keyboard.current != null && (Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame)) leftPressed = true;
+        if (Gamepad.current != null && (Gamepad.current.dpad.left.wasPressedThisFrame || Gamepad.current.leftShoulder.wasPressedThisFrame || Gamepad.current.leftStick.left.wasPressedThisFrame)) leftPressed = true;
+
+        // 패널 전환 실행
         if (useRightKey && rightPressed && nextPanel != null)
         {
             TransitionToPanel(nextPanel, -slideOffset, fromRight: true);
