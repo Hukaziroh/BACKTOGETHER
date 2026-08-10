@@ -191,8 +191,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4287353952
-  m_fontColor: {r: 0.37647063, g: 0.8313726, b: 0.54509807, a: 1}
+    rgba: 4294826124
+  m_fontColor: {r: 0.54901963, g: 0.8470589, b: 0.9921569, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -269,8 +269,13 @@ MonoBehaviour:
   koreanText: "\uCC55\uD130"
   englishText: Chapter
   japaneseText: "\u30C1\u30E3\u30D7\u30BF\u30FC"
-  chineseText: "\u7AE0"
+  chineseText: "\u7AE0\u8282"
   russianText: "\u0413\u043B\u0430\u0432\u0430"
+  italianText: Capitolo
+  frenchText: Chapitre
+  germanText: Kapitel
+  spanishText: "Cap\xEDtulo"
+  portugueseText: "Cap\xEDtulo"
   englishDilate: 1
   englishOutlineThickness: 1
   defaultDilate: 1

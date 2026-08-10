@@ -996,6 +996,30 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1105064972013253110, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: frenchText
+      value: Quitter
+      objectReference: {fileID: 0}
+    - target: {fileID: 1105064972013253110, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: germanText
+      value: Beenden
+      objectReference: {fileID: 0}
+    - target: {fileID: 1105064972013253110, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: englishText
+      value: Quit
+      objectReference: {fileID: 0}
+    - target: {fileID: 1105064972013253110, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: italianText
+      value: Esci
+      objectReference: {fileID: 0}
+    - target: {fileID: 1105064972013253110, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: spanishText
+      value: Salir
+      objectReference: {fileID: 0}
+    - target: {fileID: 1105064972013253110, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: portugueseText
+      value: Sair
+      objectReference: {fileID: 0}
     - target: {fileID: 1202294655921371746, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -1012,14 +1036,90 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1356603832823894558, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: frenchText
+      value: Rechercher
+      objectReference: {fileID: 0}
+    - target: {fileID: 1356603832823894558, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: germanText
+      value: Suchen
+      objectReference: {fileID: 0}
+    - target: {fileID: 1356603832823894558, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: italianText
+      value: Cerca
+      objectReference: {fileID: 0}
+    - target: {fileID: 1356603832823894558, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: spanishText
+      value: Buscar
+      objectReference: {fileID: 0}
+    - target: {fileID: 1356603832823894558, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: japaneseText
+      value: "\u30B1\u30F3\u30B5\u30AF"
+      objectReference: {fileID: 0}
+    - target: {fileID: 1356603832823894558, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: portugueseText
+      value: Buscar
+      objectReference: {fileID: 0}
     - target: {fileID: 1534328030227627925, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_SizeDelta.x
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1722172653270064578, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: frenchText
+      value: Retour
+      objectReference: {fileID: 0}
+    - target: {fileID: 1722172653270064578, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: germanText
+      value: "Zur\xFCck"
+      objectReference: {fileID: 0}
+    - target: {fileID: 1722172653270064578, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: koreanText
+      value: "\uB4A4\uB85C \uAC00\uAE30"
+      objectReference: {fileID: 0}
+    - target: {fileID: 1722172653270064578, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: italianText
+      value: Indietro
+      objectReference: {fileID: 0}
+    - target: {fileID: 1722172653270064578, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: spanishText
+      value: "Atr\xE1s"
+      objectReference: {fileID: 0}
+    - target: {fileID: 1722172653270064578, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: portugueseText
+      value: Voltar
       objectReference: {fileID: 0}
     - target: {fileID: 1743534497136205326, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1506203215}
+    - target: {fileID: 2163682357884459728, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: frenchText
+      value: Salle publique
+      objectReference: {fileID: 0}
+    - target: {fileID: 2163682357884459728, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: germanText
+      value: "\xD6ffentlicher Raum"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2163682357884459728, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: italianText
+      value: Stanza pubblica
+      objectReference: {fileID: 0}
+    - target: {fileID: 2163682357884459728, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: russianText
+      value: "\u041F\u0443\u0431\u043B\u0438\u0447\u043D\u0430\u044F \u043A\u043E\u043C\u043D\u0430\u0442\u0430"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2163682357884459728, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: spanishText
+      value: "Sala p\xFAblica"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2163682357884459728, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: japaneseText
+      value: "\u30D1\u30D6\u30EA\u30C3\u30AF\u30EB\u30FC\u30E0"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2163682357884459728, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: portugueseText
+      value: "Sala p\xFAblica"
+      objectReference: {fileID: 0}
     - target: {fileID: 2216780621038249876, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -1160,6 +1260,30 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1506203215}
+    - target: {fileID: 4001127968393414837, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: frenchText
+      value: Retour
+      objectReference: {fileID: 0}
+    - target: {fileID: 4001127968393414837, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: germanText
+      value: "Zur\xFCck"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4001127968393414837, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: koreanText
+      value: "\uB4A4\uB85C \uAC00\uAE30"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4001127968393414837, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: italianText
+      value: Indietro
+      objectReference: {fileID: 0}
+    - target: {fileID: 4001127968393414837, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: spanishText
+      value: "Atr\xE1s"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4001127968393414837, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: portugueseText
+      value: Voltar
+      objectReference: {fileID: 0}
     - target: {fileID: 4319463510022454231, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -1188,10 +1312,98 @@ PrefabInstance:
       propertyPath: m_hasFontAssetChanged
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4420117596893881403, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: frenchText
+      value: "H\xF4te"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4420117596893881403, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: germanText
+      value: Host
+      objectReference: {fileID: 0}
+    - target: {fileID: 4420117596893881403, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: italianText
+      value: Host
+      objectReference: {fileID: 0}
+    - target: {fileID: 4420117596893881403, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: spanishText
+      value: "Anfitri\xF3n"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4420117596893881403, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: portugueseText
+      value: Host
+      objectReference: {fileID: 0}
     - target: {fileID: 4665141533479455424, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 700180063}
+    - target: {fileID: 4739856397021009612, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: frenchText
+      value: "Un instant, s'il vous pla\xEEt."
+      objectReference: {fileID: 0}
+    - target: {fileID: 4739856397021009612, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: germanText
+      value: Bitte warten Sie einen Augenblick.
+      objectReference: {fileID: 0}
+    - target: {fileID: 4739856397021009612, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: englishText
+      value: Please wait a moment.
+      objectReference: {fileID: 0}
+    - target: {fileID: 4739856397021009612, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: italianText
+      value: Un momento, per favore.
+      objectReference: {fileID: 0}
+    - target: {fileID: 4739856397021009612, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: russianText
+      value: "\u041F\u043E\u0434\u043E\u0436\u0434\u0438\u0442\u0435."
+      objectReference: {fileID: 0}
+    - target: {fileID: 4739856397021009612, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: spanishText
+      value: Un momento, por favor.
+      objectReference: {fileID: 0}
+    - target: {fileID: 4739856397021009612, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: japaneseText
+      value: "\u5C11\u3005\u304A\u5F85\u3061\u304F\u3060\u3055\u3044."
+      objectReference: {fileID: 0}
+    - target: {fileID: 4739856397021009612, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: portugueseText
+      value: Um momento, por favor.
+      objectReference: {fileID: 0}
+    - target: {fileID: 4747091145766504046, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: frenchText
+      value: Jouer
+      objectReference: {fileID: 0}
+    - target: {fileID: 4747091145766504046, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: germanText
+      value: Spielen
+      objectReference: {fileID: 0}
+    - target: {fileID: 4747091145766504046, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: koreanText
+      value: "\uAC8C\uC784 \uC2DC\uC791"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4747091145766504046, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: chineseText
+      value: "\u5F00\u59CB\u6E38\u620F"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4747091145766504046, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: italianText
+      value: Gioca
+      objectReference: {fileID: 0}
+    - target: {fileID: 4747091145766504046, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: russianText
+      value: "\u0418\u0433\u0440\u0430\u0442\u044C"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4747091145766504046, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: spanishText
+      value: Jugar
+      objectReference: {fileID: 0}
+    - target: {fileID: 4747091145766504046, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: japaneseText
+      value: "\u306F\u3058\u3081\u308B"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4747091145766504046, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: portugueseText
+      value: Jogar
+      objectReference: {fileID: 0}
     - target: {fileID: 4989947922575210513, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_SizeDelta.x
       value: -101.22
@@ -1208,6 +1420,34 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5735380472763469297, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: frenchText
+      value: Connexion rapide
+      objectReference: {fileID: 0}
+    - target: {fileID: 5735380472763469297, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: germanText
+      value: Schneller Beitritt
+      objectReference: {fileID: 0}
+    - target: {fileID: 5735380472763469297, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: italianText
+      value: Accesso rapido
+      objectReference: {fileID: 0}
+    - target: {fileID: 5735380472763469297, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: russianText
+      value: "\u0411\u044B\u0441\u0442\u0440\u044B\u0439 \u043F\u043E\u0438\u0441\u043A"
+      objectReference: {fileID: 0}
+    - target: {fileID: 5735380472763469297, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: spanishText
+      value: "Unirse r\xE1pido"
+      objectReference: {fileID: 0}
+    - target: {fileID: 5735380472763469297, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: japaneseText
+      value: "\u30AF\u30A4\u30C3\u30AF\u53C2\u52A0"
+      objectReference: {fileID: 0}
+    - target: {fileID: 5735380472763469297, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: portugueseText
+      value: "Entrar r\xE1pido"
+      objectReference: {fileID: 0}
     - target: {fileID: 5802297257029448514, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -1216,6 +1456,62 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1506203215}
+    - target: {fileID: 6145076227594068902, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: frenchText
+      value: Actualiser
+      objectReference: {fileID: 0}
+    - target: {fileID: 6145076227594068902, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: germanText
+      value: Aktualisieren
+      objectReference: {fileID: 0}
+    - target: {fileID: 6145076227594068902, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: chineseText
+      value: "\u5237\u65B0"
+      objectReference: {fileID: 0}
+    - target: {fileID: 6145076227594068902, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: englishText
+      value: Refresh
+      objectReference: {fileID: 0}
+    - target: {fileID: 6145076227594068902, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: italianText
+      value: Aggiorna
+      objectReference: {fileID: 0}
+    - target: {fileID: 6145076227594068902, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: russianText
+      value: "\u041E\u0431\u043D\u043E\u0432\u0438\u0442\u044C"
+      objectReference: {fileID: 0}
+    - target: {fileID: 6145076227594068902, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: spanishText
+      value: Actualizar
+      objectReference: {fileID: 0}
+    - target: {fileID: 6145076227594068902, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: portugueseText
+      value: Atualizar
+      objectReference: {fileID: 0}
+    - target: {fileID: 6217797590026189323, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: frenchText
+      value: "Cr\xE9er une salle"
+      objectReference: {fileID: 0}
+    - target: {fileID: 6217797590026189323, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: germanText
+      value: Raum erstellen
+      objectReference: {fileID: 0}
+    - target: {fileID: 6217797590026189323, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: italianText
+      value: Crea stanza
+      objectReference: {fileID: 0}
+    - target: {fileID: 6217797590026189323, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: spanishText
+      value: Crear sala
+      objectReference: {fileID: 0}
+    - target: {fileID: 6217797590026189323, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: japaneseText
+      value: "\u30EB\u30FC\u30E0\u4F5C\u6210"
+      objectReference: {fileID: 0}
+    - target: {fileID: 6217797590026189323, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: portugueseText
+      value: Criar sala
+      objectReference: {fileID: 0}
     - target: {fileID: 6219869731707407354, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_text
       value: Create Room
@@ -1244,6 +1540,30 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: -51.270004
       objectReference: {fileID: 0}
+    - target: {fileID: 6530164962664049459, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: frenchText
+      value: Retour
+      objectReference: {fileID: 0}
+    - target: {fileID: 6530164962664049459, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: germanText
+      value: "Zur\xFCck"
+      objectReference: {fileID: 0}
+    - target: {fileID: 6530164962664049459, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: koreanText
+      value: "\uB4A4\uB85C \uAC00\uAE30"
+      objectReference: {fileID: 0}
+    - target: {fileID: 6530164962664049459, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: italianText
+      value: Indietro
+      objectReference: {fileID: 0}
+    - target: {fileID: 6530164962664049459, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: spanishText
+      value: "Atr\xE1s"
+      objectReference: {fileID: 0}
+    - target: {fileID: 6530164962664049459, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: portugueseText
+      value: Voltar
+      objectReference: {fileID: 0}
     - target: {fileID: 6740626679877802572, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_Navigation.m_Mode
       value: -1
@@ -1255,6 +1575,58 @@ PrefabInstance:
     - target: {fileID: 6896527515817957642, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_SizeDelta.x
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6938943899118361060, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: frenchText
+      value: Options
+      objectReference: {fileID: 0}
+    - target: {fileID: 6938943899118361060, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: germanText
+      value: Optionen
+      objectReference: {fileID: 0}
+    - target: {fileID: 6938943899118361060, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: englishText
+      value: Options
+      objectReference: {fileID: 0}
+    - target: {fileID: 6938943899118361060, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: italianText
+      value: Opzioni
+      objectReference: {fileID: 0}
+    - target: {fileID: 6938943899118361060, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: russianText
+      value: "\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438"
+      objectReference: {fileID: 0}
+    - target: {fileID: 6938943899118361060, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: spanishText
+      value: Opciones
+      objectReference: {fileID: 0}
+    - target: {fileID: 6938943899118361060, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: portugueseText
+      value: "Op\xE7\xF5es"
+      objectReference: {fileID: 0}
+    - target: {fileID: 6975707008909262011, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: frenchText
+      value: Retour
+      objectReference: {fileID: 0}
+    - target: {fileID: 6975707008909262011, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: germanText
+      value: "Zur\xFCck"
+      objectReference: {fileID: 0}
+    - target: {fileID: 6975707008909262011, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: koreanText
+      value: "\uB4A4\uB85C \uAC00\uAE30"
+      objectReference: {fileID: 0}
+    - target: {fileID: 6975707008909262011, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: italianText
+      value: Indietro
+      objectReference: {fileID: 0}
+    - target: {fileID: 6975707008909262011, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: spanishText
+      value: "Atr\xE1s"
+      objectReference: {fileID: 0}
+    - target: {fileID: 6975707008909262011, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: portugueseText
+      value: Voltar
       objectReference: {fileID: 0}
     - target: {fileID: 7314695214892358760, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_Navigation.m_SelectOnUp
@@ -1400,6 +1772,58 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1506203215}
+    - target: {fileID: 8405449212067723817, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: frenchText
+      value: Client
+      objectReference: {fileID: 0}
+    - target: {fileID: 8405449212067723817, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: germanText
+      value: Client
+      objectReference: {fileID: 0}
+    - target: {fileID: 8405449212067723817, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: italianText
+      value: Client
+      objectReference: {fileID: 0}
+    - target: {fileID: 8405449212067723817, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: spanishText
+      value: Cliente
+      objectReference: {fileID: 0}
+    - target: {fileID: 8405449212067723817, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: portugueseText
+      value: Cliente
+      objectReference: {fileID: 0}
+    - target: {fileID: 8452265070935597857, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: frenchText
+      value: "Salle priv\xE9e"
+      objectReference: {fileID: 0}
+    - target: {fileID: 8452265070935597857, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: germanText
+      value: Privater Raum
+      objectReference: {fileID: 0}
+    - target: {fileID: 8452265070935597857, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: chineseText
+      value: "\u975E\u516C\u5F00\u623F\u95F4"
+      objectReference: {fileID: 0}
+    - target: {fileID: 8452265070935597857, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: italianText
+      value: Stanza privata
+      objectReference: {fileID: 0}
+    - target: {fileID: 8452265070935597857, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: russianText
+      value: "\u0427\u0430\u0441\u0442\u043D\u0430\u044F \u043A\u043E\u043C\u043D\u0430\u0442\u0430"
+      objectReference: {fileID: 0}
+    - target: {fileID: 8452265070935597857, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: spanishText
+      value: Sala privada
+      objectReference: {fileID: 0}
+    - target: {fileID: 8452265070935597857, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: japaneseText
+      value: "\u30D7\u30E9\u30A4\u30D9\u30FC\u30C8\u30FB\u30EB\u30FC\u30E0"
+      objectReference: {fileID: 0}
+    - target: {fileID: 8452265070935597857, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
+      propertyPath: portugueseText
+      value: Sala privada
+      objectReference: {fileID: 0}
     - target: {fileID: 8678875173648882961, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
       propertyPath: m_SizeDelta.x
       value: 0
@@ -1556,17 +1980,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b54e22d057a07ac4e9ff14b6cee8252d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
-  koreanText: "\uBC29\uC774 \uC5C6\uC2B5\uB2C8\uB2E4."
+  koreanText: "\uC774\uC6A9 \uAC00\uB2A5\uD55C \uBC29\uC774 \uC5C6\uC2B5\uB2C8\uB2E4."
   englishText: No rooms available.
-  japaneseText: "\u3078\u3084\u304C\u3042\u308A\u307E\u305B\u3093."
-  chineseText: "\u6CA1\u6709\u623F\u95F4."
+  japaneseText: "\u53C2\u52A0\u53EF\u80FD\u306A\u90E8\u5C4B\u306F\u3042\u308A\u307E\u305B\u3093."
+  chineseText: "\u6CA1\u6709\u53EF\u7528\u623F\u95F4."
   russianText: "\u041D\u0435\u0442 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B\u0445
     \u043A\u043E\u043C\u043D\u0430\u0442."
-  italianText: 
-  frenchText: 
-  germanText: 
-  spanishText: 
-  portugueseText: 
+  italianText: Nessuna stanza disponibile.
+  frenchText: Aucune salle disponible.
+  germanText: "Keine R\xE4ume verf\xFCgbar."
+  spanishText: No hay salas disponibles.
+  portugueseText: "Nenhuma sala dispon\xEDvel."
   englishDilate: 1
   englishOutlineThickness: 1
   defaultDilate: 1
@@ -3165,14 +3589,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
   koreanText: "\uBC29 \uC774\uB984"
   englishText: Room Name
-  japaneseText: "\u3078\u3084\u3081\u3044"
-  chineseText: "\u623F\u95F4\u540D"
+  japaneseText: "\u90E8\u5C4B\u540D"
+  chineseText: "\u623F\u95F4\u540D\u79F0"
   russianText: "\u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u043A\u043E\u043C\u043D\u0430\u0442\u044B"
-  italianText: 
-  frenchText: 
-  germanText: 
-  spanishText: 
-  portugueseText: 
+  italianText: Nome della stanza
+  frenchText: Nom de la salle
+  germanText: Raumname
+  spanishText: Nombre de la sala
+  portugueseText: Nome da sala
   englishDilate: 1
   englishOutlineThickness: 1
   defaultDilate: 1
@@ -3411,14 +3835,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
   koreanText: "\uBC29\uC774 \uAF49 \uCC3C\uC2B5\uB2C8\uB2E4."
   englishText: Room is full.
-  japaneseText: "\u3078\u3084\u304C\u307E\u3093\u3044\u3093\u3067\u3059."
-  chineseText: "\u623F\u95F4\u5DF2\u6EE1."
+  japaneseText: "\u30EB\u30FC\u30E0\u304C\u4E00\u676F\u3067\u3059"
+  chineseText: "\u623F\u95F4\u5DF2\u6EE1"
   russianText: "\u041A\u043E\u043C\u043D\u0430\u0442\u0430 \u0437\u0430\u043F\u043E\u043B\u043D\u0435\u043D\u0430."
-  italianText: 
-  frenchText: 
-  germanText: 
-  spanishText: 
-  portugueseText: 
+  italianText: Stanza piena
+  frenchText: Salle pleine
+  germanText: Raum voll
+  spanishText: Sala llena
+  portugueseText: Sala cheia
   englishDilate: 1
   englishOutlineThickness: 1
   defaultDilate: 1
@@ -3563,15 +3987,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
   koreanText: "\uC5F0\uACB0 \uB04A\uAE40."
-  englishText: Disconnect.
-  japaneseText: "\u305B\u3064\u3060\u3093."
-  chineseText: "\u65AD\u5F00\u8FDE\u63A5."
-  russianText: "\u041E\u0442\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F."
-  italianText: 
-  frenchText: 
-  germanText: 
-  spanishText: 
-  portugueseText: 
+  englishText: Disconnected.
+  japaneseText: "\u30AB\u30A4\u30BB\u30F3\u30BB\u30C4\u30C0\u30F3."
+  chineseText: "\u7F51\u7EDC\u65AD\u5F00."
+  russianText: "\u041E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u043E."
+  italianText: Disconnesso.
+  frenchText: "D\xE9connect\xE9."
+  germanText: Getrennt.
+  spanishText: Desconectado.
+  portugueseText: Desconectado.
   englishDilate: 1
   englishOutlineThickness: 1
   defaultDilate: 1
@@ -3622,17 +4046,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b54e22d057a07ac4e9ff14b6cee8252d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
-  koreanText: "\uBC29\uC774 \uC5C6\uC2B5\uB2C8\uB2E4."
+  koreanText: "\uC774\uC6A9 \uAC00\uB2A5\uD55C \uBC29\uC774 \uC5C6\uC2B5\uB2C8\uB2E4."
   englishText: No rooms available.
-  japaneseText: "\u3078\u3084\u304C\u3042\u308A\u307E\u305B\u3093."
-  chineseText: "\u6CA1\u6709\u623F\u95F4."
+  japaneseText: "\u53C2\u52A0\u53EF\u80FD\u306A\u90E8\u5C4B\u306F\u3042\u308A\u307E\u305B\u3093."
+  chineseText: "\u6CA1\u6709\u53EF\u7528\u623F\u95F4."
   russianText: "\u041D\u0435\u0442 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B\u0445
     \u043A\u043E\u043C\u043D\u0430\u0442."
-  italianText: 
-  frenchText: 
-  germanText: 
-  spanishText: 
-  portugueseText: 
+  italianText: Nessuna stanza disponibile.
+  frenchText: Aucune salle disponible.
+  germanText: "Keine R\xE4ume verf\xFCgbar."
+  spanishText: No hay salas disponibles.
+  portugueseText: "Nenhuma sala dispon\xEDvel."
   englishDilate: 1
   englishOutlineThickness: 1
   defaultDilate: 1
@@ -3852,6 +4276,62 @@ PrefabInstance:
     - target: {fileID: 2326962195123260776, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
       propertyPath: m_SizeDelta.x
       value: 76.609985
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633421040888034740, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+      propertyPath: frenchText
+      value: "H\xF4te d\xE9connect\xE9."
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633421040888034740, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+      propertyPath: germanText
+      value: Host getrennt.
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633421040888034740, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+      propertyPath: koreanText
+      value: "\uD638\uC2A4\uD2B8 \uC5F0\uACB0 \uB04A\uAE40."
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633421040888034740, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+      propertyPath: chineseText
+      value: "\u623F\u4E3B\u65AD\u5F00\u8FDE\u63A5."
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633421040888034740, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+      propertyPath: englishText
+      value: Host Disconnect.
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633421040888034740, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+      propertyPath: italianText
+      value: Host disconnesso.
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633421040888034740, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+      propertyPath: russianText
+      value: "\u0425\u043E\u0441\u0442 \u043E\u0442\u043A\u043B\u044E\u0447\u0438\u043B\u0441\u044F."
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633421040888034740, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+      propertyPath: spanishText
+      value: "Anfitri\xF3n desconectado."
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633421040888034740, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+      propertyPath: japaneseText
+      value: "\u30DB\u30B9\u30C8\u30BB\u30C4\u30C0\u30F3."
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633421040888034740, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+      propertyPath: defaultDilate
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633421040888034740, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+      propertyPath: englishDilate
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633421040888034740, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+      propertyPath: portugueseText
+      value: "Anfitri\xE3o desconectado"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633421040888034740, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+      propertyPath: defaultOutlineThickness
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633421040888034740, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+      propertyPath: englishOutlineThickness
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8279698965767927787, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
       propertyPath: m_Name
@@ -5319,6 +5799,290 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 122796181631600404, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: "= Touche sp\xE9ciale"
+      objectReference: {fileID: 0}
+    - target: {fileID: 122796181631600404, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Sondertaste
+      objectReference: {fileID: 0}
+    - target: {fileID: 122796181631600404, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: chineseText
+      value: "= \u7279\u6B8A\u6309\u952E "
+      objectReference: {fileID: 0}
+    - target: {fileID: 122796181631600404, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Tasto speciale
+      objectReference: {fileID: 0}
+    - target: {fileID: 122796181631600404, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Tecla especial
+      objectReference: {fileID: 0}
+    - target: {fileID: 122796181631600404, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u7279\u6B8A\u30AD\u30FC "
+      objectReference: {fileID: 0}
+    - target: {fileID: 122796181631600404, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: =Tecla especial
+      objectReference: {fileID: 0}
+    - target: {fileID: 181676535504851764, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: Retour
+      objectReference: {fileID: 0}
+    - target: {fileID: 181676535504851764, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: "Zur\xFCck"
+      objectReference: {fileID: 0}
+    - target: {fileID: 181676535504851764, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: koreanText
+      value: "\uB4A4\uB85C \uAC00\uAE30"
+      objectReference: {fileID: 0}
+    - target: {fileID: 181676535504851764, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: Indietro
+      objectReference: {fileID: 0}
+    - target: {fileID: 181676535504851764, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: "Atr\xE1s"
+      objectReference: {fileID: 0}
+    - target: {fileID: 181676535504851764, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: Voltar
+      objectReference: {fileID: 0}
+    - target: {fileID: 476063170539594271, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: "Plein \xE9cran"
+      objectReference: {fileID: 0}
+    - target: {fileID: 476063170539594271, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: Vollbild
+      objectReference: {fileID: 0}
+    - target: {fileID: 476063170539594271, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: Schermo intero
+      objectReference: {fileID: 0}
+    - target: {fileID: 476063170539594271, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: Pantalla completa
+      objectReference: {fileID: 0}
+    - target: {fileID: 476063170539594271, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "\u30D5\u30EB\u30B9\u30AF\u30EA\u30FC\u30F3"
+      objectReference: {fileID: 0}
+    - target: {fileID: 476063170539594271, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: Tela cheia
+      objectReference: {fileID: 0}
+    - target: {fileID: 588048205828144966, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Retour
+      objectReference: {fileID: 0}
+    - target: {fileID: 588048205828144966, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: "= Zur\xFCck"
+      objectReference: {fileID: 0}
+    - target: {fileID: 588048205828144966, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: koreanText
+      value: "= \uC774\uC804\uC73C\uB85C"
+      objectReference: {fileID: 0}
+    - target: {fileID: 588048205828144966, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: chineseText
+      value: "= \u8FD4\u56DE"
+      objectReference: {fileID: 0}
+    - target: {fileID: 588048205828144966, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: englishText
+      value: '= Back '
+      objectReference: {fileID: 0}
+    - target: {fileID: 588048205828144966, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Indietro
+      objectReference: {fileID: 0}
+    - target: {fileID: 588048205828144966, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: russianText
+      value: "= \u041D\u0430\u0437\u0430\u0434 "
+      objectReference: {fileID: 0}
+    - target: {fileID: 588048205828144966, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: "= Atr\xE1s"
+      objectReference: {fileID: 0}
+    - target: {fileID: 588048205828144966, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u3082\u3069\u308B"
+      objectReference: {fileID: 0}
+    - target: {fileID: 588048205828144966, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Voltar
+      objectReference: {fileID: 0}
+    - target: {fileID: 655041966938192492, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Quitter le mode spectateur
+      objectReference: {fileID: 0}
+    - target: {fileID: 655041966938192492, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Zuschauen beenden
+      objectReference: {fileID: 0}
+    - target: {fileID: 655041966938192492, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: "= Esci dalla modalit\xE0 spettatore"
+      objectReference: {fileID: 0}
+    - target: {fileID: 655041966938192492, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Salir del modo espectador
+      objectReference: {fileID: 0}
+    - target: {fileID: 655041966938192492, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u89B3\u6226\u3092\u3084\u3081\u308B "
+      objectReference: {fileID: 0}
+    - target: {fileID: 655041966938192492, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Sair do modo espectador
+      objectReference: {fileID: 0}
+    - target: {fileID: 661280699611251194, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Saut
+      objectReference: {fileID: 0}
+    - target: {fileID: 661280699611251194, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Springen
+      objectReference: {fileID: 0}
+    - target: {fileID: 661280699611251194, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Salto
+      objectReference: {fileID: 0}
+    - target: {fileID: 661280699611251194, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Saltar
+      objectReference: {fileID: 0}
+    - target: {fileID: 661280699611251194, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Pular
+      objectReference: {fileID: 0}
+    - target: {fileID: 786626692142912500, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: Volume
+      objectReference: {fileID: 0}
+    - target: {fileID: 786626692142912500, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: "Lautst\xE4rke"
+      objectReference: {fileID: 0}
+    - target: {fileID: 786626692142912500, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: Volume
+      objectReference: {fileID: 0}
+    - target: {fileID: 786626692142912500, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: Volumen
+      objectReference: {fileID: 0}
+    - target: {fileID: 786626692142912500, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "\u30DC\u30EA\u30E5\u30FC\u30E0"
+      objectReference: {fileID: 0}
+    - target: {fileID: 786626692142912500, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: Volume
+      objectReference: {fileID: 0}
+    - target: {fileID: 1477166410709400835, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Bouger
+      objectReference: {fileID: 0}
+    - target: {fileID: 1477166410709400835, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Bewegen
+      objectReference: {fileID: 0}
+    - target: {fileID: 1477166410709400835, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Muovi
+      objectReference: {fileID: 0}
+    - target: {fileID: 1477166410709400835, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: russianText
+      value: "= \u0414\u0432\u0438\u0433\u0430\u0442\u044C "
+      objectReference: {fileID: 0}
+    - target: {fileID: 1477166410709400835, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Mover
+      objectReference: {fileID: 0}
+    - target: {fileID: 1477166410709400835, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u79FB\u52D5 "
+      objectReference: {fileID: 0}
+    - target: {fileID: 1477166410709400835, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Mover
+      objectReference: {fileID: 0}
+    - target: {fileID: 1551728385276887551, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: Guide des touches
+      objectReference: {fileID: 0}
+    - target: {fileID: 1551728385276887551, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: Tastenbelegung
+      objectReference: {fileID: 0}
+    - target: {fileID: 1551728385276887551, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: Guida ai tasti
+      objectReference: {fileID: 0}
+    - target: {fileID: 1551728385276887551, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: "Gu\xEDa de teclas"
+      objectReference: {fileID: 0}
+    - target: {fileID: 1551728385276887551, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "\u30AD\u30FC\u30AC\u30A4\u30C9"
+      objectReference: {fileID: 0}
+    - target: {fileID: 1551728385276887551, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: Guia de teclas
+      objectReference: {fileID: 0}
+    - target: {fileID: 1728708453843716015, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Pause
+      objectReference: {fileID: 0}
+    - target: {fileID: 1728708453843716015, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Pause
+      objectReference: {fileID: 0}
+    - target: {fileID: 1728708453843716015, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Pausa
+      objectReference: {fileID: 0}
+    - target: {fileID: 1728708453843716015, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Pausa
+      objectReference: {fileID: 0}
+    - target: {fileID: 1728708453843716015, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Pausa
+      objectReference: {fileID: 0}
+    - target: {fileID: 1937462663390575868, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: Continuer
+      objectReference: {fileID: 0}
+    - target: {fileID: 1937462663390575868, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: Fortsetzen
+      objectReference: {fileID: 0}
+    - target: {fileID: 1937462663390575868, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: Continua
+      objectReference: {fileID: 0}
+    - target: {fileID: 1937462663390575868, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: russianText
+      value: "\u041F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u0442\u044C"
+      objectReference: {fileID: 0}
+    - target: {fileID: 1937462663390575868, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: Continuar
+      objectReference: {fileID: 0}
+    - target: {fileID: 1937462663390575868, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "\u3064\u3065\u3051\u308B"
+      objectReference: {fileID: 0}
+    - target: {fileID: 1937462663390575868, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: Continuar
+      objectReference: {fileID: 0}
     - target: {fileID: 2062628588668692640, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1241.181
@@ -5363,9 +6127,821 @@ PrefabInstance:
       propertyPath: disconnectPanel
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 2695612376570258246, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Observer
+      objectReference: {fileID: 0}
+    - target: {fileID: 2695612376570258246, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Zuschauen
+      objectReference: {fileID: 0}
+    - target: {fileID: 2695612376570258246, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Osserva
+      objectReference: {fileID: 0}
+    - target: {fileID: 2695612376570258246, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Observar
+      objectReference: {fileID: 0}
+    - target: {fileID: 2695612376570258246, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u89B3\u6226\u3059\u308B "
+      objectReference: {fileID: 0}
+    - target: {fileID: 2695612376570258246, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Assistir
+      objectReference: {fileID: 0}
+    - target: {fileID: 2898317897074082824, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: 'Code:'
+      objectReference: {fileID: 0}
+    - target: {fileID: 2898317897074082824, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: 'Code:'
+      objectReference: {fileID: 0}
+    - target: {fileID: 2898317897074082824, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: 'Codice:'
+      objectReference: {fileID: 0}
+    - target: {fileID: 2898317897074082824, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: "C\xF3digo:"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2898317897074082824, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: "C\xF3digo:"
+      objectReference: {fileID: 0}
+    - target: {fileID: 3289161427317157095, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Saut
+      objectReference: {fileID: 0}
+    - target: {fileID: 3289161427317157095, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Springen
+      objectReference: {fileID: 0}
+    - target: {fileID: 3289161427317157095, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Salto
+      objectReference: {fileID: 0}
+    - target: {fileID: 3289161427317157095, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Saltar
+      objectReference: {fileID: 0}
+    - target: {fileID: 3289161427317157095, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Pular
+      objectReference: {fileID: 0}
+    - target: {fileID: 3569414800034377380, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Quitter le mode spectateur
+      objectReference: {fileID: 0}
+    - target: {fileID: 3569414800034377380, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Zuschauen beenden
+      objectReference: {fileID: 0}
+    - target: {fileID: 3569414800034377380, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: "= Esci dalla modalit\xE0 spettatore"
+      objectReference: {fileID: 0}
+    - target: {fileID: 3569414800034377380, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Salir del modo espectador
+      objectReference: {fileID: 0}
+    - target: {fileID: 3569414800034377380, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u89B3\u6226\u3092\u3084\u3081\u308B "
+      objectReference: {fileID: 0}
+    - target: {fileID: 3569414800034377380, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Sair do modo espectador
+      objectReference: {fileID: 0}
+    - target: {fileID: 3689309351312956875, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: "= Touche sp\xE9ciale"
+      objectReference: {fileID: 0}
+    - target: {fileID: 3689309351312956875, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Sondertaste
+      objectReference: {fileID: 0}
+    - target: {fileID: 3689309351312956875, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: chineseText
+      value: "= \u7279\u6B8A\u6309\u952E "
+      objectReference: {fileID: 0}
+    - target: {fileID: 3689309351312956875, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Tasto speciale
+      objectReference: {fileID: 0}
+    - target: {fileID: 3689309351312956875, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Tecla especial
+      objectReference: {fileID: 0}
+    - target: {fileID: 3689309351312956875, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u7279\u6B8A\u30AD\u30FC "
+      objectReference: {fileID: 0}
+    - target: {fileID: 3689309351312956875, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: =Tecla especial
+      objectReference: {fileID: 0}
+    - target: {fileID: 3828921242516183984, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Retour
+      objectReference: {fileID: 0}
+    - target: {fileID: 3828921242516183984, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: "= Zur\xFCck"
+      objectReference: {fileID: 0}
+    - target: {fileID: 3828921242516183984, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Indietro
+      objectReference: {fileID: 0}
+    - target: {fileID: 3828921242516183984, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: "= Atr\xE1s"
+      objectReference: {fileID: 0}
+    - target: {fileID: 3828921242516183984, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Voltar
+      objectReference: {fileID: 0}
+    - target: {fileID: 3841896672520035618, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: "= \xC9moji"
+      objectReference: {fileID: 0}
+    - target: {fileID: 3841896672520035618, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Emoji
+      objectReference: {fileID: 0}
+    - target: {fileID: 3841896672520035618, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: chineseText
+      value: "= \u8868\u60C5\u7B26\u53F7 "
+      objectReference: {fileID: 0}
+    - target: {fileID: 3841896672520035618, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Emoji
+      objectReference: {fileID: 0}
+    - target: {fileID: 3841896672520035618, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Emoji
+      objectReference: {fileID: 0}
+    - target: {fileID: 3841896672520035618, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Emoji
+      objectReference: {fileID: 0}
+    - target: {fileID: 4022115528918442250, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Quitter le mode spectateur
+      objectReference: {fileID: 0}
+    - target: {fileID: 4022115528918442250, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Zuschauen beenden
+      objectReference: {fileID: 0}
+    - target: {fileID: 4022115528918442250, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: "= Esci dalla modalit\xE0 spettatore"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4022115528918442250, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Salir del modo espectador
+      objectReference: {fileID: 0}
+    - target: {fileID: 4022115528918442250, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u89B3\u6226\u3092\u3084\u3081\u308B "
+      objectReference: {fileID: 0}
+    - target: {fileID: 4022115528918442250, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Sair do modo espectador
+      objectReference: {fileID: 0}
+    - target: {fileID: 4053148365814393529, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: "= R\xE9apparition"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4053148365814393529, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Respawn
+      objectReference: {fileID: 0}
+    - target: {fileID: 4053148365814393529, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Respawn
+      objectReference: {fileID: 0}
+    - target: {fileID: 4053148365814393529, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Reaparecer
+      objectReference: {fileID: 0}
+    - target: {fileID: 4053148365814393529, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Renascer
+      objectReference: {fileID: 0}
+    - target: {fileID: 4165909228175546653, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: 'Mode
+
+        streamer'
+      objectReference: {fileID: 0}
+    - target: {fileID: 4165909228175546653, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: 'Streamer
+
+        Modus'
+      objectReference: {fileID: 0}
+    - target: {fileID: 4165909228175546653, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: "Modalit\xE0\nstreamer"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4165909228175546653, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: 'Modo
+
+        streame'
+      objectReference: {fileID: 0}
+    - target: {fileID: 4165909228175546653, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: 'Modo de
+
+        streamer'
+      objectReference: {fileID: 0}
+    - target: {fileID: 4223660011084773621, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Bouger
+      objectReference: {fileID: 0}
+    - target: {fileID: 4223660011084773621, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Bewegen
+      objectReference: {fileID: 0}
+    - target: {fileID: 4223660011084773621, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Muovi
+      objectReference: {fileID: 0}
+    - target: {fileID: 4223660011084773621, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: russianText
+      value: "= \u0414\u0432\u0438\u0433\u0430\u0442\u044C "
+      objectReference: {fileID: 0}
+    - target: {fileID: 4223660011084773621, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Mover
+      objectReference: {fileID: 0}
+    - target: {fileID: 4223660011084773621, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u79FB\u52D5 "
+      objectReference: {fileID: 0}
+    - target: {fileID: 4223660011084773621, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Mover
+      objectReference: {fileID: 0}
+    - target: {fileID: 4345077501244199697, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Retour / Pause
+      objectReference: {fileID: 0}
+    - target: {fileID: 4345077501244199697, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: "= Zur\xFCck / Pause"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4345077501244199697, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: koreanText
+      value: "= \uC774\uC804\uC73C\uB85C / \uC77C\uC2DC\uC815\uC9C0"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4345077501244199697, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: chineseText
+      value: "= \u8FD4\u56DE / \u6682\u505C"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4345077501244199697, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: englishText
+      value: '= Back / Pause '
+      objectReference: {fileID: 0}
+    - target: {fileID: 4345077501244199697, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Indietro / Pausa
+      objectReference: {fileID: 0}
+    - target: {fileID: 4345077501244199697, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: russianText
+      value: "= \u041D\u0430\u0437\u0430\u0434 / \u041F\u0430\u0443\u0437\u0430 "
+      objectReference: {fileID: 0}
+    - target: {fileID: 4345077501244199697, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: "= Atr\xE1s / Pausa"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4345077501244199697, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u3082\u3069\u308B / \u30DD\u30FC\u30BA"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4345077501244199697, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Voltar / Pausa
+      objectReference: {fileID: 0}
+    - target: {fileID: 4835277710855978858, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: "= R\xE9apparition"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4835277710855978858, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Respawn
+      objectReference: {fileID: 0}
+    - target: {fileID: 4835277710855978858, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Respawn
+      objectReference: {fileID: 0}
+    - target: {fileID: 4835277710855978858, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Reaparecer
+      objectReference: {fileID: 0}
+    - target: {fileID: 4835277710855978858, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Renascer
+      objectReference: {fileID: 0}
+    - target: {fileID: 5026372614672685560, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Retour
+      objectReference: {fileID: 0}
+    - target: {fileID: 5026372614672685560, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: "= Zur\xFCck"
+      objectReference: {fileID: 0}
+    - target: {fileID: 5026372614672685560, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Indietro
+      objectReference: {fileID: 0}
+    - target: {fileID: 5026372614672685560, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: "= Atr\xE1s"
+      objectReference: {fileID: 0}
+    - target: {fileID: 5026372614672685560, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Voltar
+      objectReference: {fileID: 0}
+    - target: {fileID: 5134299886267021641, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: "= Touche sp\xE9ciale"
+      objectReference: {fileID: 0}
+    - target: {fileID: 5134299886267021641, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Sondertaste
+      objectReference: {fileID: 0}
+    - target: {fileID: 5134299886267021641, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: chineseText
+      value: "= \u7279\u6B8A\u6309\u952E "
+      objectReference: {fileID: 0}
+    - target: {fileID: 5134299886267021641, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Tasto speciale
+      objectReference: {fileID: 0}
+    - target: {fileID: 5134299886267021641, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Tecla especial
+      objectReference: {fileID: 0}
+    - target: {fileID: 5134299886267021641, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u7279\u6B8A\u30AD\u30FC "
+      objectReference: {fileID: 0}
+    - target: {fileID: 5134299886267021641, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: =Tecla especial
+      objectReference: {fileID: 0}
+    - target: {fileID: 5443138987530965071, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Bouger
+      objectReference: {fileID: 0}
+    - target: {fileID: 5443138987530965071, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Bewegen
+      objectReference: {fileID: 0}
+    - target: {fileID: 5443138987530965071, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Muovi
+      objectReference: {fileID: 0}
+    - target: {fileID: 5443138987530965071, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: russianText
+      value: "= \u0414\u0432\u0438\u0433\u0430\u0442\u044C "
+      objectReference: {fileID: 0}
+    - target: {fileID: 5443138987530965071, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Mover
+      objectReference: {fileID: 0}
+    - target: {fileID: 5443138987530965071, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u79FB\u52D5 "
+      objectReference: {fileID: 0}
+    - target: {fileID: 5443138987530965071, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Mover
+      objectReference: {fileID: 0}
+    - target: {fileID: 5554683964355039145, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: "= \xC9moji"
+      objectReference: {fileID: 0}
+    - target: {fileID: 5554683964355039145, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Emoji
+      objectReference: {fileID: 0}
+    - target: {fileID: 5554683964355039145, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: chineseText
+      value: "= \u8868\u60C5\u7B26\u53F7 "
+      objectReference: {fileID: 0}
+    - target: {fileID: 5554683964355039145, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Emoji
+      objectReference: {fileID: 0}
+    - target: {fileID: 5554683964355039145, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Emoji
+      objectReference: {fileID: 0}
+    - target: {fileID: 5554683964355039145, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Emoji
+      objectReference: {fileID: 0}
+    - target: {fileID: 5682082942717043887, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: "= R\xE9apparition"
+      objectReference: {fileID: 0}
+    - target: {fileID: 5682082942717043887, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Respawn
+      objectReference: {fileID: 0}
+    - target: {fileID: 5682082942717043887, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Respawn
+      objectReference: {fileID: 0}
+    - target: {fileID: 5682082942717043887, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Reaparecer
+      objectReference: {fileID: 0}
+    - target: {fileID: 5682082942717043887, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Renascer
+      objectReference: {fileID: 0}
+    - target: {fileID: 5815661885955497164, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: "= \xC9moji"
+      objectReference: {fileID: 0}
+    - target: {fileID: 5815661885955497164, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Emoji
+      objectReference: {fileID: 0}
+    - target: {fileID: 5815661885955497164, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: chineseText
+      value: "= \u8868\u60C5\u7B26\u53F7 "
+      objectReference: {fileID: 0}
+    - target: {fileID: 5815661885955497164, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Emoji
+      objectReference: {fileID: 0}
+    - target: {fileID: 5815661885955497164, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Emoji
+      objectReference: {fileID: 0}
+    - target: {fileID: 5815661885955497164, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Emoji
+      objectReference: {fileID: 0}
+    - target: {fileID: 5990117434974180419, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Saut
+      objectReference: {fileID: 0}
+    - target: {fileID: 5990117434974180419, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Springen
+      objectReference: {fileID: 0}
+    - target: {fileID: 5990117434974180419, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Salto
+      objectReference: {fileID: 0}
+    - target: {fileID: 5990117434974180419, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Saltar
+      objectReference: {fileID: 0}
+    - target: {fileID: 5990117434974180419, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Pular
+      objectReference: {fileID: 0}
+    - target: {fileID: 6020112535663561233, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Saut
+      objectReference: {fileID: 0}
+    - target: {fileID: 6020112535663561233, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Springen
+      objectReference: {fileID: 0}
+    - target: {fileID: 6020112535663561233, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Salto
+      objectReference: {fileID: 0}
+    - target: {fileID: 6020112535663561233, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Saltar
+      objectReference: {fileID: 0}
+    - target: {fileID: 6020112535663561233, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Pular
+      objectReference: {fileID: 0}
+    - target: {fileID: 6103741529056531968, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: "= R\xE9apparition"
+      objectReference: {fileID: 0}
+    - target: {fileID: 6103741529056531968, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Respawn
+      objectReference: {fileID: 0}
+    - target: {fileID: 6103741529056531968, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Respawn
+      objectReference: {fileID: 0}
+    - target: {fileID: 6103741529056531968, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Reaparecer
+      objectReference: {fileID: 0}
+    - target: {fileID: 6103741529056531968, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Renascer
+      objectReference: {fileID: 0}
+    - target: {fileID: 6582584667282467928, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: Options
+      objectReference: {fileID: 0}
+    - target: {fileID: 6582584667282467928, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: Optionen
+      objectReference: {fileID: 0}
+    - target: {fileID: 6582584667282467928, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: englishText
+      value: Options
+      objectReference: {fileID: 0}
+    - target: {fileID: 6582584667282467928, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: Opzioni
+      objectReference: {fileID: 0}
+    - target: {fileID: 6582584667282467928, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: russianText
+      value: "\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438"
+      objectReference: {fileID: 0}
+    - target: {fileID: 6582584667282467928, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: Opciones
+      objectReference: {fileID: 0}
+    - target: {fileID: 6582584667282467928, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: "Op\xE7\xF5es"
+      objectReference: {fileID: 0}
+    - target: {fileID: 7130841184681082302, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Observer
+      objectReference: {fileID: 0}
+    - target: {fileID: 7130841184681082302, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Zuschauen
+      objectReference: {fileID: 0}
+    - target: {fileID: 7130841184681082302, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Osserva
+      objectReference: {fileID: 0}
+    - target: {fileID: 7130841184681082302, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Observar
+      objectReference: {fileID: 0}
+    - target: {fileID: 7130841184681082302, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u89B3\u6226\u3059\u308B "
+      objectReference: {fileID: 0}
+    - target: {fileID: 7130841184681082302, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Assistir
+      objectReference: {fileID: 0}
+    - target: {fileID: 7624035764661333944, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Pause
+      objectReference: {fileID: 0}
+    - target: {fileID: 7624035764661333944, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Pause
+      objectReference: {fileID: 0}
+    - target: {fileID: 7624035764661333944, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Pausa
+      objectReference: {fileID: 0}
+    - target: {fileID: 7624035764661333944, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Pausa
+      objectReference: {fileID: 0}
+    - target: {fileID: 7624035764661333944, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Pausa
+      objectReference: {fileID: 0}
+    - target: {fileID: 7823408830548839085, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: "= \xC9moji"
+      objectReference: {fileID: 0}
+    - target: {fileID: 7823408830548839085, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Emoji
+      objectReference: {fileID: 0}
+    - target: {fileID: 7823408830548839085, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: chineseText
+      value: "= \u8868\u60C5\u7B26\u53F7 "
+      objectReference: {fileID: 0}
+    - target: {fileID: 7823408830548839085, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Emoji
+      objectReference: {fileID: 0}
+    - target: {fileID: 7823408830548839085, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Emoji
+      objectReference: {fileID: 0}
+    - target: {fileID: 7823408830548839085, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Emoji
+      objectReference: {fileID: 0}
+    - target: {fileID: 8241779645641686103, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Observer
+      objectReference: {fileID: 0}
+    - target: {fileID: 8241779645641686103, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Zuschauen
+      objectReference: {fileID: 0}
+    - target: {fileID: 8241779645641686103, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Osserva
+      objectReference: {fileID: 0}
+    - target: {fileID: 8241779645641686103, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Observar
+      objectReference: {fileID: 0}
+    - target: {fileID: 8241779645641686103, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u89B3\u6226\u3059\u308B "
+      objectReference: {fileID: 0}
+    - target: {fileID: 8241779645641686103, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Assistir
+      objectReference: {fileID: 0}
+    - target: {fileID: 8285853505113550406, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Observer
+      objectReference: {fileID: 0}
+    - target: {fileID: 8285853505113550406, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Zuschauen
+      objectReference: {fileID: 0}
+    - target: {fileID: 8285853505113550406, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Osserva
+      objectReference: {fileID: 0}
+    - target: {fileID: 8285853505113550406, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Observar
+      objectReference: {fileID: 0}
+    - target: {fileID: 8285853505113550406, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u89B3\u6226\u3059\u308B "
+      objectReference: {fileID: 0}
+    - target: {fileID: 8285853505113550406, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Assistir
+      objectReference: {fileID: 0}
+    - target: {fileID: 8350868922867196418, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: Quitter
+      objectReference: {fileID: 0}
+    - target: {fileID: 8350868922867196418, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: Beenden
+      objectReference: {fileID: 0}
+    - target: {fileID: 8350868922867196418, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: englishText
+      value: Quit
+      objectReference: {fileID: 0}
+    - target: {fileID: 8350868922867196418, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: Esci
+      objectReference: {fileID: 0}
+    - target: {fileID: 8350868922867196418, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: Salir
+      objectReference: {fileID: 0}
+    - target: {fileID: 8350868922867196418, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: Sair
+      objectReference: {fileID: 0}
+    - target: {fileID: 8470052872261219542, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Quitter le mode spectateur
+      objectReference: {fileID: 0}
+    - target: {fileID: 8470052872261219542, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Zuschauen beenden
+      objectReference: {fileID: 0}
+    - target: {fileID: 8470052872261219542, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: "= Esci dalla modalit\xE0 spettatore"
+      objectReference: {fileID: 0}
+    - target: {fileID: 8470052872261219542, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Salir del modo espectador
+      objectReference: {fileID: 0}
+    - target: {fileID: 8470052872261219542, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u89B3\u6226\u3092\u3084\u3081\u308B "
+      objectReference: {fileID: 0}
+    - target: {fileID: 8470052872261219542, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Sair do modo espectador
+      objectReference: {fileID: 0}
+    - target: {fileID: 8626165024818931017, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Pause
+      objectReference: {fileID: 0}
+    - target: {fileID: 8626165024818931017, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Pause
+      objectReference: {fileID: 0}
+    - target: {fileID: 8626165024818931017, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: koreanText
+      value: "= \uC77C\uC2DC\uC815\uC9C0"
+      objectReference: {fileID: 0}
+    - target: {fileID: 8626165024818931017, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: chineseText
+      value: "= \u6682\u505C"
+      objectReference: {fileID: 0}
+    - target: {fileID: 8626165024818931017, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: englishText
+      value: '= Pause '
+      objectReference: {fileID: 0}
+    - target: {fileID: 8626165024818931017, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Pausa
+      objectReference: {fileID: 0}
+    - target: {fileID: 8626165024818931017, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: russianText
+      value: "= \u041F\u0430\u0443\u0437\u0430 "
+      objectReference: {fileID: 0}
+    - target: {fileID: 8626165024818931017, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Pausa
+      objectReference: {fileID: 0}
+    - target: {fileID: 8626165024818931017, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u30DD\u30FC\u30BA"
+      objectReference: {fileID: 0}
+    - target: {fileID: 8626165024818931017, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Pausa
+      objectReference: {fileID: 0}
+    - target: {fileID: 8710254581402554226, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: = Bouger
+      objectReference: {fileID: 0}
+    - target: {fileID: 8710254581402554226, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Bewegen
+      objectReference: {fileID: 0}
+    - target: {fileID: 8710254581402554226, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Muovi
+      objectReference: {fileID: 0}
+    - target: {fileID: 8710254581402554226, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: russianText
+      value: "= \u0414\u0432\u0438\u0433\u0430\u0442\u044C "
+      objectReference: {fileID: 0}
+    - target: {fileID: 8710254581402554226, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Mover
+      objectReference: {fileID: 0}
+    - target: {fileID: 8710254581402554226, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u79FB\u52D5 "
+      objectReference: {fileID: 0}
+    - target: {fileID: 8710254581402554226, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: = Mover
+      objectReference: {fileID: 0}
     - target: {fileID: 9071347035235099874, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_Name
       value: UIMaster
+      objectReference: {fileID: 0}
+    - target: {fileID: 9155078394676646255, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: frenchText
+      value: "= Touche sp\xE9ciale"
+      objectReference: {fileID: 0}
+    - target: {fileID: 9155078394676646255, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: germanText
+      value: = Sondertaste
+      objectReference: {fileID: 0}
+    - target: {fileID: 9155078394676646255, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: chineseText
+      value: "= \u7279\u6B8A\u6309\u952E "
+      objectReference: {fileID: 0}
+    - target: {fileID: 9155078394676646255, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: italianText
+      value: = Tasto speciale
+      objectReference: {fileID: 0}
+    - target: {fileID: 9155078394676646255, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: spanishText
+      value: = Tecla especial
+      objectReference: {fileID: 0}
+    - target: {fileID: 9155078394676646255, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: japaneseText
+      value: "= \u7279\u6B8A\u30AD\u30FC "
+      objectReference: {fileID: 0}
+    - target: {fileID: 9155078394676646255, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: portugueseText
+      value: =Tecla especial
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:

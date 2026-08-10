@@ -149550,12 +149550,6 @@ Tilemap:
   - serializedVersion: 2
     m_RefCount: 4
     m_Data: {fileID: 2912048273359814756, guid: 4f2f0387e1177c14da27aac2f41ad91a, type: 3}
-  - serializedVersion: 2
-    m_RefCount: 0
-    m_Data: {fileID: 8963615045809421016, guid: 5f74b5d0416365341af2d86fc739995f, type: 3}
-  - serializedVersion: 2
-    m_RefCount: 0
-    m_Data: {fileID: 1963862852722972084, guid: a28a833e0a9682941aa12acb1d7c1c32, type: 3}
   m_TileMatrixArray:
   - serializedVersion: 2
     m_RefCount: 11124
@@ -149578,7 +149572,7 @@ Tilemap:
       e33: 1
   m_TileColorArray:
   - serializedVersion: 2
-    m_RefCount: 11466
+    m_RefCount: 11124
     m_Data: {r: 1, g: 1, b: 1, a: 1}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
@@ -254781,6 +254775,42 @@ PrefabInstance:
       propertyPath: m_Name
       value: LobbyPanel
       objectReference: {fileID: 0}
+    - target: {fileID: 3329961024483732673, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: frenchText
+      value: 'Code:'
+      objectReference: {fileID: 0}
+    - target: {fileID: 3329961024483732673, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: germanText
+      value: 'Code:'
+      objectReference: {fileID: 0}
+    - target: {fileID: 3329961024483732673, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: koreanText
+      value: "\uCF54\uB4DC:\n"
+      objectReference: {fileID: 0}
+    - target: {fileID: 3329961024483732673, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: chineseText
+      value: "\u4EE3\u7801:\n"
+      objectReference: {fileID: 0}
+    - target: {fileID: 3329961024483732673, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: italianText
+      value: 'Codice:'
+      objectReference: {fileID: 0}
+    - target: {fileID: 3329961024483732673, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: russianText
+      value: "\u043A\u043E\u0434:\n"
+      objectReference: {fileID: 0}
+    - target: {fileID: 3329961024483732673, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: spanishText
+      value: "C\xF3digo:"
+      objectReference: {fileID: 0}
+    - target: {fileID: 3329961024483732673, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: japaneseText
+      value: "\u30B3\u30FC\u30C9:\n"
+      objectReference: {fileID: 0}
+    - target: {fileID: 3329961024483732673, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: portugueseText
+      value: "C\xF3digo:"
+      objectReference: {fileID: 0}
     - target: {fileID: 4215164014586056991, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_overflowMode
       value: 1
@@ -305407,22 +305437,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: CounterChapter1
       objectReference: {fileID: 0}
-    - target: {fileID: 2020620552394857235, guid: 6cb6c59a6f55827409b62bffd4e6f443, type: 3}
-      propertyPath: m_fontColor.b
-      value: 0.9921569
-      objectReference: {fileID: 0}
-    - target: {fileID: 2020620552394857235, guid: 6cb6c59a6f55827409b62bffd4e6f443, type: 3}
-      propertyPath: m_fontColor.g
-      value: 0.8470589
-      objectReference: {fileID: 0}
-    - target: {fileID: 2020620552394857235, guid: 6cb6c59a6f55827409b62bffd4e6f443, type: 3}
-      propertyPath: m_fontColor.r
-      value: 0.54901963
-      objectReference: {fileID: 0}
-    - target: {fileID: 2020620552394857235, guid: 6cb6c59a6f55827409b62bffd4e6f443, type: 3}
-      propertyPath: m_fontColor32.rgba
-      value: 4294826124
-      objectReference: {fileID: 0}
     - target: {fileID: 6004370265167242223, guid: 6cb6c59a6f55827409b62bffd4e6f443, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -305462,10 +305476,6 @@ PrefabInstance:
     - target: {fileID: 6004370265167242223, guid: 6cb6c59a6f55827409b62bffd4e6f443, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8084715415030215050, guid: 6cb6c59a6f55827409b62bffd4e6f443, type: 3}
-      propertyPath: requiredPlayerCount
-      value: 4
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
