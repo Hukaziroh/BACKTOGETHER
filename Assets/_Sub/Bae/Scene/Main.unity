@@ -1562,6 +1562,11 @@ MonoBehaviour:
   chineseText: "\u6CA1\u6709\u623F\u95F4."
   russianText: "\u041D\u0435\u0442 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B\u0445
     \u043A\u043E\u043C\u043D\u0430\u0442."
+  italianText: 
+  frenchText: 
+  germanText: 
+  spanishText: 
+  portugueseText: 
   englishDilate: 1
   englishOutlineThickness: 1
   defaultDilate: 1
@@ -3163,6 +3168,11 @@ MonoBehaviour:
   japaneseText: "\u3078\u3084\u3081\u3044"
   chineseText: "\u623F\u95F4\u540D"
   russianText: "\u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u043A\u043E\u043C\u043D\u0430\u0442\u044B"
+  italianText: 
+  frenchText: 
+  germanText: 
+  spanishText: 
+  portugueseText: 
   englishDilate: 1
   englishOutlineThickness: 1
   defaultDilate: 1
@@ -3404,6 +3414,11 @@ MonoBehaviour:
   japaneseText: "\u3078\u3084\u304C\u307E\u3093\u3044\u3093\u3067\u3059."
   chineseText: "\u623F\u95F4\u5DF2\u6EE1."
   russianText: "\u041A\u043E\u043C\u043D\u0430\u0442\u0430 \u0437\u0430\u043F\u043E\u043B\u043D\u0435\u043D\u0430."
+  italianText: 
+  frenchText: 
+  germanText: 
+  spanishText: 
+  portugueseText: 
   englishDilate: 1
   englishOutlineThickness: 1
   defaultDilate: 1
@@ -3552,6 +3567,11 @@ MonoBehaviour:
   japaneseText: "\u305B\u3064\u3060\u3093."
   chineseText: "\u65AD\u5F00\u8FDE\u63A5."
   russianText: "\u041E\u0442\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F."
+  italianText: 
+  frenchText: 
+  germanText: 
+  spanishText: 
+  portugueseText: 
   englishDilate: 1
   englishOutlineThickness: 1
   defaultDilate: 1
@@ -3608,6 +3628,11 @@ MonoBehaviour:
   chineseText: "\u6CA1\u6709\u623F\u95F4."
   russianText: "\u041D\u0435\u0442 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B\u0445
     \u043A\u043E\u043C\u043D\u0430\u0442."
+  italianText: 
+  frenchText: 
+  germanText: 
+  spanishText: 
+  portugueseText: 
   englishDilate: 1
   englishOutlineThickness: 1
   defaultDilate: 1
@@ -4049,6 +4074,11 @@ MonoBehaviour:
   japaneseText: "\u3082\u3069\u308B"
   chineseText: "\u8FD4\u56DE"
   russianText: "\u0412\u0435\u0440\u043D\u0443\u0442\u044C\u0441\u044F"
+  italianText: 
+  frenchText: 
+  germanText: 
+  spanishText: 
+  portugueseText: 
   englishDilate: 1
   englishOutlineThickness: 1
   defaultDilate: 1
@@ -5328,6 +5358,10 @@ PrefabInstance:
     - target: {fileID: 2062628588668692640, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2304823993813371790, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: disconnectPanel
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 9071347035235099874, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_Name
