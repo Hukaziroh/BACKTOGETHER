@@ -68,6 +68,10 @@ public class ClientLobbyManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI disconnectMessageText;
     [SerializeField] private Button disconnectCloseButton;
 
+    [Header("꽉 찬 방 알림 텍스트 (인스펙터에서 할당)")]
+    [SerializeField] private TextMeshProUGUI fullRoomMessageText;
+    private Coroutine fullRoomMessageCoroutine;
+
     private EOSLobby eosLobby;
     private bool isSubscribed = false;
 
@@ -725,6 +729,13 @@ public class ClientLobbyManager : MonoBehaviour
         SubscribeEvents();
         if (lobby == null) return;
 
+        // 방이 꽉 찼는지 검사[cite: 2]
+        if (!EOSLobby.IsLobbyJoinable(lobby, out uint currentMembers, out uint maxMembers))
+        {
+            ShowFullRoomWarning();
+            return;
+        }
+
         var eos = GetEOSLobby();
         if (eos == null)
         {
@@ -734,6 +745,24 @@ public class ClientLobbyManager : MonoBehaviour
 
         SetInteractableAll(false);
         eos.JoinLobby(lobby);
+    }
+
+    private void ShowFullRoomWarning()
+    {
+        if (fullRoomMessageText != null)
+        {
+            if (fullRoomMessageCoroutine != null) StopCoroutine(fullRoomMessageCoroutine);
+            fullRoomMessageCoroutine = StartCoroutine(ShowFullRoomMessageRoutine());
+        }
+    }
+
+    private IEnumerator ShowFullRoomMessageRoutine()
+    {
+        fullRoomMessageText.text = "인원수가 다 차서 못들어 갑니다";
+        fullRoomMessageText.gameObject.SetActive(true);
+        yield return new WaitForSeconds(3f);
+        fullRoomMessageText.gameObject.SetActive(false);
+        fullRoomMessageCoroutine = null;
     }
 
     private void OnJoinLobbySucceeded(List<Epic.OnlineServices.Lobby.Attribute> attributes)
