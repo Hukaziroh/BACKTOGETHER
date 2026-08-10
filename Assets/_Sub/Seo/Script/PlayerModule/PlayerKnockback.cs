@@ -38,6 +38,22 @@ public class PlayerKnockback : NetworkBehaviour
         controller = GetComponent<PlayerController>();
     }
 
+    private void OnDisable()
+    {
+        if (Gamepad.current != null)
+        {
+            Gamepad.current.SetMotorSpeeds(0f, 0f);
+        }
+    }
+
+    private void OnApplicationQuit()
+    {
+        if (Gamepad.current != null)
+        {
+            Gamepad.current.SetMotorSpeeds(0f, 0f);
+        }
+    }
+
     void Update()
     {
         if (!isServer) return;
