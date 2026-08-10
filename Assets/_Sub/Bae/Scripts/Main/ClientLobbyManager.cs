@@ -53,10 +53,20 @@ public class ClientLobbyManager : MonoBehaviour
     [Header("로딩 UI 연결 (비워두어도 자동 탐색됩니다)")]
     [SerializeField] private GameObject loadingPanel;
 
-    [Header("에러 팝업 UI 연결")]
+    [Header("일반 에러 팝업 UI 연결 (기본 Fallback용)")]
     [SerializeField] private GameObject errorPopupPanel;
     [SerializeField] private TextMeshProUGUI errorMessageText;
     [SerializeField] private Button errorCloseButton;
+
+    [Header("연결 타임아웃 팝업 UI (10초 초과)")]
+    [SerializeField] private GameObject timeoutPopupPanel;
+    [SerializeField] private TextMeshProUGUI timeoutMessageText;
+    [SerializeField] private Button timeoutCloseButton;
+
+    [Header("호스트 디스커넥트 팝업 UI (방 폭파/연결 끊김)")]
+    [SerializeField] private GameObject disconnectPopupPanel;
+    [SerializeField] private TextMeshProUGUI disconnectMessageText;
+    [SerializeField] private Button disconnectCloseButton;
 
     private EOSLobby eosLobby;
     private bool isSubscribed = false;
@@ -122,6 +132,8 @@ public class ClientLobbyManager : MonoBehaviour
         if (clientPublicPanel != null) clientPublicPanel.SetActive(false);
         if (clientPrivatePanel != null) clientPrivatePanel.SetActive(false);
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
+        if (timeoutPopupPanel != null) timeoutPopupPanel.SetActive(false);
+        if (disconnectPopupPanel != null) disconnectPopupPanel.SetActive(false);
         if (quickJoinNoRoomText != null) quickJoinNoRoomText.SetActive(false);
 
         GameObject panel = GetLoadingPanel();
@@ -173,34 +185,73 @@ public class ClientLobbyManager : MonoBehaviour
         bool upPressed = false;
         bool downPressed = false;
         bool enterPressed = false;
+        bool escPressed = false;
 
         if (Keyboard.current != null)
         {
             leftPressed |= Keyboard.current.leftArrowKey.wasPressedThisFrame ||
-                          Keyboard.current.aKey.wasPressedThisFrame;
+                      Keyboard.current.aKey.wasPressedThisFrame;
 
             rightPressed |= Keyboard.current.rightArrowKey.wasPressedThisFrame ||
-                          Keyboard.current.dKey.wasPressedThisFrame;
+                      Keyboard.current.dKey.wasPressedThisFrame;
 
             enterPressed |= Keyboard.current.enterKey.wasPressedThisFrame ||
-                          Keyboard.current.numpadEnterKey.wasPressedThisFrame;
+                      Keyboard.current.numpadEnterKey.wasPressedThisFrame;
+
             upPressed |= Keyboard.current.upArrowKey.wasPressedThisFrame ||
                Keyboard.current.wKey.wasPressedThisFrame;
 
             downPressed |= Keyboard.current.downArrowKey.wasPressedThisFrame ||
-                           Keyboard.current.sKey.wasPressedThisFrame;
+                      Keyboard.current.sKey.wasPressedThisFrame;
+
+            escPressed |= Keyboard.current.escapeKey.wasPressedThisFrame;
         }
 
         if (Gamepad.current != null)
         {
             leftPressed |= Gamepad.current.dpad.left.wasPressedThisFrame ||
-                           Gamepad.current.leftStick.left.wasPressedThisFrame;
+                      Gamepad.current.leftStick.left.wasPressedThisFrame;
 
             rightPressed |= Gamepad.current.dpad.right.wasPressedThisFrame ||
-                            Gamepad.current.leftStick.right.wasPressedThisFrame;
+                      Gamepad.current.leftStick.right.wasPressedThisFrame;
 
             downPressed |= Gamepad.current.dpad.down.wasPressedThisFrame ||
-                           Gamepad.current.leftStick.down.wasPressedThisFrame;
+                      Gamepad.current.leftStick.down.wasPressedThisFrame;
+        }
+
+        // ESC 입력 처리 (열려 있는 패널 계층에 따라 역순으로 닫기)
+        if (escPressed)
+        {
+            if (timeoutPopupPanel != null && timeoutPopupPanel.activeSelf)
+            {
+                OnClick_CloseTimeoutPopup();
+                return;
+            }
+            else if (disconnectPopupPanel != null && disconnectPopupPanel.activeSelf)
+            {
+                OnClick_CloseDisconnectPopup();
+                return;
+            }
+            else if (errorPopupPanel != null && errorPopupPanel.activeSelf)
+            {
+                OnClick_CloseErrorPopup();
+                return;
+            }
+            else if (clientPublicPanel != null && clientPublicPanel.activeSelf)
+            {
+                OnClick_ClosePublicPanel();
+                return;
+            }
+            else if (clientPrivatePanel != null && clientPrivatePanel.activeSelf)
+            {
+                OnClick_ClosePrivatePanel();
+                return;
+            }
+            else if (clientSelectionPanel != null && clientSelectionPanel.activeSelf)
+            {
+                OnClick_CloseSelectionPanel();
+                return;
+            }
         }
 
         if (EventSystem.current == null) return;
@@ -212,9 +263,9 @@ public class ClientLobbyManager : MonoBehaviour
         {
             if (selected == null) return;
             bool isFilterChapterSelected = (chapterFilterSelectObject != null && selected == chapterFilterSelectObject) ||
-                                           (filterChapterText != null && (selected == filterChapterText.gameObject || selected == filterChapterText.transform.parent.gameObject)) ||
-                                           (prevFilterChapterButton != null && selected == prevFilterChapterButton.gameObject) ||
-                                           (nextFilterChapterButton != null && selected == nextFilterChapterButton.gameObject);
+                                   (filterChapterText != null && (selected == filterChapterText.gameObject || selected == filterChapterText.transform.parent.gameObject)) ||
+                                   (prevFilterChapterButton != null && selected == prevFilterChapterButton.gameObject) ||
+                                   (nextFilterChapterButton != null && selected == nextFilterChapterButton.gameObject);
 
             if (isFilterChapterSelected)
             {
@@ -232,7 +283,7 @@ public class ClientLobbyManager : MonoBehaviour
             if (searchInputField != null)
             {
                 bool isInputFieldSelected = (selected == searchInputField.gameObject) ||
-                                            (selected == searchInputField.transform.parent?.gameObject);
+                                    (selected == searchInputField.transform.parent?.gameObject);
 
                 if (isInputFieldSelected && Keyboard.current != null)
                 {
@@ -255,7 +306,7 @@ public class ClientLobbyManager : MonoBehaviour
             if (privateRoomInputField != null)
             {
                 bool isPrivateInputFieldSelected = (selected == privateRoomInputField.gameObject) ||
-                                            (selected == privateRoomInputField.transform.parent?.gameObject);
+                                    (selected == privateRoomInputField.transform.parent?.gameObject);
 
                 if (isPrivateInputFieldSelected && Keyboard.current != null)
                 {
@@ -289,7 +340,6 @@ public class ClientLobbyManager : MonoBehaviour
         {
             searchInputField.interactable = false;
 
-            // 엔터 등으로 입력이 끝났을 때 다음 네비게이션(아래쪽) 요소로 포커스 이동
             Selectable nextSelectable = searchInputField.FindSelectableOnDown();
             if (nextSelectable != null && EventSystem.current != null)
             {
@@ -304,7 +354,6 @@ public class ClientLobbyManager : MonoBehaviour
         {
             privateRoomInputField.interactable = false;
 
-            // 엔터 등으로 입력이 끝났을 때 다음 네비게이션(아래쪽) 요소로 포커스 이동
             Selectable nextSelectable = privateRoomInputField.FindSelectableOnDown();
             if (nextSelectable != null && EventSystem.current != null)
             {
@@ -326,6 +375,12 @@ public class ClientLobbyManager : MonoBehaviour
             if (GlobalSceneInputManager.Instance != null)
             {
                 GlobalSceneInputManager.Instance.SetFocusScope(clientSelectionPanel);
+            }
+            if (EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+                if (selectPublicModeButton != null)
+                    EventSystem.current.SetSelectedGameObject(selectPublicModeButton.gameObject);
             }
         }
     }
@@ -387,6 +442,8 @@ public class ClientLobbyManager : MonoBehaviour
 
         if (logo != null) logo.SetActive(true);
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
+        if (timeoutPopupPanel != null) timeoutPopupPanel.SetActive(false);
+        if (disconnectPopupPanel != null) disconnectPopupPanel.SetActive(false);
 
         if (mainPanel != null)
         {
@@ -394,6 +451,14 @@ public class ClientLobbyManager : MonoBehaviour
             if (GlobalSceneInputManager.Instance != null)
             {
                 GlobalSceneInputManager.Instance.SetFocusScope(mainPanel);
+            }
+            if (EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+                if (mainClientButton != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(mainClientButton.gameObject);
+                }
             }
         }
     }
@@ -414,6 +479,14 @@ public class ClientLobbyManager : MonoBehaviour
             {
                 GlobalSceneInputManager.Instance.SetFocusScope(clientSelectionPanel);
             }
+            if (EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+                if (selectPublicModeButton != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(selectPublicModeButton.gameObject);
+                }
+            }
         }
     }
 
@@ -426,6 +499,14 @@ public class ClientLobbyManager : MonoBehaviour
             if (GlobalSceneInputManager.Instance != null)
             {
                 GlobalSceneInputManager.Instance.SetFocusScope(clientSelectionPanel);
+            }
+            if (EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+                if (selectPrivateModeButton != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(selectPrivateModeButton.gameObject);
+                }
             }
         }
     }
@@ -689,7 +770,7 @@ public class ClientLobbyManager : MonoBehaviour
         if (clientSelectionPanel != null) clientSelectionPanel.SetActive(false);
         if (clientPublicPanel != null) clientPublicPanel.SetActive(false);
         if (clientPrivatePanel != null) clientPrivatePanel.SetActive(false);
-        if (logo != null) logo.SetActive(false);
+        if (logo != null) logo.SetActive(true);
     }
 
     private string GetLobbyAttribute(LobbyDetails lobby, string key, string defaultValue)
@@ -823,7 +904,75 @@ public class ClientLobbyManager : MonoBehaviour
     public void OnClick_CloseErrorPopup()
     {
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
+        RestoreInputScopeAfterPopup();
+    }
 
+    private void ShowTimeoutPopup(string msg)
+    {
+        if (timeoutPopupPanel != null)
+        {
+            if (timeoutMessageText != null) timeoutMessageText.text = msg;
+            timeoutPopupPanel.SetActive(true);
+
+            if (EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+                if (timeoutCloseButton != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(timeoutCloseButton.gameObject);
+                }
+                else
+                {
+                    EventSystem.current.SetSelectedGameObject(timeoutPopupPanel);
+                }
+            }
+        }
+        else
+        {
+            ShowError(msg); // 타임아웃 패널 미할당 시 일반 에러 팝업 사용
+        }
+    }
+
+    public void OnClick_CloseTimeoutPopup()
+    {
+        if (timeoutPopupPanel != null) timeoutPopupPanel.SetActive(false);
+        RestoreInputScopeAfterPopup();
+    }
+
+    private void ShowDisconnectPopup(string msg)
+    {
+        if (disconnectPopupPanel != null)
+        {
+            if (disconnectMessageText != null) disconnectMessageText.text = msg;
+            disconnectPopupPanel.SetActive(true);
+
+            if (EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+                if (disconnectCloseButton != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(disconnectCloseButton.gameObject);
+                }
+                else
+                {
+                    EventSystem.current.SetSelectedGameObject(disconnectPopupPanel);
+                }
+            }
+        }
+        else
+        {
+            ShowError(msg); // 디스커넥트 패널 미할당 시 일반 에러 팝업 사용
+        }
+    }
+
+    public void OnClick_CloseDisconnectPopup()
+    {
+        if (disconnectPopupPanel != null) disconnectPopupPanel.SetActive(false);
+        RestoreInputScopeAfterPopup();
+    }
+
+    private void RestoreInputScopeAfterPopup()
+    {
         if (GlobalSceneInputManager.Instance != null)
         {
             if (clientPublicPanel != null && clientPublicPanel.activeSelf)
@@ -877,24 +1026,44 @@ public class ClientLobbyManager : MonoBehaviour
         float timeoutDuration = 10f;
         float timer = 0f;
 
-        while (timer < timeoutDuration)
+        // 1단계: 초기 연결 대기 (최대 10초) - 로딩 중 타임아웃
+        while (!NetworkClient.isConnected)
         {
-            if (NetworkClient.isConnected)
-            {
-                yield break;
-            }
-
             if (!NetworkClient.active)
             {
                 break;
             }
 
             timer += Time.unscaledDeltaTime;
+            if (timer >= timeoutDuration)
+            {
+                Debug.LogWarning("[ClientLobbyManager] 초기 P2P 연결 시간 초과 (로딩 중)");
+                HandleInitialConnectionTimeout();
+                yield break;
+            }
             yield return null;
         }
 
-        Debug.LogWarning("[ClientLobbyManager] 호스트와의 P2P 연결 시간 초과 또는 실패");
+        // 만약 연결에 실패한 상태로 빠져나왔다면
+        if (!NetworkClient.isConnected)
+        {
+            HandleInitialConnectionTimeout();
+            yield break;
+        }
 
+        // 2단계: 연결 성공 후 접속 유지 상태 모니터링
+        while (NetworkClient.isConnected)
+        {
+            yield return null;
+        }
+
+        // 3단계: 게임 도중 호스트가 방을 폭파하거나 연결이 끊긴 경우 (호스트 디스커넥트)
+        Debug.LogWarning("[ClientLobbyManager] 호스트와의 연결이 끊어짐 (방 폭파 / 호스트 디스커넥트 감지)");
+        HandleHostDisconnected();
+    }
+
+    private void HandleInitialConnectionTimeout()
+    {
         if (NetworkManager.singleton != null)
         {
             NetworkManager.singleton.StopClient();
@@ -903,11 +1072,53 @@ public class ClientLobbyManager : MonoBehaviour
         GameObject panel = GetLoadingPanel();
         if (panel != null) panel.SetActive(false);
 
-        if (clientSelectionPanel != null) clientSelectionPanel.SetActive(true);
+        if (clientPublicPanel != null) clientPublicPanel.SetActive(false);
+        if (clientPrivatePanel != null) clientPrivatePanel.SetActive(false);
+        if (clientSelectionPanel != null)
+        {
+            clientSelectionPanel.SetActive(true);
+            if (EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+                if (selectPublicModeButton != null)
+                    EventSystem.current.SetSelectedGameObject(selectPublicModeButton.gameObject);
+            }
+        }
         if (logo != null) logo.SetActive(true);
 
         SetInteractableAll(true);
 
-        ShowError("호스트와의 연결에 실패했습니다.\n방이 폭파되었거나 네트워크 상태가 불안정합니다.");
+        // 타임아웃 전용 패널 호출
+        ShowTimeoutPopup("호스트와의 연결에 시간 초과되었습니다.\n네트워크 상태가 불안정합니다.");
+    }
+
+    private void HandleHostDisconnected()
+    {
+        if (NetworkManager.singleton != null)
+        {
+            NetworkManager.singleton.StopClient();
+        }
+
+        GameObject panel = GetLoadingPanel();
+        if (panel != null) panel.SetActive(false);
+
+        if (clientPublicPanel != null) clientPublicPanel.SetActive(false);
+        if (clientPrivatePanel != null) clientPrivatePanel.SetActive(false);
+        if (clientSelectionPanel != null)
+        {
+            clientSelectionPanel.SetActive(true);
+            if (EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+                if (selectPublicModeButton != null)
+                    EventSystem.current.SetSelectedGameObject(selectPublicModeButton.gameObject);
+            }
+        }
+        if (logo != null) logo.SetActive(true);
+
+        SetInteractableAll(true);
+
+        // 디스커넥트 전용 패널 호출
+        ShowDisconnectPopup("호스트가 방을 폭파하였거나 연결이 끊어졌습니다.");
     }
 }

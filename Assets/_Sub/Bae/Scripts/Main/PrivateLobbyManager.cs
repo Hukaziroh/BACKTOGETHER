@@ -23,7 +23,7 @@ public class PrivateLobbyManager : MonoBehaviour
 
     [Header("UI 연결 - 방 설정 (패널 내부)")]
     [SerializeField] private TMP_InputField roomNameInputField;
-    
+
     [Header("기본 방 이름 목록 (미입력 시 랜덤 선택)")]
     [SerializeField]
     private string[] defaultRoomNames = new string[]
@@ -69,7 +69,7 @@ public class PrivateLobbyManager : MonoBehaviour
     private bool isSubscribed = false;
 
     public static string currentShortCode = "";
-    public static string lastCreatedRoomName = ""; // <--- 추가: 방 이름 저장용 변수
+    public static string lastCreatedRoomName = "";
     public static int selectedChapter = 1;
     private int selectedChapterIndex = 1;
     private int maxChapterCount = 6;
@@ -159,18 +159,35 @@ public class PrivateLobbyManager : MonoBehaviour
         bool leftPressed = false;
         bool rightPressed = false;
         bool enterOrActionPressed = false;
+        bool escPressed = false;
 
         if (Keyboard.current != null)
         {
             leftPressed |= Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame;
             rightPressed |= Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame;
             enterOrActionPressed |= Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.numpadEnterKey.wasPressedThisFrame;
+            escPressed |= Keyboard.current.escapeKey.wasPressedThisFrame;
         }
 
         if (Gamepad.current != null)
         {
             leftPressed |= Gamepad.current.dpad.left.wasPressedThisFrame || Gamepad.current.leftStick.left.wasPressedThisFrame;
             rightPressed |= Gamepad.current.dpad.right.wasPressedThisFrame || Gamepad.current.leftStick.right.wasPressedThisFrame;
+        }
+
+        // ESC 입력 처리 (에러 팝업 -> 호스트 패널 순서로 역방향 닫기)
+        if (escPressed)
+        {
+            if (errorPopupPanel != null && errorPopupPanel.activeSelf)
+            {
+                OnClick_CloseErrorPopup();
+                return;
+            }
+            else if (hostPanel != null && hostPanel.activeSelf)
+            {
+                OnClick_ReturnToMain();
+                return;
+            }
         }
 
         if (EventSystem.current == null) return;
@@ -305,7 +322,7 @@ public class PrivateLobbyManager : MonoBehaviour
      ? roomNameInputField.text
      : GetRandomDefaultRoomName();
 
-        lastCreatedRoomName = roomTitle; 
+        lastCreatedRoomName = roomTitle;
 
         if (isPublicRoom) currentShortCode = "";
         else currentShortCode = GenerateShortCode();
@@ -415,6 +432,23 @@ public class PrivateLobbyManager : MonoBehaviour
         }
     }
 
+    public void OnClick_CloseErrorPopup()
+    {
+        if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
+
+        if (GlobalSceneInputManager.Instance != null)
+        {
+            if (hostPanel != null && hostPanel.activeSelf)
+            {
+                GlobalSceneInputManager.Instance.SetFocusScope(hostPanel);
+            }
+            else if (mainPanel != null && mainPanel.activeSelf)
+            {
+                GlobalSceneInputManager.Instance.SetFocusScope(mainPanel);
+            }
+        }
+    }
+
     public void OnClick_ReturnToMain()
     {
         var lobby = GetEOSLobby();
@@ -443,6 +477,6 @@ public class PrivateLobbyManager : MonoBehaviour
             int randomIndex = Random.Range(0, defaultRoomNames.Length);
             return defaultRoomNames[randomIndex];
         }
-        return "Back Together!"; 
+        return "Back Together!";
     }
 }

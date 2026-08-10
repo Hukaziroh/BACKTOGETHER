@@ -37793,6 +37793,7 @@ MonoBehaviour:
   playerCount: 0
   roomCodeText: {fileID: 1415804499}
   roomCode: 
+  roomName: 
 --- !u!114 &479596971
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -258647,6 +258648,14 @@ PrefabInstance:
     - target: {fileID: 1381074218888706539, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_Name
       value: LobbyPanel
+      objectReference: {fileID: 0}
+    - target: {fileID: 4215164014586056991, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_overflowMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7549401996362473519, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 72
       objectReference: {fileID: 0}
     - target: {fileID: 7936479838601238568, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_Pivot.x
