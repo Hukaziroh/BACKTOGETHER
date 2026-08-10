@@ -43,11 +43,6 @@ public class PlayerCombineHandler : NetworkBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
-
-    // =========================================================
-    // SyncVar Hook
-    // =========================================================
-
     private void OnCombineStateChanged(bool oldVal, bool newVal)
     {
         isCombined = newVal;
@@ -62,18 +57,18 @@ public class PlayerCombineHandler : NetworkBehaviour
 
     private void OnBodyTargetChanged(GameObject oldVal, GameObject newVal)
     {
-        bodyTarget = newVal;
-
-        CoopPlayerIdentity identity =
-            GetComponent<CoopPlayerIdentity>();
-
-        if (identity != null)
-            identity.ForceUpdateVisual();
-
-        // 로컬 플레이어라면 카메라를 새 본체로 설정
+        bodyTarget = newVal; // 필수!
+        CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
+        if (identity != null) identity.ForceUpdateVisual();
+        
         if (isLocalPlayer && newVal != null)
         {
-            SetCameraTarget(newVal.transform);
+            Camera mainCam = Camera.main;
+            if (mainCam != null)
+            {
+                CameraFollow cam = mainCam.GetComponent<CameraFollow>();
+                if (cam != null) cam.target = newVal.transform;
+            }
         }
     }
 
@@ -95,11 +90,6 @@ public class PlayerCombineHandler : NetworkBehaviour
         combineFaceIndex = newVal;
     }
 
-
-    // =========================================================
-    // 카메라
-    // =========================================================
-
     private void SetCameraTarget(Transform target)
     {
         if (!isLocalPlayer || target == null)
@@ -118,11 +108,6 @@ public class PlayerCombineHandler : NetworkBehaviour
             cam.target = target;
         }
     }
-
-
-    // =========================================================
-    // 합체 시작
-    // =========================================================
 
     [Server]
     public void StartCombineMode(
@@ -174,11 +159,6 @@ public class PlayerCombineHandler : NetworkBehaviour
 
         if (identity != null)
             identity.ForceUpdateVisual();
-
-
-        // =====================================================
-        // 카메라에 전달할 본체
-        // =====================================================
 
         NetworkIdentity bodyNetId =
             body.GetComponent<NetworkIdentity>();
@@ -242,21 +222,11 @@ public class PlayerCombineHandler : NetworkBehaviour
         if (identity != null)
             identity.ForceUpdateVisual();
 
-
-        // =====================================================
-        // 합체한 로컬 플레이어의 카메라는 본체를 따라감
-        // =====================================================
-
         if (isLocalPlayer && bodyObj != null)
         {
             SetCameraTarget(bodyObj.transform);
         }
     }
-
-
-    // =========================================================
-    // 서버 합체 입력
-    // =========================================================
 
     [Server]
     public float GetServerCombinedHorizontalInput()
@@ -472,11 +442,6 @@ public class PlayerCombineHandler : NetworkBehaviour
             }
         }
     }
-
-
-    // =========================================================
-    // 합체 해제
-    // =========================================================
 
     [Server]
     public void StopCombineMode(
