@@ -7,7 +7,12 @@ public enum Language
     Korean = 1,
     Japanese = 2,
     Chinese = 3,
-    Russian = 4
+    Russian = 4,
+    Italian = 5,
+    French = 6,
+    German = 7,
+    Spanish = 8,
+    Portuguese = 9
 }
 
 public class LocalizationController : MonoBehaviour

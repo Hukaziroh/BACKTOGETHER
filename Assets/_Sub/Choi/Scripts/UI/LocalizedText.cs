@@ -12,10 +12,15 @@ public class LocalizedText : MonoBehaviour
     [TextArea] public string japaneseText;
     [TextArea] public string chineseText;
     [TextArea] public string russianText;
+    [TextArea] public string italianText;
+    [TextArea] public string frenchText;
+    [TextArea] public string germanText;
+    [TextArea] public string spanishText;
+    [TextArea] public string portugueseText;
 
     [Header("가독성 보정 설정 (영어 메인폰트 전용)")]
-    public float englishDilate = 1f;          // 뭉개지지 않도록 기본값 0 기준 조절
-    public float englishOutlineThickness = 1; // 깔끔한 테두리 두께
+    public float englishDilate = 1f;
+    public float englishOutlineThickness = 1;
 
     [Header("기본 가독성 설정 (다국어/폴백폰트용)")]
     public float defaultDilate = 1f;
@@ -60,6 +65,21 @@ public class LocalizedText : MonoBehaviour
             case Language.Russian:
                 tmpText.text = string.IsNullOrEmpty(russianText) ? koreanText : russianText;
                 break;
+            case Language.Italian:
+                tmpText.text = string.IsNullOrEmpty(italianText) ? koreanText : italianText;
+                break;
+            case Language.French:
+                tmpText.text = string.IsNullOrEmpty(frenchText) ? koreanText : frenchText;
+                break;
+            case Language.German:
+                tmpText.text = string.IsNullOrEmpty(germanText) ? koreanText : germanText;
+                break;
+            case Language.Spanish:
+                tmpText.text = string.IsNullOrEmpty(spanishText) ? koreanText : spanishText;
+                break;
+            case Language.Portuguese:
+                tmpText.text = string.IsNullOrEmpty(portugueseText) ? koreanText : portugueseText;
+                break;
         }
 
         Material mat = tmpText.fontMaterial;
@@ -76,7 +96,6 @@ public class LocalizedText : MonoBehaviour
                 mat.SetFloat("_OutlineWidth", defaultOutlineThickness);
             }
 
-            // 변경된 머티리얼 인스턴스를 다시 적용하고 갱신을 강제함
             tmpText.fontMaterial = mat;
             tmpText.SetVerticesDirty();
         }
