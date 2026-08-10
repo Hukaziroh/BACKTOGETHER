@@ -57,6 +57,19 @@ public class EchoModeController : MonoBehaviour
 
     void LateUpdate()
     {
+        // 네트워크 스폰 타이밍에 따라 Start() 시점에 부모 쪽 SpriteRenderer가
+        // 아직 준비 안 돼있을 수 있다. 못 찾았으면 매 프레임 재시도해서 자기복구한다.
+        if (parentSpriteRenderer == null && transform.parent != null)
+        {
+            parentSpriteRenderer = transform.parent.GetComponent<SpriteRenderer>();
+        }
+
+        if (parentFaceSpriteRenderer == null && transform.parent != null)
+        {
+            Transform faceChild = transform.parent.Find("FaceSprite");
+            if (faceChild != null) parentFaceSpriteRenderer = faceChild.GetComponent<SpriteRenderer>();
+        }
+
         // 1. 바디(몸통) 외곽선 동기화
         if (parentSpriteRenderer != null && outlineSpriteRenderer != null)
         {
