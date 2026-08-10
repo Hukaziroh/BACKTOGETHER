@@ -100,49 +100,70 @@ public class PlayerCombineHandler : NetworkBehaviour
         NetworkIdentity bodyNetId = body.GetComponent<NetworkIdentity>();
         RpcApplyCombineVisual(bodyNetId, combineColorIndex, combineFaceIndex);
     }
-
     [ClientRpc]
-    private void RpcApplyCombineVisual(NetworkIdentity bodyNetId, int colorIdx, int faceIdx)
+    private void RpcApplyCombineVisual(
+        NetworkIdentity bodyNetId,
+        int colorIdx,
+        int faceIdx)
     {
         GameObject bodyObj = null;
+
         if (bodyNetId != null)
         {
             bodyObj = bodyNetId.gameObject;
             bodyTarget = bodyObj;
         }
-
         isCombined = true;
         combineColorIndex = colorIdx;
         combineFaceIndex = faceIdx;
 
-        bool isBody = (bodyNetId != null && netIdentity.netId == bodyNetId.netId);
+        bool isBody =
+            bodyNetId != null &&
+            netIdentity.netId == bodyNetId.netId;
 
         if (isBody)
         {
-            if (spriteRenderer != null) spriteRenderer.enabled = true;
-            if (col != null) col.enabled = true;
+            if (spriteRenderer != null)
+                spriteRenderer.enabled = true;
+
+            if (col != null)
+                col.enabled = true;
         }
         else
         {
-            if (spriteRenderer != null) spriteRenderer.enabled = false;
-            if (col != null) col.enabled = false;
-            if (rb != null) rb.simulated = false;
+            if (spriteRenderer != null)
+                spriteRenderer.enabled = false;
+
+            if (col != null)
+                col.enabled = false;
+
+            if (rb != null)
+                rb.simulated = false;
         }
+        
 
-        CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
-        if (identity != null) identity.ForceUpdateVisual();
+        CoopPlayerIdentity identity =
+            GetComponent<CoopPlayerIdentity>();
 
-        if (isLocalPlayer && bodyNetId != null)
+        if (identity != null)
+            identity.ForceUpdateVisual();
+
+        if (isLocalPlayer && bodyObj != null)
         {
             Camera mainCam = Camera.main;
+
             if (mainCam != null)
             {
-                CameraFollow cam = mainCam.GetComponent<CameraFollow>();
-                if (cam != null) cam.target = bodyNetId.transform;
+                CameraFollow cam =
+                    mainCam.GetComponent<CameraFollow>();
+
+                if (cam != null)
+                {
+                    cam.target = bodyObj.transform;
+                }
             }
         }
     }
-
     [Server]
     public float GetServerCombinedHorizontalInput()
     {
@@ -302,15 +323,24 @@ public class PlayerCombineHandler : NetworkBehaviour
     [ClientRpc]
     private void RpcApplySeparateVisual(Vector3 releasePosition)
     {
-        spriteRenderer.enabled = true;
-        col.enabled = true;
-        if (rb != null) rb.simulated = true;
+
+        if (spriteRenderer != null)
+            spriteRenderer.enabled = true;
+
+        if (col != null)
+            col.enabled = true;
+
+        if (rb != null)
+            rb.simulated = true;
+
         isCombined = false;
         combineColorIndex = -1;
+        combineFaceIndex = -1;
         bodyTarget = null;
 
+        CoopPlayerIdentity identity =
+            GetComponent<CoopPlayerIdentity>();
 
-        CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
         if (identity != null)
         {
             identity.ResetFaceVisual();
@@ -321,11 +351,18 @@ public class PlayerCombineHandler : NetworkBehaviour
         if (isLocalPlayer)
         {
             transform.position = releasePosition;
+
             Camera mainCam = Camera.main;
+
             if (mainCam != null)
             {
-                CameraFollow cam = mainCam.GetComponent<CameraFollow>();
-                if (cam != null) cam.target = transform;
+                CameraFollow cam =
+                    mainCam.GetComponent<CameraFollow>();
+
+                if (cam != null)
+                {
+                    cam.target = transform;
+                }
             }
         }
     }
