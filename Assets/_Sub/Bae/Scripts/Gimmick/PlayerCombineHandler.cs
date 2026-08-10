@@ -45,55 +45,67 @@ public class PlayerCombineHandler : NetworkBehaviour
         if (gameObject == body)
         {
             connectedGhosts.Clear();
-        }
-        else // gameObject != body
-        {
-            rb.simulated = false;
-            rb.linearVelocity = Vector2.zero;
 
-            PlayerCombineHandler bodyHandler = body.GetComponent<PlayerCombineHandler>();
+            if (spriteRenderer != null)
+                spriteRenderer.enabled = true;
 
-            if (bodyHandler != null)
-            {
-                if (!bodyHandler.connectedGhosts.Contains(this))
-                {
-                    bodyHandler.connectedGhosts.Add(this);
-                }
-            }
-        }
-
-        NetworkIdentity bodyNetId = body.GetComponent<NetworkIdentity>();
-        RpcApplyCombineVisual(bodyNetId);
-    }
-
-    [ClientRpc]
-    private void RpcApplyCombineVisual(NetworkIdentity bodyNetId)
-    {
-        if (bodyNetId == null || netIdentity.netId != bodyNetId.netId)
-        {
-            spriteRenderer.enabled = false;
-            col.enabled = false;
-            if (rb != null) rb.simulated = false;
+            if (col != null)
+                col.enabled = true;
         }
         else
         {
-            spriteRenderer.enabled = true; 
+            if (rb != null)
+            {
+                rb.simulated = false;
+                rb.linearVelocity = Vector2.zero;
+            }
+
+            PlayerCombineHandler bodyHandler = body.GetComponent<PlayerCombineHandler>();
+
+            if (bodyHandler != null && !bodyHandler.connectedGhosts.Contains(this))
+            {
+                bodyHandler.connectedGhosts.Add(this);
+            }
+
+            if (spriteRenderer != null)
+                spriteRenderer.enabled = false;
+
+            if (col != null)
+                col.enabled = false;
         }
 
         CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
-        if (identity != null) identity.ForceUpdateVisual();
+        if (identity != null)
+            identity.ForceUpdateVisual();
 
-        if (isLocalPlayer && bodyNetId != null)
-        {
-            Camera mainCam = Camera.main;
-            if (mainCam != null)
-            {
-                CameraFollow cam = mainCam.GetComponent<CameraFollow>();
-                if (cam != null) cam.target = bodyNetId.transform;
-            }
-        }
+        RpcApplyCombineVisual(body);
     }
 
+    [ClientRpc]
+    private void RpcApplyCombineVisual(GameObject body)
+    {
+        bodyTarget = body;
+        bool isBody = (gameObject == body);
+
+        if (spriteRenderer != null)
+            spriteRenderer.enabled = isBody;
+
+        if (col != null)
+            col.enabled = isBody;
+
+        if (rb != null)
+        {
+            rb.simulated = isBody;
+            if (!isBody)
+                rb.linearVelocity = Vector2.zero;
+        }
+
+        CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
+        if (identity != null)
+        {
+            identity.ForceUpdateVisual();
+        }
+    }
     void LateUpdate()
     {
         if (isCombined && bodyTarget != null && gameObject != bodyTarget)

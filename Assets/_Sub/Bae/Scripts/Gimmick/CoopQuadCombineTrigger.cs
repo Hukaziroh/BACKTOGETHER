@@ -43,62 +43,103 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
     [Server]
     private void ActivateQuadGroup()
     {
-        List<GameObject> validPlayers = playersInZone.Where(p => p != null && !p.GetComponent<PlayerCombineHandler>().isCombined).ToList();
+        List<GameObject> validPlayers = playersInZone
+            .Where(p =>
+                p != null &&
+                p.activeInHierarchy &&
+                p.GetComponent<PlayerCombineHandler>() != null &&
+                !p.GetComponent<PlayerCombineHandler>().isCombined)
+            .ToList();
 
-        if (validPlayers.Count < 4) return;
+        if (validPlayers.Count < requiredPlayers)
+            return;
 
-        GameObject playerA = validPlayers[0];
-        GameObject playerB = validPlayers[1];
-        GameObject playerC = validPlayers[2];
-        GameObject playerD = validPlayers[3];
+        validPlayers = validPlayers.Take(4).ToList();
 
-        PlayerCombineHandler a = playerA.GetComponent<PlayerCombineHandler>();
-        PlayerCombineHandler b = playerB.GetComponent<PlayerCombineHandler>();
-        PlayerCombineHandler c = playerC.GetComponent<PlayerCombineHandler>();
-        PlayerCombineHandler d = playerD.GetComponent<PlayerCombineHandler>();
-
-        a.connectedGhosts.Clear();
-        b.connectedGhosts.Clear();
-        c.connectedGhosts.Clear();
-        d.connectedGhosts.Clear();
-
-        int color = Random.Range(0, 2);
-        int face = Random.Range(0, 2);
-
-        a.combineColorIndex = color; a.combineFaceIndex = face;
-        b.combineColorIndex = color; b.combineFaceIndex = face;
-        c.combineColorIndex = color; c.combineFaceIndex = face;
-        d.combineColorIndex = color; d.combineFaceIndex = face;
-
-        List<CombineRole> roles = new List<CombineRole> {
-            CombineRole.Move_Left,
-            CombineRole.Move_Right,
-            CombineRole.Jump,
-            CombineRole.Action
-        };
-
-        for (int i = 0; i < roles.Count; i++)
+        for (int i = 0; i < validPlayers.Count; i++)
         {
-            int rand = Random.Range(i, roles.Count);
-            CombineRole temp = roles[i];
-            roles[i] = roles[rand];
-            roles[rand] = temp;
+            int randomIndex = Random.Range(i, validPlayers.Count);
+
+            GameObject temp = validPlayers[i];
+            validPlayers[i] = validPlayers[randomIndex];
+            validPlayers[randomIndex] = temp;
         }
 
-        a.StartCombineMode(roles[0], playerA);
-        b.StartCombineMode(roles[1], playerA);
-        c.StartCombineMode(roles[2], playerA);
-        d.StartCombineMode(roles[3], playerA);
+        List<CombineRole> availableRoles = new List<CombineRole>
+    {
+        CombineRole.Move_Left,
+        CombineRole.Move_Right,
+        CombineRole.Jump,
+        CombineRole.Action
+    };
 
-        Debug.Log($"[4인 합체 배정 완료] 본체({playerA.name}) -> {roles[0]}");
-        Debug.Log($"[4인 합체 배정 완료] 탑승({playerB.name}) -> {roles[1]}");
-        Debug.Log($"[4인 합체 배정 완료] 탑승({playerC.name}) -> {roles[2]}");
-        Debug.Log($"[4인 합체 배정 완료] 탑승({playerD.name}) -> {roles[3]}");
+        for (int i = 0; i < availableRoles.Count; i++)
+        {
+            int randomIndex = Random.Range(i, availableRoles.Count);
 
-        playersInZone.Remove(playerA);
-        playersInZone.Remove(playerB);
-        playersInZone.Remove(playerC);
-        playersInZone.Remove(playerD);
+            CombineRole temp = availableRoles[i];
+            availableRoles[i] = availableRoles[randomIndex];
+            availableRoles[randomIndex] = temp;
+        }
+        GameObject bodyPlayer = validPlayers[0];
+
+        foreach (GameObject player in validPlayers)
+        {
+            PlayerCombineHandler handler =
+                player.GetComponent<PlayerCombineHandler>();
+
+            if (handler == null)
+                continue;
+
+            handler.connectedGhosts.Clear();
+
+            handler.myRole = CombineRole.None;
+
+            handler.isCombined = false;
+
+            handler.bodyTarget = null;
+        }
+
+
+        int combineColor = Random.Range(0, 2);
+        int combineFace = Random.Range(0, 2);
+
+        for (int i = 0; i < 4; i++)
+        {
+            GameObject player = validPlayers[i];
+
+            PlayerCombineHandler handler =
+                player.GetComponent<PlayerCombineHandler>();
+
+            handler.combineColorIndex = combineColor;
+            handler.combineFaceIndex = combineFace;
+
+            CombineRole assignedRole = availableRoles[i];
+
+            handler.StartCombineMode(
+                assignedRole,
+                bodyPlayer
+            );
+
+            Debug.Log(
+                $"[4인 합체 역할 배정] " +
+                $"{player.name} → {assignedRole}"
+            );
+        }
+
+        foreach (GameObject player in validPlayers)
+        {
+            playersInZone.Remove(player);
+        }
+
+        Debug.Log(
+            $"[4인 합체 완료] " +
+            $"Body = {bodyPlayer.name} / " +
+            $"P1 = {validPlayers[0].name}:{availableRoles[0]} / " +
+            $"P2 = {validPlayers[1].name}:{availableRoles[1]} / " +
+            $"P3 = {validPlayers[2].name}:{availableRoles[2]} / " +
+            $"P4 = {validPlayers[3].name}:{availableRoles[3]}"
+        );
     }
 }
    
