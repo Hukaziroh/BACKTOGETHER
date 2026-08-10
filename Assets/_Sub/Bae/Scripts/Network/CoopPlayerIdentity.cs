@@ -31,7 +31,11 @@ public class CoopPlayerIdentity : NetworkBehaviour
         Color.yellow
     };
     [Header("합체 몸통 색")]
-    public Color[] combineColors = new Color[2];
+    public Color[] combineColors = new Color[2]
+    {
+    new Color(1f, 0.5f, 0.5f, 1f),
+    new Color(0.5f, 0.5f, 1f, 1f)
+    };
 
     [SyncVar(hook = nameof(OnPlayerIndexChanged))]
     public int playerIndex = -1;
