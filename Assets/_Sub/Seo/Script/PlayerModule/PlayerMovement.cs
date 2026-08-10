@@ -529,6 +529,9 @@ public class PlayerMovement : NetworkBehaviour
         var parallel = platform.GetComponentInParent<CoopParallelPlatform>();
         if (parallel != null) { getPlatformVelocityFunc = () => parallel.CurrentVelocity; return; }
 
+        var buttonGated = platform.GetComponentInParent<CoopButtonGatedPlatform>();
+        if (buttonGated != null) { getPlatformVelocityFunc = () => buttonGated.CurrentVelocity; return; }
+
         var mirror = platform.GetComponentInParent<CoopMirrorPlatforms>();
         if (mirror != null)
         {
