@@ -274,15 +274,16 @@ public class CoopPlayerIdentity : NetworkBehaviour
         Color mainColor;
 
         if (combineHandler == null) combineHandler = GetComponent<PlayerCombineHandler>();
+
         bool isCombinedState = (combineHandler != null &&
-                                        combineHandler.isCombined &&
-                                        combineHandler.combineColorIndex >= 0);
+                                combineHandler.isCombined &&
+                                combineHandler.combineColorIndex >= 0);
 
         if (isCombinedState)
         {
             mainColor = combineColors[combineHandler.combineColorIndex];
 
-            propBlock.SetFloat("_SplitMode", 0);
+            propBlock.SetFloat("_SplitMode", 1);
         }
         else
         {
@@ -298,6 +299,4 @@ public class CoopPlayerIdentity : NetworkBehaviour
         playerSpriteRenderer.color = mainColor;
         playerSpriteRenderer.SetPropertyBlock(propBlock);
     }
-
-
 }
