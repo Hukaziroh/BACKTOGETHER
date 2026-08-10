@@ -53,11 +53,9 @@ public class CoopPlayerIdentity : NetworkBehaviour
     public static Dictionary<int, CoopPlayerIdentity> players = new Dictionary<int, CoopPlayerIdentity>();
     private static readonly Dictionary<int, int> serverConnectionIndexMap = new Dictionary<int, int>();
 
-    private MaterialPropertyBlock propBlock;
 
     void Awake()
     {
-        propBlock = new MaterialPropertyBlock();
         controller = GetComponent<PlayerController>();
         anim = GetComponent<Animator>();
         combineHandler = GetComponent<PlayerCombineHandler>();
@@ -213,17 +211,12 @@ public class CoopPlayerIdentity : NetworkBehaviour
         if (playerSpriteRenderer == null)
             return;
 
-        Color originalColor = (playerIndex >= 0 && playerIndex < playerColors.Length)
+        Color originalColor =
+            (playerIndex >= 0 && playerIndex < playerColors.Length)
             ? playerColors[playerIndex]
             : Color.white;
 
-        playerSpriteRenderer.GetPropertyBlock(propBlock);
-
-        propBlock.SetFloat("_SplitMode", 0);
-        propBlock.SetColor("_Color1", originalColor);
-
         playerSpriteRenderer.color = originalColor;
-        playerSpriteRenderer.SetPropertyBlock(propBlock);
     }
 
     private void AssignAvailableIndex()
@@ -267,36 +260,32 @@ public class CoopPlayerIdentity : NetworkBehaviour
 
     private void UpdatePlayerVisual()
     {
-        if (playerSpriteRenderer == null) return;
+        if (playerSpriteRenderer == null)
+            return;
 
-        playerSpriteRenderer.GetPropertyBlock(propBlock);
+        if (combineHandler == null)
+            combineHandler = GetComponent<PlayerCombineHandler>();
 
         Color mainColor;
 
-        if (combineHandler == null) combineHandler = GetComponent<PlayerCombineHandler>();
-
-        bool isCombinedState = (combineHandler != null &&
-                                combineHandler.isCombined &&
-                                combineHandler.combineColorIndex >= 0);
-
-        if (isCombinedState)
+        if (combineHandler != null &&
+            combineHandler.isCombined &&
+            combineHandler.combineColorIndex >= 0 &&
+            combineHandler.combineColorIndex < combineColors.Length)
         {
             mainColor = combineColors[combineHandler.combineColorIndex];
-
-            propBlock.SetFloat("_SplitMode", 1);
+        }
+        
+        else if (playerIndex >= 0 &&
+                 playerIndex < playerColors.Length)
+        {
+            mainColor = playerColors[playerIndex];
         }
         else
         {
-            mainColor = (playerIndex >= 0 && playerIndex < playerColors.Length)
-                ? playerColors[playerIndex]
-                : Color.white;
-
-            propBlock.SetFloat("_SplitMode", 0);
+            mainColor = Color.white;
         }
 
-        propBlock.SetColor("_Color1", mainColor);
-
         playerSpriteRenderer.color = mainColor;
-        playerSpriteRenderer.SetPropertyBlock(propBlock);
     }
 }
