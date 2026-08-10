@@ -4,6 +4,7 @@ using UnityEngine;
 using Epic.OnlineServices;
 using System.Collections.Generic;
 #pragma warning disable 0067, 0414
+
 public class EOSLobby : MonoBehaviour
 {
     public bool IsLeavingLobby { get; private set; }
@@ -69,7 +70,7 @@ public class EOSLobby : MonoBehaviour
     /// <summary>When invoked, a message is sent to all subscribers with the key of the attribute that wasn't updated and an error message. </summary>
     public event UpdateAttributeFailure AttributeUpdateFailed;
 
-    //batch update attributes events (여러 속성을 한 번의 UpdateLobby 요청으로 반영할 때 사용)
+    //batch update attributes events
     public delegate void UpdateAttributesBatchSuccess();
     /// <summary>When invoked, all attributes passed to <see cref="UpdateLobbyAttributes"/> were applied in a single UpdateLobby request.</summary>
     public event UpdateAttributesBatchSuccess LobbyAttributesUpdateSucceeded;
@@ -144,13 +145,7 @@ public class EOSLobby : MonoBehaviour
 
     /// <summary>
     /// Creates a lobby based on given parameters using Epic Online Services.
-    /// <para>You can get the data that was added to the lobby by subscribing to the <see cref="CreateLobbySucceeded"/> event which gives you a list of <see cref="Attribute"/>.</para>
-    /// <para>This process may throw errors. You can get errors by subscribing to the <see cref="CreateLobbyFailed"/> event.</para>
     /// </summary>
-    /// <param name="maxConnections">The maximum amount of connections the lobby allows.</param>
-    /// <param name="permissionLevel">The restriction on the lobby to prevent unwanted people from joining.</param>
-    /// <param name="presenceEnabled">Use Epic's overlay to display information to others.</param>
-    /// <param name="lobbyData">Optional data that you can to the lobby. By default, there is an empty attribute for searching and an attribute which holds the host's network address.</param>
     public virtual void CreateLobby(uint maxConnections, LobbyPermissionLevel permissionLevel, bool presenceEnabled, AttributeData[] lobbyData = null)
     {
 
@@ -183,6 +178,12 @@ public class EOSLobby : MonoBehaviour
             //add attributes
             modHandle.AddAttribute(new LobbyModificationAddAttributeOptions { Attribute = defaultData, Visibility = LobbyAttributeVisibility.Public });
             modHandle.AddAttribute(new LobbyModificationAddAttributeOptions { Attribute = hostAddressData, Visibility = LobbyAttributeVisibility.Public });
+
+            // ⭐ [추가됨] 방 생성 시간을 유닉스 타임스탬프(숫자)로 저장하여 속성에 부여합니다.
+            long currentTimestamp = System.DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            AttributeData createdAtData = new AttributeData { Key = "created_at", Value = currentTimestamp };
+            modHandle.AddAttribute(new LobbyModificationAddAttributeOptions { Attribute = createdAtData, Visibility = LobbyAttributeVisibility.Public });
+            lobbyReturnData.Add(new Attribute { Data = createdAtData, Visibility = LobbyAttributeVisibility.Public });
 
             //add user attributes
             if (lobbyData != null)
@@ -222,11 +223,7 @@ public class EOSLobby : MonoBehaviour
 
     /// <summary>
     /// Finds lobbies based on given parameters using Epic Online Services.
-    /// <para>You can get the found lobbies by subscribing to the <see cref="FindLobbiesSucceeded"/> event which gives you a list of <see cref="LobbyDetails"/>.</para>
-    /// <para>This process may throw errors. You can get errors by subscribing to the <see cref="FindLobbiesFailed"/> event.</para>
     /// </summary>
-    /// <param name="maxResults">The maximum amount of results to return.</param>
-    /// <param name="lobbySearchSetParameterOptions">The parameters to search by. If left empty, then the search will use the default attribute attached to all the lobbies.</param>
     public virtual void FindLobbies(uint maxResults = 100, LobbySearchSetParameterOptions[] lobbySearchSetParameterOptions = null)
     {
         //create search handle and list of lobby details
@@ -262,8 +259,6 @@ public class EOSLobby : MonoBehaviour
             }
 
             // 이전 검색 결과로 받은 LobbyDetails 핸들을 해제한 뒤 비웁니다.
-            // (LobbyDetails는 EOS 네이티브 메모리를 들고 있으므로, 검색을 반복할 때마다
-            //  덮어쓰기 전에 반드시 Release 해줘야 누적 누수가 발생하지 않습니다.)
             ReleaseFoundLobbies();
 
             //for each lobby found, add data to details
@@ -273,6 +268,30 @@ public class EOSLobby : MonoBehaviour
                 search.CopySearchResultByIndex(new LobbySearchCopySearchResultByIndexOptions { LobbyIndex = (uint)i }, out lobbyInformation);
                 foundLobbies.Add(lobbyInformation);
             }
+
+            // ⭐ [추가됨] 방 리스트를 최신순으로 정렬합니다. (새로고침 시 순서 섞임 방지)
+            foundLobbies.Sort((lobbyA, lobbyB) =>
+            {
+                Attribute attrA = new Attribute();
+                Attribute attrB = new Attribute();
+
+                long timeA = 0;
+                long timeB = 0;
+
+                if (lobbyA.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "created_at" }, out attrA) == Result.Success)
+                {
+                    if (attrA.Data != null)
+                        timeA = attrA.Data.Value.AsInt64 ?? 0;
+                }
+
+                if (lobbyB.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "created_at" }, out attrB) == Result.Success)
+                {
+                    if (attrB.Data != null)
+                        timeB = attrB.Data.Value.AsInt64 ?? 0;
+                }
+
+                return timeB.CompareTo(timeA); // 내림차순 정렬 (나중에 만들어진 방이 위로)
+            });
 
             // 검색 결과는 이미 각 LobbyDetails로 복사해왔으므로 LobbySearch 핸들 자체는 더 필요 없습니다.
             search.Release();
@@ -284,8 +303,6 @@ public class EOSLobby : MonoBehaviour
 
     /// <summary>
     /// foundLobbies에 들어있는 이전 검색 결과의 LobbyDetails 핸들을 전부 Release하고 리스트를 비웁니다.
-    /// EOSLobby가 이 핸들들의 유일한 소유자이므로(리스트를 그대로 넘겨 쓰는 쪽에서는 복사해서 쓰는 걸 권장),
-    /// 여기서만 Release 하도록 통일해 중복 해제(double free)를 피합니다.
     /// </summary>
     private void ReleaseFoundLobbies()
     {
@@ -298,12 +315,7 @@ public class EOSLobby : MonoBehaviour
 
     /// <summary>
     /// Join the given lobby and get the data attached.
-    /// <para>You can get the lobby's data by subscribing to the <see cref="JoinLobbySucceeded"/> event which gives you a list of <see cref="Attribute"/>.</para>
-    /// <para>This process may throw errors. You can get errors by subscribing to the <see cref="JoinLobbyFailed"/> event.</para>
     /// </summary>
-    /// <param name="lobbyToJoin"><see cref="LobbyDetails"/> of the lobby to join that is retrieved from the <see cref="FindLobbiesSucceeded"/> event.</param>
-    /// <param name="attributeKeys">The keys to use to retrieve the data attached to the lobby. If you leave this empty, the host address attribute will still be read.</param>
-    /// <param name="presenceEnabled">Use Epic's overlay to display information to others.</param>
     public virtual void JoinLobby(LobbyDetails lobbyToJoin, string[] attributeKeys = null, bool presenceEnabled = false)
     {
         //join lobby
@@ -381,7 +393,6 @@ public class EOSLobby : MonoBehaviour
 
     /// <summary>
     /// 로비가 참가 가능한 상태인지(정원이 다 차지 않았는지) 확인하고, 현재/최대 인원도 함께 돌려줍니다.
-    /// ClientRoomItemUI, ClientLobbyManager(Quick Join) 등 여러 곳에서 중복 구현되던 로직을 하나로 모았습니다.
     /// </summary>
     public static bool IsLobbyJoinable(LobbyDetails lobby, out uint currentMembers, out uint maxMembers)
     {
@@ -398,9 +409,7 @@ public class EOSLobby : MonoBehaviour
     }
 
     /// <summary>
-    /// Leave the lobby that the user is connected to. If the creator of the lobby leaves, the lobby will be destroyed, and any client connected to the lobby will leave. If a member leaves, there will be no further action.
-    /// <para>If the player was able to destroy or leave the lobby, the <see cref="LeaveLobbySucceeded"/> event will be invoked.</para>
-    /// <para>This process may throw errors. You can errors by subscribing to the <see cref="LeaveLobbyFailed"/> event.</para>
+    /// Leave the lobby that the user is connected to.
     /// </summary>
     public void LeaveLobby()
     {
@@ -432,10 +441,8 @@ public class EOSLobby : MonoBehaviour
         EOSSDKComponent.GetLobbyInterface().LeaveLobby(options, null, OnLeaveLobbyCompleted);
     }
 
-   
-    private void OnLeaveLobbyCompleted(
-    LeaveLobbyCallbackInfo data
-)
+
+    private void OnLeaveLobbyCompleted(LeaveLobbyCallbackInfo data)
     {
         Debug.Log(
             $"[EOSLobby] ③ LeaveLobby 콜백 도착 | " +
@@ -465,10 +472,10 @@ public class EOSLobby : MonoBehaviour
             );
         }
     }
+
     /// <summary>
     /// Remove an attribute attached to the lobby.
     /// </summary>
-    /// <param name="key">The key of the attribute that will be removed.</param>
     public virtual void RemoveAttribute(string key)
     {
         LobbyModification modHandle = new LobbyModification();
@@ -491,7 +498,6 @@ public class EOSLobby : MonoBehaviour
     /// <summary>
     /// Update an attribute that is attached to the lobby.
     /// </summary>
-    /// <param name="attribute">The new data to apply.</param>
     private void UpdateAttribute(AttributeData attribute)
     {
         LobbyModification modHandle = new LobbyModification();
@@ -511,44 +517,24 @@ public class EOSLobby : MonoBehaviour
         });
     }
 
-    /// <summary>
-    /// Update a boolean attribute.
-    /// </summary>
-    /// <param name="key">The key of the attribute.</param>
-    /// <param name="newValue">The new boolean value.</param>
     public void UpdateLobbyAttribute(string key, bool newValue)
     {
         AttributeData data = new AttributeData { Key = key, Value = newValue };
         UpdateAttribute(data);
     }
 
-    /// <summary>
-    /// Update an integer attribute.
-    /// </summary>
-    /// <param name="key">The key of the attribute.</param>
-    /// <param name="newValue">The new integer value.</param>
     public void UpdateLobbyAttribute(string key, int newValue)
     {
         AttributeData data = new AttributeData { Key = key, Value = newValue };
         UpdateAttribute(data);
     }
 
-    /// <summary>
-    /// Update a double attribute.
-    /// </summary>
-    /// <param name="key">The key of the attribute.</param>
-    /// <param name="newValue">The new double value.</param>
     public void UpdateLobbyAttribute(string key, double newValue)
     {
         AttributeData data = new AttributeData { Key = key, Value = newValue };
         UpdateAttribute(data);
     }
 
-    /// <summary>
-    /// Update a string attribute.
-    /// </summary>
-    /// <param name="key">The key of the attribute.</param>
-    /// <param name="newValue">The new string value.</param>
     public void UpdateLobbyAttribute(string key, string newValue)
     {
         AttributeData data = new AttributeData { Key = key, Value = newValue };
@@ -557,15 +543,7 @@ public class EOSLobby : MonoBehaviour
 
     /// <summary>
     /// 여러 속성을 하나의 LobbyModification / UpdateLobby 요청으로 한 번에 반영합니다.
-    /// <para>
-    /// UpdateLobbyAttribute를 여러 번 연달아 호출하면 각 호출이 서로 기다리지 않는
-    /// 별개의 비동기 요청이 되어 순서를 보장할 수 없고, 그중 하나만 실패해도
-    /// 나머지 속성만 반영된 채로 남을 수 있습니다.
-    /// 방 생성처럼 여러 속성을 "한 세트"로 등록해야 하는 경우에는 이 메서드를 사용하세요.
-    /// </para>
-    /// <para>결과는 <see cref="LobbyAttributesUpdateSucceeded"/> / <see cref="LobbyAttributesUpdateFailed"/> 이벤트로 전달됩니다.</para>
     /// </summary>
-    /// <param name="attributes">한 번에 반영할 속성 목록.</param>
     public void UpdateLobbyAttributes(AttributeData[] attributes)
     {
         if (attributes == null || attributes.Length == 0)
@@ -601,16 +579,11 @@ public class EOSLobby : MonoBehaviour
     /// <summary>
     /// Returns the current lobby id
     /// </summary>
-    /// <returns>current lobby id</returns>
     public string GetCurrentLobbyId()
     {
         return currentLobbyId;
     }
 
-    /// <summary>
-    /// ★ 추가됨: 방장이 에픽 서버에서 로비를 완전히 파괴/삭제합니다.
-    /// (구버전 호환 코드로 작성됨)
-    /// </summary>
     /// <summary>
     /// 방장이 에픽 서버에서 로비를 완전히 파괴/삭제합니다.
     /// </summary>
@@ -646,6 +619,25 @@ public class EOSLobby : MonoBehaviour
         // 🌟 오브젝트가 파괴될 때 남아있는 로비 연결이 있다면 정해진 규격에 따라 자동 정제
         if (ConnectedToLobby && !string.IsNullOrEmpty(currentLobbyId))
         {
+            if (isLobbyOwner)
+            {
+                DestroyLobby();
+            }
+            else
+            {
+                LeaveLobby();
+            }
+        }
+    }
+
+    private void OnApplicationQuit()
+    {
+        if (!EOSSDKComponent.IsEOSReady()) return;
+
+        if (ConnectedToLobby && !string.IsNullOrEmpty(currentLobbyId))
+        {
+            Debug.Log("[EOSLobby] 강제 종료 감지! 에픽 서버에 로비 파괴/퇴장 신호를 긴급 송신합니다.");
+
             if (isLobbyOwner)
             {
                 DestroyLobby();
