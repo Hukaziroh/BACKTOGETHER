@@ -96,14 +96,18 @@ public class PlayerCombineHandler : NetworkBehaviour
         CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
         if (identity != null) identity.ForceUpdateVisual();
 
-        RpcApplyCombineVisual(body, combineColorIndex, combineFaceIndex);
+        // 🌟 수정: GameObject 대신 안전한 NetworkIdentity를 넘깁니다.
+        NetworkIdentity bodyNetId = body.GetComponent<NetworkIdentity>();
+        RpcApplyCombineVisual(bodyNetId, combineColorIndex, combineFaceIndex);
     }
 
     [ClientRpc]
-    private void RpcApplyCombineVisual(GameObject bodyObj, int colorIdx, int faceIdx)
+    private void RpcApplyCombineVisual(NetworkIdentity bodyNetId, int colorIdx, int faceIdx)
     {
-        if (bodyObj != null)
+        GameObject bodyObj = null;
+        if (bodyNetId != null)
         {
+            bodyObj = bodyNetId.gameObject;
             bodyTarget = bodyObj;
         }
 
@@ -111,7 +115,7 @@ public class PlayerCombineHandler : NetworkBehaviour
         combineColorIndex = colorIdx;
         combineFaceIndex = faceIdx;
 
-        bool isBody = (bodyObj != null && gameObject == bodyObj);
+        bool isBody = (bodyNetId != null && netIdentity.netId == bodyNetId.netId);
 
         if (isBody)
         {
@@ -128,13 +132,13 @@ public class PlayerCombineHandler : NetworkBehaviour
         CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
         if (identity != null) identity.ForceUpdateVisual();
 
-        if (isLocalPlayer && bodyObj != null)
+        if (isLocalPlayer && bodyNetId != null)
         {
             Camera mainCam = Camera.main;
             if (mainCam != null)
             {
                 CameraFollow cam = mainCam.GetComponent<CameraFollow>();
-                if (cam != null) cam.target = bodyObj.transform;
+                if (cam != null) cam.target = bodyNetId.transform;
             }
         }
     }

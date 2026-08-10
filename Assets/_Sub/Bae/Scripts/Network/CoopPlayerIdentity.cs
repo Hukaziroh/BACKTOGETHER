@@ -274,11 +274,9 @@ public class CoopPlayerIdentity : NetworkBehaviour
         Color mainColor;
 
         if (combineHandler == null) combineHandler = GetComponent<PlayerCombineHandler>();
-
         bool isCombinedState = (combineHandler != null &&
-                                combineHandler.isCombined &&
-                                combineHandler.combineColorIndex >= 0 &&
-                                combineHandler.bodyTarget != null);
+                                        combineHandler.isCombined &&
+                                        combineHandler.combineColorIndex >= 0);
 
         if (isCombinedState)
         {
