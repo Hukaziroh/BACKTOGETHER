@@ -145,6 +145,7 @@ GameObject:
   - component: {fileID: 3474944690302933491}
   - component: {fileID: 6350544986058331245}
   - component: {fileID: 6089486542906772621}
+  - component: {fileID: 2633421040888034740}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -271,6 +272,28 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2633421040888034740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1550839877888401147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b54e22d057a07ac4e9ff14b6cee8252d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  koreanText: "\uD638\uC2A4\uD2B8 \uC5F0\uACB0 \uB04A\uAE40"
+  englishText: HostDisconnect
+  japaneseText: "\u30DB\u30B9\u30C8\u63A5\u7D9A\u5207\u308C"
+  chineseText: "\u4E0E\u4E3B\u673A\u7684\u8FDE\u63A5\u5DF2\u65AD\u5F00"
+  russianText: "\u0421\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0435 \u0441
+    \u0445\u043E\u0441\u0442\u043E\u043C \u043F\u043E\u0442\u0435\u0440\u044F\u043D\u043E"
+  englishDilate: 0
+  englishOutlineThickness: 0.4
+  defaultDilate: 0
+  defaultOutlineThickness: 0
 --- !u!1 &2285621058433210610
 GameObject:
   m_ObjectHideFlags: 0
@@ -282,6 +305,7 @@ GameObject:
   - component: {fileID: 2326962195123260776}
   - component: {fileID: 9189901155819839410}
   - component: {fileID: 5089362399001263618}
+  - component: {fileID: 9086672926039421807}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -336,7 +360,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Go to back
+  m_text: Return to Title
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 2627e9ca796b22d4fb592f60230c2fec, type: 2}
   m_sharedMaterial: {fileID: 4301745327245154971, guid: 2627e9ca796b22d4fb592f60230c2fec, type: 2}
@@ -408,6 +432,27 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &9086672926039421807
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2285621058433210610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b54e22d057a07ac4e9ff14b6cee8252d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  koreanText: "\uD0C0\uC774\uD2C0\uB85C \uB3CC\uC544\uAC00\uAE30"
+  englishText: Return to Title
+  japaneseText: "\u30BF\u30A4\u30C8\u30EB\u306B\u623B\u308B"
+  chineseText: "\u8FD4\u56DE\u6807\u9898"
+  russianText: "\u0412\u0435\u0440\u043D\u0443\u0442\u044C\u0441\u044F \u043A \u0437\u0430\u0433\u043E\u043B\u043E\u0432\u043A\u0443"
+  englishDilate: 0
+  englishOutlineThickness: 0.4
+  defaultDilate: 0
+  defaultOutlineThickness: 0
 --- !u!1 &6306415820498370904
 GameObject:
   m_ObjectHideFlags: 0
