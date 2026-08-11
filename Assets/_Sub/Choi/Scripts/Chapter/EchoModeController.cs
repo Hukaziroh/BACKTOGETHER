@@ -47,27 +47,25 @@ public class EchoModeController : MonoBehaviour
         {
             faceOutlineSpriteRenderer = faceOutlineChild.GetComponent<SpriteRenderer>();
         }
-
-        // 바디 외곽선과 동일한 셰이더(마테리얼) 공유
-        if (outlineSpriteRenderer != null && faceOutlineSpriteRenderer != null)
-        {
-            faceOutlineSpriteRenderer.sharedMaterial = outlineSpriteRenderer.sharedMaterial;
-        }
     }
 
     void LateUpdate()
     {
-        // 네트워크 스폰 타이밍에 따라 Start() 시점에 부모 쪽 SpriteRenderer가
-        // 아직 준비 안 돼있을 수 있다. 못 찾았으면 매 프레임 재시도해서 자기복구한다.
-        if (parentSpriteRenderer == null && transform.parent != null)
+        // 타이밍 이슈를 근본적으로 없애기 위해, null일 때만 재시도하는 게 아니라
+        // 매 프레임 무조건 다시 참조를 갱신한다. (4명뿐이라 성능 부담 없음)
+        if (outlineSpriteRenderer == null) outlineSpriteRenderer = GetComponent<SpriteRenderer>();
+        if (transform.parent != null)
         {
             parentSpriteRenderer = transform.parent.GetComponent<SpriteRenderer>();
-        }
 
-        if (parentFaceSpriteRenderer == null && transform.parent != null)
-        {
             Transform faceChild = transform.parent.Find("FaceSprite");
             if (faceChild != null) parentFaceSpriteRenderer = faceChild.GetComponent<SpriteRenderer>();
+        }
+
+        // 바디 외곽선과 동일한 셰이더(마테리얼) 공유 - 매 프레임 보정
+        if (outlineSpriteRenderer != null && faceOutlineSpriteRenderer != null && faceOutlineSpriteRenderer.sharedMaterial != outlineSpriteRenderer.sharedMaterial)
+        {
+            faceOutlineSpriteRenderer.sharedMaterial = outlineSpriteRenderer.sharedMaterial;
         }
 
         // 1. 바디(몸통) 외곽선 동기화
