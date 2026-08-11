@@ -641,22 +641,22 @@ public class EOSLobby : MonoBehaviour
         }
     }
 
-    private void OnApplicationQuit()
-    {
-        if (!EOSSDKComponent.IsEOSReady()) return;
+    ////private void OnApplicationQuit()
+    ////{
+    ////    if (!EOSSDKComponent.IsEOSReady()) return;
 
-        if (ConnectedToLobby && !string.IsNullOrEmpty(currentLobbyId))
-        {
-            Debug.Log("[EOSLobby] 강제 종료 감지! 에픽 서버에 로비 파괴/퇴장 신호를 긴급 송신합니다.");
+    ////    if (ConnectedToLobby && !string.IsNullOrEmpty(currentLobbyId))
+    ////    {
+    ////        Debug.Log("[EOSLobby] 강제 종료 감지! 에픽 서버에 로비 파괴/퇴장 신호를 긴급 송신합니다.");
 
-            if (isLobbyOwner)
-            {
-                DestroyLobby();
-            }
-            else
-            {
-                LeaveLobby();
-            }
-        }
-    }
+    ////        if (isLobbyOwner)
+    ////        {
+    ////            DestroyLobby();
+    ////        }
+    ////        else
+    ////        {
+    ////            LeaveLobby();
+    ////        }
+    ////    }
+    ////}
 }
