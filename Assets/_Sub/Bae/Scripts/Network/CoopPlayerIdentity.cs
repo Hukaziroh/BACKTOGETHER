@@ -91,9 +91,56 @@ public class CoopPlayerIdentity : NetworkBehaviour
     {
         base.OnStartServer();
 
-        CoopPlayerManager.RegisterPlayer(gameObject);
+        if (connectionToClient != null)
+        {
+            int connId = connectionToClient.connectionId;
 
-        AssignAvailableIndex();
+            // ⭐ 1. 자가 청소 (Garbage Collection):
+            // 현재 방에 실제 연결된 유저 명단(connections)에 없는 
+            // 죽은 ID(유령)가 딕셔너리에 남아있다면 싹 다 지워버립니다.
+            List<int> deadKeys = new List<int>();
+            foreach (int key in serverConnectionIndexMap.Keys)
+            {
+                if (!NetworkServer.connections.ContainsKey(key))
+                {
+                    deadKeys.Add(key);
+                }
+            }
+            foreach (int deadKey in deadKeys)
+            {
+                serverConnectionIndexMap.Remove(deadKey);
+            }
+
+            // 2. 인덱스(번호표) 할당
+            if (serverConnectionIndexMap.ContainsKey(connId))
+            {
+                playerIndex = serverConnectionIndexMap[connId];
+            }
+            else // 처음 온 유저
+            {
+                int assigned = -1;
+                for (int i = 0; i < 4; i++)
+                {
+                    if (!serverConnectionIndexMap.ContainsValue(i))
+                    {
+                        assigned = i;
+                        break;
+                    }
+                }
+
+                // ⭐ 3. 핵심 방어 로직: 
+                // 타임아웃 지연 등으로 유령이 번호표를 안 놓고 있어서 빈자리가 없을 때 (-1 방지)
+                if (assigned == -1)
+                {
+                    Debug.LogWarning($"[CoopPlayerIdentity] 남는 번호표가 없습니다! 하얀색 플레이어 버그 방지를 위해 임시 번호를 강제 부여합니다.");
+                    // -1 대신 현재 접속 ID를 4로 나눈 나머지를 주어 절대 하얀색으로 뻗거나 에러가 나지 않게 만듭니다.
+                    assigned = connId % 4;
+                }
+
+                serverConnectionIndexMap[connId] = assigned;
+                playerIndex = assigned;
+            }
+        }
     }
 
     public override void OnStartClient()
