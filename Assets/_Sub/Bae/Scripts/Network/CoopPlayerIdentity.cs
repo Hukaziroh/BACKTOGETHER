@@ -130,13 +130,13 @@ public class CoopPlayerIdentity : NetworkBehaviour
 
         CoopPlayerManager.UnregisterPlayer(gameObject);
 
-        if (connectionToClient != null)
+        if (connectionToClient != null && !connectionToClient.isReady)
         {
             int connId = connectionToClient.connectionId;
             if (serverConnectionIndexMap.ContainsKey(connId))
             {
                 serverConnectionIndexMap.Remove(connId);
-                Debug.Log($"[플레이어 퇴장] 접속 ID({connId})의 인덱스 기록을 삭제하여 자리를 비웁니다.");
+                Debug.Log($"[플레이어 퇴장] 접속 ID({connId})의 인덱스 기록을 삭제합니다.");
             }
         }
 
