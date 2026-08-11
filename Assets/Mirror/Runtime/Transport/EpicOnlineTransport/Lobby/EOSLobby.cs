@@ -266,6 +266,17 @@ public class EOSLobby : MonoBehaviour
             {
                 LobbyDetails lobbyInformation;
                 search.CopySearchResultByIndex(new LobbySearchCopySearchResultByIndexOptions { LobbyIndex = (uint)i }, out lobbyInformation);
+
+                // ⭐ [추가됨] EOS 백엔드 삭제 지연으로 남은 인원수 0명 유령방 필터링
+                uint memberCount = lobbyInformation.GetMemberCount(new LobbyDetailsGetMemberCountOptions());
+                if (memberCount == 0)
+                {
+                    // 인원이 0명이면 에픽 백엔드에서 삭제 진행 중인 방이므로
+                    // 네이티브 메모리를 해제하고 목록에 추가하지 않고 건너뜁니다.
+                    lobbyInformation.Release();
+                    continue;
+                }
+
                 foundLobbies.Add(lobbyInformation);
             }
 
