@@ -127,16 +127,21 @@ public class CoopPlayerIdentity : NetworkBehaviour
     public override void OnStopServer()
     {
         base.OnStopServer();
-
         CoopPlayerManager.UnregisterPlayer(gameObject);
-
-        if (connectionToClient != null && !connectionToClient.isReady)
+        if (connectionToClient != null)
         {
             int connId = connectionToClient.connectionId;
-            if (serverConnectionIndexMap.ContainsKey(connId))
+            if (!NetworkServer.connections.ContainsKey(connId))
             {
-                serverConnectionIndexMap.Remove(connId);
-                Debug.Log($"[플레이어 퇴장] 접속 ID({connId})의 인덱스 기록을 삭제합니다.");
+                if (serverConnectionIndexMap.ContainsKey(connId))
+                {
+                    serverConnectionIndexMap.Remove(connId);
+                    Debug.Log($"[플레이어 퇴장] 접속 ID({connId})가 완전히 퇴장했습니다. 색상을 회수합니다.");
+                }
+            }
+            else
+            {
+                Debug.Log($"[씬 전환] 접속 ID({connId})는 방에 남아있습니다. 색상 인덱스를 안전하게 보존합니다.");
             }
         }
 
