@@ -32,6 +32,16 @@ public class EchoZoneController : NetworkBehaviour
         if (echoManager != null) echoManager.SetActive(false);
     }
 
+    void Update()
+    {
+        // 존 시작부터 바로 켜지는 맵(챕터6 보스맵 등)은 씬 시작 타이밍에 플레이어 스폰/
+        // firstEntrantNetId 전파가 아직 안 끝났을 수 있다. 한 번 실패해도 다음 프레임에
+        // 자동으로 재시도해서 자기복구하도록 함. playersInsideCount가 아니라
+        // echoManager의 실제 활성 상태를 기준으로 삼아서, 트리거를 거치지 않고
+        // 강제로 켜진 경우(처음부터 시작 등)에도 재시도가 걸리게 한다.
+        if (echoManager != null && echoManager.activeSelf) UpdateEchoWaveOrigin();
+    }
+
     void OnTriggerEnter2D(Collider2D other)
     {
         NetworkIdentity identity = GetPlayerIdentity(other);
