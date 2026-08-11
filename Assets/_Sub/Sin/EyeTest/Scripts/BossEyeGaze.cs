@@ -12,6 +12,7 @@ public class BossEyeGaze : MonoBehaviour
     public float maxGazeDelay = 3f;
 
     [Header("깜빡임 (감은 눈 그림 없이 스케일로 표현)")]
+    public bool enableBlinking = true;
     public float minBlinkDelay = 2f;
     public float maxBlinkDelay = 5f;
     public float blinkCloseTime = 0.06f;
@@ -48,6 +49,9 @@ public class BossEyeGaze : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(Random.Range(minBlinkDelay, maxBlinkDelay));
+
+            if (!enableBlinking) continue;
+
             yield return Blink(baseScale);
         }
     }
