@@ -1037,9 +1037,6 @@ MonoBehaviour:
   - {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   - {r: 1, g: 0.5019608, b: 1, a: 1}
   - {r: 0.5019608, g: 0.5019608, b: 1, a: 1}
-  combineColors:
-  - {r: 0, g: 0, b: 0, a: 0}
-  - {r: 0, g: 0, b: 0, a: 0}
   playerIndex: -1
   faceSpriteRenderer: {fileID: 1103731208479697864}
   playerFaceGroups:
@@ -1263,9 +1260,9 @@ MonoBehaviour:
   isRestrictedByRope: 0
   moveSpeed: 7
   normalFriction: 20
-  iceSlideFriction: 20
+  iceSlideFriction: 10
   airFriction: 3
-  iceAcceleration: 150
+  iceAcceleration: 14
   jumpHeight: 4
   jumpSpeed: 4
   fallSpeed: 2.5
