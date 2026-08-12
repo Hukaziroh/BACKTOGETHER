@@ -290,6 +290,26 @@ public class ClientLobbyManager : MonoBehaviour
         if (clientPublicPanel != null && clientPublicPanel.activeSelf)
         {
             if (selected == null) return;
+
+            // 퍼블릭 방 리스트 하단 페이지네이션 좌우 입력 처리 (패드/키보드 공용)
+            bool isPaginationSelected = (prevPageButton != null && selected == prevPageButton.gameObject) ||
+                                        (nextPageButton != null && selected == nextPageButton.gameObject) ||
+                                        (pageText != null && (selected == pageText.gameObject || selected == pageText.transform.parent.gameObject));
+
+            if (isPaginationSelected)
+            {
+                if (leftPressed)
+                {
+                    OnClick_PrevPage();
+                }
+                else if (rightPressed)
+                {
+                    OnClick_NextPage();
+                }
+
+                return;
+            }
+
             bool isFilterChapterSelected = (chapterFilterSelectObject != null && selected == chapterFilterSelectObject) ||
                                    (filterChapterText != null && (selected == filterChapterText.gameObject || selected == filterChapterText.transform.parent.gameObject)) ||
                                    (prevFilterChapterButton != null && selected == prevFilterChapterButton.gameObject) ||
