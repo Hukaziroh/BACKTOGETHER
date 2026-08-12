@@ -37873,7 +37873,8 @@ MonoBehaviour:
   syncInterval: 0
   playerCountText: {fileID: 1415804500}
   playerCount: 0
-  roomCodeText: {fileID: 1415804499}
+  roomCodeLabelText: {fileID: 1415804499}
+  roomCodeValueText: {fileID: 1415804501}
   roomCode: 
   roomName: 
 --- !u!114 &479596971
@@ -254775,9 +254776,45 @@ PrefabInstance:
       propertyPath: m_overflowMode
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4766194744893955446, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4766194744893955446, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4766194744893955446, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4766194744893955446, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7549401996362473519, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7549401996362473519, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7549401996362473519, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7549401996362473519, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 100
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7549401996362473519, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7549401996362473519, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7936479838601238568, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_Pivot.x
@@ -254883,6 +254920,17 @@ MonoBehaviour:
 --- !u!114 &1415804500 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1594833032769272802, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+  m_PrefabInstance: {fileID: 1415804497}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+--- !u!114 &1415804501 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 534971709051548441, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
   m_PrefabInstance: {fileID: 1415804497}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
