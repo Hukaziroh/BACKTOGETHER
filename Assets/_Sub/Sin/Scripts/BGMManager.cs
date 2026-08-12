@@ -12,9 +12,10 @@ public class BGMManager : MonoBehaviour
     {
         public string sceneName;
         public AudioClip clip;
+        [Range(0f, 1f)] public float volume = 1f;
     }
 
-    [Header("씬 이름 <-> 곡 매핑 (8개)")]
+    [Header("씬 이름 <-> 곡 매핑 (8개, 씬별 볼륨 포함)")]
     public SceneTrack[] tracks = new SceneTrack[]
     {
         new SceneTrack { sceneName = "Main" },
@@ -30,6 +31,7 @@ public class BGMManager : MonoBehaviour
     [Header("출력 믹서 그룹")]
     public AudioMixerGroup outputGroup;
 
+    [Header("전체 마스터 배율 (씬별 volume에 곱해짐)")]
     [Range(0f, 1f)]
     public float targetVolume = 1f;
 
@@ -51,7 +53,6 @@ public class BGMManager : MonoBehaviour
         source = GetComponent<AudioSource>();
         source.loop = true;
         source.playOnAwake = false;
-        source.volume = targetVolume;
         if (outputGroup != null) source.outputAudioMixerGroup = outputGroup;
     }
 
@@ -93,23 +94,24 @@ public class BGMManager : MonoBehaviour
         if (sceneName == currentSceneName) return;
         currentSceneName = sceneName;
 
-        AudioClip clip = null;
+        SceneTrack track = null;
         foreach (SceneTrack t in tracks)
         {
             if (t.sceneName == sceneName)
             {
-                clip = t.clip;
+                track = t;
                 break;
             }
         }
 
-        if (clip == null)
+        if (track == null || track.clip == null)
         {
             source.Stop();
             return;
         }
 
-        source.clip = clip;
+        source.volume = targetVolume * track.volume;
+        source.clip = track.clip;
         source.Play();
     }
 }
