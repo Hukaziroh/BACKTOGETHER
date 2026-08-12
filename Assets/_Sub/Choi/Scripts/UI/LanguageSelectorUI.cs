@@ -25,12 +25,30 @@ public class LanguageSelectorUI : MonoBehaviour
     {
         if (EventSystem.current.currentSelectedGameObject == gameObject)
         {
-            if (Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame)
+            bool leftPressed = false;
+            bool rightPressed = false;
+
+            // 키보드 입력 체크
+            if (Keyboard.current != null)
+            {
+                leftPressed |= Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame;
+                rightPressed |= Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame;
+            }
+
+            // 게임패드 입력 체크
+            if (Gamepad.current != null)
+            {
+                leftPressed |= Gamepad.current.dpad.left.wasPressedThisFrame || Gamepad.current.leftStick.left.wasPressedThisFrame;
+                rightPressed |= Gamepad.current.dpad.right.wasPressedThisFrame || Gamepad.current.leftStick.right.wasPressedThisFrame;
+            }
+
+            // 입력에 따른 동작 처리
+            if (leftPressed)
             {
                 ChangeLanguageOffset(-1);
                 if (leftFeedback != null) leftFeedback.PlayPressEffect();
             }
-            else if (Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame)
+            else if (rightPressed)
             {
                 ChangeLanguageOffset(1);
                 if (rightFeedback != null) rightFeedback.PlayPressEffect();
