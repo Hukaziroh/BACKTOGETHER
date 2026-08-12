@@ -42,6 +42,7 @@ public class PlayerRespawn : NetworkBehaviour
         if (!isLocalPlayer || isRespawning)
             return;
 
+        // 🌟 New Input System의 restartAction 상태 감지
         bool isHoldingRestart = controller.input != null &&
                                 controller.input.restartAction != null &&
                                 controller.input.restartAction.IsPressed();
@@ -82,14 +83,27 @@ public class PlayerRespawn : NetworkBehaviour
     private IEnumerator RespawnSinglePlayerRoutine()
     {
         isRespawning = true;
+
         PlayerKnockback knockback = GetComponent<PlayerKnockback>();
         if (knockback != null) knockback.ResetKnockback();
-        if (controller != null && controller.rb != null) controller.rb.linearVelocity = Vector2.zero;
+
+        if (controller != null && controller.rb != null)
+        {
+            controller.rb.linearVelocity = Vector2.zero;
+            controller.rb.simulated = false;
+        }
+
+        yield return new WaitForSeconds(0.2f);
 
         transform.position = currentSpawnPoint;
         Physics2D.SyncTransforms();
 
-        yield return new WaitForSeconds(0.2f);
+        if (controller != null && controller.rb != null)
+        {
+            controller.rb.simulated = true; 
+        }
+
+        yield return new WaitForSeconds(0.1f); 
 
         isRespawning = false;
     }
@@ -111,6 +125,7 @@ public class PlayerRespawn : NetworkBehaviour
                 if (pController != null && pController.rb != null)
                 {
                     pController.rb.linearVelocity = Vector2.zero;
+                    pController.rb.simulated = false;
                 }
             }
         }
@@ -136,10 +151,16 @@ public class PlayerRespawn : NetworkBehaviour
 
                 p.transform.position = finalSpawnPos;
                 Physics2D.SyncTransforms();
+
+                PlayerController pController = p.GetComponent<PlayerController>();
+                if (pController != null && pController.rb != null)
+                {
+                    pController.rb.simulated = true; 
+                }
             }
         }
 
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.1f);
 
         foreach (var p in allPlayers)
         {
