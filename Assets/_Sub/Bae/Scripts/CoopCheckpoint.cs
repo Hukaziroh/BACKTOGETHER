@@ -141,14 +141,39 @@ public class CoopCheckpoint : NetworkBehaviour
                 $"체크포인트 Index = {checkpointIndex} | 개인 체크포인트 갱신 시도"
             );
 
-            // 🌟 [수정됨] 마찬가지로 하나로 통합!
+            // 1. 트기러를 밟은 본인(몸통) 갱신
             respawnScript.UpdateCheckpoint(spawnLocation.position, checkpointIndex);
 
             NetworkIdentity identity = other.GetComponent<NetworkIdentity>();
             if (identity != null && activatedByNetId.Add(identity.netId))
             {
-                // UI(시각적) 연출은 해당 클라이언트에게만 쏴줘야 하므로 TargetRpc 유지 (완벽함)
+                // UI(시각적) 연출은 해당 클라이언트에게만 쏴줘야 하므로 TargetRpc 유지
                 TargetActivateFlag(respawnScript.connectionToClient);
+            }
+
+            // 🌟 [추가된 로직] 합체 상태일 경우, 몸통에 연결된 고스트(Ghost) 플레이어들도 함께 갱신!
+            PlayerCombineHandler combineHandler = other.GetComponent<PlayerCombineHandler>();
+            if (combineHandler != null && combineHandler.isCombined && combineHandler.connectedGhosts.Count > 0)
+            {
+                foreach (var ghost in combineHandler.connectedGhosts)
+                {
+                    if (ghost == null) continue;
+
+                    PlayerRespawn ghostRespawn = ghost.GetComponent<PlayerRespawn>();
+                    NetworkIdentity ghostIdentity = ghost.GetComponent<NetworkIdentity>();
+
+                    if (ghostRespawn != null)
+                    {
+                        // 고스트 플레이어의 서버 체크포인트 위치 갱신
+                        ghostRespawn.UpdateCheckpoint(spawnLocation.position, checkpointIndex);
+
+                        // 고스트 플레이어의 클라이언트에도 팡파레 연출 TargetRpc 전송
+                        if (ghostIdentity != null && activatedByNetId.Add(ghostIdentity.netId))
+                        {
+                            TargetActivateFlag(ghostRespawn.connectionToClient);
+                        }
+                    }
+                }
             }
         }
     }
