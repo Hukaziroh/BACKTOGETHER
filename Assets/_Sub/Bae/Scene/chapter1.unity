@@ -156742,6 +156742,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Counter
       objectReference: {fileID: 0}
+    - target: {fileID: 1925333371316135368, guid: 1bed9f6c33c4e2f4b9fa6f51ee0fa12e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2020620552394857235, guid: 1bed9f6c33c4e2f4b9fa6f51ee0fa12e, type: 3}
       propertyPath: m_fontSize
       value: 0.5
@@ -156768,7 +156772,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5229212575877560158, guid: 1bed9f6c33c4e2f4b9fa6f51ee0fa12e, type: 3}
       propertyPath: m_Size.y
-      value: 3.7956219
+      value: 1.5519931
       objectReference: {fileID: 0}
     - target: {fileID: 5229212575877560158, guid: 1bed9f6c33c4e2f4b9fa6f51ee0fa12e, type: 3}
       propertyPath: m_Offset.x
@@ -156776,7 +156780,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5229212575877560158, guid: 1bed9f6c33c4e2f4b9fa6f51ee0fa12e, type: 3}
       propertyPath: m_Offset.y
-      value: -0.9026413
+      value: -2.0244555
       objectReference: {fileID: 0}
     - target: {fileID: 5425679398505350696, guid: 1bed9f6c33c4e2f4b9fa6f51ee0fa12e, type: 3}
       propertyPath: m_SizeDelta.x
