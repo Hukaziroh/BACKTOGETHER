@@ -12,8 +12,10 @@ public class LobbySyncManager : NetworkBehaviour
     [SyncVar(hook = nameof(OnPlayerCountUpdated))]
     public int playerCount = 0;
 
-    [Header("오른쪽 UI: 룸코드")]
-    public TextMeshProUGUI roomCodeText;
+    [Header("오른쪽 UI: 룸코드 (분리된 오브젝트)")]
+    // 🌟 라벨(번역된 문구)과 값(코드 데이터)을 별도로 관리합니다.
+    public TextMeshProUGUI roomCodeLabelText;
+    public TextMeshProUGUI roomCodeValueText;
 
     [SyncVar(hook = nameof(OnRoomCodeUpdated))]
     public string roomCode = "";
@@ -94,12 +96,18 @@ public class LobbySyncManager : NetworkBehaviour
 
     private void UpdateRoomCodeUI(string code)
     {
-        if (roomCodeText == null) return;
+        // 🌟 문자열 파싱을 하지 않고 값(Value) 오브젝트만 업데이트합니다.
+        if (roomCodeValueText == null) return;
 
         bool isMainScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Main";
 
         // 공개방(code가 비어있음)일 때 방 이름 사용, 아니면 코드 사용
         string formattedCode = (isMainScene) ? "Empty" : (string.IsNullOrEmpty(code) ? roomName : code);
+
+        if (string.IsNullOrEmpty(formattedCode) && !isMainScene && !string.IsNullOrEmpty(PrivateLobbyManager.currentShortCode))
+        {
+            formattedCode = PrivateLobbyManager.currentShortCode;
+        }
 
         // 스트리머 모드(가리기) 적용 여부 확인
         bool isCodeVisible = true;
@@ -108,32 +116,15 @@ public class LobbySyncManager : NetworkBehaviour
             isCodeVisible = OptionsManager.instance.IsCodeVisible;
         }
 
-        // 🌟 수정된 부분: 비공개방/공개방 구분 없이 가리기 옵션이 켜져있지 않으면(isCodeVisible이 false면) 무조건 마스킹 처리
+        // 비공개방/공개방 구분 없이 가리기 옵션이 켜져있지 않으면 마스킹 처리
         if (!isMainScene && !isCodeVisible)
         {
             formattedCode = "******";
         }
 
-        // 줄바꿈 문자(\n, \r)를 유지하거나 기존 텍스트 형태에 맞춰 prefix 추출
-        string prefix = "Code:\n";
-        if (!string.IsNullOrEmpty(roomCodeText.text))
-        {
-            int splitIndex = roomCodeText.text.IndexOf('\n');
-            if (splitIndex != -1 && roomCodeText.text.Length >= splitIndex + 1)
-            {
-                prefix = roomCodeText.text.Substring(0, splitIndex + 1);
-            }
-            else
-            {
-                int colonIndex = roomCodeText.text.IndexOf(':');
-                if (colonIndex != -1)
-                {
-                    prefix = roomCodeText.text.Substring(0, colonIndex + 1);
-                }
-            }
-        }
-
-        // 최종 텍스트 적용 (줄바꿈 포함)
-        roomCodeText.text = prefix + formattedCode;
+        // 🌟 더 이상 접두사(Prefix)를 찾거나 파싱하지 않습니다.
+        // 라벨(roomCodeLabelText)은 이미 유니티 내 번역 시스템이 처리한 대로 고정되어 있고,
+        // 우리는 오직 코드 값(roomCodeValueText)만 갱신합니다.
+        roomCodeValueText.text = formattedCode;
     }
 }
