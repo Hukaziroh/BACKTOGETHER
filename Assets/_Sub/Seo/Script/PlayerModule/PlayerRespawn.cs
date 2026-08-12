@@ -42,7 +42,6 @@ public class PlayerRespawn : NetworkBehaviour
         if (!isLocalPlayer || isRespawning)
             return;
 
-        // 🌟 New Input System의 restartAction(패드 RT 홀드 등) 상태 감지
         bool isHoldingRestart = controller.input != null &&
                                 controller.input.restartAction != null &&
                                 controller.input.restartAction.IsPressed();
@@ -83,6 +82,9 @@ public class PlayerRespawn : NetworkBehaviour
     private IEnumerator RespawnSinglePlayerRoutine()
     {
         isRespawning = true;
+        PlayerKnockback knockback = GetComponent<PlayerKnockback>();
+        if (knockback != null) knockback.ResetKnockback();
+        if (controller != null && controller.rb != null) controller.rb.linearVelocity = Vector2.zero;
 
         transform.position = currentSpawnPoint;
         Physics2D.SyncTransforms();
@@ -94,13 +96,22 @@ public class PlayerRespawn : NetworkBehaviour
 
     private IEnumerator RespawnAllPlayersRoutine()
     {
-        PlayerRespawn[] allPlayers = FindObjectsByType<PlayerRespawn>();
+        PlayerRespawn[] allPlayers = FindObjectsByType<PlayerRespawn>(FindObjectsInactive.Exclude);
 
         foreach (var p in allPlayers)
         {
             if (p != null)
             {
                 p.isRespawning = true;
+
+                PlayerKnockback pKnockback = p.GetComponent<PlayerKnockback>();
+                if (pKnockback != null) pKnockback.ResetKnockback();
+
+                PlayerController pController = p.GetComponent<PlayerController>();
+                if (pController != null && pController.rb != null)
+                {
+                    pController.rb.linearVelocity = Vector2.zero;
+                }
             }
         }
 

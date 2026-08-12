@@ -249,6 +249,7 @@ public class PlayerKnockback : NetworkBehaviour
         isKnockedBack = false;
         stunTimer = 0f;
         knockbackTimeoutTimer = 0f;
+        RpcToggleCriticalUI(false);
     }
 
     public void ApplyKnockbackFromEye(Vector3 eyePosition)
