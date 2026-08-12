@@ -74246,6 +74246,16 @@ PrefabInstance:
       value: Canvas
       objectReference: {fileID: 0}
     - target: {fileID: 3607097073002954664, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: m_text
+      value: 'Press
+
+        Special Key'
+      objectReference: {fileID: 0}
+    - target: {fileID: 3607097073002954664, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: m_fontSize
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 3607097073002954664, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
       propertyPath: m_fontAsset
       value: 
       objectReference: {fileID: 11400000, guid: 2627e9ca796b22d4fb592f60230c2fec, type: 2}
@@ -74260,6 +74270,10 @@ PrefabInstance:
     - target: {fileID: 3607097073002954664, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
       propertyPath: m_fontColor.r
       value: 0.9960785
+      objectReference: {fileID: 0}
+    - target: {fileID: 3607097073002954664, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 3607097073002954664, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
       propertyPath: m_sharedMaterial
