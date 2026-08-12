@@ -155,12 +155,15 @@ public class ClientLobbyManager : MonoBehaviour
         if (searchInputField != null)
         {
             searchInputField.onEndEdit.AddListener(OnSearchInputEndEdit);
+            searchInputField.onValueChanged.AddListener(OnSearchInputChanged); // ★ 검색 입력 즉시 반영 리스너 추가[cite: 1]
+            searchInputField.characterLimit = 15; // ★ 퍼블릭 방 검색 최대 글자 수 제한 (원하는 숫자로 변경 가능)[cite: 1]
             searchInputField.interactable = false;
         }
 
         if (privateRoomInputField != null)
         {
             privateRoomInputField.onEndEdit.AddListener(OnPrivateRoomInputEndEdit);
+            privateRoomInputField.characterLimit = 6; // ★ 비공개 방 코드(ShortCode) 최대 글자 수 제한[cite: 1]
             privateRoomInputField.interactable = false;
         }
 
@@ -174,6 +177,7 @@ public class ClientLobbyManager : MonoBehaviour
         if (searchInputField != null)
         {
             searchInputField.onEndEdit.RemoveListener(OnSearchInputEndEdit);
+            searchInputField.onValueChanged.RemoveListener(OnSearchInputChanged); // ★ 해제 코드 추가[cite: 1]
         }
 
         if (privateRoomInputField != null)

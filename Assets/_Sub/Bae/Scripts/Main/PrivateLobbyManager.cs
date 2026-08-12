@@ -139,6 +139,7 @@ public class PrivateLobbyManager : MonoBehaviour
         if (roomNameInputField != null)
         {
             roomNameInputField.onEndEdit.AddListener(OnRoomNameEndEdit);
+            roomNameInputField.characterLimit = 15; // ★ 방 이름 입력 최대 글자 수 제한 (원하는 숫자로 변경 가능)[cite: 2]
         }
 
         UpdateChapterUI();
