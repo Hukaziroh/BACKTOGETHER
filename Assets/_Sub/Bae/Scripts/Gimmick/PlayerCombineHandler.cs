@@ -266,34 +266,30 @@ public class PlayerCombineHandler : NetworkBehaviour
     }
 
     [Server]
-    public bool ConsumeServerCombinedActionPressed()
+    public bool GetServerCombinedActionPressed()
     {
-        // Body 자신이 Action 역할인 경우
-        if (myRole == CombineRole.Action)
-        {
-            PlayerInput myInput = GetComponent<PlayerInput>();
+        PlayerInput myInput = GetComponent<PlayerInput>();
 
-            if (myInput != null)
-            {
-                return myInput.ConsumeActionPressed();
-            }
+        if (myRole == CombineRole.Action &&
+            myInput != null &&
+            myInput.ActionPressedThisFrame)
+        {
+            return true;
         }
 
-        // Ghost 중 Action 역할인 플레이어 찾기
         foreach (var ghost in connectedGhosts)
         {
-            if (ghost == null)
-                continue;
-
-            if (ghost.myRole != CombineRole.Action)
-                continue;
-
-            PlayerInput ghostInput =
-                ghost.GetComponent<PlayerInput>();
-
-            if (ghostInput != null)
+            if (ghost != null &&
+                ghost.myRole == CombineRole.Action)
             {
-                return ghostInput.ConsumeActionPressed();
+                PlayerInput ghostInput =
+                    ghost.GetComponent<PlayerInput>();
+
+                if (ghostInput != null &&
+                    ghostInput.ActionPressedThisFrame)
+                {
+                    return true;
+                }
             }
         }
 

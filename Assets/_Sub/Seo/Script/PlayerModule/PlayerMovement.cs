@@ -199,26 +199,23 @@ public class PlayerMovement : NetworkBehaviour
             return;
         }
 
-        bool isActionPressed;
+        bool isActionPressed = controller.input.ActionPressedThisFrame;
 
-        // 합체 Body
         if (controller.combineHandler != null &&
             controller.combineHandler.isCombined &&
             controller.combineHandler.bodyTarget == gameObject)
         {
-            isActionPressed = controller.combineHandler.ConsumeServerCombinedActionPressed();
-        }
-        // 일반 플레이어
-        else
-        {
-            isActionPressed = controller.input.ConsumeActionPressed();
+            isActionPressed =
+                controller.combineHandler.GetServerCombinedActionPressed();
         }
 
-        if (isActionPressed &&
-            controller.combineHandler != null &&
-            controller.combineHandler.canUseAction)
+        if (isActionPressed)
         {
-            CallCombinedAction();
+            if (controller.combineHandler != null &&
+                controller.combineHandler.canUseAction)
+            {
+                CallCombinedAction();
+            }
         }
     }
 

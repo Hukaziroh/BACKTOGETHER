@@ -159,15 +159,7 @@ public class PlayerInput : NetworkBehaviour
     {
         serverJumpPressed = false;
         serverJumpReleased = false;
-    }
-
-    [Server]
-    public bool ConsumeActionPressed()
-    {
-        if (!serverActionPressed)
-            return false;
-
         serverActionPressed = false;
-        return true;
     }
+
 }
