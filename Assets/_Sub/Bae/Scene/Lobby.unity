@@ -254732,6 +254732,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1215221574}
     m_Modifications:
+    - target: {fileID: 534971709051548441, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_text
+      value: hu zup
+      objectReference: {fileID: 0}
     - target: {fileID: 1381074218888706539, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_Name
       value: LobbyPanel
@@ -254773,8 +254777,12 @@ PrefabInstance:
       value: "C\xF3digo:"
       objectReference: {fileID: 0}
     - target: {fileID: 4215164014586056991, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_text
+      value: 'Code:'
+      objectReference: {fileID: 0}
+    - target: {fileID: 4215164014586056991, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_overflowMode
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4766194744893955446, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_AnchorMax.y
@@ -254782,6 +254790,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4766194744893955446, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4766194744893955446, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4766194744893955446, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4766194744893955446, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
@@ -254895,6 +254911,14 @@ PrefabInstance:
     - target: {fileID: 7936479838601238568, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8688766008373213758, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_MinWidth
+      value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 8688766008373213758, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_PreferredWidth
+      value: 200
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
