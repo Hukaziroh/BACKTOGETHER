@@ -50,7 +50,7 @@ public class PlayerCombineHandler : NetworkBehaviour
 
     private void OnBodyTargetChanged(GameObject oldVal, GameObject newVal)
     {
-        bodyTarget = newVal; // 필수!
+        bodyTarget = newVal;
         CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
         if (identity != null) identity.ForceUpdateVisual();
     }
@@ -66,8 +66,6 @@ public class PlayerCombineHandler : NetworkBehaviour
     {
         combineFaceIndex = newVal;
     }
-
-    // 🌟 유저님의 예전 코드에서 카메라가 완벽하게 따라가게 해주었던 1등 공신 (그대로 복구)
     void LateUpdate()
     {
         if (isCombined && bodyTarget != null && gameObject != bodyTarget)
@@ -81,23 +79,13 @@ public class PlayerCombineHandler : NetworkBehaviour
     {
         if (body == null)
             return;
-
-        // ---------------------------------
-        // 1. 합체 상태 먼저 확정
-        // ---------------------------------
         isCombined = true;
         myRole = role;
         bodyTarget = body;
-
-        // ---------------------------------
-        // 2. Body / Ghost 물리 및 Renderer 결정
-        // ---------------------------------
         bool isBody = gameObject == body;
 
         if (isBody)
         {
-            connectedGhosts.Clear();
-
             if (spriteRenderer != null)
                 spriteRenderer.enabled = true;
 
@@ -115,16 +103,6 @@ public class PlayerCombineHandler : NetworkBehaviour
                 rb.linearVelocity = Vector2.zero;
                 rb.angularVelocity = 0f;
             }
-
-            PlayerCombineHandler bodyHandler =
-                body.GetComponent<PlayerCombineHandler>();
-
-            if (bodyHandler != null &&
-                !bodyHandler.connectedGhosts.Contains(this))
-            {
-                bodyHandler.connectedGhosts.Add(this);
-            }
-
             if (spriteRenderer != null)
                 spriteRenderer.enabled = false;
 
@@ -132,9 +110,6 @@ public class PlayerCombineHandler : NetworkBehaviour
                 col.enabled = false;
         }
 
-        // ---------------------------------
-        // 3. 서버에서도 즉시 합체 색 적용
-        // ---------------------------------
         CoopPlayerIdentity identity =
             GetComponent<CoopPlayerIdentity>();
 
@@ -142,10 +117,6 @@ public class PlayerCombineHandler : NetworkBehaviour
         {
             identity.ForceUpdateVisual();
         }
-
-        // ---------------------------------
-        // 4. 클라이언트에 Body 정보 전달
-        // ---------------------------------
         NetworkIdentity bodyNetId =
             body.GetComponent<NetworkIdentity>();
 
@@ -178,10 +149,6 @@ public class PlayerCombineHandler : NetworkBehaviour
             bodyNetId != null &&
             netIdentity != null &&
             netIdentity.netId == bodyNetId.netId;
-
-        // ---------------------------------
-        // 몸통 / 고스트 표시 상태
-        // ---------------------------------
         if (isBody)
         {
             if (spriteRenderer != null)
@@ -204,10 +171,6 @@ public class PlayerCombineHandler : NetworkBehaviour
             if (rb != null)
                 rb.simulated = false;
         }
-
-        // ---------------------------------
-        // 비주얼 적용
-        // ---------------------------------
         CoopPlayerIdentity identity =
             GetComponent<CoopPlayerIdentity>();
 
@@ -215,10 +178,6 @@ public class PlayerCombineHandler : NetworkBehaviour
         {
             identity.ForceUpdateVisual();
         }
-
-        // ---------------------------------
-        // 🌟 예전 코드의 카메라 로직 100% 동일하게 가져옴
-        // ---------------------------------
         if (isLocalPlayer && bodyObj != null)
         {
             Camera mainCam = Camera.main;
@@ -405,7 +364,6 @@ public class PlayerCombineHandler : NetworkBehaviour
             identity.ForceUpdateVisual();
         }
 
-        // 🌟 예전 코드의 카메라 로직 100% 동일하게 가져옴
         if (isLocalPlayer)
         {
             transform.position = releasePosition;
