@@ -63,11 +63,6 @@ public class ClientLobbyManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI timeoutMessageText;
     [SerializeField] private Button timeoutCloseButton;
 
-    [Header("호스트 디스커넥트 팝업 UI (방 폭파/연결 끊김)")]
-    [SerializeField] private GameObject disconnectPopupPanel;
-    [SerializeField] private TextMeshProUGUI disconnectMessageText;
-    [SerializeField] private Button disconnectCloseButton;
-
     [Header("꽉 찬 방 알림 텍스트 (인스펙터에서 할당)")]
     [SerializeField] private TextMeshProUGUI fullRoomMessageText;
     private Coroutine fullRoomMessageCoroutine;
@@ -137,7 +132,6 @@ public class ClientLobbyManager : MonoBehaviour
         if (clientPrivatePanel != null) clientPrivatePanel.SetActive(false);
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
         if (timeoutPopupPanel != null) timeoutPopupPanel.SetActive(false);
-        if (disconnectPopupPanel != null) disconnectPopupPanel.SetActive(false);
         if (quickJoinNoRoomText != null) quickJoinNoRoomText.SetActive(false);
 
         GameObject panel = GetLoadingPanel();
@@ -155,15 +149,15 @@ public class ClientLobbyManager : MonoBehaviour
         if (searchInputField != null)
         {
             searchInputField.onEndEdit.AddListener(OnSearchInputEndEdit);
-            searchInputField.onValueChanged.AddListener(OnSearchInputChanged); // ★ 검색 입력 즉시 반영 리스너 추가[cite: 1]
-            searchInputField.characterLimit = 15; // ★ 퍼블릭 방 검색 최대 글자 수 제한 (원하는 숫자로 변경 가능)[cite: 1]
+            searchInputField.onValueChanged.AddListener(OnSearchInputChanged);
+            searchInputField.characterLimit = 15;
             searchInputField.interactable = false;
         }
 
         if (privateRoomInputField != null)
         {
             privateRoomInputField.onEndEdit.AddListener(OnPrivateRoomInputEndEdit);
-            privateRoomInputField.characterLimit = 6; // ★ 비공개 방 코드(ShortCode) 최대 글자 수 제한[cite: 1]
+            privateRoomInputField.characterLimit = 6;
             privateRoomInputField.interactable = false;
         }
 
@@ -177,7 +171,7 @@ public class ClientLobbyManager : MonoBehaviour
         if (searchInputField != null)
         {
             searchInputField.onEndEdit.RemoveListener(OnSearchInputEndEdit);
-            searchInputField.onValueChanged.RemoveListener(OnSearchInputChanged); // ★ 해제 코드 추가[cite: 1]
+            searchInputField.onValueChanged.RemoveListener(OnSearchInputChanged);
         }
 
         if (privateRoomInputField != null)
@@ -235,11 +229,6 @@ public class ClientLobbyManager : MonoBehaviour
                 OnClick_CloseTimeoutPopup();
                 return;
             }
-            else if (disconnectPopupPanel != null && disconnectPopupPanel.activeSelf)
-            {
-                OnClick_CloseDisconnectPopup();
-                return;
-            }
             else if (errorPopupPanel != null && errorPopupPanel.activeSelf)
             {
                 OnClick_CloseErrorPopup();
@@ -253,11 +242,6 @@ public class ClientLobbyManager : MonoBehaviour
             if (timeoutPopupPanel != null && timeoutPopupPanel.activeSelf)
             {
                 OnClick_CloseTimeoutPopup();
-                return;
-            }
-            else if (disconnectPopupPanel != null && disconnectPopupPanel.activeSelf)
-            {
-                OnClick_CloseDisconnectPopup();
                 return;
             }
             else if (errorPopupPanel != null && errorPopupPanel.activeSelf)
@@ -491,7 +475,6 @@ public class ClientLobbyManager : MonoBehaviour
         if (logo != null) logo.SetActive(true);
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
         if (timeoutPopupPanel != null) timeoutPopupPanel.SetActive(false);
-        if (disconnectPopupPanel != null) disconnectPopupPanel.SetActive(false);
 
         if (mainPanel != null)
         {
@@ -753,7 +736,6 @@ public class ClientLobbyManager : MonoBehaviour
         SubscribeEvents();
         if (lobby == null) return;
 
-        // 방이 꽉 찼는지 검사[cite: 2]
         if (!EOSLobby.IsLobbyJoinable(lobby, out uint currentMembers, out uint maxMembers))
         {
             ShowFullRoomWarning();
@@ -878,22 +860,18 @@ public class ClientLobbyManager : MonoBehaviour
         if (current == null)
             return;
 
-
         Selectable selectable = current.GetComponent<Selectable>();
 
         if (selectable == null)
             return;
 
-
         Navigation nav = selectable.navigation;
-
 
         if (nav.mode == Navigation.Mode.Explicit && nav.selectOnUp != null)
         {
             EventSystem.current.SetSelectedGameObject(nav.selectOnUp.gameObject);
             return;
         }
-
 
         Selectable previous = selectable.FindSelectableOnUp();
 
@@ -903,34 +881,28 @@ public class ClientLobbyManager : MonoBehaviour
         }
     }
 
-
     private void SelectPrivateRoomDown()
     {
         if (EventSystem.current == null)
             return;
-
 
         GameObject current = EventSystem.current.currentSelectedGameObject;
 
         if (current == null)
             return;
 
-
         Selectable selectable = current.GetComponent<Selectable>();
 
         if (selectable == null)
             return;
 
-
         Navigation nav = selectable.navigation;
-
 
         if (nav.mode == Navigation.Mode.Explicit && nav.selectOnDown != null)
         {
             EventSystem.current.SetSelectedGameObject(nav.selectOnDown.gameObject);
             return;
         }
-
 
         Selectable next = selectable.FindSelectableOnDown();
 
@@ -980,7 +952,6 @@ public class ClientLobbyManager : MonoBehaviour
         RestoreInputScopeAfterPopup();
     }
 
-    // 타임아웃 패널은 에디터에 세팅된 텍스트를 그대로 사용하도록 변경함
     private void ShowTimeoutPopup()
     {
         if (timeoutPopupPanel != null)
@@ -1005,34 +976,6 @@ public class ClientLobbyManager : MonoBehaviour
     public void OnClick_CloseTimeoutPopup()
     {
         if (timeoutPopupPanel != null) timeoutPopupPanel.SetActive(false);
-        RestoreInputScopeAfterPopup();
-    }
-
-    // 디스커넥트 패널은 에디터에 세팅된 텍스트를 그대로 사용하도록 변경함
-    private void ShowDisconnectPopup()
-    {
-        if (disconnectPopupPanel != null)
-        {
-            disconnectPopupPanel.SetActive(true);
-
-            if (EventSystem.current != null)
-            {
-                EventSystem.current.SetSelectedGameObject(null);
-                if (disconnectCloseButton != null)
-                {
-                    EventSystem.current.SetSelectedGameObject(disconnectCloseButton.gameObject);
-                }
-                else
-                {
-                    EventSystem.current.SetSelectedGameObject(disconnectPopupPanel);
-                }
-            }
-        }
-    }
-
-    public void OnClick_CloseDisconnectPopup()
-    {
-        if (disconnectPopupPanel != null) disconnectPopupPanel.SetActive(false);
         RestoreInputScopeAfterPopup();
     }
 
@@ -1091,7 +1034,7 @@ public class ClientLobbyManager : MonoBehaviour
         float timeoutDuration = 10f;
         float timer = 0f;
 
-        // 1단계: 초기 연결 대기 (최대 10초) - 로딩 중 타임아웃
+        // 초기 연결 대기 (최대 10초) - 로딩 중 타임아웃
         while (!NetworkClient.isConnected)
         {
             if (!NetworkClient.active)
@@ -1109,29 +1052,18 @@ public class ClientLobbyManager : MonoBehaviour
             yield return null;
         }
 
-        // 만약 연결에 실패한 상태로 빠져나왔다면
+        // 연결에 실패한 상태로 빠져나왔다면
         if (!NetworkClient.isConnected)
         {
             HandleInitialConnectionTimeout();
             yield break;
         }
-
-        // 2단계: 연결 성공 후 접속 유지 상태 모니터링
-        while (NetworkClient.isConnected)
-        {
-            yield return null;
-        }
-
-        // 3단계: 게임 도중 호스트가 방을 폭파하거나 연결이 끊긴 경우 (호스트 디스커넥트)
-        Debug.LogWarning("[ClientLobbyManager] 호스트와의 연결이 끊어짐 (방 폭파 / 호스트 디스커넥트 감지)");
-        HandleHostDisconnected();
     }
 
     private void HandleInitialConnectionTimeout()
     {
         Debug.LogWarning("[ClientLobbyManager] 초기 접속 실패, EOS 로비에서 퇴장합니다.");
 
-        // ★ EOS 로비 퇴장 로직 추가
         var eos = GetEOSLobby();
         if (eos != null && eos.ConnectedToLobby)
         {
@@ -1162,37 +1094,6 @@ public class ClientLobbyManager : MonoBehaviour
 
         SetInteractableAll(true);
 
-        // 타임아웃 전용 패널 호출 (기본 TMP 텍스트 사용)
         ShowTimeoutPopup();
-    }
-
-    private void HandleHostDisconnected()
-    {
-        if (NetworkManager.singleton != null)
-        {
-            NetworkManager.singleton.StopClient();
-        }
-
-        GameObject panel = GetLoadingPanel();
-        if (panel != null) panel.SetActive(false);
-
-        if (clientPublicPanel != null) clientPublicPanel.SetActive(false);
-        if (clientPrivatePanel != null) clientPrivatePanel.SetActive(false);
-        if (clientSelectionPanel != null)
-        {
-            clientSelectionPanel.SetActive(true);
-            if (EventSystem.current != null)
-            {
-                EventSystem.current.SetSelectedGameObject(null);
-                if (selectPublicModeButton != null)
-                    EventSystem.current.SetSelectedGameObject(selectPublicModeButton.gameObject);
-            }
-        }
-        if (logo != null) logo.SetActive(true);
-
-        SetInteractableAll(true);
-
-        // 디스커넥트 전용 패널 호출 (기본 TMP 텍스트 사용)
-        ShowDisconnectPopup();
     }
 }
