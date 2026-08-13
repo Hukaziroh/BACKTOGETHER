@@ -110,25 +110,13 @@ public class MovingSafeEyeGimmick : NetworkBehaviour
 
             if (!isPlayerSafe)
             {
-                NetworkIdentity identity = other.GetComponent<NetworkIdentity>();
-                if (identity != null)
+                PlayerKnockback knockback = other.GetComponent<PlayerKnockback>();
+
+                if (knockback != null)
                 {
                     Debug.Log($"[{other.name}] 안전 박스 영역 밖으로 이탈! 가시 넉백을 발사합니다.");
-                    TargetTriggerKnockback(identity.connectionToClient, other.gameObject);
+                    knockback.ApplyKnockbackFromEye(transform.position);
                 }
-            }
-        }
-    }
-
-    [TargetRpc]
-    private void TargetTriggerKnockback(NetworkConnection target, GameObject playerObj)
-    {
-        if (playerObj != null)
-        {
-            PlayerKnockback knockback = playerObj.GetComponent<PlayerKnockback>();
-            if (knockback != null)
-            {
-                knockback.ApplyKnockbackFromEye(transform.position);
             }
         }
     }
