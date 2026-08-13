@@ -2498,6 +2498,14 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: 76.609985
       objectReference: {fileID: 0}
+    - target: {fileID: 7065405236593066232, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 6870475135527063538}
+    - target: {fileID: 7065405236593066232, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: GoBackToLobby
+      objectReference: {fileID: 0}
     - target: {fileID: 8279698965767927787, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
       propertyPath: m_Name
       value: HostDisconnectPanel
@@ -2782,6 +2790,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fcc14f19fcedfa74386ec57af4e9f8e0, type: 3}
+--- !u!114 &1271476053 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7065405236593066232, guid: ec5274d9b102a4d47b7fc5a472d4e234, type: 3}
+  m_PrefabInstance: {fileID: 1051082100}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!114 &1300944472 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6315063124405030020, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
@@ -2978,9 +2997,6 @@ MonoBehaviour:
   timeoutPopupPanel: {fileID: 1035984737}
   timeoutMessageText: {fileID: 1035984735}
   timeoutCloseButton: {fileID: 1035984736}
-  disconnectPopupPanel: {fileID: 1843497040}
-  disconnectMessageText: {fileID: 1843497038}
-  disconnectCloseButton: {fileID: 1843497039}
   fullRoomMessageText: {fileID: 1597778574}
 --- !u!1 &1514349945
 GameObject:
@@ -4239,6 +4255,10 @@ PrefabInstance:
       value: Mater Volume
       objectReference: {fileID: 0}
     - target: {fileID: 7637155221894298280, guid: 7500713905eca24478d84408a6a59c74, type: 3}
+      propertyPath: m_Navigation.m_Mode
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7637155221894298280, guid: 7500713905eca24478d84408a6a59c74, type: 3}
       propertyPath: m_Navigation.m_SelectOnUp
       value: 
       objectReference: {fileID: 0}
@@ -5207,6 +5227,10 @@ PrefabInstance:
       propertyPath: disconnectPanel
       value: 
       objectReference: {fileID: 1051082102}
+    - target: {fileID: 2304823993813371790, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: disconnectButton
+      value: 
+      objectReference: {fileID: 1271476053}
     - target: {fileID: 2444279907164752421, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 0
@@ -6123,6 +6147,17 @@ PrefabInstance:
       addedObject: {fileID: 1169729709}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d391139454a53e341889149a36646d1d, type: 3}
+--- !u!114 &6870475135527063538 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2304823993813371790, guid: d391139454a53e341889149a36646d1d, type: 3}
+  m_PrefabInstance: {fileID: 6870475135527063537}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 480ecce4566e76141a5f390cd69a8109, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HostDisconnectHandler
 --- !u!114 &8234879079532356322 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7797093614986329305, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
