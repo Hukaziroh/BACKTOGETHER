@@ -192,22 +192,33 @@ public class PlayerMovement : NetworkBehaviour
 
     private void HandleActionInput()
     {
-        if (controller.combineHandler != null && controller.combineHandler.isCombined && gameObject != controller.combineHandler.bodyTarget)
-            return;
-
-        bool isActionPressed = controller.input.ActionPressedThisFrame;
-
-        if (controller.combineHandler != null && controller.combineHandler.isCombined && controller.combineHandler.bodyTarget == gameObject)
+        if (controller.combineHandler != null &&
+            controller.combineHandler.isCombined &&
+            gameObject != controller.combineHandler.bodyTarget)
         {
-            isActionPressed = controller.combineHandler.GetServerCombinedActionPressed();
+            return;
         }
 
-        if (isActionPressed)
+        bool isActionPressed;
+
+        // 합체 Body
+        if (controller.combineHandler != null &&
+            controller.combineHandler.isCombined &&
+            controller.combineHandler.bodyTarget == gameObject)
         {
-            if (controller.combineHandler != null && controller.combineHandler.canUseAction)
-            {
-                CallCombinedAction();
-            }
+            isActionPressed = controller.combineHandler.ConsumeServerCombinedActionPressed();
+        }
+        // 일반 플레이어
+        else
+        {
+            isActionPressed = controller.input.ConsumeActionPressed();
+        }
+
+        if (isActionPressed &&
+            controller.combineHandler != null &&
+            controller.combineHandler.canUseAction)
+        {
+            CallCombinedAction();
         }
     }
 
@@ -345,7 +356,6 @@ public class PlayerMovement : NetworkBehaviour
         RpcPlayJumpSound();
     }
 
-    // 점프를 누른 본인은 서버 왕복 없이 PlayerInput에서 즉시 재생하므로 본인은 제외하고 전파
     [ClientRpc(includeOwner = false)]
     private void RpcPlayJumpSound()
     {

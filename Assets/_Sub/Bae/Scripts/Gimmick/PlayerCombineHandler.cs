@@ -66,6 +66,7 @@ public class PlayerCombineHandler : NetworkBehaviour
     {
         combineFaceIndex = newVal;
     }
+
     void LateUpdate()
     {
         if (isCombined && bodyTarget != null && gameObject != bodyTarget)
@@ -265,19 +266,37 @@ public class PlayerCombineHandler : NetworkBehaviour
     }
 
     [Server]
-    public bool GetServerCombinedActionPressed()
+    public bool ConsumeServerCombinedActionPressed()
     {
-        PlayerInput myInput = GetComponent<PlayerInput>();
-        if (myRole == CombineRole.Action && myInput != null && myInput.ActionPressedThisFrame) return true;
-
-        foreach (var ghost in connectedGhosts)
+        // Body 자신이 Action 역할인 경우
+        if (myRole == CombineRole.Action)
         {
-            if (ghost != null && ghost.myRole == CombineRole.Action)
+            PlayerInput myInput = GetComponent<PlayerInput>();
+
+            if (myInput != null)
             {
-                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
-                if (ghostInput != null && ghostInput.ActionPressedThisFrame) return true;
+                return myInput.ConsumeActionPressed();
             }
         }
+
+        // Ghost 중 Action 역할인 플레이어 찾기
+        foreach (var ghost in connectedGhosts)
+        {
+            if (ghost == null)
+                continue;
+
+            if (ghost.myRole != CombineRole.Action)
+                continue;
+
+            PlayerInput ghostInput =
+                ghost.GetComponent<PlayerInput>();
+
+            if (ghostInput != null)
+            {
+                return ghostInput.ConsumeActionPressed();
+            }
+        }
+
         return false;
     }
 
