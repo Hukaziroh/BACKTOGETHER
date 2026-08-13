@@ -9,6 +9,12 @@ public class BossCollisionHandler : NetworkBehaviour
     [Tooltip("플레이어와 닿은 후 씬을 재시작할 때까지의 대기 시간(초)")]
     public float restartDelay = 2f;
 
+    [Header("사망 사운드")]
+    public AudioClip deathSound;
+    [Range(0f, 1f)] public float deathSoundVolume = 1f;
+    public float soundMinDistance = 9f;
+    public float soundMaxDistance = 40f;
+
     private bool isRestarting = false;
     [ServerCallback]
     private void OnTriggerEnter2D(Collider2D other)
@@ -17,7 +23,7 @@ public class BossCollisionHandler : NetworkBehaviour
 
         if (other.CompareTag("Player"))
         {
-            TriggerGameOver();
+            TriggerGameOver(other.transform.position);
         }
     }
     [ServerCallback]
@@ -27,19 +33,25 @@ public class BossCollisionHandler : NetworkBehaviour
 
         if (collision.gameObject.CompareTag("Player"))
         {
-            TriggerGameOver();
+            TriggerGameOver(collision.transform.position);
         }
     }
 
     [Server]
-    private void TriggerGameOver()
+    private void TriggerGameOver(Vector3 deathPosition)
     {
         isRestarting = true;
         Debug.Log("💀 보스가 플레이어를 잡았습니다! 2초 뒤 스테이지를 재시작합니다.");
 
-        // 추가 연출을 넣고 싶다면 여기에서 보스 애니메이션을 멈추거나 효과음을 재생하세요.
+        RpcPlayDeathSound(deathPosition);
 
         StartCoroutine(RestartStageRoutine());
+    }
+
+    [ClientRpc]
+    private void RpcPlayDeathSound(Vector3 position)
+    {
+        PlayerSoundUtility.PlayPositional(position, deathSound, deathSoundVolume, soundMinDistance, soundMaxDistance);
     }
 
     private IEnumerator RestartStageRoutine()
