@@ -94,40 +94,48 @@ public class UIManager : MonoBehaviour
     {
         string scene = SceneManager.GetActiveScene().name;
 
-        if (optionsManager != null &&
-            optionsManager.keyGuidePanel != null &&
-            optionsManager.keyGuidePanel.activeSelf)
+        // [수정] 설정(옵션/볼륨/키가이드) 관련 메뉴가 하나라도 열려 있다면 닫기 로직 수행
+        if (optionsManager != null && optionsManager.IsSettingsOpen)
         {
-            if (cancelPressed || pausePressed) 
+            if (cancelPressed || pausePressed)
             {
-                optionsManager.ToggleKeyGuide(); 
+                // 1. 볼륨 패널이 열려있으면 닫기
+                if (optionsManager.volumePanel != null && optionsManager.volumePanel.activeSelf)
+                {
+                    optionsManager.CloseVolumePanel();
+                }
+                // 2. 키 가이드가 열려있으면 닫기
+                else if (optionsManager.keyGuidePanel != null && optionsManager.keyGuidePanel.activeSelf)
+                {
+                    optionsManager.ToggleKeyGuide();
+                }
+                // 3. 메인 옵션 패널이 열려있으면 닫기
+                else if (optionsManager.optionsPanel != null && optionsManager.optionsPanel.activeSelf)
+                {
+                    optionsManager.Close();
+                }
                 inputCooldown = 0.2f;
             }
             return;
         }
 
-        if (optionsManager != null)
-        {
-            bool isOptionsOpen = optionsManager.optionsPanel != null && optionsManager.optionsPanel.activeSelf;
-            if (isOptionsOpen)
-            {
-                optionsManager.Close(); 
-                inputCooldown = 0.2f;
-                return;
-            }
-        }
-
+        // --- 설정 메뉴가 모두 닫혀 있을 때만 퍼즈 기능 실행 ---
         if (scene == mainSceneName) return;
 
         if (pauseManager != null)
         {
             if (pauseManager.isPaused)
             {
-                pauseManager.ResumeGame();
-                inputCooldown = 0.2f;
+                // 퍼즈 중일 때 ESC/Pause 누르면 해제
+                if (pausePressed || cancelPressed)
+                {
+                    pauseManager.ResumeGame();
+                    inputCooldown = 0.2f;
+                }
             }
             else
             {
+                // 게임 중일 때 Pause 키만 누르면 퍼즈 켜기 (ESC는 설정 창이 닫혀있으면 보통 안 켜지게 설정)
                 if (pausePressed)
                 {
                     pauseManager.PauseGame();

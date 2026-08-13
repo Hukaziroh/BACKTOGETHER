@@ -23,6 +23,11 @@ public class OptionsManager : MonoBehaviour
     public Slider bgmVolumeSlider;
     public Toggle fullscreenToggle;
 
+    [Header("Volume Panel UI (추가)")]
+    public GameObject volumePanel;
+    public Button volumePanelToggleButton;
+    public Button volumePanelBackButton;
+
     [Header("방 코드 UI (모든 플레이어 공용)")]
     public GameObject roomCodeUIContainer;
 
@@ -39,6 +44,10 @@ public class OptionsManager : MonoBehaviour
     public Button keyGuideToggleButton;
 
     public bool IsCodeVisible => isCodeVisible;
+
+    public bool IsSettingsOpen => (optionsPanel != null && optionsPanel.activeSelf) ||
+                                  (volumePanel != null && volumePanel.activeSelf) ||
+                                  (keyGuidePanel != null && keyGuidePanel.activeSelf);
 
     private bool isCodeVisible = true;
     private Coroutine fetchCodeRoutine;
@@ -72,34 +81,52 @@ public class OptionsManager : MonoBehaviour
 
         if (volumeSlider != null)
         {
-            if (audioMixer != null && audioMixer.GetFloat("Volume", out float currentDb))
+            float loadedVolume = PlayerPrefs.GetFloat("MasterVolume", 1f);
+            if (PlayerPrefs.HasKey("MasterVolume") && audioMixer != null)
             {
-                float currentVolume = Mathf.Pow(10f, currentDb / 20f);
-                volumeSlider.SetValueWithoutNotify(currentVolume);
+                float db = Mathf.Log10(Mathf.Max(loadedVolume, 0.0001f)) * 20;
+                audioMixer.SetFloat("Volume", db);
+            }
+            else if (audioMixer != null && audioMixer.GetFloat("Volume", out float currentDb))
+            {
+                loadedVolume = Mathf.Pow(10f, currentDb / 20f);
             }
 
+            volumeSlider.SetValueWithoutNotify(loadedVolume);
             volumeSlider.onValueChanged.AddListener(SetVolume);
         }
 
         if (sfxVolumeSlider != null)
         {
-            if (audioMixer != null && audioMixer.GetFloat("SFXVolume", out float currentSfxDb))
+            float loadedSfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
+            if (PlayerPrefs.HasKey("SFXVolume") && audioMixer != null)
             {
-                float currentSfxVolume = Mathf.Pow(10f, currentSfxDb / 20f);
-                sfxVolumeSlider.SetValueWithoutNotify(currentSfxVolume);
+                float db = Mathf.Log10(Mathf.Max(loadedSfxVolume, 0.0001f)) * 20;
+                audioMixer.SetFloat("SFXVolume", db);
+            }
+            else if (audioMixer != null && audioMixer.GetFloat("SFXVolume", out float currentSfxDb))
+            {
+                loadedSfxVolume = Mathf.Pow(10f, currentSfxDb / 20f);
             }
 
+            sfxVolumeSlider.SetValueWithoutNotify(loadedSfxVolume);
             sfxVolumeSlider.onValueChanged.AddListener(SetSFXVolume);
         }
 
         if (bgmVolumeSlider != null)
         {
-            if (audioMixer != null && audioMixer.GetFloat("BGMVolume", out float currentBgmDb))
+            float loadedBgmVolume = PlayerPrefs.GetFloat("BGMVolume", 1f);
+            if (PlayerPrefs.HasKey("BGMVolume") && audioMixer != null)
             {
-                float currentBgmVolume = Mathf.Pow(10f, currentBgmDb / 20f);
-                bgmVolumeSlider.SetValueWithoutNotify(currentBgmVolume);
+                float db = Mathf.Log10(Mathf.Max(loadedBgmVolume, 0.0001f)) * 20;
+                audioMixer.SetFloat("BGMVolume", db);
+            }
+            else if (audioMixer != null && audioMixer.GetFloat("BGMVolume", out float currentBgmDb))
+            {
+                loadedBgmVolume = Mathf.Pow(10f, currentBgmDb / 20f);
             }
 
+            bgmVolumeSlider.SetValueWithoutNotify(loadedBgmVolume);
             bgmVolumeSlider.onValueChanged.AddListener(SetBGMVolume);
         }
 
@@ -113,6 +140,21 @@ public class OptionsManager : MonoBehaviour
             keyGuideToggleButton.onClick.AddListener(ToggleKeyGuide);
         }
 
+        if (volumePanelToggleButton != null)
+        {
+            volumePanelToggleButton.onClick.AddListener(ToggleVolumePanel);
+        }
+
+        if (volumePanelBackButton != null)
+        {
+            volumePanelBackButton.onClick.AddListener(CloseVolumePanel);
+        }
+
+        if (volumePanel != null)
+        {
+            volumePanel.SetActive(false);
+        }
+
         UpdateVisibilityButtonGraphic();
     }
 
@@ -120,6 +162,7 @@ public class OptionsManager : MonoBehaviour
     {
         if (optionsPanel != null) optionsPanel.SetActive(true);
         if (keyGuidePanel != null) keyGuidePanel.SetActive(false);
+        if (volumePanel != null) volumePanel.SetActive(false);
 
         if (PauseManager.instance != null && PauseManager.instance.pausePanel != null)
         {
@@ -154,6 +197,9 @@ public class OptionsManager : MonoBehaviour
         if (keyGuidePanel != null)
             keyGuidePanel.SetActive(false);
 
+        if (volumePanel != null)
+            volumePanel.SetActive(false);
+
         bool isMainScene = SceneManager.GetActiveScene().name == "Main";
 
         if (!isMainScene && PauseManager.instance != null)
@@ -183,6 +229,58 @@ public class OptionsManager : MonoBehaviour
             if (GlobalSceneInputManager.Instance != null)
             {
                 GlobalSceneInputManager.Instance.ClearFocusScope();
+            }
+        }
+    }
+
+    public void ToggleVolumePanel()
+    {
+        if (volumePanel != null)
+        {
+            bool isActive = volumePanel.activeSelf;
+            volumePanel.SetActive(!isActive);
+
+            if (!isActive && optionsPanel != null)
+            {
+                optionsPanel.SetActive(false);
+            }
+            else if (isActive && optionsPanel != null)
+            {
+                optionsPanel.SetActive(true);
+            }
+
+            if (!isActive && GlobalSceneInputManager.Instance != null)
+            {
+                GlobalSceneInputManager.Instance.SetFocusScope(volumePanel);
+            }
+            else if (isActive && GlobalSceneInputManager.Instance != null && optionsPanel != null)
+            {
+                GlobalSceneInputManager.Instance.SetFocusScope(optionsPanel);
+            }
+        }
+    }
+
+    public void CloseVolumePanel()
+    {
+        if (volumePanel != null)
+        {
+            volumePanel.SetActive(false);
+        }
+
+        if (optionsPanel != null)
+        {
+            optionsPanel.SetActive(true);
+            UpdateRoomCodeUI();
+
+            if (GlobalSceneInputManager.Instance != null)
+            {
+                GlobalSceneInputManager.Instance.SetFocusScope(optionsPanel);
+            }
+
+            Button firstButton = optionsPanel.GetComponentInChildren<Button>();
+            if (firstButton != null && EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(firstButton.gameObject);
             }
         }
     }
@@ -217,6 +315,7 @@ public class OptionsManager : MonoBehaviour
             {
                 keyGuidePanel.SetActive(true);
                 if (optionsPanel != null) optionsPanel.SetActive(false);
+                if (volumePanel != null) volumePanel.SetActive(false);
 
                 if (GlobalSceneInputManager.Instance != null)
                 {
@@ -324,7 +423,6 @@ public class OptionsManager : MonoBehaviour
         }
         else
         {
-            // 🌟 수정: 공개방이든 비공개방이든 구분 없이 isCodeVisible 상태에 따라 가려지도록 변경
             independentRoomCodeText.text = isCodeVisible ? displayCode : "******";
         }
 
@@ -341,6 +439,8 @@ public class OptionsManager : MonoBehaviour
             float db = Mathf.Log10(Mathf.Max(volume, 0.0001f)) * 20;
             audioMixer.SetFloat("Volume", db);
         }
+        PlayerPrefs.SetFloat("MasterVolume", volume);
+        PlayerPrefs.Save();
     }
 
     public void SetSFXVolume(float volume)
@@ -350,6 +450,8 @@ public class OptionsManager : MonoBehaviour
             float db = Mathf.Log10(Mathf.Max(volume, 0.0001f)) * 20;
             audioMixer.SetFloat("SFXVolume", db);
         }
+        PlayerPrefs.SetFloat("SFXVolume", volume);
+        PlayerPrefs.Save();
     }
 
     public void SetBGMVolume(float volume)
@@ -359,6 +461,8 @@ public class OptionsManager : MonoBehaviour
             float db = Mathf.Log10(Mathf.Max(volume, 0.0001f)) * 20;
             audioMixer.SetFloat("BGMVolume", db);
         }
+        PlayerPrefs.SetFloat("BGMVolume", volume);
+        PlayerPrefs.Save();
     }
 
     public void SetFullscreen(bool isFullscreen)
