@@ -100,7 +100,7 @@ namespace PlayerControls
                     ""id"": ""1a3fa35a-51dd-4941-992d-aeb4275523e0"",
                     ""expectedControlType"": ""Axis"",
                     ""processors"": """",
-                    ""interactions"": ""Hold(duration=3)"",
+                    ""interactions"": ""Hold"",
                     ""initialStateCheck"": true
                 },
                 {
