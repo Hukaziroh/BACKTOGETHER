@@ -145,19 +145,27 @@ MonoBehaviour:
   tracks:
   - sceneName: Main
     clip: {fileID: 8300000, guid: f88a2b37e097c5d4da04e5eba7abdc52, type: 3}
+    volume: 0.5
   - sceneName: Lobby
     clip: {fileID: 8300000, guid: 4d4d6804310f0b749a5c1f4a4129c95e, type: 3}
+    volume: 0.3
   - sceneName: chapter1
     clip: {fileID: 8300000, guid: 19d16e5408759b54c9d915c8f7db7a15, type: 3}
+    volume: 0.3
   - sceneName: chapter2
     clip: {fileID: 8300000, guid: 751f0907c941d0c4d9c1c28670898c50, type: 3}
+    volume: 0.3
   - sceneName: chapter3
     clip: {fileID: 8300000, guid: d203e81959cb77f4e8867fc87dfe489f, type: 3}
+    volume: 0.3
   - sceneName: chapter4
     clip: {fileID: 8300000, guid: ad9831b5ec957824982aa6aff8403f4d, type: 3}
+    volume: 0.3
   - sceneName: chapter5
     clip: {fileID: 8300000, guid: 5a70138bd8f90f844b1f9d71637782b9, type: 3}
+    volume: 0.3
   - sceneName: chapter6
-    clip: {fileID: 0}
-  outputGroup: {fileID: 0}
-  targetVolume: 1
+    clip: {fileID: 8300000, guid: 8e9380f8c0848924f800d4ff1dbdcd9d, type: 3}
+    volume: 0.3
+  outputGroup: {fileID: -1089326382837711588, guid: 95799436be0aef347a09df451fe579be, type: 2}
+  targetVolume: 0.3
