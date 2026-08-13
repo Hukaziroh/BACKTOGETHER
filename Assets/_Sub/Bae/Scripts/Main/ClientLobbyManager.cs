@@ -1129,6 +1129,15 @@ public class ClientLobbyManager : MonoBehaviour
 
     private void HandleInitialConnectionTimeout()
     {
+        Debug.LogWarning("[ClientLobbyManager] 초기 접속 실패, EOS 로비에서 퇴장합니다.");
+
+        // ★ EOS 로비 퇴장 로직 추가
+        var eos = GetEOSLobby();
+        if (eos != null && eos.ConnectedToLobby)
+        {
+            eos.LeaveLobby();
+        }
+
         if (NetworkManager.singleton != null)
         {
             NetworkManager.singleton.StopClient();

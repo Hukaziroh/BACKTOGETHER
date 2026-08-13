@@ -78,6 +78,7 @@ public class PrivateLobbyManager : MonoBehaviour
     private bool isCreatingLobby = false;
     private bool attributeUpdateDone = false;
     private bool attributeUpdateFailed = false;
+    private bool createLobbySuccess = false;
 
     private GameObject currentPanel;
 
@@ -123,6 +124,8 @@ public class PrivateLobbyManager : MonoBehaviour
 
     private void Start()
     {
+        Application.runInBackground = true;
+
         SubscribeEvents();
         if (hostPanel != null) hostPanel.SetActive(false);
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
@@ -337,9 +340,15 @@ public class PrivateLobbyManager : MonoBehaviour
         StartCoroutine(CreateLobbyAndSetAttributesRoutine(roomTitle));
     }
 
-    private void OnCreateLobbySucceeded(List<Epic.OnlineServices.Lobby.Attribute> attributes) { isCreatingLobby = false; }
+    private void OnCreateLobbySucceeded(List<Epic.OnlineServices.Lobby.Attribute> attributes)
+    {
+        createLobbySuccess = true;
+        isCreatingLobby = false;
+    }
+
     private void OnCreateLobbyFailed(string errorMessage)
     {
+        createLobbySuccess = false;
         isCreatingLobby = false;
         SetAllButtonsInteractable(true);
         if (currentPanel != null) currentPanel.SetActive(false);
@@ -351,13 +360,21 @@ public class PrivateLobbyManager : MonoBehaviour
     private IEnumerator CreateLobbyAndSetAttributesRoutine(string roomTitle)
     {
         float timeout = 5f;
+        // 결과(성공 또는 실패)가 나올 때까지 대기
         while (isCreatingLobby && timeout > 0f) { timeout -= Time.unscaledDeltaTime; yield return null; }
 
+        // 타임아웃 처리
         if (isCreatingLobby)
         {
             SetAllButtonsInteractable(true);
             if (currentPanel != null) currentPanel.SetActive(false);
             ShowErrorPopup("방 생성 시간이 초과되었습니다.");
+            yield break;
+        }
+
+        // ★ 실패했다면 여기서 코루틴을 중단해야 합니다!
+        if (!createLobbySuccess)
+        {
             yield break;
         }
 
