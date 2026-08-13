@@ -122,6 +122,7 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
             handler.combineColorIndex = combineColor;
             handler.combineFaceIndex = combineFace;
         }
+        bodyHandler.canUseAction = true;
 
         bodyHandler.connectedGhosts.Clear();
 
