@@ -86,6 +86,7 @@ public class PlayerEmojiController : NetworkBehaviour
     // --- 일반 이모지 처리 ---
     private void HandleLocalEmojiIndexSelected(int emojiIndex)
     {
+        if (Time.timeScale == 0) return;
         if (!isLocalPlayer) return;
         CmdShowEmoji(emojiIndex);
     }
@@ -105,6 +106,7 @@ public class PlayerEmojiController : NetworkBehaviour
     // --- 애니메이션 이모지 처리 ---
     private void HandleLocalAnimatedEmojiIndexSelected(int emojiIndex)
     {
+        if (Time.timeScale == 0) return;
         if (!isLocalPlayer) return;
         CmdShowAnimatedEmoji(emojiIndex);
     }

@@ -320,7 +320,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 20
+  m_SortingOrder: 30
   m_MaskInteraction: 0
   m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -1382,8 +1382,8 @@ MonoBehaviour:
     - {fileID: 5783837810845549781, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
     - {fileID: 2453225149448660891, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
   frameInterval: 0.8
-  targetSize: 0.5
-  headOffset: {x: 0, y: 2, z: 0}
+  targetSize: 0.3
+  headOffset: {x: 0, y: 1, z: 0}
   displayDuration: 2
 --- !u!114 &1904173253102594305
 MonoBehaviour:

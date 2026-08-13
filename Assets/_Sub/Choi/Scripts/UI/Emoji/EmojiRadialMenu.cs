@@ -148,6 +148,7 @@ public class EmojiRadialMenu : MonoBehaviour
 
     public void OpenMenu()
     {
+        if (Time.timeScale == 0) return; // 타임스케일이 0일 때 메뉴 오픈 차단
         if (_isOpen) return;
         _isOpen = true;
 
@@ -211,6 +212,7 @@ public class EmojiRadialMenu : MonoBehaviour
 
     public void OnMenuUpdate()
     {
+        if (Time.timeScale == 0) return;
         UpdateSelection();
 
         if (_selectedIndex != _prevSelectedIndex)
