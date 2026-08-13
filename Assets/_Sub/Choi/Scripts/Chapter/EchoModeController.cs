@@ -37,7 +37,7 @@ public class EchoModeController : MonoBehaviour
         {
             GameObject faceOutlineObj = new GameObject("FaceOutline");
             faceOutlineObj.transform.SetParent(transform);
-            faceOutlineObj.transform.localPosition = Vector3.zero;
+            faceOutlineObj.transform.localPosition = new Vector3(0,0.1f,0);
             faceOutlineObj.transform.localRotation = Quaternion.identity;
             faceOutlineObj.transform.localScale = Vector3.one;
 
