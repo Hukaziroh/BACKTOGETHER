@@ -217,7 +217,7 @@ PrefabInstance:
     - target: {fileID: 7070018043978612738, guid: a07509864346611469d86c860eb518a6, type: 3}
       propertyPath: outputGroup
       value: 
-      objectReference: {fileID: 24300002, guid: 95799436be0aef347a09df451fe579be, type: 2}
+      objectReference: {fileID: -1089326382837711588, guid: 95799436be0aef347a09df451fe579be, type: 2}
     - target: {fileID: 7070018043978612738, guid: a07509864346611469d86c860eb518a6, type: 3}
       propertyPath: targetVolume
       value: 0.3
@@ -1462,6 +1462,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+--- !u!114 &694333476 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3219837880667612168, guid: 7500713905eca24478d84408a6a59c74, type: 3}
+  m_PrefabInstance: {fileID: 1170277493389677825}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Slider
 --- !u!1 &697138732 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3343727382899621338, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
@@ -2952,6 +2963,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+--- !u!114 &1529864086 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1138771116181944912, guid: 7500713905eca24478d84408a6a59c74, type: 3}
+  m_PrefabInstance: {fileID: 1170277493389677825}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Slider
 --- !u!1 &1591156737
 GameObject:
   m_ObjectHideFlags: 0
@@ -3007,6 +3029,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+--- !u!114 &1610999183 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2771702971065800376, guid: 7500713905eca24478d84408a6a59c74, type: 3}
+  m_PrefabInstance: {fileID: 1170277493389677825}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Slider
 --- !u!114 &1687534787 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5963039619738049223, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}
@@ -3815,9 +3848,13 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1954295076}
     m_Modifications:
+    - target: {fileID: 121607499467497173, guid: 7500713905eca24478d84408a6a59c74, type: 3}
+      propertyPath: m_Name
+      value: BGM
+      objectReference: {fileID: 0}
     - target: {fileID: 510488561281679872, guid: 7500713905eca24478d84408a6a59c74, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 139.32
+      value: 257.82
       objectReference: {fileID: 0}
     - target: {fileID: 528211639755543373, guid: 7500713905eca24478d84408a6a59c74, type: 3}
       propertyPath: m_AnchorMax.y
@@ -3859,13 +3896,17 @@ PrefabInstance:
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1164090375}
+    - target: {fileID: 3645262291277027401, guid: 7500713905eca24478d84408a6a59c74, type: 3}
+      propertyPath: m_Name
+      value: Mater Volume
+      objectReference: {fileID: 0}
     - target: {fileID: 3774794815301316239, guid: 7500713905eca24478d84408a6a59c74, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 139.32
+      value: 84.36
       objectReference: {fileID: 0}
     - target: {fileID: 4317808064387949570, guid: 7500713905eca24478d84408a6a59c74, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 139.32
+      value: 246.01
       objectReference: {fileID: 0}
     - target: {fileID: 4711995956133182979, guid: 7500713905eca24478d84408a6a59c74, type: 3}
       propertyPath: m_Pivot.x
@@ -3959,6 +4000,22 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5756435090504283584, guid: 7500713905eca24478d84408a6a59c74, type: 3}
+      propertyPath: m_Name
+      value: Effet Volume
+      objectReference: {fileID: 0}
+    - target: {fileID: 6146986541489460864, guid: 7500713905eca24478d84408a6a59c74, type: 3}
+      propertyPath: m_text
+      value: BGM
+      objectReference: {fileID: 0}
+    - target: {fileID: 7419043997748114078, guid: 7500713905eca24478d84408a6a59c74, type: 3}
+      propertyPath: m_Name
+      value: Effet Volume
+      objectReference: {fileID: 0}
+    - target: {fileID: 7480146918641763098, guid: 7500713905eca24478d84408a6a59c74, type: 3}
+      propertyPath: m_Name
+      value: Mater Volume
+      objectReference: {fileID: 0}
     - target: {fileID: 7637155221894298280, guid: 7500713905eca24478d84408a6a59c74, type: 3}
       propertyPath: m_Navigation.m_SelectOnUp
       value: 
@@ -3970,6 +4027,18 @@ PrefabInstance:
     - target: {fileID: 8113280236721855967, guid: 7500713905eca24478d84408a6a59c74, type: 3}
       propertyPath: m_AnchorMax.y
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8913928432277949890, guid: 7500713905eca24478d84408a6a59c74, type: 3}
+      propertyPath: m_Name
+      value: BGM
+      objectReference: {fileID: 0}
+    - target: {fileID: 8928230942299472118, guid: 7500713905eca24478d84408a6a59c74, type: 3}
+      propertyPath: m_text
+      value: Effet Volume
+      objectReference: {fileID: 0}
+    - target: {fileID: 8987439291114097087, guid: 7500713905eca24478d84408a6a59c74, type: 3}
+      propertyPath: m_text
+      value: Mater Volume
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4659,6 +4728,18 @@ PrefabInstance:
       propertyPath: portugueseText
       value: = Pular
       objectReference: {fileID: 0}
+    - target: {fileID: 691312139185975647, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: volumeSlider
+      value: 
+      objectReference: {fileID: 1529864086}
+    - target: {fileID: 691312139185975647, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: bgmVolumeSlider
+      value: 
+      objectReference: {fileID: 694333476}
+    - target: {fileID: 691312139185975647, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: sfxVolumeSlider
+      value: 
+      objectReference: {fileID: 1610999183}
     - target: {fileID: 786626692142912500, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: frenchText
       value: Volume

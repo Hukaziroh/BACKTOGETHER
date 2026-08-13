@@ -19,6 +19,8 @@ public class OptionsManager : MonoBehaviour
     [Header("Settings")]
     public AudioMixer audioMixer;
     public Slider volumeSlider;
+    public Slider sfxVolumeSlider;
+    public Slider bgmVolumeSlider;
     public Toggle fullscreenToggle;
 
     [Header("방 코드 UI (모든 플레이어 공용)")]
@@ -50,7 +52,7 @@ public class OptionsManager : MonoBehaviour
 
             if (audioMixer != null)
             {
-                AudioMixerGroup[] groups = audioMixer.FindMatchingGroups("Master");
+                AudioMixerGroup[] groups = audioMixer.FindMatchingGroups("SFX");
                 if (groups.Length > 0) PlayerSoundUtility.DefaultSfxGroup = groups[0];
             }
         }
@@ -77,6 +79,28 @@ public class OptionsManager : MonoBehaviour
             }
 
             volumeSlider.onValueChanged.AddListener(SetVolume);
+        }
+
+        if (sfxVolumeSlider != null)
+        {
+            if (audioMixer != null && audioMixer.GetFloat("SFXVolume", out float currentSfxDb))
+            {
+                float currentSfxVolume = Mathf.Pow(10f, currentSfxDb / 20f);
+                sfxVolumeSlider.SetValueWithoutNotify(currentSfxVolume);
+            }
+
+            sfxVolumeSlider.onValueChanged.AddListener(SetSFXVolume);
+        }
+
+        if (bgmVolumeSlider != null)
+        {
+            if (audioMixer != null && audioMixer.GetFloat("BGMVolume", out float currentBgmDb))
+            {
+                float currentBgmVolume = Mathf.Pow(10f, currentBgmDb / 20f);
+                bgmVolumeSlider.SetValueWithoutNotify(currentBgmVolume);
+            }
+
+            bgmVolumeSlider.onValueChanged.AddListener(SetBGMVolume);
         }
 
         if (toggleVisibilityButton != null)
@@ -316,6 +340,24 @@ public class OptionsManager : MonoBehaviour
         {
             float db = Mathf.Log10(Mathf.Max(volume, 0.0001f)) * 20;
             audioMixer.SetFloat("Volume", db);
+        }
+    }
+
+    public void SetSFXVolume(float volume)
+    {
+        if (audioMixer != null)
+        {
+            float db = Mathf.Log10(Mathf.Max(volume, 0.0001f)) * 20;
+            audioMixer.SetFloat("SFXVolume", db);
+        }
+    }
+
+    public void SetBGMVolume(float volume)
+    {
+        if (audioMixer != null)
+        {
+            float db = Mathf.Log10(Mathf.Max(volume, 0.0001f)) * 20;
+            audioMixer.SetFloat("BGMVolume", db);
         }
     }
 
