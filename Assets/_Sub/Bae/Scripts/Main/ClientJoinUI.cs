@@ -177,6 +177,14 @@ public class ClientJoinUI : MonoBehaviour
         if (timeout <= 0f && !searchFinished)
         {
             Debug.LogWarning($"[ClientJoinUI] 코드 검색 5초 초과.");
+
+            // ★ 추가: 검색 5초 초과 시에도 진행 중이던 검색 핸들을 안전하게 해제 및 null 처리
+            if (currentSearchHandle != null)
+            {
+                currentSearchHandle.Release();
+                currentSearchHandle = null;
+            }
+
             CancelTimeout();
             HideLoadingPanel();
             ShowErrorPopup("방 검색에 실패했습니다. 코드를 다시 확인해 주세요.");
@@ -219,6 +227,8 @@ public class ClientJoinUI : MonoBehaviour
 
     private void OnLobbySearchCompleted(LobbySearchFindCallbackInfo data)
     {
+        if (currentSearchHandle == null) return;
+
         if (data.ResultCode == Result.Success && currentSearchHandle != null)
         {
             LobbySearchGetSearchResultCountOptions countOptions = new LobbySearchGetSearchResultCountOptions();

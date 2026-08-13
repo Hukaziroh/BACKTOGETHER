@@ -13,47 +13,46 @@ public class HostDisconnectHandler : MonoBehaviour
     private bool wasConnected = false;
     private bool isIntentionalExit = false;
 
-    void Update()
+    private void Start()
     {
-        if (NetworkServer.active)
-            return;
+        // 시작 시 디스커넥트 팝업 비활성화
+        if (disconnectPanel != null)
+            disconnectPanel.SetActive(false);
+    }
 
-        if (NetworkClient.isConnected && !wasConnected)
+    private void Update()
+    {
+        // 내가 호스트(서버)라면 감지할 필요 없음
+        if (NetworkServer.active) return;
+
+        // 1. 클라이언트가 정상 연결된 상태
+        if (NetworkClient.isConnected)
         {
             wasConnected = true;
-            isIntentionalExit = false;
         }
-
-        if (wasConnected && !NetworkClient.isConnected)
+        // 2. 연결되어 있다가 호스트가 나가서 끊어진 순간 감지
+        else if (wasConnected)
         {
             wasConnected = false;
 
             if (isIntentionalExit)
             {
-                Debug.Log("[HostDisconnectHandler] 의도적인 종료 - 메인으로 이동");
-
+                // 유저가 직접 [나가기] 버튼을 누른 경우 -> 팝업 없이 로비로 이동
                 isIntentionalExit = false;
-
-                if (disconnectPanel != null)
-                    disconnectPanel.SetActive(false);
-
                 SceneManager.LoadScene(lobbySceneName);
             }
             else
             {
-                Debug.Log("[HostDisconnectHandler] 호스트 연결 끊김");
-
-                ShowDisconnectUI();
+                // 호스트가 강제 종료되거나 튕김 -> 연결 끊김 팝업창 띄우기
+                if (disconnectPanel != null)
+                    disconnectPanel.SetActive(true);
             }
         }
     }
 
-    private void ShowDisconnectUI()
-    {
-        if (disconnectPanel != null)
-            disconnectPanel.SetActive(true);
-    }
-
+    /// <summary>
+    /// 디스커넥트 팝업 창의 [확인 / 로비로 돌아가기] 버튼에 연결
+    /// </summary>
     public void GoBackToLobby()
     {
         if (NetworkManager.singleton != null)
@@ -67,6 +66,9 @@ public class HostDisconnectHandler : MonoBehaviour
         SceneManager.LoadScene(lobbySceneName);
     }
 
+    /// <summary>
+    /// Pause 메뉴 등에서 유저가 스스로 방을 나갈 때 호출
+    /// </summary>
     public void SetIntentionalExit()
     {
         isIntentionalExit = true;
