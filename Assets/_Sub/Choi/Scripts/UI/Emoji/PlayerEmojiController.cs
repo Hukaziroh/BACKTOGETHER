@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using Mirror;
+using DG.Tweening;
 
 public class PlayerEmojiController : NetworkBehaviour
 {
@@ -11,11 +12,10 @@ public class PlayerEmojiController : NetworkBehaviour
     [Header("일반 이모지 스프라이트 리스트")]
     [SerializeField] private Sprite[] emojiSprites;
 
-
     [System.Serializable]
     public class AnimatedEmojiData
     {
-        public Sprite[] frames; // 순차적으로 보여줄 스프라이트들 (예: 3 -> 2 -> 1)
+        public Sprite[] frames; // 순차적으로 보여줄 스프라이트들
     }
     [SerializeField] private AnimatedEmojiData[] animatedEmojis;
     [SerializeField] private float frameInterval = 0.8f; // 프레임 간 전환 시간
@@ -132,9 +132,10 @@ public class PlayerEmojiController : NetworkBehaviour
         if (activeEmojiCoroutine != null) StopCoroutine(activeEmojiCoroutine);
 
         emojiSpriteRenderer.sprite = emojiSprites[emojiIndex];
-        SetEmojiScale();
-
         emojiSpriteRenderer.gameObject.SetActive(true);
+
+        PlayPopAnimation();
+
         activeEmojiCoroutine = StartCoroutine(HideEmojiRoutine(displayDuration));
     }
 
@@ -147,7 +148,6 @@ public class PlayerEmojiController : NetworkBehaviour
 
         if (activeEmojiCoroutine != null) StopCoroutine(activeEmojiCoroutine);
 
-        SetEmojiScale();
         emojiSpriteRenderer.gameObject.SetActive(true);
 
         activeEmojiCoroutine = StartCoroutine(PlayAnimationRoutine(animData.frames));
@@ -160,11 +160,12 @@ public class PlayerEmojiController : NetworkBehaviour
             if (frame != null)
             {
                 emojiSpriteRenderer.sprite = frame;
+                // 🌟 애니메이션 프레임이 전환될 때마다 띠용띠용 튀는 효과 적용
+                PlayPopAnimation();
             }
             yield return new WaitForSeconds(frameInterval);
         }
 
-        // 애니메이션 재생이 모두 끝난 후 일정 시간 유지하다가 끔 (혹은 바로 끄려면 frameInterval만 유지)
         yield return new WaitForSeconds(displayDuration);
 
         if (emojiSpriteRenderer != null)
@@ -183,10 +184,15 @@ public class PlayerEmojiController : NetworkBehaviour
         }
     }
 
-    private void SetEmojiScale()
+    // 🌟 띠용띠용 커지는 팝업 애니메이션 메서드 (DOTween 사용)
+    private void PlayPopAnimation()
     {
-        float scaleX = Mathf.Abs(targetSize);
-        float scaleY = Mathf.Abs(targetSize);
-        emojiTransform.localScale = new Vector3(scaleX, scaleY, 1f);
+        if (emojiTransform == null) return;
+
+        float finalSize = Mathf.Abs(targetSize);
+
+        emojiTransform.DOKill();
+        emojiTransform.localScale = Vector3.zero;
+        emojiTransform.DOScale(finalSize, 0.35f).SetEase(Ease.OutBack);
     }
 }
