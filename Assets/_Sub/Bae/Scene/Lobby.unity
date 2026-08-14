@@ -153363,7 +153363,7 @@ Tilemap:
       e33: 1
   m_TileColorArray:
   - serializedVersion: 2
-    m_RefCount: 11563
+    m_RefCount: 11504
     m_Data: {r: 1, g: 1, b: 1, a: 1}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
@@ -258534,7 +258534,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 534971709051548441, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_text
-      value: hu zup
+      value: ABCDEFGQWERi
       objectReference: {fileID: 0}
     - target: {fileID: 1381074218888706539, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_Name
@@ -258576,6 +258576,10 @@ PrefabInstance:
       propertyPath: portugueseText
       value: "C\xF3digo:"
       objectReference: {fileID: 0}
+    - target: {fileID: 3331865519203247460, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_Spacing
+      value: 17
+      objectReference: {fileID: 0}
     - target: {fileID: 4215164014586056991, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_text
       value: 'Code:'
@@ -258607,6 +258611,14 @@ PrefabInstance:
     - target: {fileID: 4766194744893955446, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6709851874221663644, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 746.7505
+      objectReference: {fileID: 0}
+    - target: {fileID: 6709851874221663644, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 586.62994
       objectReference: {fileID: 0}
     - target: {fileID: 7549401996362473519, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_AnchorMax.y

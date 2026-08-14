@@ -9,6 +9,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement; // 씬 초기화용 네임스페이스 추가
 using UnityEngine.UI;
 
 public class ClientLobbyManager : MonoBehaviour
@@ -188,6 +189,7 @@ public class ClientLobbyManager : MonoBehaviour
         bool downPressed = false;
         bool enterPressed = false;
         bool escPressed = false;
+        bool submitPressed = false;
 
         if (Keyboard.current != null)
         {
@@ -207,6 +209,8 @@ public class ClientLobbyManager : MonoBehaviour
                       Keyboard.current.sKey.wasPressedThisFrame;
 
             escPressed |= Keyboard.current.escapeKey.wasPressedThisFrame;
+
+            submitPressed |= enterPressed || Keyboard.current.spaceKey.wasPressedThisFrame;
         }
 
         if (Gamepad.current != null)
@@ -219,10 +223,12 @@ public class ClientLobbyManager : MonoBehaviour
 
             downPressed |= Gamepad.current.dpad.down.wasPressedThisFrame ||
                       Gamepad.current.leftStick.down.wasPressedThisFrame;
+
+            submitPressed |= Gamepad.current.buttonSouth.wasPressedThisFrame; // 패드 A / Cross 버튼
         }
 
-        // 엔터 입력 처리 (팝업이 열려 있는 경우 엔터로 닫기 수행)
-        if (enterPressed)
+        // 확인 / 제출 입력 처리 (팝업이 열려 있는 경우 엔터나 패드 A버튼으로 닫기 수행)
+        if (submitPressed)
         {
             if (timeoutPopupPanel != null && timeoutPopupPanel.activeSelf)
             {
@@ -363,6 +369,52 @@ public class ClientLobbyManager : MonoBehaviour
             {
                 SelectPrivateRoomDown();
             }
+        }
+    }
+
+    /// <summary>
+    /// 매 프레임 최후순위에 실행되어 팝업창 외부로 UI 포커스가 이탈하거나 해제되는 것을 방지합니다.
+    /// </summary>
+    private void LateUpdate()
+    {
+        if (EventSystem.current == null) return;
+
+        // 1. 타임아웃 팝업 포커스 강제 고정
+        if (timeoutPopupPanel != null && timeoutPopupPanel.activeSelf)
+        {
+            GameObject selected = EventSystem.current.currentSelectedGameObject;
+            if (selected == null || !selected.transform.IsChildOf(timeoutPopupPanel.transform))
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+                if (timeoutCloseButton != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(timeoutCloseButton.gameObject);
+                }
+                else
+                {
+                    EventSystem.current.SetSelectedGameObject(timeoutPopupPanel);
+                }
+            }
+            return;
+        }
+
+        // 2. 일반 에러 팝업 포커스 강제 고정
+        if (errorPopupPanel != null && errorPopupPanel.activeSelf)
+        {
+            GameObject selected = EventSystem.current.currentSelectedGameObject;
+            if (selected == null || !selected.transform.IsChildOf(errorPopupPanel.transform))
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+                if (errorCloseButton != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(errorCloseButton.gameObject);
+                }
+                else
+                {
+                    EventSystem.current.SetSelectedGameObject(errorPopupPanel);
+                }
+            }
+            return;
         }
     }
 
@@ -930,6 +982,11 @@ public class ClientLobbyManager : MonoBehaviour
             if (errorMessageText != null) errorMessageText.text = msg;
             errorPopupPanel.SetActive(true);
 
+            if (GlobalSceneInputManager.Instance != null)
+            {
+                GlobalSceneInputManager.Instance.SetFocusScope(errorPopupPanel);
+            }
+
             if (EventSystem.current != null)
             {
                 EventSystem.current.SetSelectedGameObject(null);
@@ -958,6 +1015,11 @@ public class ClientLobbyManager : MonoBehaviour
         {
             timeoutPopupPanel.SetActive(true);
 
+            if (GlobalSceneInputManager.Instance != null)
+            {
+                GlobalSceneInputManager.Instance.SetFocusScope(timeoutPopupPanel);
+            }
+
             if (EventSystem.current != null)
             {
                 EventSystem.current.SetSelectedGameObject(null);
@@ -973,10 +1035,28 @@ public class ClientLobbyManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 10초 초과 타임아웃 팝업을 닫을 때 실행됩니다.
+    /// 네트워크 정리 후 메인 씬 전체를 재로드하여 상태를 완전히 초기화합니다.
+    /// </summary>
     public void OnClick_CloseTimeoutPopup()
     {
         if (timeoutPopupPanel != null) timeoutPopupPanel.SetActive(false);
-        RestoreInputScopeAfterPopup();
+
+        // EOS 및 Mirror 클라이언트 연결 완전히 해제
+        var eos = GetEOSLobby();
+        if (eos != null && eos.ConnectedToLobby)
+        {
+            eos.LeaveLobby();
+        }
+
+        if (NetworkManager.singleton != null)
+        {
+            NetworkManager.singleton.StopClient();
+        }
+
+        // 현재 메인 씬을 재로드하여 초기 상태로 깔끔하게 리셋
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     private void RestoreInputScopeAfterPopup()
@@ -1080,16 +1160,7 @@ public class ClientLobbyManager : MonoBehaviour
 
         if (clientPublicPanel != null) clientPublicPanel.SetActive(false);
         if (clientPrivatePanel != null) clientPrivatePanel.SetActive(false);
-        if (clientSelectionPanel != null)
-        {
-            clientSelectionPanel.SetActive(true);
-            if (EventSystem.current != null)
-            {
-                EventSystem.current.SetSelectedGameObject(null);
-                if (selectPublicModeButton != null)
-                    EventSystem.current.SetSelectedGameObject(selectPublicModeButton.gameObject);
-            }
-        }
+        if (clientSelectionPanel != null) clientSelectionPanel.SetActive(false);
         if (logo != null) logo.SetActive(true);
 
         SetInteractableAll(true);
