@@ -28,6 +28,9 @@ public class ClientJoinUI : MonoBehaviour
     private bool searchFinished = false;
     private Coroutine? timeoutCoroutine;
 
+    // ★ 연타 방지 플래그
+    private bool isSearchingCode = false;
+
     private void Start()
     {
         GameObject? panel = GetLoadingPanel();
@@ -53,6 +56,9 @@ public class ClientJoinUI : MonoBehaviour
     /// </summary>
     public void OnClick_ConnectByCode()
     {
+        // ★ 이미 검색 진행 중이면 중복 클릭 차단
+        if (isSearchingCode) return;
+
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
 
         if (sixDigitUI == null)
@@ -71,6 +77,9 @@ public class ClientJoinUI : MonoBehaviour
             return;
         }
 
+        // ★ 검색 시작 상태로 전환
+        isSearchingCode = true;
+
         GameObject? currentPanel = GetLoadingPanel();
         if (currentPanel != null)
         {
@@ -85,7 +94,7 @@ public class ClientJoinUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 무한 로딩 감지 및 타임아웃 처리 코루틴 (추가됨)
+    /// 무한 로딩 감지 및 타임아웃 처리 코루틴
     /// </summary>
     private IEnumerator JoinTimeoutRoutine()
     {
@@ -105,7 +114,7 @@ public class ClientJoinUI : MonoBehaviour
                 currentSearchHandle = null;
             }
 
-            // [수정된 부분] Mirror를 끄기 전에 반드시 EOS 로비에서도 강제 퇴장(LeaveLobby)을 수행하여 유령 클라이언트 방지
+            // Mirror를 끄기 전에 반드시 EOS 로비에서도 강제 퇴장(LeaveLobby)을 수행하여 유령 클라이언트 방지
             if (NetworkManager.singleton != null)
             {
                 EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
@@ -121,6 +130,7 @@ public class ClientJoinUI : MonoBehaviour
                 }
             }
 
+            isSearchingCode = false; // ★ 리셋
             HideLoadingPanel();
             ShowErrorPopup("방 접속 시간이 초과되었습니다.\n(서버 응답이 없거나 네트워크가 불안정합니다.)");
         }
@@ -134,9 +144,10 @@ public class ClientJoinUI : MonoBehaviour
         LobbyInterface lobbyInterface = EOSSDKComponent.GetLobbyInterface();
         if (lobbyInterface == null)
         {
+            isSearchingCode = false; // ★ 리셋
             CancelTimeout();
-            ShowErrorPopup("EOS 네트워크 시스템이 준비되지 않았습니다.");
             HideLoadingPanel();
+            ShowErrorPopup("EOS 네트워크 시스템이 준비되지 않았습니다.");
             yield break;
         }
 
@@ -178,13 +189,13 @@ public class ClientJoinUI : MonoBehaviour
         {
             Debug.LogWarning($"[ClientJoinUI] 코드 검색 5초 초과.");
 
-            // ★ 추가: 검색 5초 초과 시에도 진행 중이던 검색 핸들을 안전하게 해제 및 null 처리
             if (currentSearchHandle != null)
             {
                 currentSearchHandle.Release();
                 currentSearchHandle = null;
             }
 
+            isSearchingCode = false; // ★ 리셋
             CancelTimeout();
             HideLoadingPanel();
             ShowErrorPopup("방 검색에 실패했습니다. 코드를 다시 확인해 주세요.");
@@ -204,13 +215,14 @@ public class ClientJoinUI : MonoBehaviour
 
             if (eosLobby != null)
             {
-                // 정상적으로 씬이 넘어가면 이 오브젝트가 파괴되면서 로딩창도 사라지고 타임아웃도 자동 취소됨.
-                // 만약 씬이 넘어가지 않고 100%에서 멈춰있다면 위에서 실행한 JoinTimeoutRoutine이 작동함.
+                // 정상적으로 참가가 진행되면 씬이 넘어가며, 
+                // 타임아웃 발생 시 JoinTimeoutRoutine에서 isSearchingCode가 해제됩니다.
                 eosLobby.JoinLobby(foundLobbyDetails);
             }
             else
             {
                 Debug.LogError("[ClientJoinUI] EOSLobby 인스턴스를 찾을 수 없습니다.");
+                isSearchingCode = false; // ★ 리셋
                 CancelTimeout();
                 HideLoadingPanel();
                 ShowErrorPopup("네트워크 매니저(EOSLobby)를 찾을 수 없습니다.");
@@ -219,6 +231,7 @@ public class ClientJoinUI : MonoBehaviour
         else
         {
             Debug.LogWarning($"[ClientJoinUI] 코드 '{code}'에 해당하는 방을 찾을 수 없습니다.");
+            isSearchingCode = false; // ★ 리셋
             CancelTimeout();
             HideLoadingPanel();
             ShowErrorPopup($"코드 [{code}] 방을 찾을 수 없습니다.\n코드를 다시 확인해 주세요.");
@@ -269,6 +282,7 @@ public class ClientJoinUI : MonoBehaviour
 
     private void ShowErrorPopup(string message)
     {
+        isSearchingCode = false; // ★ 안전망: 에러 팝업 출력을 요청할 때 플래그 해제
         if (errorPopupPanel != null)
         {
             if (errorMessageText != null) errorMessageText.text = message;
@@ -282,6 +296,7 @@ public class ClientJoinUI : MonoBehaviour
 
     public void OnClick_CloseErrorPopup()
     {
+        isSearchingCode = false; // ★ 팝업을 닫았을 때도 플래그 해제
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
     }
 }
