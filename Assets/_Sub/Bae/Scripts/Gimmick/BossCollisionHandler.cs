@@ -11,7 +11,7 @@ public class BossCollisionHandler : NetworkBehaviour
 
     [Header("사망 사운드")]
     public AudioClip deathSound;
-    [Range(0f, 1f)] public float deathSoundVolume = 1f;
+    [Range(0f, 3f)] public float deathSoundVolume = 1f;
     public float soundMinDistance = 9f;
     public float soundMaxDistance = 40f;
 
