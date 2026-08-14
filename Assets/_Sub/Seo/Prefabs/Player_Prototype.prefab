@@ -1366,21 +1366,21 @@ MonoBehaviour:
   syncInterval: 0
   emojiSpriteRenderer: {fileID: 2018865092427533078}
   emojiSprites:
-  - {fileID: 2453225149448660891, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
-  - {fileID: 8466565502762357432, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
-  - {fileID: -4855082346359090717, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
-  - {fileID: -4573851567144314647, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
-  - {fileID: -7866977358523287424, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
-  - {fileID: 6162069267118594589, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
-  - {fileID: 1664003977717168982, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
-  - {fileID: -3068238926824723033, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
-  - {fileID: 1458036559636054859, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+  - {fileID: -5179336097983462039, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+  - {fileID: 2216019017426768509, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+  - {fileID: -7632717673066108937, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+  - {fileID: 5788101664747893077, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+  - {fileID: 1615577708561746914, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+  - {fileID: -2725792238155407021, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+  - {fileID: -1252483017046966270, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+  - {fileID: 697798277833988971, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+  - {fileID: -142576600999167426, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
   animatedEmojis:
   - frames:
-    - {fileID: 1458036559636054859, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
-    - {fileID: 2856023600122083782, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
-    - {fileID: 5783837810845549781, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
-    - {fileID: 2453225149448660891, guid: 4db1e708ab9025c4489265c8c8d8ea72, type: 3}
+    - {fileID: -142576600999167426, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+    - {fileID: 2772066017136111552, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+    - {fileID: -987327527253144003, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+    - {fileID: 2216019017426768509, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
   frameInterval: 0.8
   targetSize: 0.3
   headOffset: {x: 0, y: 1, z: 0}

@@ -5075,6 +5075,58 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[0].icon
+      value: 
+      objectReference: {fileID: -5179336097983462039, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[1].icon
+      value: 
+      objectReference: {fileID: 2216019017426768509, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[2].icon
+      value: 
+      objectReference: {fileID: -7632717673066108937, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[3].icon
+      value: 
+      objectReference: {fileID: 5788101664747893077, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[4].icon
+      value: 
+      objectReference: {fileID: 1615577708561746914, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[5].icon
+      value: 
+      objectReference: {fileID: -2725792238155407021, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[6].icon
+      value: 
+      objectReference: {fileID: -1252483017046966270, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[7].icon
+      value: 
+      objectReference: {fileID: 697798277833988971, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: items.Array.data[8].icon
+      value: 
+      objectReference: {fileID: -142576600999167426, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: 'items.Array.data[8].animationFrames.Array.data[0]'
+      value: 
+      objectReference: {fileID: -142576600999167426, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: 'items.Array.data[8].animationFrames.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2772066017136111552, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: 'items.Array.data[8].animationFrames.Array.data[2]'
+      value: 
+      objectReference: {fileID: -987327527253144003, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
+    - target: {fileID: 1404181844533839889, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: 'items.Array.data[8].animationFrames.Array.data[3]'
+      value: 
+      objectReference: {fileID: 2216019017426768509, guid: 0dfc9da659d37f944a8341ab1b3d0e7c, type: 3}
     - target: {fileID: 1477166410709400835, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: frenchText
       value: = Bouger
