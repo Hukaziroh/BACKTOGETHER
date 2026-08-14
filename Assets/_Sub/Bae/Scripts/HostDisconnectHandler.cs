@@ -1,10 +1,10 @@
-using UnityEngine;
 using Mirror;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem; // 신규 인풋 시스템 네임스페이스
-
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using EpicTransport;
 public class HostDisconnectHandler : MonoBehaviour
 {
     [Header("UI 연결")]
@@ -147,9 +147,19 @@ public class HostDisconnectHandler : MonoBehaviour
     /// </summary>
     public void GoBackToLobby()
     {
+        // ★ [핵심 1] 다음 접속을 위해 wasConnected 플래그를 반드시 초기화
+        wasConnected = false;
+
         if (NetworkManager.singleton != null)
         {
             NetworkManager.singleton.StopClient();
+
+            // ★ [핵심 2] EOS P2P 소켓 세션 강제 종료 및 캐시 초기화
+            EosTransport transport = NetworkManager.singleton.GetComponent<EosTransport>();
+            if (transport != null)
+            {
+                transport.Shutdown();
+            }
         }
 
         if (disconnectPanel != null)
