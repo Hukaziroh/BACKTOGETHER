@@ -148,8 +148,11 @@ public class PlayerRespawn : NetworkBehaviour
 
         if (combineHandler.bodyTarget != null)
         {
-            bodyHandler =
+            PlayerCombineHandler targetBody =
                 combineHandler.bodyTarget.GetComponent<PlayerCombineHandler>();
+
+            if (targetBody != null)
+                bodyHandler = targetBody;
         }
 
         if (bodyHandler == null)
@@ -161,100 +164,50 @@ public class PlayerRespawn : NetworkBehaviour
         if (bodyRespawn == null)
             yield break;
 
-        PlayerRespawn latestRespawn = bodyRespawn;
+        Vector3 respawnPosition =
+            bodyRespawn.currentSpawnPoint;
 
-        foreach (PlayerCombineHandler ghost in bodyHandler.connectedGhosts)
+        if (bodyRespawn.connectionToClient != null)
         {
-            if (ghost == null)
-                continue;
-
-            PlayerRespawn ghostRespawn =
-                ghost.GetComponent<PlayerRespawn>();
-
-            if (ghostRespawn != null &&
-                ghostRespawn.currentCheckpointIndex >
-                latestRespawn.currentCheckpointIndex)
-            {
-                latestRespawn = ghostRespawn;
-            }
+            bodyRespawn.TargetRpcPlayFadeOut();
         }
 
-        Vector3 respawnPosition = latestRespawn.currentSpawnPoint;
+        bodyRespawn.isRespawning = true;
 
-        List<PlayerRespawn> respawnPlayers =
-            new List<PlayerRespawn>();
+        PlayerKnockback knockback =
+            bodyRespawn.GetComponent<PlayerKnockback>();
 
-        PlayerRespawn bodyPlayerRespawn = bodyRespawn;
+        if (knockback != null)
+            knockback.ResetKnockback();
 
-        if (!respawnPlayers.Contains(bodyPlayerRespawn))
-            respawnPlayers.Add(bodyPlayerRespawn);
+        PlayerController bodyController =
+            bodyRespawn.GetComponent<PlayerController>();
 
-        foreach (PlayerCombineHandler ghost in bodyHandler.connectedGhosts)
+        if (bodyController != null &&
+            bodyController.rb != null)
         {
-            if (ghost == null)
-                continue;
-
-            PlayerRespawn ghostRespawn =
-                ghost.GetComponent<PlayerRespawn>();
-
-            if (ghostRespawn != null &&
-                !respawnPlayers.Contains(ghostRespawn))
-            {
-                respawnPlayers.Add(ghostRespawn);
-            }
-        }
-
-        foreach (PlayerRespawn player in respawnPlayers)
-        {
-            if (player.connectionToClient != null)
-            {
-                player.TargetRpcPlayFadeOut();
-            }
-
-            player.isRespawning = true;
-
-            PlayerKnockback knockback =
-                player.GetComponent<PlayerKnockback>();
-
-            if (knockback != null)
-                knockback.ResetKnockback();
-
-            PlayerController playerController =
-                player.GetComponent<PlayerController>();
-
-            if (playerController != null &&
-                playerController.rb != null)
-            {
-                playerController.rb.linearVelocity = Vector2.zero;
-                playerController.rb.simulated = false;
-            }
+            bodyController.rb.linearVelocity = Vector2.zero;
+            bodyController.rb.simulated = false;
         }
 
         yield return new WaitForSeconds(0.3f);
 
-        foreach (PlayerRespawn player in respawnPlayers)
+        
+        bodyRespawn.transform.position = respawnPosition;
+
+        Physics2D.SyncTransforms();
+
+        if (bodyController != null &&
+            bodyController.rb != null)
         {
-            player.transform.position = respawnPosition;
-            Physics2D.SyncTransforms();
-
-            PlayerController playerController =
-                player.GetComponent<PlayerController>();
-
-            if (playerController != null &&
-                playerController.rb != null)
-            {
-                playerController.rb.simulated = true;
-                playerController.rb.linearVelocity = Vector2.zero;
-            }
+            bodyController.rb.simulated = true;
+            bodyController.rb.linearVelocity = Vector2.zero;
         }
 
         yield return new WaitForSeconds(0.1f);
 
-        foreach (PlayerRespawn player in respawnPlayers)
-        {
-            player.TargetRpcPlayFadeIn();
-            player.isRespawning = false;
-        }
+        bodyRespawn.TargetRpcPlayFadeIn();
+        bodyRespawn.isRespawning = false;
     }
 
     private IEnumerator RespawnSinglePlayerRoutine()
@@ -374,7 +327,6 @@ public class PlayerRespawn : NetworkBehaviour
         }
     }
 
-    // 🌟 클라이언트 화면 강제 페이드 아웃 (팀 리스폰 시 깜빡임 방지용)
     [TargetRpc]
     public void TargetRpcPlayFadeOut()
     {
@@ -385,7 +337,6 @@ public class PlayerRespawn : NetworkBehaviour
         }
     }
 
-    // 🌟 서버에서 리스폰 완료 후 클라이언트의 화면을 밝게 띄워주는 TargetRpc
     [TargetRpc]
     public void TargetRpcPlayFadeIn()
     {
