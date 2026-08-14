@@ -116,6 +116,14 @@ public class PlayerRespawn : NetworkBehaviour
     {
         if (isRespawning) return;
 
+        PlayerCombineHandler combineHandler = GetComponent<PlayerCombineHandler>();
+
+        if (combineHandler != null && combineHandler.isCombined)
+        {
+            StartCoroutine(RespawnCombinedPlayersRoutine());
+            return;
+        }
+
         string sceneName = SceneManager.GetActiveScene().name;
 
         if (teamRespawnScenes.Contains(sceneName))
@@ -125,6 +133,127 @@ public class PlayerRespawn : NetworkBehaviour
         else
         {
             StartCoroutine(RespawnSinglePlayerRoutine());
+        }
+    }
+
+    private IEnumerator RespawnCombinedPlayersRoutine()
+    {
+        PlayerCombineHandler combineHandler =
+            GetComponent<PlayerCombineHandler>();
+
+        if (combineHandler == null)
+            yield break;
+
+        PlayerCombineHandler bodyHandler = combineHandler;
+
+        if (combineHandler.bodyTarget != null)
+        {
+            bodyHandler =
+                combineHandler.bodyTarget.GetComponent<PlayerCombineHandler>();
+        }
+
+        if (bodyHandler == null)
+            yield break;
+
+        PlayerRespawn bodyRespawn =
+            bodyHandler.GetComponent<PlayerRespawn>();
+
+        if (bodyRespawn == null)
+            yield break;
+
+        PlayerRespawn latestRespawn = bodyRespawn;
+
+        foreach (PlayerCombineHandler ghost in bodyHandler.connectedGhosts)
+        {
+            if (ghost == null)
+                continue;
+
+            PlayerRespawn ghostRespawn =
+                ghost.GetComponent<PlayerRespawn>();
+
+            if (ghostRespawn != null &&
+                ghostRespawn.currentCheckpointIndex >
+                latestRespawn.currentCheckpointIndex)
+            {
+                latestRespawn = ghostRespawn;
+            }
+        }
+
+        Vector3 respawnPosition = latestRespawn.currentSpawnPoint;
+
+        List<PlayerRespawn> respawnPlayers =
+            new List<PlayerRespawn>();
+
+        PlayerRespawn bodyPlayerRespawn = bodyRespawn;
+
+        if (!respawnPlayers.Contains(bodyPlayerRespawn))
+            respawnPlayers.Add(bodyPlayerRespawn);
+
+        foreach (PlayerCombineHandler ghost in bodyHandler.connectedGhosts)
+        {
+            if (ghost == null)
+                continue;
+
+            PlayerRespawn ghostRespawn =
+                ghost.GetComponent<PlayerRespawn>();
+
+            if (ghostRespawn != null &&
+                !respawnPlayers.Contains(ghostRespawn))
+            {
+                respawnPlayers.Add(ghostRespawn);
+            }
+        }
+
+        foreach (PlayerRespawn player in respawnPlayers)
+        {
+            if (player.connectionToClient != null)
+            {
+                player.TargetRpcPlayFadeOut();
+            }
+
+            player.isRespawning = true;
+
+            PlayerKnockback knockback =
+                player.GetComponent<PlayerKnockback>();
+
+            if (knockback != null)
+                knockback.ResetKnockback();
+
+            PlayerController playerController =
+                player.GetComponent<PlayerController>();
+
+            if (playerController != null &&
+                playerController.rb != null)
+            {
+                playerController.rb.linearVelocity = Vector2.zero;
+                playerController.rb.simulated = false;
+            }
+        }
+
+        yield return new WaitForSeconds(0.3f);
+
+        foreach (PlayerRespawn player in respawnPlayers)
+        {
+            player.transform.position = respawnPosition;
+            Physics2D.SyncTransforms();
+
+            PlayerController playerController =
+                player.GetComponent<PlayerController>();
+
+            if (playerController != null &&
+                playerController.rb != null)
+            {
+                playerController.rb.simulated = true;
+                playerController.rb.linearVelocity = Vector2.zero;
+            }
+        }
+
+        yield return new WaitForSeconds(0.1f);
+
+        foreach (PlayerRespawn player in respawnPlayers)
+        {
+            player.TargetRpcPlayFadeIn();
+            player.isRespawning = false;
         }
     }
 
