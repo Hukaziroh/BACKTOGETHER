@@ -134,6 +134,9 @@ public class CoopDuoCombineTrigger : NetworkBehaviour
         b.combineColorIndex = color;
         b.combineFaceIndex = face;
 
+        a.connectedGhosts.Clear();
+        a.connectedGhosts.Add(b);
+
         a.StartCombineMode(roleA, playerA);
         b.StartCombineMode(roleB, playerA);
     }
