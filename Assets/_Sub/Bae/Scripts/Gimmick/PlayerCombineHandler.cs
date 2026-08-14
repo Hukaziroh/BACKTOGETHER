@@ -268,6 +268,8 @@ public class PlayerCombineHandler : NetworkBehaviour
     [Server]
     public bool GetServerCombinedActionPressed()
     {
+        if (bodyTarget != gameObject)
+            return false;
         PlayerInput myInput = GetComponent<PlayerInput>();
 
         if (myRole == CombineRole.Action &&
