@@ -477,10 +477,12 @@ public class PrivateLobbyManager : MonoBehaviour
             else lobby.DestroyLobby();
         }
 
+        // ★ 수정된 핵심 부분: StopHost() 이후에 EosTransport를 강제로 Shutdown 시킵니다.
         if (NetworkManager.singleton != null)
         {
             NetworkManager.singleton.StopHost();
 
+            // 에픽 P2P 소켓에 남아있는 비정상 접속 시도 찌꺼기(캐시)를 강제로 초기화
             EosTransport transport = NetworkManager.singleton.GetComponent<EosTransport>();
             if (transport != null)
             {
