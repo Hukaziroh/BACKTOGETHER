@@ -200,7 +200,7 @@ public class PlayerMovement : NetworkBehaviour
         }
 
         bool isActionPressed = controller.input.ActionPressedThisFrame;
-        
+
         if (controller.combineHandler != null &&
             controller.combineHandler.isCombined &&
             controller.combineHandler.bodyTarget == gameObject)
@@ -211,7 +211,11 @@ public class PlayerMovement : NetworkBehaviour
 
         if (isActionPressed)
         {
-            CallCombinedAction();
+            if (controller.combineHandler != null &&
+                controller.combineHandler.canUseAction)
+            {
+                CallCombinedAction();
+            }
         }
     }
 
