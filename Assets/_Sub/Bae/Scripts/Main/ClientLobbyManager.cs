@@ -14,6 +14,7 @@ using UnityEngine.UI;
 
 public class ClientLobbyManager : MonoBehaviour
 {
+    public bool IsConnecting { get; private set; }
     [Header("UI 패널 연결")]
     [SerializeField] private GameObject mainPanel;
     [SerializeField] private GameObject clientSelectionPanel;
@@ -789,21 +790,27 @@ public class ClientLobbyManager : MonoBehaviour
 
     public void JoinRoom(LobbyDetails lobby)
     {
-        SubscribeEvents();
-        if (lobby == null) return;
-
-        if (!EOSLobby.IsLobbyJoinable(lobby, out uint currentMembers, out uint maxMembers))
-        {
-            ShowFullRoomWarning();
-            return;
-        }
-
         var eos = GetEOSLobby();
-        if (eos == null)
+
+        // ★ 추가: 이전 방 퇴장이 덜 끝났다면 접근 차단 (경쟁 상태 방지)
+        if (eos != null && eos.IsLeavingLobby)
         {
-            ShowError("네트워크 시스템을 찾을 수 없습니다.");
+            Debug.LogWarning("[ClientLobbyManager] 이전 Lobby 퇴장 처리 중입니다. 잠시 후 다시 입장하세요.");
             return;
         }
+
+        // ★ 추가: 새 방 입장 전 HostDisconnectHandler 상태 리셋
+        var disconnectHandler = FindFirstObjectByType<HostDisconnectHandler>();
+        if (disconnectHandler != null)
+        {
+            disconnectHandler.BeginNewConnectionAttempt();
+        }
+
+        IsConnecting = true; // 접속 프로세스 시작
+
+        SubscribeEvents();
+
+        if (lobby == null) return;
 
         SetInteractableAll(false);
         eos.JoinLobby(lobby);
@@ -1149,38 +1156,50 @@ public class ClientLobbyManager : MonoBehaviour
 
     private IEnumerator CheckConnectionTimeout()
     {
-        float timeoutDuration = 10f;
         float timer = 0f;
+        float timeoutDuration = 10f;
 
-        // 초기 연결 대기 (최대 10초) - 로딩 중 타임아웃
         while (!NetworkClient.isConnected)
         {
-            if (!NetworkClient.active)
-            {
-                break;
-            }
+            if (!NetworkClient.active) break;
 
             timer += Time.unscaledDeltaTime;
             if (timer >= timeoutDuration)
             {
-                Debug.LogWarning("[ClientLobbyManager] 초기 P2P 연결 시간 초과 (로딩 중)");
+                Debug.LogWarning("[ClientLobbyManager] P2P 연결 타임아웃!");
                 HandleInitialConnectionTimeout();
                 yield break;
             }
             yield return null;
         }
 
-        // 연결에 실패한 상태로 빠져나왔다면
         if (!NetworkClient.isConnected)
         {
             HandleInitialConnectionTimeout();
-            yield break;
+        }
+        else
+        {
+            // ★ 중요: 실제 Mirror 연결까지 성공했다면 Connecting 상태 해제
+            // 이제부터 끊기는 건 HostDisconnectHandler가 담당함
+            IsConnecting = false;
+            Debug.Log("[ClientLobbyManager] Mirror 연결 성공, HostDisconnectHandler로 감시 이관");
         }
     }
 
     private void HandleInitialConnectionTimeout()
     {
-        Debug.LogWarning("[ClientLobbyManager] 초기 접속 실패, EOS 로비에서 퇴장합니다.");
+        IsConnecting = false; // 접속 프로세스 종료
+
+        Debug.LogWarning("[ClientLobbyManager] 초기 접속 실패, 네트워크 상태를 초기화합니다.");
+
+        if (NetworkManager.singleton != null)
+        {
+            NetworkManager.singleton.StopClient();
+
+            // P2P 소켓 찌꺼기 방지용
+            EpicTransport.EosTransport transport = NetworkManager.singleton.GetComponent<EpicTransport.EosTransport>();
+            if (transport != null) transport.Shutdown();
+        }
 
         var eos = GetEOSLobby();
         if (eos != null && eos.ConnectedToLobby)
@@ -1188,21 +1207,11 @@ public class ClientLobbyManager : MonoBehaviour
             eos.LeaveLobby();
         }
 
-        if (NetworkManager.singleton != null)
-        {
-            NetworkManager.singleton.StopClient();
-        }
-
         GameObject panel = GetLoadingPanel();
         if (panel != null) panel.SetActive(false);
 
-        if (clientPublicPanel != null) clientPublicPanel.SetActive(false);
-        if (clientPrivatePanel != null) clientPrivatePanel.SetActive(false);
-        if (clientSelectionPanel != null) clientSelectionPanel.SetActive(false);
-        if (logo != null) logo.SetActive(true);
-
+        // UI 복구 로직...
         SetInteractableAll(true);
-
         ShowTimeoutPopup();
     }
 }
