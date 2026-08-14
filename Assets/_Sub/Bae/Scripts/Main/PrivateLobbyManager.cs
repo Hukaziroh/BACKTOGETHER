@@ -475,7 +475,17 @@ public class PrivateLobbyManager : MonoBehaviour
             if (NetworkServer.active && NetworkClient.active) lobby.DestroyLobby();
             else if (NetworkClient.active) lobby.LeaveLobby();
             else lobby.DestroyLobby();
-            if (NetworkManager.singleton != null) NetworkManager.singleton.StopHost();
+        }
+
+        if (NetworkManager.singleton != null)
+        {
+            NetworkManager.singleton.StopHost();
+
+            EosTransport transport = NetworkManager.singleton.GetComponent<EosTransport>();
+            if (transport != null)
+            {
+                transport.Shutdown();
+            }
         }
 
         if (hostPanel != null) hostPanel.SetActive(false);
