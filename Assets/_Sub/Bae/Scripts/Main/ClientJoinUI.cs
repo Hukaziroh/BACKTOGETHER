@@ -98,41 +98,39 @@ public class ClientJoinUI : MonoBehaviour
     /// </summary>
     private IEnumerator JoinTimeoutRoutine()
     {
+        // 설정한 시간(기본 10초)만큼 대기
         yield return new WaitForSeconds(joinTimeout);
 
+        // 시간이 지났는데도 로딩 창이 켜져 있다면 접속 실패로 간주!
         GameObject? panel = GetLoadingPanel();
         if (panel != null && panel.activeSelf)
         {
             Debug.LogWarning($"[ClientJoinUI] 방 진입 타임아웃 ({joinTimeout}초 초과) -> 접속 시도를 강제 중단합니다.");
 
+            // 검색 중이었다면 핸들 강제 해제
             if (currentSearchHandle != null)
             {
                 currentSearchHandle.Release();
                 currentSearchHandle = null;
             }
 
+            // Mirror를 끄기 전에 반드시 EOS 로비에서도 강제 퇴장(LeaveLobby)을 수행하여 유령 클라이언트 방지
             if (NetworkManager.singleton != null)
             {
+                EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
+                if (eosLobby != null && eosLobby.ConnectedToLobby)
+                {
+                    eosLobby.LeaveLobby(); // EOS 로비에서도 확실히 나가기
+                }
+
+                // Mirror 클라이언트 연결 강제 종료
                 if (NetworkManager.singleton.isNetworkActive)
                 {
                     NetworkManager.singleton.StopClient();
                 }
-
-                // ★ [추가] EosTransport P2P 세션 완전 초기화
-                EosTransport transport = NetworkManager.singleton.GetComponent<EosTransport>();
-                if (transport != null)
-                {
-                    transport.Shutdown();
-                }
-
-                EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
-                if (eosLobby != null && eosLobby.ConnectedToLobby)
-                {
-                    eosLobby.LeaveLobby();
-                }
             }
 
-            isSearchingCode = false;
+            isSearchingCode = false; // ★ 리셋
             HideLoadingPanel();
             ShowErrorPopup("방 접속 시간이 초과되었습니다.\n(서버 응답이 없거나 네트워크가 불안정합니다.)");
         }
