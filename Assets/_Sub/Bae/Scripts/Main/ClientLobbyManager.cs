@@ -865,10 +865,28 @@ public class ClientLobbyManager : MonoBehaviour
 
     private void OnJoinLobbyFailed(string error)
     {
-        SetInteractableAll(true);
+        if (!isLocalSearchRequest) return;
+        isLocalSearchRequest = false;
 
+        isQuickJoining = false;
+
+        // 로딩 패널 끄기 및 UI 복구
         GameObject panel = GetLoadingPanel();
         if (panel != null) panel.SetActive(false);
+
+        SetInteractableAll(true);
+
+        // 실패한 Mirror 접속 시도 정지
+        if (NetworkManager.singleton != null && NetworkClient.active)
+        {
+            NetworkManager.singleton.StopClient();
+        }
+
+        var eos = GetEOSLobby();
+        if (eos != null && eos.ConnectedToLobby)
+        {
+            eos.LeaveLobby();
+        }
 
         ShowError("방 입장에 실패했습니다: " + error);
     }
@@ -1010,8 +1028,10 @@ public class ClientLobbyManager : MonoBehaviour
     public void OnClick_CloseErrorPopup()
     {
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
+
         RestoreInputScopeAfterPopup();
 
+        // 1. Mirror 및 EOS 연결 정리
         if (NetworkManager.singleton != null)
         {
             NetworkManager.singleton.StopClient();
@@ -1023,6 +1043,7 @@ public class ClientLobbyManager : MonoBehaviour
             eos.LeaveLobby();
         }
 
+        // 2. 씬을 재로드하여 좀비 P2P 소켓과 메모리를 깔끔하게 초기화
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
@@ -1060,17 +1081,16 @@ public class ClientLobbyManager : MonoBehaviour
     {
         if (timeoutPopupPanel != null) timeoutPopupPanel.SetActive(false);
 
-        // [수정] 1. StopClient 먼저
-        if (NetworkManager.singleton != null)
-        {
-            NetworkManager.singleton.StopClient();
-        }
-
-        // [수정] 2. LeaveLobby 나중에
+        // EOS 및 Mirror 클라이언트 연결 완전히 해제
         var eos = GetEOSLobby();
         if (eos != null && eos.ConnectedToLobby)
         {
             eos.LeaveLobby();
+        }
+
+        if (NetworkManager.singleton != null)
+        {
+            NetworkManager.singleton.StopClient();
         }
 
         // 현재 메인 씬을 재로드하여 초기 상태로 깔끔하게 리셋
@@ -1162,17 +1182,15 @@ public class ClientLobbyManager : MonoBehaviour
     {
         Debug.LogWarning("[ClientLobbyManager] 초기 접속 실패, EOS 로비에서 퇴장합니다.");
 
-        // [수정] 1. Mirror 클라이언트를 먼저 강제 종료하여 P2P 소켓을 정상적으로 닫도록 유도
-        if (NetworkManager.singleton != null)
-        {
-            NetworkManager.singleton.StopClient();
-        }
-
-        // [수정] 2. 그 다음 EOS 로비 퇴장
         var eos = GetEOSLobby();
         if (eos != null && eos.ConnectedToLobby)
         {
             eos.LeaveLobby();
+        }
+
+        if (NetworkManager.singleton != null)
+        {
+            NetworkManager.singleton.StopClient();
         }
 
         GameObject panel = GetLoadingPanel();
