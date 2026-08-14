@@ -117,12 +117,15 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
 
             if (handler == null)
                 continue;
-
             handler.myRole = availableRoles[i];
             handler.combineColorIndex = combineColor;
             handler.combineFaceIndex = combineFace;
+
+            if (handler.myRole == CombineRole.Action)
+            {
+                handler.canUseAction = true;
+            }
         }
-        bodyHandler.canUseAction = true;
 
         bodyHandler.connectedGhosts.Clear();
 
