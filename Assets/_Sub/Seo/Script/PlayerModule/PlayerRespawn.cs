@@ -138,76 +138,111 @@ public class PlayerRespawn : NetworkBehaviour
 
     private IEnumerator RespawnCombinedPlayersRoutine()
     {
-        PlayerCombineHandler combineHandler =
-            GetComponent<PlayerCombineHandler>();
-
-        if (combineHandler == null)
-            yield break;
+        PlayerCombineHandler combineHandler = GetComponent<PlayerCombineHandler>();
+        if (combineHandler == null) yield break;
 
         PlayerCombineHandler bodyHandler = combineHandler;
-
         if (combineHandler.bodyTarget != null)
         {
-            PlayerCombineHandler targetBody =
-                combineHandler.bodyTarget.GetComponent<PlayerCombineHandler>();
-
-            if (targetBody != null)
-                bodyHandler = targetBody;
+            PlayerCombineHandler targetBody = combineHandler.bodyTarget.GetComponent<PlayerCombineHandler>();
+            if (targetBody != null) bodyHandler = targetBody;
         }
 
-        if (bodyHandler == null)
-            yield break;
+        if (bodyHandler == null) yield break;
 
-        PlayerRespawn bodyRespawn =
-            bodyHandler.GetComponent<PlayerRespawn>();
+        PlayerRespawn bodyRespawn = bodyHandler.GetComponent<PlayerRespawn>();
+        if (bodyRespawn == null) yield break;
 
-        if (bodyRespawn == null)
-            yield break;
+        // 🌟 합체된 본체와 연관된 모든 파츠/고스트 플레이어들을 정밀 탐색하여 리스트업
+        List<PlayerRespawn> combinedPlayers = new List<PlayerRespawn>();
+        PlayerRespawn[] allPlayers = FindObjectsByType<PlayerRespawn>(FindObjectsInactive.Exclude);
 
-        Vector3 respawnPosition =
-            bodyRespawn.currentSpawnPoint;
-
-        if (bodyRespawn.connectionToClient != null)
+        foreach (var p in allPlayers)
         {
-            bodyRespawn.TargetRpcPlayFadeOut();
+            if (p == null) continue;
+            PlayerCombineHandler combine = p.GetComponent<PlayerCombineHandler>();
+            if (combine != null && combine.isCombined)
+            {
+                if (combine.bodyTarget == bodyHandler.gameObject || p.gameObject == bodyHandler.gameObject)
+                {
+                    if (!combinedPlayers.Contains(p))
+                    {
+                        combinedPlayers.Add(p);
+                    }
+                }
+            }
         }
 
-        bodyRespawn.isRespawning = true;
-
-        PlayerKnockback knockback =
-            bodyRespawn.GetComponent<PlayerKnockback>();
-
-        if (knockback != null)
-            knockback.ResetKnockback();
-
-        PlayerController bodyController =
-            bodyRespawn.GetComponent<PlayerController>();
-
-        if (bodyController != null &&
-            bodyController.rb != null)
+        if (!combinedPlayers.Contains(bodyRespawn))
         {
-            bodyController.rb.linearVelocity = Vector2.zero;
-            bodyController.rb.simulated = false;
+            combinedPlayers.Add(bodyRespawn);
+        }
+
+        // 🌟 1. 연관된 모든 플레이어 화면 페이드 아웃 및 리스폰 상태 잠금
+        foreach (var p in combinedPlayers)
+        {
+            if (p != null)
+            {
+                p.isRespawning = true;
+                if (p.connectionToClient != null)
+                {
+                    p.TargetRpcPlayFadeOut();
+                }
+            }
         }
 
         yield return new WaitForSeconds(0.3f);
 
-        
-        bodyRespawn.transform.position = respawnPosition;
+        Vector3 respawnPosition = bodyRespawn.currentSpawnPoint;
 
+        // 🌟 2. 연관된 모든 플레이어 넉백 리셋 및 물리 비활성화
+        foreach (var p in combinedPlayers)
+        {
+            if (p != null)
+            {
+                PlayerKnockback knockback = p.GetComponent<PlayerKnockback>();
+                if (knockback != null) knockback.ResetKnockback();
+
+                PlayerController pController = p.GetComponent<PlayerController>();
+                if (pController != null && pController.rb != null)
+                {
+                    pController.rb.linearVelocity = Vector2.zero;
+                    pController.rb.simulated = false;
+                }
+            }
+        }
+
+        yield return new WaitForSeconds(0.2f);
+
+        // 3. 위치 이동
+        bodyRespawn.transform.position = respawnPosition;
         Physics2D.SyncTransforms();
 
-        if (bodyController != null &&
-            bodyController.rb != null)
+        // 🌟 4. 물리 활성화 및 속도 초기화
+        foreach (var p in combinedPlayers)
         {
-            bodyController.rb.simulated = true;
-            bodyController.rb.linearVelocity = Vector2.zero;
+            if (p != null)
+            {
+                PlayerController pController = p.GetComponent<PlayerController>();
+                if (pController != null && pController.rb != null)
+                {
+                    pController.rb.simulated = true;
+                    pController.rb.linearVelocity = Vector2.zero;
+                }
+            }
         }
 
         yield return new WaitForSeconds(0.1f);
 
-        bodyRespawn.TargetRpcPlayFadeIn();
-        bodyRespawn.isRespawning = false;
+        // 🌟 5. 연관된 모든 플레이어의 화면을 밝게 함 (Fade In) 및 리스폰 상태 해제
+        foreach (var p in combinedPlayers)
+        {
+            if (p != null)
+            {
+                p.TargetRpcPlayFadeIn();
+                p.isRespawning = false;
+            }
+        }
     }
 
     private IEnumerator RespawnSinglePlayerRoutine()
