@@ -2,98 +2,121 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class EyeMotionController : MonoBehaviour
 {
-    [Header("눈동자 스프라이트 설정 (2개)")]
+    [Header("눈동자 스프라이트 설정")]
     public Image eyeImage;                // 눈동자 UI Image 컴포넌트
-    public Sprite eyeClosedSprite;        // 처음 시작할 때의 감은 눈 스프라이트
-    public Sprite eyeOpenSprite;          // 눈을 떴을 때의 뜬 눈 스프라이트
+    public Sprite eyeOpenSprite;          // 뜬 눈 스프라이트 (이 스프라이트만 활용하여 접었다 폅니다)
 
     [Header("연출용 오브젝트 (Fill 방식)")]
     public Image boxImage;                // 스르륵 차오를 박스 Image 컴포넌트
     public List<GameObject> contentElements; // 박스가 다 찬 후 나타날 내부 버튼/텍스트 리스트
 
-    [Header("모션 설정")]
-    public float eyeAppearDuration = 0.15f; // 눈이 톡 하고 커지는 시간
-    public float fillDuration = 0.25f;      // 박스가 위에서 아래로 채워지는 시간
+    [Header("모션 설정 (속도 및 연출)")]
+    public float eyeOpenDuration = 0.45f;    // 눈이 깜빡이며 위아래로 확 떠지는 시간 (속도 조절)
+    public float fillDuration = 0.45f;       // 박스가 위에서 아래로 채워지는 시간
+    public float eyeCloseDuration = 0.4f;    // 눈이 깜빡이며 닫히는 시간
 
-    private Coroutine activeMotionRoutine;
+    private Sequence activeSequence;
 
-    // 패널이 켜지는 순간 자동으로 모션 실행
+    // 패널이 켜지는 순간 자동으로 오픈 모션 실행
     void OnEnable()
     {
-        if (activeMotionRoutine != null)
-        {
-            StopCoroutine(activeMotionRoutine);
-        }
-        activeMotionRoutine = StartCoroutine(PlayOpenMotion());
+        PlayOpenMotion();
     }
 
-    // 패널이 꺼질 때 초기화
     void OnDisable()
     {
-        if (activeMotionRoutine != null)
-        {
-            StopCoroutine(activeMotionRoutine);
-            activeMotionRoutine = null;
-        }
+        KillSequence();
         SetContentsActive(false);
     }
 
-    // ==========================================
-    // 창 오픈 모션 (감은 눈 등장 -> 눈 뜨기 -> 박스 Fill 채워짐 -> 내부 버튼 등장)
-    // ==========================================
-    private IEnumerator PlayOpenMotion()
+    // 외부에서 패널을 끌 때 닫히는 모션을 재생하기 위한 함수
+    public void ClosePanelWithMotion(System.Action onComplete = null)
     {
-        // 오픈 시작 시 내부 컨텐츠 숨기기
+        PlayCloseMotion(onComplete);
+    }
+
+    private void KillSequence()
+    {
+        if (activeSequence != null && activeSequence.IsActive())
+        {
+            activeSequence.Kill();
+            activeSequence = null;
+        }
+
+        if (eyeImage != null) eyeImage.transform.DOKill();
+        if (boxImage != null) boxImage.DOKill();
+    }
+
+    // ==========================================
+    // 창 오픈 모션 (세로로 접혀있던 눈이 확 떠짐 -> 박스 Fill 채워짐 -> 내부 컨텐츠 등장)
+    // ==========================================
+    private void PlayOpenMotion()
+    {
+        KillSequence();
         SetContentsActive(false);
 
-        if (eyeImage == null || boxImage == null) yield break;
+        if (eyeImage == null || boxImage == null) return;
 
-        // 1. 눈 초기화: 감은 눈으로 설정하고 크기 0에서 시작
-        if (eyeClosedSprite != null) eyeImage.sprite = eyeClosedSprite;
+        // 1. 초기 상태 세팅 (뜬 눈 지정, 세로 크기를 0으로 만들어 감긴 눈처럼 압축, 박스 Fill 0)
+        if (eyeOpenSprite != null) eyeImage.sprite = eyeOpenSprite;
         eyeImage.gameObject.SetActive(true);
-        eyeImage.transform.localScale = Vector3.zero;
+        eyeImage.transform.localScale = new Vector3(1f, 0f, 1f); // 가로는 유지하고 세로만 0으로 접음
 
-        // 2. 박스 초기화: Fill Amount를 0으로 설정
         boxImage.type = Image.Type.Filled;
         boxImage.fillAmount = 0f;
         boxImage.gameObject.SetActive(true);
 
-        // Step 1: 감은 눈이 톡 하고 커짐
-        float elapsed = 0f;
-        while (elapsed < eyeAppearDuration)
+        // 2. 오픈 Sequence 생성
+        activeSequence = DOTween.Sequence();
+
+        // Step 1: 눈이 깜빡이며 위아래로 시원하게 떠짐 (OutBack을 주어 살짝 위로 튕겼다 안착)
+        activeSequence.Append(eyeImage.transform.DOScaleY(1f, eyeOpenDuration).SetEase(Ease.OutBack));
+
+        // Step 2: 박스가 위에서 아래로 부드럽게 채워짐
+        activeSequence.Append(boxImage.DOFillAmount(1f, fillDuration).SetEase(Ease.OutCubic));
+
+        // Step 3: 내부 컨텐츠 등장
+        activeSequence.OnComplete(() =>
         {
-            elapsed += Time.unscaledDeltaTime;
-            float t = elapsed / eyeAppearDuration;
-            float scale = Mathf.Lerp(0f, 1f, t);
-            eyeImage.transform.localScale = new Vector3(scale, scale, 1f);
-            yield return null;
-        }
-        eyeImage.transform.localScale = Vector3.one;
+            SetContentsActive(true);
+        });
 
-        // Step 2: 눈을 번쩍 뜨며 '뜬 눈' 스프라이트로 교체
-        if (eyeOpenSprite != null)
+        activeSequence.SetUpdate(true);
+    }
+
+    // ==========================================
+    // 창 클로즈 모션 (내부 컨텐츠 숨김 -> 박스 줄어듦 -> 눈이 세로로 접히며 깜빡 감김)
+    // ==========================================
+    public void PlayCloseMotion(System.Action onComplete = null)
+    {
+        KillSequence();
+        SetContentsActive(false);
+
+        if (eyeImage == null || boxImage == null)
         {
-            eyeImage.sprite = eyeOpenSprite;
+            onComplete?.Invoke();
+            return;
         }
 
-        // Step 3: 박스가 Fill Amount를 이용해 위에서 아래로 스르륵 채워짐 (0 -> 1)
-        elapsed = 0f;
-        while (elapsed < fillDuration)
+        activeSequence = DOTween.Sequence();
+
+        // Step 1: 박스가 아래에서 위로 줄어듦
+        activeSequence.Append(boxImage.DOFillAmount(0f, fillDuration * 0.7f).SetEase(Ease.InCubic));
+
+        // Step 2: 눈이 세로로 좁혀지며(ScaleY -> 0) 깜빡 감기는 연출
+        activeSequence.Append(eyeImage.transform.DOScaleY(0f, eyeCloseDuration).SetEase(Ease.InBack));
+
+        // Step 3: 완료 콜백
+        activeSequence.OnComplete(() =>
         {
-            elapsed += Time.unscaledDeltaTime;
-            float t = elapsed / fillDuration;
-            t = 1f - (1f - t) * (1f - t); // 부드러운 감속 (EaseOut)
+            onComplete?.Invoke();
+        });
 
-            boxImage.fillAmount = Mathf.Lerp(0f, 1f, t);
-            yield return null;
-        }
-        boxImage.fillAmount = 1f;
-
-        // Step 4: 박스가 다 찬 후 내부 버튼/컨텐츠 리스트 일괄 활성화
-        SetContentsActive(true);
+        activeSequence.SetUpdate(true);
     }
 
     // 내부 요소 리스트 일괄 제어 함수
