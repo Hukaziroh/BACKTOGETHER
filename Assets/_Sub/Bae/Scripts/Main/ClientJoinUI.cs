@@ -114,19 +114,19 @@ public class ClientJoinUI : MonoBehaviour
                 currentSearchHandle = null;
             }
 
-            // Mirror를 끄기 전에 반드시 EOS 로비에서도 강제 퇴장(LeaveLobby)을 수행하여 유령 클라이언트 방지
             if (NetworkManager.singleton != null)
             {
-                EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
-                if (eosLobby != null && eosLobby.ConnectedToLobby)
-                {
-                    eosLobby.LeaveLobby(); // EOS 로비에서도 확실히 나가기
-                }
-
-                // Mirror 클라이언트 연결 강제 종료
+                // [수정] 1. Mirror 클라이언트 연결 강제 종료 먼저 (P2P 세션 클리어)
                 if (NetworkManager.singleton.isNetworkActive)
                 {
                     NetworkManager.singleton.StopClient();
+                }
+
+                // [수정] 2. 그 다음 EOS 로비에서 강제 퇴장
+                EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
+                if (eosLobby != null && eosLobby.ConnectedToLobby)
+                {
+                    eosLobby.LeaveLobby();
                 }
             }
 
