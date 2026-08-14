@@ -640,9 +640,13 @@ public class ClientLobbyManager : MonoBehaviour
             {
                 if (EOSLobby.IsLobbyJoinable(lobby, out uint currentMembers, out uint maxMembers))
                 {
-                    Debug.Log($"[QuickJoin] 빈 방 발견! ({currentMembers}/{maxMembers}) 즉시 입장합니다.");
-                    JoinRoom(lobby);
-                    return;
+                    // ★ 수정: 유령방(0명)에는 퀵 조인으로 들어가지 않도록 방어!
+                    if (currentMembers > 0)
+                    {
+                        Debug.Log($"[QuickJoin] 빈 방 발견! ({currentMembers}/{maxMembers}) 즉시 입장합니다.");
+                        JoinRoom(lobby);
+                        return;
+                    }
                 }
             }
 
