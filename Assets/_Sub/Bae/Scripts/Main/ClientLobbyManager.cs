@@ -790,29 +790,49 @@ public class ClientLobbyManager : MonoBehaviour
 
     public void JoinRoom(LobbyDetails lobby)
     {
-        var eos = GetEOSLobby();
+        SubscribeEvents();
 
-        // ★ 추가: 이전 방 퇴장이 덜 끝났다면 접근 차단 (경쟁 상태 방지)
-        if (eos != null && eos.IsLeavingLobby)
+        if (lobby == null)
+            return;
+
+        if (!EOSLobby.IsLobbyJoinable(
+                lobby,
+                out uint currentMembers,
+                out uint maxMembers))
         {
-            Debug.LogWarning("[ClientLobbyManager] 이전 Lobby 퇴장 처리 중입니다. 잠시 후 다시 입장하세요.");
+            ShowFullRoomWarning();
             return;
         }
 
-        // ★ 추가: 새 방 입장 전 HostDisconnectHandler 상태 리셋
-        var disconnectHandler = FindFirstObjectByType<HostDisconnectHandler>();
-        if (disconnectHandler != null)
+        var eos = GetEOSLobby();
+
+        if (eos == null)
         {
-            disconnectHandler.BeginNewConnectionAttempt();
+            ShowError("네트워크 시스템을 찾을 수 없습니다.");
+            return;
         }
 
-        IsConnecting = true; // 접속 프로세스 시작
+        // ---------------------------------------------------------
+        // ★ 중요
+        // 새로운 방 접속 시작을 HostDisconnectHandler에 알려준다.
+        // 이전 연결의 Disconnect 상태가 새 방에 영향을 주지 않도록
+        // wasConnected를 초기화한다.
+        // ---------------------------------------------------------
+        HostDisconnectHandler disconnectHandler =
+            FindFirstObjectByType<HostDisconnectHandler>();
 
-        SubscribeEvents();
-
-        if (lobby == null) return;
+        if (disconnectHandler != null)
+        {
+            disconnectHandler.BeginConnectionAttempt();
+        }
 
         SetInteractableAll(false);
+
+        Debug.Log(
+            $"[ClientLobbyManager] 방 입장 시작 | " +
+            $"Members={currentMembers}/{maxMembers}"
+        );
+
         eos.JoinLobby(lobby);
     }
 
