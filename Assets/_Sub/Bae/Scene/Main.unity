@@ -338,23 +338,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &187291213 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 9010855181338360226, guid: 8e4abe2d07381be4a80127c546652040, type: 3}
-  m_PrefabInstance: {fileID: 1264963546603916821}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &187291219
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 187291213}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b7bc4900ac462d44993c921fb35957b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FPSCounter
 --- !u!1 &218687036
 GameObject:
   m_ObjectHideFlags: 0
@@ -2828,7 +2811,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1327071942
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3091,7 +3074,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 758448204709538383, guid: 6e6225a3ab838204b875b018abb9a5d6, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5552556113559087895, guid: 6e6225a3ab838204b875b018abb9a5d6, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3176,7 +3159,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1591156738
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4459,10 +4442,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 9010855181338360226, guid: 8e4abe2d07381be4a80127c546652040, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 187291219}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8e4abe2d07381be4a80127c546652040, type: 3}
 --- !u!1001 &1806739330078937685
 PrefabInstance:
@@ -4551,7 +4531,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5842514920909279112, guid: 94f2a66812145a6449fad7d0017567a7, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7962128980137201812, guid: 94f2a66812145a6449fad7d0017567a7, type: 3}
       propertyPath: m_LocalPosition.x

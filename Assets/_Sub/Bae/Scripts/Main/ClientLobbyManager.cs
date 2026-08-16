@@ -1218,7 +1218,11 @@ public class ClientLobbyManager : MonoBehaviour
 
             // P2P 소켓 찌꺼기 방지용
             EpicTransport.EosTransport transport = NetworkManager.singleton.GetComponent<EpicTransport.EosTransport>();
-            if (transport != null) transport.Shutdown();
+            if (NetworkManager.singleton != null &&
+      NetworkClient.active)
+            {
+                NetworkManager.singleton.StopClient();
+            }
         }
 
         var eos = GetEOSLobby();
