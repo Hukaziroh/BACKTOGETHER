@@ -1,10 +1,11 @@
 using Mirror;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem; // 신규 인풋 시스템 네임스페이스
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using EpicTransport;
+
 public class HostDisconnectHandler : MonoBehaviour
 {
     [Header("UI 연결")]
@@ -17,6 +18,7 @@ public class HostDisconnectHandler : MonoBehaviour
     private bool wasConnected = false;
     private bool isIntentionalExit = false;
     private bool isConnecting = false;
+
     private void Start()
     {
         // 시작 시 디스커넥트 팝업 비활성화
@@ -32,6 +34,7 @@ public class HostDisconnectHandler : MonoBehaviour
         // 처음에는 아직 실제 게임 연결을 감시하지 않음
         wasConnected = false;
         isConnecting = false;
+        isIntentionalExit = false;
     }
 
     private void Update()
@@ -44,12 +47,15 @@ public class HostDisconnectHandler : MonoBehaviour
                 GoBackToLobby();
                 return;
             }
-
             return;
         }
 
         // 호스트 자신은 감지하지 않음
         if (NetworkServer.active)
+            return;
+
+        // 의도적인 퇴장이면 무시
+        if (isIntentionalExit)
             return;
 
         // ---------------------------------------------------------
@@ -90,17 +96,8 @@ public class HostDisconnectHandler : MonoBehaviour
 
         Debug.Log("[HostDisconnectHandler] 실제 연결 이후 Disconnect 감지");
 
-        if (isIntentionalExit)
-        {
-            // 유저가 직접 나가기
-            isIntentionalExit = false;
-
-            SceneManager.LoadScene(lobbySceneName);
-            return;
-        }
-
         // ---------------------------------------------------------
-        // 호스트 Disconnect
+        // 호스트 Disconnect 패널 활성화
         // ---------------------------------------------------------
         if (disconnectPanel != null && !disconnectPanel.activeSelf)
         {
@@ -108,15 +105,12 @@ public class HostDisconnectHandler : MonoBehaviour
 
             if (disconnectButton == null)
             {
-                disconnectButton =
-                    disconnectPanel.GetComponentInChildren<Button>();
+                disconnectButton = disconnectPanel.GetComponentInChildren<Button>();
             }
 
             if (GlobalSceneInputManager.Instance != null)
             {
-                GlobalSceneInputManager.Instance.SetFocusScope(
-                    disconnectPanel
-                );
+                GlobalSceneInputManager.Instance.SetFocusScope(disconnectPanel);
             }
 
             FocusDisconnectButton();
@@ -146,7 +140,6 @@ public class HostDisconnectHandler : MonoBehaviour
     /// </summary>
     private bool IsSubmitPressed()
     {
-        // 키보드 입력 (Enter, Keypad Enter, Space)
         if (Keyboard.current != null)
         {
             if (Keyboard.current.enterKey.wasPressedThisFrame ||
@@ -157,7 +150,6 @@ public class HostDisconnectHandler : MonoBehaviour
             }
         }
 
-        // 게임패드 입력 (A / Cross 버튼)
         if (Gamepad.current != null)
         {
             if (Gamepad.current.buttonSouth.wasPressedThisFrame)
@@ -183,19 +175,13 @@ public class HostDisconnectHandler : MonoBehaviour
     /// </summary>
     public void GoBackToLobby()
     {
-        // ★ [핵심 1] 다음 접속을 위해 wasConnected 플래그를 반드시 초기화
         wasConnected = false;
+        isConnecting = false;
+        isIntentionalExit = false;
 
         if (NetworkManager.singleton != null)
         {
             NetworkManager.singleton.StopClient();
-
-            // ★ [핵심 2] EOS P2P 소켓 세션 강제 종료 및 캐시 초기화
-            EosTransport transport = NetworkManager.singleton.GetComponent<EosTransport>();
-            if (transport != null)
-            {
-                transport.Shutdown();
-            }
         }
 
         if (disconnectPanel != null)
@@ -213,9 +199,9 @@ public class HostDisconnectHandler : MonoBehaviour
     }
 
     /// <summary>
+    /// ★ 에러의 원인이었던 함수! (ClientLobbyManager가 부르는 이름과 똑같이 맞췄습니다)
     /// 새로운 방에 접속하기 시작할 때 호출.
-    /// 이전 연결의 Disconnect 상태를 초기화하고
-    /// 새로운 연결이 완료될 때까지 Disconnect 감지를 막는다.
+    /// 이전 연결의 Disconnect 상태를 초기화하고 새로운 연결이 완료될 때까지 감지를 막습니다.
     /// </summary>
     public void BeginConnectionAttempt()
     {

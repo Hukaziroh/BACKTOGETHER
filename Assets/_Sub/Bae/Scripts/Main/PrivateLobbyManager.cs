@@ -481,13 +481,6 @@ public class PrivateLobbyManager : MonoBehaviour
         if (NetworkManager.singleton != null)
         {
             NetworkManager.singleton.StopHost();
-
-            // 에픽 P2P 소켓에 남아있는 비정상 접속 시도 찌꺼기(캐시)를 강제로 초기화
-            EosTransport transport = NetworkManager.singleton.GetComponent<EosTransport>();
-            if (transport != null)
-            {
-                transport.Shutdown();
-            }
         }
 
         if (hostPanel != null) hostPanel.SetActive(false);
