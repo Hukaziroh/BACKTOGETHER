@@ -102,8 +102,7 @@ public class PlayerInput : NetworkBehaviour
              OptionsManager.instance.optionsPanel.activeSelf)
             ||
             (OptionsManager.instance != null &&
-             OptionsManager.instance.keyGuidePanel != null &&
-             OptionsManager.instance.keyGuidePanel.activeSelf)
+             OptionsManager.instance.IsAnyKeyGuideActive())
             ||
             (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen());
 
@@ -161,5 +160,4 @@ public class PlayerInput : NetworkBehaviour
         serverJumpReleased = false;
         serverActionPressed = false;
     }
-
 }

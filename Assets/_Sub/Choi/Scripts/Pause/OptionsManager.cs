@@ -23,7 +23,7 @@ public class OptionsManager : MonoBehaviour
     public Slider bgmVolumeSlider;
     public Toggle fullscreenToggle;
 
-    [Header("Volume Panel UI (추가)")]
+    [Header("Volume Panel UI")]
     public GameObject volumePanel;
     public Button volumePanelToggleButton;
     public Button volumePanelBackButton;
@@ -39,18 +39,26 @@ public class OptionsManager : MonoBehaviour
     [Header("★ 방 코드 가리기 토글용 이미지 슬롯 (인스펙터에서 드래그)")]
     public GameObject visibilityIconObject;
 
-    [Header("Key Guide Panel")]
-    public GameObject keyGuidePanel;
+    [Header("Key Guide Panels (모든 키 가이드 패널 배열 통일)")]
+    public GameObject[] allKeyGuidePanels; // [0]: Keyboard, [1]: XBOX, [2]: Switch, [3]: PlayStation 등 순서대로 등록
     public Button keyGuideToggleButton;
+
+    [HideInInspector]
+    public bool isOpenedFromZone = false;
+
+    [HideInInspector]
+    public float blockPauseUntilTime = 0f;
 
     public bool IsCodeVisible => isCodeVisible;
 
     public bool IsSettingsOpen => (optionsPanel != null && optionsPanel.activeSelf) ||
                                   (volumePanel != null && volumePanel.activeSelf) ||
-                                  (keyGuidePanel != null && keyGuidePanel.activeSelf);
+                                  IsAnyKeyGuideActive() ||
+                                  (Time.unscaledTime < blockPauseUntilTime);
 
     private bool isCodeVisible = true;
     private Coroutine fetchCodeRoutine;
+    private bool wasOptionsOpenBeforeKeyGuide = false;
 
     void Awake()
     {
@@ -158,10 +166,33 @@ public class OptionsManager : MonoBehaviour
         UpdateVisibilityButtonGraphic();
     }
 
+    public bool IsAnyKeyGuideActive()
+    {
+        if (allKeyGuidePanels != null && allKeyGuidePanels.Length > 0)
+        {
+            foreach (var panel in allKeyGuidePanels)
+            {
+                if (panel != null && panel.activeSelf) return true;
+            }
+        }
+        return false;
+    }
+
+    public void CloseAllKeyGuides()
+    {
+        if (allKeyGuidePanels != null && allKeyGuidePanels.Length > 0)
+        {
+            foreach (var panel in allKeyGuidePanels)
+            {
+                if (panel != null) panel.SetActive(false);
+            }
+        }
+    }
+
     public void Open()
     {
         if (optionsPanel != null) optionsPanel.SetActive(true);
-        if (keyGuidePanel != null) keyGuidePanel.SetActive(false);
+        CloseAllKeyGuides();
         if (volumePanel != null) volumePanel.SetActive(false);
 
         if (PauseManager.instance != null && PauseManager.instance.pausePanel != null)
@@ -194,8 +225,7 @@ public class OptionsManager : MonoBehaviour
         if (optionsPanel != null)
             optionsPanel.SetActive(false);
 
-        if (keyGuidePanel != null)
-            keyGuidePanel.SetActive(false);
+        CloseAllKeyGuides();
 
         if (volumePanel != null)
             volumePanel.SetActive(false);
@@ -307,39 +337,50 @@ public class OptionsManager : MonoBehaviour
 
     public void ToggleKeyGuide()
     {
-        if (keyGuidePanel != null)
-        {
-            bool isKeyGuideActive = keyGuidePanel.activeSelf;
+        bool isAnyActive = IsAnyKeyGuideActive();
 
-            if (!isKeyGuideActive)
+        if (!isAnyActive)
+        {
+            isOpenedFromZone = false;
+            wasOptionsOpenBeforeKeyGuide = (optionsPanel != null && optionsPanel.activeSelf);
+
+            if (allKeyGuidePanels != null && allKeyGuidePanels.Length > 0 && allKeyGuidePanels[0] != null)
             {
-                keyGuidePanel.SetActive(true);
-                if (optionsPanel != null) optionsPanel.SetActive(false);
-                if (volumePanel != null) volumePanel.SetActive(false);
+                allKeyGuidePanels[0].SetActive(true);
+                if (GlobalSceneInputManager.Instance != null)
+                {
+                    GlobalSceneInputManager.Instance.SetFocusScope(allKeyGuidePanels[0]);
+                }
+            }
+
+            if (optionsPanel != null) optionsPanel.SetActive(false);
+            if (volumePanel != null) volumePanel.SetActive(false);
+        }
+        else
+        {
+            CloseAllKeyGuides();
+
+            if (wasOptionsOpenBeforeKeyGuide && optionsPanel != null)
+            {
+                optionsPanel.SetActive(true);
+                UpdateRoomCodeUI();
 
                 if (GlobalSceneInputManager.Instance != null)
                 {
-                    GlobalSceneInputManager.Instance.SetFocusScope(keyGuidePanel);
+                    GlobalSceneInputManager.Instance.SetFocusScope(optionsPanel);
+                }
+
+                Button firstButton = optionsPanel.GetComponentInChildren<Button>();
+                if (firstButton != null && EventSystem.current != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(firstButton.gameObject);
                 }
             }
             else
             {
-                keyGuidePanel.SetActive(false);
-                if (optionsPanel != null)
+                if (GlobalSceneInputManager.Instance != null)
                 {
-                    optionsPanel.SetActive(true);
-                    UpdateRoomCodeUI();
-
-                    if (GlobalSceneInputManager.Instance != null)
-                    {
-                        GlobalSceneInputManager.Instance.SetFocusScope(optionsPanel);
-                    }
-
-                    Button firstButton = optionsPanel.GetComponentInChildren<Button>();
-                    if (firstButton != null && EventSystem.current != null)
-                    {
-                        EventSystem.current.SetSelectedGameObject(firstButton.gameObject);
-                    }
+                    GlobalSceneInputManager.Instance.ClearFocusScope();
                 }
             }
         }
