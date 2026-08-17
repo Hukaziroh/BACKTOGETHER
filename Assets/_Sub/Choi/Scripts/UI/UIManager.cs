@@ -53,7 +53,6 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
-      
         if (inputCooldown > 0f) inputCooldown -= Time.unscaledDeltaTime;
 
         if (controls == null) return;
@@ -82,7 +81,6 @@ public class UIManager : MonoBehaviour
                 spectatorSystem.CycleNextTarget();
             }
 
-
             if (EmojiRadialMenu.Instance != null && EmojiRadialMenu.Instance.IsOpen())
             {
                 EmojiRadialMenu.Instance.OnMenuUpdate();
@@ -94,18 +92,29 @@ public class UIManager : MonoBehaviour
     {
         string scene = SceneManager.GetActiveScene().name;
 
-        // [수정] 설정(옵션/볼륨/키가이드) 관련 메뉴가 하나라도 열려 있다면 닫기 로직 수행
+        // 설정(옵션/볼륨/키가이드) 관련 메뉴가 하나라도 열려 있다면 닫기 로직 수행
         if (optionsManager != null && optionsManager.IsSettingsOpen)
         {
             if (cancelPressed || pausePressed)
             {
+                // 존 트리거로 열린 키 가이드인 경우, ESC를 누르면 옵션 창을 띄우지 않고 키 가이드만 끄고 끝냄
+                if (optionsManager.IsAnyKeyGuideActive() && optionsManager.isOpenedFromZone)
+                {
+                    optionsManager.CloseAllKeyGuides();
+                    optionsManager.isOpenedFromZone = false;
+
+                    if (GlobalSceneInputManager.Instance != null)
+                    {
+                        GlobalSceneInputManager.Instance.ClearFocusScope();
+                    }
+                }
                 // 1. 볼륨 패널이 열려있으면 닫기
-                if (optionsManager.volumePanel != null && optionsManager.volumePanel.activeSelf)
+                else if (optionsManager.volumePanel != null && optionsManager.volumePanel.activeSelf)
                 {
                     optionsManager.CloseVolumePanel();
                 }
-                // 2. 키 가이드가 열려있으면 닫기
-                else if (optionsManager.keyGuidePanel != null && optionsManager.keyGuidePanel.activeSelf)
+                // 2. 일반 키 가이드가 열려있으면 닫기
+                else if (optionsManager.IsAnyKeyGuideActive())
                 {
                     optionsManager.ToggleKeyGuide();
                 }
@@ -114,6 +123,7 @@ public class UIManager : MonoBehaviour
                 {
                     optionsManager.Close();
                 }
+
                 inputCooldown = 0.2f;
             }
             return;
@@ -135,7 +145,7 @@ public class UIManager : MonoBehaviour
             }
             else
             {
-                // 게임 중일 때 Pause 키만 누르면 퍼즈 켜기 (ESC는 설정 창이 닫혀있으면 보통 안 켜지게 설정)
+                // 게임 중일 때 Pause 키만 누르면 퍼즈 켜기
                 if (pausePressed)
                 {
                     pauseManager.PauseGame();
@@ -144,6 +154,7 @@ public class UIManager : MonoBehaviour
             }
         }
     }
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (optionsManager != null && optionsManager.optionsPanel != null && optionsManager.optionsPanel.activeSelf)

@@ -3911,6 +3911,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 691312139185975647, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: allKeyGuidePanels.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 691312139185975647, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: 'allKeyGuidePanels.Array.data[0]'
+      value: 
+      objectReference: {fileID: 6870475135527063544}
+    - target: {fileID: 691312139185975647, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: 'allKeyGuidePanels.Array.data[1]'
+      value: 
+      objectReference: {fileID: 6870475135527063543}
+    - target: {fileID: 691312139185975647, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: 'allKeyGuidePanels.Array.data[2]'
+      value: 
+      objectReference: {fileID: 6870475135527063542}
+    - target: {fileID: 691312139185975647, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: 'allKeyGuidePanels.Array.data[3]'
+      value: 
+      objectReference: {fileID: 6870475135527063541}
     - target: {fileID: 1618241594654690989, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_Spacing
       value: 10
@@ -4093,6 +4113,26 @@ MonoBehaviour:
   englishOutlineThickness: 1
   defaultDilate: 1
   defaultOutlineThickness: 1
+--- !u!1 &6870475135527063541 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3369305556748438429, guid: d391139454a53e341889149a36646d1d, type: 3}
+  m_PrefabInstance: {fileID: 6870475135527063537}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &6870475135527063542 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3235899521012894031, guid: d391139454a53e341889149a36646d1d, type: 3}
+  m_PrefabInstance: {fileID: 6870475135527063537}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &6870475135527063543 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5017039070204515589, guid: d391139454a53e341889149a36646d1d, type: 3}
+  m_PrefabInstance: {fileID: 6870475135527063537}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &6870475135527063544 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4234965304924416080, guid: d391139454a53e341889149a36646d1d, type: 3}
+  m_PrefabInstance: {fileID: 6870475135527063537}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &8234879079532356322 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7797093614986329305, guid: 31ca41e928d36a442b029dccb46712a2, type: 3}

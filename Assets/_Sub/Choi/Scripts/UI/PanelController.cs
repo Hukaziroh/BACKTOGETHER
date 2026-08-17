@@ -53,7 +53,6 @@ public class PanelController : MonoBehaviour
             .Join(canvasGroup.DOFade(1f, duration).SetEase(Ease.OutQuad))
             .OnComplete(() =>
             {
-                // 등장 완료 후 GlobalSceneInputManager를 통해 이 패널로 포커스 스코프 설정 및 첫 버튼 선택
                 ApplyFocusScope();
             });
     }
@@ -67,18 +66,18 @@ public class PanelController : MonoBehaviour
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) escapePressed = true;
         if (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame) escapePressed = true;
 
-        if (useEscapeKey && escapePressed && escapeTargetPanel != null)
+        if (useEscapeKey && escapePressed && (escapeTargetPanel != null || IsAnyKeyGuidePanel(gameObject.name)))
         {
             TransitionToEscapePanel();
             return;
         }
 
-        // 2. 우측 넘기기 (키보드: 방향키/D키 | 패드: 십자키 우측/RB/왼쪽 스틱 우측)
+        // 2. 우측 넘기기
         bool rightPressed = false;
         if (Keyboard.current != null && (Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame)) rightPressed = true;
         if (Gamepad.current != null && (Gamepad.current.dpad.right.wasPressedThisFrame || Gamepad.current.rightShoulder.wasPressedThisFrame || Gamepad.current.leftStick.right.wasPressedThisFrame)) rightPressed = true;
 
-        // 3. 좌측 넘기기 (키보드: 방향키/A키 | 패드: 십자키 좌측/LB/왼쪽 스틱 좌측)
+        // 3. 좌측 넘기기
         bool leftPressed = false;
         if (Keyboard.current != null && (Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame)) leftPressed = true;
         if (Gamepad.current != null && (Gamepad.current.dpad.left.wasPressedThisFrame || Gamepad.current.leftShoulder.wasPressedThisFrame || Gamepad.current.leftStick.left.wasPressedThisFrame)) leftPressed = true;
@@ -92,6 +91,13 @@ public class PanelController : MonoBehaviour
         {
             TransitionToPanel(prevPanel, slideOffset, fromRight: false);
         }
+    }
+
+    private bool IsAnyKeyGuidePanel(string objName)
+    {
+        return objName.Contains("Keyboard") || objName.Contains("XBOX") ||
+               objName.Contains("Switch") || objName.Contains("PlayStation") ||
+               objName.Contains("KeyGuide");
     }
 
     public void OpenPanel(bool fromRight)
@@ -116,7 +122,6 @@ public class PanelController : MonoBehaviour
                 else
                 {
                     targetPanel.SetActive(true);
-                    // PanelController가 없는 일반 패널일 경우에도 GlobalSceneInputManager로 포커스 스코프 지정
                     if (GlobalSceneInputManager.Instance != null)
                     {
                         GlobalSceneInputManager.Instance.SetFocusScope(targetPanel);
@@ -135,19 +140,62 @@ public class PanelController : MonoBehaviour
             .Join(canvasGroup.DOFade(0f, duration).SetEase(Ease.InQuad))
             .OnComplete(() =>
             {
-                escapeTargetPanel.SetActive(true);
+                bool isKeyGuide = IsAnyKeyGuidePanel(gameObject.name);
 
-                // ESC로 타겟 패널이 켜질 때 GlobalSceneInputManager에 스코프 요청
-                if (GlobalSceneInputManager.Instance != null)
+                // [핵심] 키 가이드 패널들 중 하나이고 존 트리거로 열렸던 경우, 옵션도 안 띄우고 퍼즈도 안 띄우고 완전 차단 후 종료
+                if (isKeyGuide && OptionsManager.instance != null && OptionsManager.instance.isOpenedFromZone)
                 {
-                    GlobalSceneInputManager.Instance.SetFocusScope(escapeTargetPanel);
+                    gameObject.SetActive(false);
+                    OptionsManager.instance.isOpenedFromZone = false;
+                    OptionsManager.instance.blockPauseUntilTime = Time.unscaledTime + 0.3f;
+
+                    if (GlobalSceneInputManager.Instance != null)
+                    {
+                        GlobalSceneInputManager.Instance.ClearFocusScope();
+                    }
+                    return;
+                }
+
+                if (escapeTargetPanel != null)
+                {
+                    bool isTargetOption = escapeTargetPanel.name.Contains("Option");
+                    bool isLobbyScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Lobby";
+
+                    if (isLobbyScene && isTargetOption)
+                    {
+                        gameObject.SetActive(false);
+                        if (GlobalSceneInputManager.Instance != null)
+                        {
+                            GlobalSceneInputManager.Instance.ClearFocusScope();
+                        }
+                        return;
+                    }
+
+                    escapeTargetPanel.SetActive(true);
+
+                    if (escapeTargetPanel.name.Contains("Option"))
+                    {
+                        GameObject pauseObj = GameObject.Find("PausePanel");
+                        if (pauseObj != null) pauseObj.SetActive(false);
+                    }
+
+                    if (GlobalSceneInputManager.Instance != null)
+                    {
+                        GlobalSceneInputManager.Instance.SetFocusScope(escapeTargetPanel);
+                    }
+                }
+                else
+                {
+                    if (GlobalSceneInputManager.Instance != null)
+                    {
+                        GlobalSceneInputManager.Instance.ClearFocusScope();
+                    }
                 }
 
                 gameObject.SetActive(false);
             });
     }
 
-    // GlobalSceneInputManager에 현재 패널을 포커스 스코프로 등록하는 함수
     private void ApplyFocusScope()
     {
         if (GlobalSceneInputManager.Instance != null)
