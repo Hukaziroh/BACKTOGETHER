@@ -1,11 +1,12 @@
 using UnityEngine;
-using UnityEngine.UI; // Text 사용 시
-using TMPro;          // TextMeshPro 사용 시 (TMPro를 쓴다면 이 줄 주석 해제)
+using UnityEngine.UI;
+using TMPro;
 
 public class SpectatorSubtitle : MonoBehaviour
 {
-    [SerializeField] private GameObject uiContainer; // 자막을 감싸고 있는 UI 패널이나 오브젝트
-    [SerializeField] private TextMeshProUGUI subtitleText;      // 일반 Text일 경우
+    [SerializeField] private GameObject uiContainer;           // 자막을 감싸고 있는 UI 패널이나 오브젝트
+    [SerializeField] private TextMeshProUGUI customText;       // 1. 내가 직접 사용할 텍스트 (다국어 처리나 커스텀 메시지용)
+    [SerializeField] private TextMeshProUGUI playerInfoText;   // 2. 플레이어 번호 텍스트 (예: "2P")
 
     private SpectatorSystem spectatorSystem;
 
@@ -31,17 +32,19 @@ public class SpectatorSubtitle : MonoBehaviour
             CoopPlayerIdentity identity = currentTarget.GetComponent<CoopPlayerIdentity>();
             if (identity != null)
             {
-                subtitleText.text = $"[Specting] {identity.playerIndex + 1}P Player Specting...";
+                // 플레이어 번호만 표시 (예: "2P")
+                playerInfoText.text = $"{identity.playerIndex + 1}P";
 
-                // 플레이어 인덱스에 해당하는 색상을 가져와서 텍스트 색상에 적용
+                // 플레이어 인덱스에 해당하는 색상 가져오기
+                Color targetColor = Color.white;
                 if (identity.playerIndex >= 0 && identity.playerIndex < identity.playerColors.Length)
                 {
-                    subtitleText.color = identity.playerColors[identity.playerIndex];
+                    targetColor = identity.playerColors[identity.playerIndex];
                 }
-                else
-                {
-                    subtitleText.color = Color.white; // 예외 처리 (기본 흰색)
-                }
+
+                // 두 텍스트 모두에 동일한 플레이어 색상 적용
+                playerInfoText.color = targetColor;
+                customText.color = targetColor;
             }
         }
     }
