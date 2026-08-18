@@ -33,7 +33,7 @@ public class NoCheckpointButtonController : MonoBehaviour
         if (GameSaveManager.Instance != null && noCheckpointButton != null)
         {
             int maxCleared = GameSaveManager.Instance.currentData.maxClearedChapter;
-            bool canUse = (maxCleared >= 5);
+            bool canUse = (maxCleared >= 6);
             noCheckpointButton.gameObject.SetActive(canUse);
 
             if (!canUse && isChecked)
