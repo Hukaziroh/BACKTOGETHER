@@ -80,9 +80,11 @@ public class PlayerCombineHandler : NetworkBehaviour
     {
         if (body == null)
             return;
-        isCombined = true;
+
         myRole = role;
+        isCombined = true;
         bodyTarget = body;
+
         bool isBody = gameObject == body;
 
         if (isBody)
@@ -104,6 +106,7 @@ public class PlayerCombineHandler : NetworkBehaviour
                 rb.linearVelocity = Vector2.zero;
                 rb.angularVelocity = 0f;
             }
+
             if (spriteRenderer != null)
                 spriteRenderer.enabled = false;
 
@@ -118,6 +121,7 @@ public class PlayerCombineHandler : NetworkBehaviour
         {
             identity.ForceUpdateVisual();
         }
+
         NetworkIdentity bodyNetId =
             body.GetComponent<NetworkIdentity>();
 
