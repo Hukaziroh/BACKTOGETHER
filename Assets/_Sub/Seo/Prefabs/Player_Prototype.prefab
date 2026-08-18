@@ -1302,7 +1302,7 @@ MonoBehaviour:
   currentSpawnPoint: {x: 0, y: 30, z: 0}
   currentCheckpointIndex: -1
   teamRespawnScenes:
-  - chapter4
+  - chapter3
   disabledRespawnScenes:
   - chapter5
   - chapter6
