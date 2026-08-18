@@ -21,6 +21,7 @@ public class PlayerKnockback : NetworkBehaviour
     private float criticalCooldownTimer = 0f;
 
     [SyncVar] public bool isKnockedBack;
+    private Coroutine rumbleCoroutine;
 
     private float knockbackGraceTimer = 0f;
     private float knockbackTimeoutTimer = 0f;
@@ -161,7 +162,7 @@ public class PlayerKnockback : NetworkBehaviour
         knockbackGraceTimer = 0.2f;
         knockbackTimeoutTimer = 3.0f;
 
-        RpcPlayHitAnimation();
+        RpcPlayHitAnimation(false);
 
         CoopRopeManager ropeManager = FindAnyObjectByType<CoopRopeManager>();
         if (ropeManager != null && ropeManager.isRopeActive)
@@ -189,8 +190,7 @@ public class PlayerKnockback : NetworkBehaviour
         knockbackGraceTimer = 0.5f;
         knockbackTimeoutTimer = 3.0f;
 
-        RpcPlayHitAnimation();
-        PlayGamepadRumble(0.8f, 1.0f, 0.4f); // 🌟 크리티컬 탈출 시 더 강력하고 긴 진동 부여
+        RpcPlayHitAnimation(true);
 
         CoopRopeManager ropeManager = FindAnyObjectByType<CoopRopeManager>();
         if (ropeManager != null && ropeManager.isRopeActive)
@@ -205,23 +205,42 @@ public class PlayerKnockback : NetworkBehaviour
     }
 
     [ClientRpc]
-    void RpcPlayHitAnimation()
+    void RpcPlayHitAnimation(bool critical)
     {
-        if (controller.anim != null) controller.anim.SetTrigger("Hit");
+        if (controller.anim != null)
+            controller.anim.SetTrigger("Hit");
+
         PlayHitSoundLocal();
-        PlayGamepadRumble(0.5f, 1.0f, 0.2f); // 🌟 일반 피격 진동 (0.2초)
+
+        if (critical)
+        {
+            PlayGamepadRumble(1.0f, 1.0f, 0.6f);
+        }
+        else
+        {
+            PlayGamepadRumble(0.6f, 0.7f, 0.3f);
+        }
     }
 
-    // 🌟 게임패드 진동 제어 함수 추가
     private void PlayGamepadRumble(float lowFreq, float highFreq, float duration)
     {
         if (!isLocalPlayer) return;
 
-        if (Gamepad.current != null)
+        if (Gamepad.current == null)
+            return;
+
+        // 기존 진동 종료 예약이 있으면 취소
+        if (rumbleCoroutine != null)
         {
-            Gamepad.current.SetMotorSpeeds(lowFreq, highFreq);
-            StartCoroutine(StopGamepadRumble(duration));
+            StopCoroutine(rumbleCoroutine);
+            rumbleCoroutine = null;
         }
+
+        // 새로운 진동 시작
+        Gamepad.current.SetMotorSpeeds(lowFreq, highFreq);
+
+        // 새로운 종료 타이머 시작
+        rumbleCoroutine = StartCoroutine(StopGamepadRumble(duration));
     }
 
     private System.Collections.IEnumerator StopGamepadRumble(float duration)
@@ -232,6 +251,8 @@ public class PlayerKnockback : NetworkBehaviour
         {
             Gamepad.current.SetMotorSpeeds(0f, 0f);
         }
+
+        rumbleCoroutine = null;
     }
 
     private void PlayHitSoundLocal()
