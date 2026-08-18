@@ -781,11 +781,34 @@ public class ClientLobbyManager : MonoBehaviour
         return 6; // 기본값
     }
 
+    private bool IsExChapter(int chapterIndex)
+    {
+        if (chapterIndex <= 0) return false;
+        int arrayIndex = chapterIndex - 1;
+        string[] names = GetChapterNamesFromPrivateManager();
+        string currentChapterName = (names != null && arrayIndex >= 0 && arrayIndex < names.Length) ? names[arrayIndex] : "";
+        return currentChapterName.Contains("EX") || chapterIndex >= 7;
+    }
+
     public void OnClick_PrevFilterChapter()
     {
         int maxCh = GetMaxChapterCount();
+        int maxCleared = (GameSaveManager.Instance != null) ? GameSaveManager.Instance.currentData.maxClearedChapter : 0;
+
         selectedFilterChapter--;
+
+        if (IsExChapter(selectedFilterChapter) && maxCleared < 6)
+        {
+            selectedFilterChapter--;
+        }
+
         if (selectedFilterChapter < 0) selectedFilterChapter = maxCh;
+
+        if (IsExChapter(selectedFilterChapter) && maxCleared < 6)
+        {
+            selectedFilterChapter = 0;
+        }
+
         UpdateFilterChapterUI();
         ApplyFiltersAndRefresh();
     }
@@ -793,8 +816,18 @@ public class ClientLobbyManager : MonoBehaviour
     public void OnClick_NextFilterChapter()
     {
         int maxCh = GetMaxChapterCount();
+        int maxCleared = (GameSaveManager.Instance != null) ? GameSaveManager.Instance.currentData.maxClearedChapter : 0;
+
         selectedFilterChapter++;
+
         if (selectedFilterChapter > maxCh) selectedFilterChapter = 0;
+
+        if (IsExChapter(selectedFilterChapter) && maxCleared < 6)
+        {
+            selectedFilterChapter++;
+            if (selectedFilterChapter > maxCh) selectedFilterChapter = 0;
+        }
+
         UpdateFilterChapterUI();
         ApplyFiltersAndRefresh();
     }
@@ -830,6 +863,13 @@ public class ClientLobbyManager : MonoBehaviour
 
         string[] chapterNames = GetChapterNamesFromPrivateManager();
 
+        // 플레이어의 최대 클리어 챕터 정보 가져오기
+        int maxClearedChapter = 0;
+        if (GameSaveManager.Instance != null)
+        {
+            maxClearedChapter = GameSaveManager.Instance.currentData.maxClearedChapter;
+        }
+
         foreach (var lobby in allFetchedLobbies)
         {
             if (lobby == null) continue;
@@ -838,10 +878,29 @@ public class ClientLobbyManager : MonoBehaviour
             if (!string.IsNullOrEmpty(searchKey) && !roomName.ToLower().Contains(searchKey))
                 continue;
 
-            // ★ 챕터 필터링 로직 (인덱스 및 커스텀 챕터 이름 문자열 모두 완벽 호환)
+            string chapterStr = GetLobbyAttribute(lobby, "CHAPTER", "");
+
+            int chapterNum = 0;
+            int.TryParse(chapterStr, out chapterNum);
+
+            // ★ [핵심 요구사항] EX 스테이지 / 6챕 클리어 전까지 검색 결과에서 숨기기 로직
+            bool isExStage = chapterStr.Contains("EX") || chapterNum >= 7;
+            if (!isExStage && chapterNames != null && chapterNum > 0 && chapterNum <= chapterNames.Length)
+            {
+                if (chapterNames[chapterNum - 1].Contains("EX"))
+                {
+                    isExStage = true;
+                }
+            }
+
+            if (isExStage && maxClearedChapter < 6)
+            {
+                continue;
+            }
+
+            // ★ 기존 챕터 필터링 로직
             if (selectedFilterChapter > 0)
             {
-                string chapterStr = GetLobbyAttribute(lobby, "CHAPTER", "");
                 int target1Based = selectedFilterChapter;
                 int target0Based = selectedFilterChapter - 1;
                 string targetName = (chapterNames != null && target0Based >= 0 && target0Based < chapterNames.Length) ? chapterNames[target0Based] : null;
@@ -850,21 +909,18 @@ public class ClientLobbyManager : MonoBehaviour
 
                 if (!string.IsNullOrEmpty(chapterStr))
                 {
-                    // 1. 숫자로 파싱 가능한 경우 (1기반 또는 0기반 인덱스 매칭)
                     if (int.TryParse(chapterStr, out int chVal))
                     {
                         if (chVal == target1Based || chVal == target0Based)
                             isChapterMatch = true;
                     }
 
-                    // 2. 인스펙터에 작성하신 챕터 이름 문자열(예: "Chapter1", "EX" 등)과 직접 일치하는 경우
                     if (!isChapterMatch && !string.IsNullOrEmpty(targetName))
                     {
                         if (string.Equals(chapterStr.Trim(), targetName.Trim(), System.StringComparison.OrdinalIgnoreCase))
                             isChapterMatch = true;
                     }
 
-                    // 3. "ChapterN" 포맷 폴백 매칭
                     if (!isChapterMatch && string.Equals(chapterStr.Trim(), $"Chapter{target1Based}", System.StringComparison.OrdinalIgnoreCase))
                     {
                         isChapterMatch = true;

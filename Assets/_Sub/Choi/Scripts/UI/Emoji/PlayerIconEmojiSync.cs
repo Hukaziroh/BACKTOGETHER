@@ -90,20 +90,15 @@ public class PlayerIconEmojiSync : MonoBehaviour
 
     private GameObject FindCorrespondingPlayer()
     {
-        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-        if (players.Length == 0) return null;
-
-        System.Array.Sort(players, (a, b) =>
-        {
-            int indexA = GetPlayerIndex(a);
-            int indexB = GetPlayerIndex(b);
-            return indexA.CompareTo(indexB);
-        });
-
+        // 🌟 수정된 부분: SiblingIndex를 플레이어 고유 인덱스로 사용하여 CoopPlayerIdentity 딕셔너리에서 직접 매칭
         int myIndex = transform.GetSiblingIndex();
-        if (myIndex >= 0 && myIndex < players.Length)
+
+        if (CoopPlayerIdentity.players != null && CoopPlayerIdentity.players.TryGetValue(myIndex, out CoopPlayerIdentity playerIdentity))
         {
-            return players[myIndex];
+            if (playerIdentity != null)
+            {
+                return playerIdentity.gameObject;
+            }
         }
 
         return null;
@@ -143,13 +138,12 @@ public class PlayerIconEmojiSync : MonoBehaviour
 
         emojiImage.sprite = sprite;
 
-        // 🌟 PlayerEmojiController 방식: 스프라이트 본래의 가로세로 비율(Aspect Ratio) 계산 적용
         float spriteWidth = sprite.rect.width;
         float spriteHeight = sprite.rect.height;
         if (spriteHeight > 0)
         {
             float aspect = spriteWidth / spriteHeight;
-            emojiRect.sizeDelta = new Vector2(baseSize * aspect, baseSize); // 비율에 맞춰 가로/세로 자동 조절
+            emojiRect.sizeDelta = new Vector2(baseSize * aspect, baseSize);
         }
         else
         {
@@ -158,7 +152,6 @@ public class PlayerIconEmojiSync : MonoBehaviour
 
         emojiImage.gameObject.SetActive(true);
 
-        // 🌟 PlayerEmojiController의 PlayPopAnimation과 동일한 띠용 팝업 연출
         emojiImage.transform.DOKill();
         emojiImage.transform.localScale = Vector3.zero;
         emojiImage.transform.DOScale(1f, 0.35f).SetEase(Ease.OutBack);
