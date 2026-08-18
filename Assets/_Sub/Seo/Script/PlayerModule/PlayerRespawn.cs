@@ -118,25 +118,25 @@ public class PlayerRespawn : NetworkBehaviour
             ScreenFader.Instance.fadeCanvasGroup.gameObject.SetActive(false);
         }
     }
-
     [Command]
     public void CmdRequestRespawn()
     {
         if (isRespawning) return;
 
-        PlayerCombineHandler combineHandler = GetComponent<PlayerCombineHandler>();
+        // 🌟 1. 제일 먼저 현재 씬이 리스폰 불가 씬인지 확인하고 강제 종료! (순서 올림)
+        string sceneName = SceneManager.GetActiveScene().name;
+        if (disabledRespawnScenes.Contains(sceneName))
+            return;
 
+        // 🌟 2. 그 다음 합체 상태 확인
+        PlayerCombineHandler combineHandler = GetComponent<PlayerCombineHandler>();
         if (combineHandler != null && combineHandler.isCombined)
         {
             StartCoroutine(RespawnCombinedPlayersRoutine());
             return;
         }
 
-        string sceneName = SceneManager.GetActiveScene().name;
-
-        if (disabledRespawnScenes.Contains(sceneName))
-            return;
-
+        // 🌟 3. 마지막으로 팀/개인 리스폰 분기
         if (teamRespawnScenes.Contains(sceneName))
         {
             StartCoroutine(RespawnAllPlayersRoutine());
