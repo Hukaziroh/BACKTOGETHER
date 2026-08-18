@@ -36,6 +36,9 @@ public class ClientLobbyManager : MonoBehaviour
     [SerializeField] private Button prevFilterChapterButton;
     [SerializeField] private Button nextFilterChapterButton;
 
+    [Header("프라이빗 로비 매니저 연동")]
+    [SerializeField] private PrivateLobbyManager privateLobbyManager; // ★ PrivateLobbyManager 연결 필드 추가
+
     [Header("비공개 방 관련")]
     [SerializeField] private TMP_InputField privateRoomInputField; // 비공개 방 코드/비밀번호 입력용 인풋필드
 
@@ -79,11 +82,12 @@ public class ClientLobbyManager : MonoBehaviour
 
     private int currentPage = 0;
     private const int itemsPerPage = 8;
-    private int selectedFilterChapter = 0; // 0: All, 1~6: Chapter 1~6
+    private int selectedFilterChapter = 0; // 0: All, 1~N: Chapter 1~N
     private bool isQuickJoining = false;
 
     private Coroutine connectionTimeoutCoroutine;
     private Coroutine hideQuickJoinNoRoomCoroutine;
+    private GameObject lastSelectedBeforeSearch; // ★ 리로드 직전 포커스 저장용 변수 추가
 
 
     private EOSLobby GetEOSLobby()
@@ -491,6 +495,15 @@ public class ClientLobbyManager : MonoBehaviour
             {
                 GlobalSceneInputManager.Instance.SetFocusScope(clientPublicPanel);
             }
+            // ★ 퍼블릭 패널이 열릴 때 첫 번째 버튼으로 튀는 현상을 방지하고 원하는 버튼(예: searchInputField 또는 첫 상호작용 요소)으로 정확히 고정
+            if (EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+                if (searchInputField != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(searchInputField.gameObject);
+                }
+            }
         }
         if (logo != null) logo.SetActive(false);
 
@@ -515,6 +528,15 @@ public class ClientLobbyManager : MonoBehaviour
             if (GlobalSceneInputManager.Instance != null)
             {
                 GlobalSceneInputManager.Instance.SetFocusScope(clientPrivatePanel);
+            }
+            // ★ 프라이빗 패널이 열릴 때 첫 번째 버튼으로 튀는 현상을 방지하고 privateRoomInputField로 포커스 고정
+            if (EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+                if (privateRoomInputField != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(privateRoomInputField.gameObject);
+                }
             }
         }
     }
@@ -610,6 +632,12 @@ public class ClientLobbyManager : MonoBehaviour
             return;
         }
 
+        // ★ 리로드 버튼을 누른 순간 현재 포커스(리로드 버튼)를 기억합니다.
+        if (EventSystem.current != null)
+        {
+            lastSelectedBeforeSearch = EventSystem.current.currentSelectedGameObject;
+        }
+
         SetInteractableAll(false);
 
         LobbySearchSetParameterOptions[] searchOptions = new LobbySearchSetParameterOptions[]
@@ -631,6 +659,17 @@ public class ClientLobbyManager : MonoBehaviour
         isLocalSearchRequest = false;
 
         SetInteractableAll(true);
+
+        // ★ 저장해 둔 포커스 복구 (리로드 버튼으로 다시 포커스 고정)
+        if (EventSystem.current != null && lastSelectedBeforeSearch != null && lastSelectedBeforeSearch.activeInHierarchy)
+        {
+            EventSystem.current.SetSelectedGameObject(lastSelectedBeforeSearch);
+        }
+        else if (researchButton != null)
+        {
+            EventSystem.current?.SetSelectedGameObject(researchButton.gameObject);
+        }
+
         allFetchedLobbies = lobbies ?? new List<LobbyDetails>();
 
         if (isQuickJoining)
@@ -641,7 +680,7 @@ public class ClientLobbyManager : MonoBehaviour
             {
                 if (EOSLobby.IsLobbyJoinable(lobby, out uint currentMembers, out uint maxMembers))
                 {
-                    // ★ 수정: 유령방(0명)에는 퀵 조인으로 들어가지 않도록 방어!
+                    // ★ 유령방(0명)에는 퀵 조인으로 들어가지 않도록 방어
                     if (currentMembers > 0)
                     {
                         Debug.Log($"[QuickJoin] 빈 방 발견! ({currentMembers}/{maxMembers}) 즉시 입장합니다.");
@@ -658,6 +697,18 @@ public class ClientLobbyManager : MonoBehaviour
 
                 hideQuickJoinNoRoomCoroutine = StartCoroutine(ShowAndHideQuickJoinNoRoomText());
             }
+
+            // ★ 퀵 조인 시 빈 방이 없어 입장을 못 한 경우에도 버튼 상호작용 복구 및 포커스 정상 복원
+            SetInteractableAll(true);
+            if (EventSystem.current != null && lastSelectedBeforeSearch != null && lastSelectedBeforeSearch.activeInHierarchy)
+            {
+                EventSystem.current.SetSelectedGameObject(lastSelectedBeforeSearch);
+            }
+            else if (quickJoinSelectionButton != null)
+            {
+                EventSystem.current?.SetSelectedGameObject(quickJoinSelectionButton.gameObject);
+            }
+
             return;
         }
 
@@ -679,23 +730,71 @@ public class ClientLobbyManager : MonoBehaviour
 
         isQuickJoining = false;
         SetInteractableAll(true);
+
+        // ★ 실패 시에도 포커스 복구
+        if (EventSystem.current != null && lastSelectedBeforeSearch != null && lastSelectedBeforeSearch.activeInHierarchy)
+        {
+            EventSystem.current.SetSelectedGameObject(lastSelectedBeforeSearch);
+        }
+        else if (researchButton != null)
+        {
+            EventSystem.current?.SetSelectedGameObject(researchButton.gameObject);
+        }
+
         ShowError("방 목록을 불러오지 못했습니다: " + error);
     }
 
     public void OnSearchInputChanged(string input) { ApplyFiltersAndRefresh(); }
 
+    // ★ PrivateLobbyManager의 chapterNames 배열을 보호 수준 에러(CS0122) 없이 안전하게 가져오는 헬퍼 메서드 (리플렉션 사용)
+    private string[] GetChapterNamesFromPrivateManager()
+    {
+        if (privateLobbyManager == null) return null;
+        try
+        {
+            var field = privateLobbyManager.GetType().GetField("chapterNames", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (field != null)
+            {
+                return field.GetValue(privateLobbyManager) as string[];
+            }
+            var prop = privateLobbyManager.GetType().GetProperty("chapterNames", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (prop != null)
+            {
+                return prop.GetValue(privateLobbyManager) as string[];
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[ClientLobbyManager] chapterNames 취득 실패: {e.Message}");
+        }
+        return null;
+    }
+
+    // PrivateLobbyManager의 챕터 개수를 동적으로 가져옴
+    private int GetMaxChapterCount()
+    {
+        string[] names = GetChapterNamesFromPrivateManager();
+        if (names != null && names.Length > 0)
+        {
+            return names.Length;
+        }
+        return 6; // 기본값
+    }
+
     public void OnClick_PrevFilterChapter()
     {
+        int maxCh = GetMaxChapterCount();
         selectedFilterChapter--;
-        if (selectedFilterChapter < 0) selectedFilterChapter = 6;
+        if (selectedFilterChapter < 0) selectedFilterChapter = maxCh;
         UpdateFilterChapterUI();
         ApplyFiltersAndRefresh();
     }
 
     public void OnClick_NextFilterChapter()
     {
+        int maxCh = GetMaxChapterCount();
         selectedFilterChapter++;
-        if (selectedFilterChapter > 6) selectedFilterChapter = 0;
+        if (selectedFilterChapter > maxCh) selectedFilterChapter = 0;
         UpdateFilterChapterUI();
         ApplyFiltersAndRefresh();
     }
@@ -703,13 +802,33 @@ public class ClientLobbyManager : MonoBehaviour
     private void UpdateFilterChapterUI()
     {
         if (filterChapterText != null)
-            filterChapterText.text = (selectedFilterChapter == 0) ? "Chapter All" : $"Chapter {selectedFilterChapter}";
+        {
+            if (selectedFilterChapter == 0)
+            {
+                filterChapterText.text = "Chapter All";
+            }
+            else
+            {
+                int index = selectedFilterChapter - 1;
+                string[] names = GetChapterNamesFromPrivateManager();
+                if (names != null && index >= 0 && index < names.Length && !string.IsNullOrEmpty(names[index]))
+                {
+                    filterChapterText.text = names[index];
+                }
+                else
+                {
+                    filterChapterText.text = $"Chapter {selectedFilterChapter}";
+                }
+            }
+        }
     }
 
     private void ApplyFiltersAndRefresh()
     {
         filteredLobbies.Clear();
         string searchKey = (searchInputField != null) ? searchInputField.text.Trim().ToLower() : "";
+
+        string[] chapterNames = GetChapterNamesFromPrivateManager();
 
         foreach (var lobby in allFetchedLobbies)
         {
@@ -719,10 +838,40 @@ public class ClientLobbyManager : MonoBehaviour
             if (!string.IsNullOrEmpty(searchKey) && !roomName.ToLower().Contains(searchKey))
                 continue;
 
+            // ★ 챕터 필터링 로직 (인덱스 및 커스텀 챕터 이름 문자열 모두 완벽 호환)
             if (selectedFilterChapter > 0)
             {
-                string chapterStr = GetLobbyAttribute(lobby, "CHAPTER", "1");
-                if (int.TryParse(chapterStr, out int ch) && ch != selectedFilterChapter)
+                string chapterStr = GetLobbyAttribute(lobby, "CHAPTER", "");
+                int target1Based = selectedFilterChapter;
+                int target0Based = selectedFilterChapter - 1;
+                string targetName = (chapterNames != null && target0Based >= 0 && target0Based < chapterNames.Length) ? chapterNames[target0Based] : null;
+
+                bool isChapterMatch = false;
+
+                if (!string.IsNullOrEmpty(chapterStr))
+                {
+                    // 1. 숫자로 파싱 가능한 경우 (1기반 또는 0기반 인덱스 매칭)
+                    if (int.TryParse(chapterStr, out int chVal))
+                    {
+                        if (chVal == target1Based || chVal == target0Based)
+                            isChapterMatch = true;
+                    }
+
+                    // 2. 인스펙터에 작성하신 챕터 이름 문자열(예: "Chapter1", "EX" 등)과 직접 일치하는 경우
+                    if (!isChapterMatch && !string.IsNullOrEmpty(targetName))
+                    {
+                        if (string.Equals(chapterStr.Trim(), targetName.Trim(), System.StringComparison.OrdinalIgnoreCase))
+                            isChapterMatch = true;
+                    }
+
+                    // 3. "ChapterN" 포맷 폴백 매칭
+                    if (!isChapterMatch && string.Equals(chapterStr.Trim(), $"Chapter{target1Based}", System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        isChapterMatch = true;
+                    }
+                }
+
+                if (!isChapterMatch)
                     continue;
             }
 
@@ -801,6 +950,7 @@ public class ClientLobbyManager : MonoBehaviour
                 out uint maxMembers))
         {
             ShowFullRoomWarning();
+            // ★ 방 입장 실패/거부 시 현재 선택된 버튼/요소의 포커스가 유실되거나 백그라운드로 새어나가지 않도록 현재 선택 상태 유지 또는 복구 처리
             return;
         }
 
@@ -812,12 +962,6 @@ public class ClientLobbyManager : MonoBehaviour
             return;
         }
 
-        // ---------------------------------------------------------
-        // ★ 중요
-        // 새로운 방 접속 시작을 HostDisconnectHandler에 알려준다.
-        // 이전 연결의 Disconnect 상태가 새 방에 영향을 주지 않도록
-        // wasConnected를 초기화한다.
-        // ---------------------------------------------------------
         HostDisconnectHandler disconnectHandler =
             FindFirstObjectByType<HostDisconnectHandler>();
 
@@ -897,13 +1041,11 @@ public class ClientLobbyManager : MonoBehaviour
 
         isQuickJoining = false;
 
-        // 로딩 패널 끄기 및 UI 복구
         GameObject panel = GetLoadingPanel();
         if (panel != null) panel.SetActive(false);
 
         SetInteractableAll(true);
 
-        // 실패한 Mirror 접속 시도 정지
         if (NetworkManager.singleton != null && NetworkClient.active)
         {
             NetworkManager.singleton.StopClient();
@@ -941,14 +1083,16 @@ public class ClientLobbyManager : MonoBehaviour
 
     private void SetInteractableAll(bool interactable)
     {
-        if (selectPublicModeButton != null) selectPublicModeButton.interactable = interactable;
-        if (selectPrivateModeButton != null) selectPrivateModeButton.interactable = interactable;
-        if (quickJoinSelectionButton != null) quickJoinSelectionButton.interactable = interactable;
-        if (researchButton != null) researchButton.interactable = interactable;
-        if (prevPageButton != null) prevPageButton.interactable = interactable;
-        if (nextPageButton != null) nextPageButton.interactable = interactable;
-        if (prevFilterChapterButton != null) prevFilterChapterButton.interactable = interactable;
-        if (nextFilterChapterButton != null) nextFilterChapterButton.interactable = interactable;
+        GameObject currentSelected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+
+        if (selectPublicModeButton != null && (interactable || selectPublicModeButton.gameObject != currentSelected)) selectPublicModeButton.interactable = interactable;
+        if (selectPrivateModeButton != null && (interactable || selectPrivateModeButton.gameObject != currentSelected)) selectPrivateModeButton.interactable = interactable;
+        if (quickJoinSelectionButton != null && (interactable || quickJoinSelectionButton.gameObject != currentSelected)) quickJoinSelectionButton.interactable = interactable;
+        if (researchButton != null && (interactable || researchButton.gameObject != currentSelected)) researchButton.interactable = interactable;
+        if (prevPageButton != null && (interactable || prevPageButton.gameObject != currentSelected)) prevPageButton.interactable = interactable;
+        if (nextPageButton != null && (interactable || nextPageButton.gameObject != currentSelected)) nextPageButton.interactable = interactable;
+        if (prevFilterChapterButton != null && (interactable || prevFilterChapterButton.gameObject != currentSelected)) prevFilterChapterButton.interactable = interactable;
+        if (nextFilterChapterButton != null && (interactable || nextFilterChapterButton.gameObject != currentSelected)) nextFilterChapterButton.interactable = interactable;
     }
 
     private void SelectPrivateRoomUp()
@@ -1058,7 +1202,6 @@ public class ClientLobbyManager : MonoBehaviour
 
         RestoreInputScopeAfterPopup();
 
-        // 1. Mirror 및 EOS 연결 정리
         if (NetworkManager.singleton != null)
         {
             NetworkManager.singleton.StopClient();
@@ -1070,7 +1213,6 @@ public class ClientLobbyManager : MonoBehaviour
             eos.LeaveLobby();
         }
 
-        // 2. 씬을 재로드하여 좀비 P2P 소켓과 메모리를 깔끔하게 초기화
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
@@ -1100,15 +1242,10 @@ public class ClientLobbyManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 10초 초과 타임아웃 팝업을 닫을 때 실행됩니다.
-    /// 네트워크 정리 후 메인 씬 전체를 재로드하여 상태를 완전히 초기화합니다.
-    /// </summary>
     public void OnClick_CloseTimeoutPopup()
     {
         if (timeoutPopupPanel != null) timeoutPopupPanel.SetActive(false);
 
-        // EOS 및 Mirror 클라이언트 연결 완전히 해제
         var eos = GetEOSLobby();
         if (eos != null && eos.ConnectedToLobby)
         {
@@ -1120,7 +1257,6 @@ public class ClientLobbyManager : MonoBehaviour
             NetworkManager.singleton.StopClient();
         }
 
-        // 현재 메인 씬을 재로드하여 초기 상태로 깔끔하게 리셋
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
@@ -1156,6 +1292,12 @@ public class ClientLobbyManager : MonoBehaviour
         {
             ShowError("네트워크 시스템이 준비되지 않았습니다.");
             return;
+        }
+
+        // ★ 퀵 조인 버튼을 누를 때 현재 선택되어 있던 포커스 오브젝트를 기억해 둠으로써 클릭 직후 백그라운드로 포커스가 새는 현상 차단
+        if (EventSystem.current != null)
+        {
+            lastSelectedBeforeSearch = EventSystem.current.currentSelectedGameObject;
         }
 
         SetInteractableAll(false);
@@ -1218,24 +1360,22 @@ public class ClientLobbyManager : MonoBehaviour
 
             // P2P 소켓 찌꺼기 방지용
             EpicTransport.EosTransport transport = NetworkManager.singleton.GetComponent<EpicTransport.EosTransport>();
-            if (NetworkManager.singleton != null &&
-      NetworkClient.active)
+            if (NetworkManager.singleton != null && NetworkClient.active)
             {
                 NetworkManager.singleton.StopClient();
             }
+
+            var eos = GetEOSLobby();
+            if (eos != null && eos.ConnectedToLobby)
+            {
+                eos.LeaveLobby();
+            }
+
+            GameObject panel = GetLoadingPanel();
+            if (panel != null) panel.SetActive(false);
+
+            SetInteractableAll(true);
+            ShowTimeoutPopup();
         }
-
-        var eos = GetEOSLobby();
-        if (eos != null && eos.ConnectedToLobby)
-        {
-            eos.LeaveLobby();
-        }
-
-        GameObject panel = GetLoadingPanel();
-        if (panel != null) panel.SetActive(false);
-
-        // UI 복구 로직...
-        SetInteractableAll(true);
-        ShowTimeoutPopup();
     }
 }
