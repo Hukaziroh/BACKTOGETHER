@@ -37695,7 +37695,7 @@ PrefabInstance:
     - target: {fileID: 4717372598130438329, guid: 486319035bdb2da4ebd3cd22ee53a50d, type: 3}
       propertyPath: targetLand
       value: 
-      objectReference: {fileID: 2030806028}
+      objectReference: {fileID: 1185384251}
     - target: {fileID: 4717372598130438329, guid: 486319035bdb2da4ebd3cd22ee53a50d, type: 3}
       propertyPath: playerCounter
       value: 
@@ -212567,7 +212567,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: -2
   m_MaskInteraction: 0
   m_Sprite: {fileID: 8310256654757038766, guid: 2c4b43a52191aff4ba3a252a95dd8b0b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -299712,7 +299712,7 @@ PrefabInstance:
     - target: {fileID: 4717372598130438329, guid: 486319035bdb2da4ebd3cd22ee53a50d, type: 3}
       propertyPath: targetLand
       value: 
-      objectReference: {fileID: 1185384251}
+      objectReference: {fileID: 2030806028}
     - target: {fileID: 4717372598130438329, guid: 486319035bdb2da4ebd3cd22ee53a50d, type: 3}
       propertyPath: playerCounter
       value: 
