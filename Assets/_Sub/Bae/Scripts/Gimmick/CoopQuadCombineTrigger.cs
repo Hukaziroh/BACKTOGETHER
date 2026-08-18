@@ -24,7 +24,7 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
 
             playersInZone.Add(other.gameObject);
 
-            while (playersInZone.Count >= requiredPlayers)
+            if (playersInZone.Count >= requiredPlayers)
             {
                 ActivateQuadGroup();
             }
@@ -49,40 +49,35 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
                 p.activeInHierarchy &&
                 p.GetComponent<PlayerCombineHandler>() != null &&
                 !p.GetComponent<PlayerCombineHandler>().isCombined)
+            .Distinct()
             .ToList();
 
-        if (validPlayers.Count < requiredPlayers)
+        if (validPlayers.Count < 4)
             return;
 
+        // 정확히 4명만 확정
         validPlayers = validPlayers.Take(4).ToList();
 
-        for (int i = 0; i < validPlayers.Count; i++)
-        {
-            int randomIndex = Random.Range(i, validPlayers.Count);
+        List<CombineRole> roles = new List<CombineRole>
+    {
+        CombineRole.Move_Left,
+        CombineRole.Move_Right,
+        CombineRole.Jump,
+        CombineRole.Action
+    };
 
-            GameObject temp = validPlayers[i];
-            validPlayers[i] = validPlayers[randomIndex];
-            validPlayers[randomIndex] = temp;
+        // 역할 랜덤 섞기
+        for (int i = 0; i < roles.Count; i++)
+        {
+            int randomIndex = Random.Range(i, roles.Count);
+
+            CombineRole temp = roles[i];
+            roles[i] = roles[randomIndex];
+            roles[randomIndex] = temp;
         }
 
-        List<CombineRole> availableRoles = new List<CombineRole>
-        {
-            CombineRole.Move_Left,
-            CombineRole.Move_Right,
-            CombineRole.Jump,
-            CombineRole.Action
-        };
-
-        for (int i = 0; i < availableRoles.Count; i++)
-        {
-            int randomIndex = Random.Range(i, availableRoles.Count);
-
-            CombineRole temp = availableRoles[i];
-            availableRoles[i] = availableRoles[randomIndex];
-            availableRoles[randomIndex] = temp;
-        }
-
-        GameObject bodyPlayer = validPlayers[0];
+        int bodyIndex = Random.Range(0, validPlayers.Count);
+        GameObject bodyPlayer = validPlayers[bodyIndex];
 
         PlayerCombineHandler bodyHandler =
             bodyPlayer.GetComponent<PlayerCombineHandler>();
@@ -99,16 +94,43 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
                 continue;
 
             handler.connectedGhosts.Clear();
-            handler.myRole = CombineRole.None;
+
             handler.isCombined = false;
+            handler.myRole = CombineRole.None;
             handler.bodyTarget = null;
             handler.canUseAction = false;
             handler.combineColorIndex = -1;
             handler.combineFaceIndex = -1;
         }
-
         int combineColor = Random.Range(0, 2);
         int combineFace = Random.Range(0, 2);
+
+        for (int i = 0; i < 4; i++)
+        {
+            GameObject player = validPlayers[i];
+
+            PlayerCombineHandler handler =
+                player.GetComponent<PlayerCombineHandler>();
+
+            if (handler == null)
+                continue;
+
+            CombineRole assignedRole = roles[i];
+
+            handler.myRole = assignedRole;
+
+            handler.combineColorIndex = combineColor;
+            handler.combineFaceIndex = combineFace;
+
+            handler.canUseAction =
+                assignedRole == CombineRole.Action;
+
+            Debug.Log(
+                $"[4인 합체 역할 확정] " +
+                $"{player.name} -> {assignedRole}"
+            );
+        }
+        HashSet<CombineRole> assignedRoles = new HashSet<CombineRole>();
 
         for (int i = 0; i < 4; i++)
         {
@@ -116,23 +138,31 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
                 validPlayers[i].GetComponent<PlayerCombineHandler>();
 
             if (handler == null)
-                continue;
-            handler.myRole = availableRoles[i];
-            handler.combineColorIndex = combineColor;
-            handler.combineFaceIndex = combineFace;
-
-            if (handler.myRole == CombineRole.Action)
             {
-                handler.canUseAction = true;
+                Debug.LogError(
+                    $"[4인 합체 오류] PlayerCombineHandler 없음: {validPlayers[i].name}"
+                );
+                return;
+            }
+
+            if (!assignedRoles.Add(handler.myRole))
+            {
+                Debug.LogError(
+                    $"[4인 합체 오류] 역할 중복 발생! " +
+                    $"{validPlayers[i].name} -> {handler.myRole}"
+                );
+                return;
             }
         }
-
         bodyHandler.connectedGhosts.Clear();
 
-        for (int i = 1; i < 4; i++)
+        foreach (GameObject player in validPlayers)
         {
+            if (player == bodyPlayer)
+                continue;
+
             PlayerCombineHandler ghostHandler =
-                validPlayers[i].GetComponent<PlayerCombineHandler>();
+                player.GetComponent<PlayerCombineHandler>();
 
             if (ghostHandler != null &&
                 !bodyHandler.connectedGhosts.Contains(ghostHandler))
@@ -140,11 +170,10 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
                 bodyHandler.connectedGhosts.Add(ghostHandler);
             }
         }
-
-        for (int i = 0; i < 4; i++)
+        foreach (GameObject player in validPlayers)
         {
             PlayerCombineHandler handler =
-                validPlayers[i].GetComponent<PlayerCombineHandler>();
+                player.GetComponent<PlayerCombineHandler>();
 
             if (handler == null)
                 continue;
@@ -153,19 +182,19 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
                 handler.myRole,
                 bodyPlayer
             );
-
-            Debug.Log(
-                $"[4인 합체 역할] {validPlayers[i].name} -> {handler.myRole}"
-            );
         }
-
         foreach (GameObject player in validPlayers)
         {
             playersInZone.Remove(player);
         }
-
         Debug.Log(
-            $"[4인 합체 완료] Body = {bodyPlayer.name}"
+            $"[4인 합체 완료] " +
+            $"Body={bodyPlayer.name} / " +
+            $"{validPlayers[0].name}={validPlayers[0].GetComponent<PlayerCombineHandler>().myRole}, " +
+            $"{validPlayers[1].name}={validPlayers[1].GetComponent<PlayerCombineHandler>().myRole}, " +
+            $"{validPlayers[2].name}={validPlayers[2].GetComponent<PlayerCombineHandler>().myRole}, " +
+            $"{validPlayers[3].name}={validPlayers[3].GetComponent<PlayerCombineHandler>().myRole}"
         );
+
     }
 }
