@@ -192,30 +192,31 @@ public class PlayerMovement : NetworkBehaviour
 
     private void HandleActionInput()
     {
-        if (controller.combineHandler != null &&
-            controller.combineHandler.isCombined &&
-            gameObject != controller.combineHandler.bodyTarget)
+        PlayerCombineHandler combine = controller.combineHandler;
+        if (combine != null && combine.isCombined)
         {
-            return;
-        }
+            if (gameObject != combine.bodyTarget)
+                return;
 
-        bool isActionPressed = controller.input.ActionPressedThisFrame;
+            if (!combine.canUseAction)
+                return;
 
-        if (controller.combineHandler != null &&
-            controller.combineHandler.isCombined &&
-            controller.combineHandler.bodyTarget == gameObject)
-        {
-            isActionPressed =
-                controller.combineHandler.GetServerCombinedActionPressed();
-        }
+            bool isActionPressed =
+                combine.GetServerCombinedActionPressed();
 
-        if (isActionPressed)
-        {
-            if (controller.combineHandler != null &&
-                controller.combineHandler.canUseAction)
+            if (isActionPressed)
             {
                 CallCombinedAction();
             }
+
+            return;
+        }
+        bool normalActionPressed =
+            controller.input.ActionPressedThisFrame;
+
+        if (normalActionPressed)
+        {
+            CallCombinedAction();
         }
     }
 
