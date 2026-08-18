@@ -167,5 +167,8 @@ MonoBehaviour:
   - sceneName: chapter6
     clip: {fileID: 8300000, guid: 8e9380f8c0848924f800d4ff1dbdcd9d, type: 3}
     volume: 0.3
+  - sceneName: Ex
+    clip: {fileID: 8300000, guid: b17a87161a45f8a47b4548aed7754992, type: 3}
+    volume: 0.3
   outputGroup: {fileID: -1089326382837711588, guid: 95799436be0aef347a09df451fe579be, type: 2}
   targetVolume: 0.3
