@@ -43,6 +43,7 @@ public class PrivateLobbyManager : MonoBehaviour
     [SerializeField] private Button nextChapterButton;
     [SerializeField] private Image chapterPreviewImage;
     [SerializeField] private Sprite[] chapterSprites;
+    [SerializeField] public string[] chapterNames;
 
     [Header("챕터 잠금 UI")]
     [SerializeField] private GameObject chapterLockObject;
@@ -72,7 +73,7 @@ public class PrivateLobbyManager : MonoBehaviour
     public static string lastCreatedRoomName = "";
     public static int selectedChapter = 1;
     private int selectedChapterIndex = 1;
-    private int maxChapterCount = 6;
+    private int maxChapterCount => chapterNames != null && chapterNames.Length > 0 ? chapterNames.Length : 6;
     private bool isPublicRoom = true;
 
     private bool isCreatingLobby = false;
@@ -142,7 +143,7 @@ public class PrivateLobbyManager : MonoBehaviour
         if (roomNameInputField != null)
         {
             roomNameInputField.onEndEdit.AddListener(OnRoomNameEndEdit);
-            roomNameInputField.characterLimit = 15; // ★ 방 이름 입력 최대 글자 수 제한 (원하는 숫자로 변경 가능)[cite: 2]
+            roomNameInputField.characterLimit = 15; // ★ 방 이름 입력 최대 글자 수 제한 (원하는 숫자로 변경 가능)
         }
 
         UpdateChapterUI();
@@ -211,9 +212,9 @@ public class PrivateLobbyManager : MonoBehaviour
         }
 
         bool isRoomTypeSelected = (roomTypeSelectObject != null && selected == roomTypeSelectObject) ||
-                                  (roomTypeDisplayText != null && (selected == roomTypeDisplayText.gameObject || selected == roomTypeDisplayText.transform.parent.gameObject)) ||
-                                  (prevRoomTypeButton != null && selected == prevRoomTypeButton.gameObject) ||
-                                  (nextRoomTypeButton != null && selected == nextRoomTypeButton.gameObject);
+                                 (roomTypeDisplayText != null && (selected == roomTypeDisplayText.gameObject || selected == roomTypeDisplayText.transform.parent.gameObject)) ||
+                                 (prevRoomTypeButton != null && selected == prevRoomTypeButton.gameObject) ||
+                                 (nextRoomTypeButton != null && selected == nextRoomTypeButton.gameObject);
 
         if (isRoomTypeSelected)
         {
@@ -285,7 +286,18 @@ public class PrivateLobbyManager : MonoBehaviour
         int displayChapter = selectedChapterIndex;
         int arrayIndex = selectedChapterIndex - 1;
 
-        if (chapterDisplayText != null) chapterDisplayText.text = $"Chapter {displayChapter}";
+        if (chapterDisplayText != null)
+        {
+            if (chapterNames != null && arrayIndex >= 0 && arrayIndex < chapterNames.Length && !string.IsNullOrEmpty(chapterNames[arrayIndex]))
+            {
+                chapterDisplayText.text = chapterNames[arrayIndex];
+            }
+            else
+            {
+                chapterDisplayText.text = $"Chapter {displayChapter}";
+            }
+        }
+
         if (chapterPreviewImage != null && chapterSprites != null && chapterSprites.Length > arrayIndex) chapterPreviewImage.sprite = chapterSprites[arrayIndex];
 
         bool isUnlocked = true;

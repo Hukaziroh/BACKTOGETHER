@@ -2911,6 +2911,7 @@ MonoBehaviour:
   filterChapterText: {fileID: 121102590639922179}
   prevFilterChapterButton: {fileID: 8234879079532356322}
   nextFilterChapterButton: {fileID: 6594075951928533216}
+  privateLobbyManager: {fileID: 700180063}
   privateRoomInputField: {fileID: 0}
   roomListContainer: {fileID: 2473280918732346846}
   roomItemPrefab: {fileID: 3931104095033623730, guid: e76c33481c058cd4d884f18558f91b9c, type: 3}
@@ -4568,6 +4569,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
+      propertyPath: chapterNames.Array.size
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
       propertyPath: createPublicLobbyButton
       value: 
       objectReference: {fileID: 525580931}
@@ -4577,7 +4582,35 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
       propertyPath: chapterSprites.Array.size
-      value: 6
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
+      propertyPath: 'chapterNames.Array.data[0]'
+      value: Chapter1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
+      propertyPath: 'chapterNames.Array.data[1]'
+      value: Chapter2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
+      propertyPath: 'chapterNames.Array.data[2]'
+      value: Chapter3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
+      propertyPath: 'chapterNames.Array.data[3]'
+      value: Chapter4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
+      propertyPath: 'chapterNames.Array.data[4]'
+      value: Chapter5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
+      propertyPath: 'chapterNames.Array.data[5]'
+      value: Chapter6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
+      propertyPath: 'chapterNames.Array.data[6]'
+      value: EX
       objectReference: {fileID: 0}
     - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
       propertyPath: noCheckpointLobbySceneName
@@ -4607,6 +4640,10 @@ PrefabInstance:
       propertyPath: 'chapterSprites.Array.data[5]'
       value: 
       objectReference: {fileID: 21300000, guid: b05e7c84480168244b2f5e2306d00620, type: 3}
+    - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
+      propertyPath: 'chapterSprites.Array.data[6]'
+      value: 
+      objectReference: {fileID: 21300000, guid: 16176f10d9dce7b46874f6e71e12731e, type: 3}
     - target: {fileID: 8422485441135400866, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
       propertyPath: m_Name
       value: MainManager
