@@ -43,7 +43,7 @@ public class GameSaveManager : MonoBehaviour
     /// </summary>
     private string GetSaveFilePath()
     {
-        string saveFileName = "PicoSaveData.json";
+        string saveFileName = "BackTogetherSaveData.json";
 
 #if STOVE_BUILD
         if (StovePCSDK3Manager.InstanceExists && StovePCSDK3Manager.Instance.isInitialized)
