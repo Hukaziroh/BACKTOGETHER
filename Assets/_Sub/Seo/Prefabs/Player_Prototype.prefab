@@ -1270,7 +1270,7 @@ MonoBehaviour:
   coyoteTime: 0.15
   superJump: 0.5
   showGizmo: 1
-  checkRadius: 0.36
+  checkRadius: 0.34
   checkOffset: {x: 0, y: 0}
   groundCheck: {fileID: 286342587236517845}
   groundLayer:
@@ -1303,6 +1303,15 @@ MonoBehaviour:
   currentCheckpointIndex: -1
   teamRespawnScenes:
   - chapter4
+  disabledRespawnScenes:
+  - chapter5
+  - chapter6
+  - Nchapter1
+  - Nchapter2
+  - Nchapter3
+  - Nchapter4
+  - Nchapter5
+  - Nchapter6
 --- !u!61 &1312891903968155803
 BoxCollider2D:
   m_ObjectHideFlags: 0
