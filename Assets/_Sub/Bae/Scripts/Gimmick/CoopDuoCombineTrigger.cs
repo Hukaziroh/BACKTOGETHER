@@ -8,7 +8,7 @@ public class CoopDuoCombineTrigger : NetworkBehaviour
 {
     [Header("2인 1조 합체 기믹 설정")]
     [Tooltip("합체에 필요한 최소 인원 수 (항상 2명씩 묶음)")]
-    public int requiredPlayers = 2;
+    public int requiredPlayers = 4;
 
     private HashSet<GameObject> playersInZone = new HashSet<GameObject>();
 
