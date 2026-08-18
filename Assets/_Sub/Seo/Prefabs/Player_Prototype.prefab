@@ -1270,7 +1270,7 @@ MonoBehaviour:
   coyoteTime: 0.15
   superJump: 0.5
   showGizmo: 1
-  checkRadius: 0.3
+  checkRadius: 0.36
   checkOffset: {x: 0, y: 0}
   groundCheck: {fileID: 286342587236517845}
   groundLayer:
