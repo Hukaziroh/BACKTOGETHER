@@ -27,6 +27,9 @@ public class PlayerRespawn : NetworkBehaviour
     [Header("팀 리스폰 씬 설정")]
     public List<string> teamRespawnScenes = new List<string> { "chapter4" };
 
+    [Header("리스폰 불가 씬 설정")]
+    public List<string> disabledRespawnScenes = new List<string> { "chapter5", "chapter6", "Nchapter1", "Nchapter2", "Nchapter3", "Nchapter4", "Nchapter5", "Nchapter6" };
+
     void Awake()
     {
         controller = GetComponent<PlayerController>();
@@ -41,6 +44,11 @@ public class PlayerRespawn : NetworkBehaviour
     void Update()
     {
         if (!isLocalPlayer || isRespawning)
+            return;
+
+        // 🌟 [추가됨] 현재 씬이 리스폰 불가 씬이라면 R키 입력과 화면 페이드 연출을 완전히 무시
+        string sceneName = SceneManager.GetActiveScene().name;
+        if (disabledRespawnScenes != null && disabledRespawnScenes.Contains(sceneName))
             return;
 
         // 🌟 New Input System의 restartAction 상태 감지
@@ -125,6 +133,9 @@ public class PlayerRespawn : NetworkBehaviour
         }
 
         string sceneName = SceneManager.GetActiveScene().name;
+
+        if (disabledRespawnScenes.Contains(sceneName))
+            return;
 
         if (teamRespawnScenes.Contains(sceneName))
         {
