@@ -47,6 +47,9 @@ MonoBehaviour:
     m_path: Assets/_Sub/Bae/Scene/chapter6.unity
     m_guid: 630d34a98dfb1274fa219014c97b3e2a
   - m_enabled: 1
+    m_path: Assets/_Sub/Bae/Scene/NLobby.unity
+    m_guid: 0ba5bc17c76d8c94da8518f8779c1c6f
+  - m_enabled: 1
     m_path: Assets/_Sub/Bae/Scene/Nchapter1.unity
     m_guid: 59afa402b5ad11e4583b16f28c98cb76
   - m_enabled: 1
