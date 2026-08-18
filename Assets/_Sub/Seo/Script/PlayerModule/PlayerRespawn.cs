@@ -27,6 +27,9 @@ public class PlayerRespawn : NetworkBehaviour
     [Header("팀 리스폰 씬 설정")]
     public List<string> teamRespawnScenes = new List<string> { "chapter4" };
 
+    [Header("리스폰 불가 씬 설정")]
+    public List<string> disabledRespawnScenes = new List<string> { "chapter5", "chapter6", "Nchapter1", "Nchapter2", "Nchapter3", "Nchapter4", "Nchapter5", "Nchapter6" };
+
     void Awake()
     {
         controller = GetComponent<PlayerController>();
@@ -41,6 +44,11 @@ public class PlayerRespawn : NetworkBehaviour
     void Update()
     {
         if (!isLocalPlayer || isRespawning)
+            return;
+
+        // 🌟 [추가됨] 현재 씬이 리스폰 불가 씬이라면 R키 입력과 화면 페이드 연출을 완전히 무시
+        string sceneName = SceneManager.GetActiveScene().name;
+        if (disabledRespawnScenes != null && disabledRespawnScenes.Contains(sceneName))
             return;
 
         // 🌟 New Input System의 restartAction 상태 감지
@@ -110,22 +118,25 @@ public class PlayerRespawn : NetworkBehaviour
             ScreenFader.Instance.fadeCanvasGroup.gameObject.SetActive(false);
         }
     }
-
     [Command]
     public void CmdRequestRespawn()
     {
         if (isRespawning) return;
 
-        PlayerCombineHandler combineHandler = GetComponent<PlayerCombineHandler>();
+        // 🌟 1. 제일 먼저 현재 씬이 리스폰 불가 씬인지 확인하고 강제 종료! (순서 올림)
+        string sceneName = SceneManager.GetActiveScene().name;
+        if (disabledRespawnScenes.Contains(sceneName))
+            return;
 
+        // 🌟 2. 그 다음 합체 상태 확인
+        PlayerCombineHandler combineHandler = GetComponent<PlayerCombineHandler>();
         if (combineHandler != null && combineHandler.isCombined)
         {
             StartCoroutine(RespawnCombinedPlayersRoutine());
             return;
         }
 
-        string sceneName = SceneManager.GetActiveScene().name;
-
+        // 🌟 3. 마지막으로 팀/개인 리스폰 분기
         if (teamRespawnScenes.Contains(sceneName))
         {
             StartCoroutine(RespawnAllPlayersRoutine());

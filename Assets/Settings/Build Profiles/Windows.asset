@@ -46,6 +46,27 @@ MonoBehaviour:
   - m_enabled: 1
     m_path: Assets/_Sub/Bae/Scene/chapter6.unity
     m_guid: 630d34a98dfb1274fa219014c97b3e2a
+  - m_enabled: 1
+    m_path: Assets/_Sub/Bae/Scene/Nchapter1.unity
+    m_guid: 59afa402b5ad11e4583b16f28c98cb76
+  - m_enabled: 1
+    m_path: Assets/_Sub/Bae/Scene/Nchapter2.unity
+    m_guid: 8bca6c12813ce3b4db05ab0be8303170
+  - m_enabled: 1
+    m_path: Assets/_Sub/Bae/Scene/Nchapter3.unity
+    m_guid: 599c829bb6118a84f887e6c38e6ebc8e
+  - m_enabled: 1
+    m_path: Assets/_Sub/Bae/Scene/Nchapter4.unity
+    m_guid: 68192d1694b9e7e4ca207f498d3f8fb9
+  - m_enabled: 1
+    m_path: Assets/_Sub/Bae/Scene/Nchapter5.unity
+    m_guid: 7cea9107566a15449b9bed439729247d
+  - m_enabled: 1
+    m_path: Assets/_Sub/Bae/Scene/Nchapter6.unity
+    m_guid: c450b7aba6eda184ca2bed13939221f6
+  - m_enabled: 1
+    m_path: Assets/_Sub/Sin/Scene/Ex.unity
+    m_guid: 0b3b47fae6f587b4cb3e29d78e98baa6
   m_HasScriptingDefines: 0
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:
