@@ -483,34 +483,53 @@ public class PlayerMovement : NetworkBehaviour
 
     void CheckGroundOrPlayer()
     {
-        int hitCount = Physics2D.OverlapCircle(groundCheck.position, checkRadius, groundFilter, groundCheckResults);
-
+        int hitCount = Physics2D.OverlapCircle(
+            groundCheck.position,
+            checkRadius,
+            groundFilter,
+            groundCheckResults
+        );
         isGrounded = false;
         bool currentOnIce = false;
         bool foundPlatform = false;
         Transform detectedPlatform = null;
-
         for (int i = 0; i < hitCount; i++)
         {
             Collider2D col = groundCheckResults[i];
-            if (col.CompareTag("Spike") || col.gameObject == gameObject || col.isTrigger) continue;
+
+            if (col.CompareTag("Spike") ||
+                col.gameObject == gameObject ||
+                col.isTrigger)
+                continue;
 
             isGrounded = true;
-            if (col.CompareTag("Ice")) currentOnIce = true;
+
+            if (col.CompareTag("Ice"))
+                currentOnIce = true;
+
             if (col.CompareTag("MovingPlatform"))
             {
                 detectedPlatform = col.transform;
                 foundPlatform = true;
             }
         }
-
-        if (!isGrounded)
+        if (!isGrounded &&
+            SceneManager.GetActiveScene().name != "Ex")
         {
-            int playerHitCount = Physics2D.OverlapCircle(groundCheck.position, checkRadius, playerFilter, playerCheckResults);
+            int playerHitCount = Physics2D.OverlapCircle(
+                groundCheck.position,
+                checkRadius,
+                playerFilter,
+                playerCheckResults
+            );
+
             for (int i = 0; i < playerHitCount; i++)
             {
                 Collider2D col = playerCheckResults[i];
-                if (col.gameObject != gameObject && col.CompareTag("Player") && groundCheck.position.y > col.bounds.max.y - 0.05f)
+
+                if (col.gameObject != gameObject &&
+                    col.CompareTag("Player") &&
+                    groundCheck.position.y > col.bounds.max.y - 0.05f)
                 {
                     isGrounded = true;
                     break;
@@ -518,7 +537,11 @@ public class PlayerMovement : NetworkBehaviour
             }
         }
 
-        if (isGrounded && Mathf.Abs(controller.rb.linearVelocity.y) <= 0.1f) justJumped = false;
+        if (isGrounded &&
+            Mathf.Abs(controller.rb.linearVelocity.y) <= 0.1f)
+        {
+            justJumped = false;
+        }
 
         if (foundPlatform)
         {
@@ -535,25 +558,51 @@ public class PlayerMovement : NetworkBehaviour
         }
 
         isOnIce = currentOnIce;
-        if (isGrounded) wasOnIceLastFrame = isOnIce;
-    }
 
+        if (isGrounded)
+            wasOnIceLastFrame = isOnIce;
+    }
     void CheckHeadForPlayer()
     {
-        if (headCheck == null) return;
-        hasPlayerOnHead = false;
-        Vector2 checkPosition = (Vector2)headCheck.position + headCheckOffset;
+        if (SceneManager.GetActiveScene().name == "Ex")
+        {
+            hasPlayerOnHead = false;
+            return;
+        }
 
-        int hitCount = Physics2D.OverlapBox(checkPosition, headCheckBoxSize, 0f, playerFilter, headCheckResults);
+        if (headCheck == null)
+            return;
+
+        hasPlayerOnHead = false;
+
+        Vector2 checkPosition =
+            (Vector2)headCheck.position + headCheckOffset;
+
+        int hitCount = Physics2D.OverlapBox(
+            checkPosition,
+            headCheckBoxSize,
+            0f,
+            playerFilter,
+            headCheckResults
+        );
 
         for (int i = 0; i < hitCount; i++)
         {
             Collider2D col = headCheckResults[i];
-            if (col.gameObject == gameObject || col.isTrigger) continue;
 
-            Vector2 dir = col.transform.position - transform.position;
-            if (dir.y <= 0.2f) continue;
-            if (col.attachedRigidbody != null && col.attachedRigidbody.linearVelocity.y > 0.1f) continue;
+            if (col.gameObject == gameObject ||
+                col.isTrigger)
+                continue;
+
+            Vector2 dir =
+                col.transform.position - transform.position;
+
+            if (dir.y <= 0.2f)
+                continue;
+
+            if (col.attachedRigidbody != null &&
+                col.attachedRigidbody.linearVelocity.y > 0.1f)
+                continue;
 
             hasPlayerOnHead = true;
             break;
