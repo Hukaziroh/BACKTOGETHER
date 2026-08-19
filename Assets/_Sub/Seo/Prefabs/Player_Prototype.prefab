@@ -807,6 +807,7 @@ GameObject:
   - component: {fileID: 7575866404674331902}
   - component: {fileID: 4858706675134242407}
   - component: {fileID: 106991141419042085}
+  - component: {fileID: 1818505097064413287}
   - component: {fileID: 1312891903968155803}
   - component: {fileID: 6800475550925425856}
   - component: {fileID: 1904173253102594305}
@@ -1121,15 +1122,6 @@ MonoBehaviour:
   canInvertGravity: 0
   isGravityInverted: 0
   gravityMultiplier: 1
-  invertAction:
-    m_Name: Invert
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: 6e15a325-1291-4949-9fcf-5622f911b40d
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings: []
-    m_Flags: 0
 --- !u!114 &7761479740853381908
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1312,6 +1304,20 @@ MonoBehaviour:
   - Nchapter4
   - Nchapter5
   - Nchapter6
+--- !u!114 &1818505097064413287
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8453197966436518037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e9530196be65ed4b8217bfc41069c05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSceneSetting
+  targetSceneName: Ex
+  otherPlayerAlpha: 0.2
 --- !u!61 &1312891903968155803
 BoxCollider2D:
   m_ObjectHideFlags: 0
