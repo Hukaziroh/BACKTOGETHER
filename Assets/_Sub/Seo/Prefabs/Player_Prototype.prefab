@@ -1317,7 +1317,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSceneSetting
   targetSceneName: Ex
-  otherPlayerAlpha: 0.2
+  otherPlayerBodyAlpha: 0.4
+  otherPlayerFaceAlpha: 0.5
 --- !u!61 &1312891903968155803
 BoxCollider2D:
   m_ObjectHideFlags: 0
