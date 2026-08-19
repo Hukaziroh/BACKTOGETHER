@@ -200,9 +200,6 @@ public class PlayerMovement : NetworkBehaviour
             if (gameObject != combine.bodyTarget)
                 return;
 
-            if (!combine.canUseAction)
-                return;
-
             bool isActionPressed =
                 combine.GetServerCombinedActionPressed();
 
