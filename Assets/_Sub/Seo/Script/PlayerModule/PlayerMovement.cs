@@ -1,5 +1,7 @@
 using UnityEngine;
 using Mirror;
+using UnityEngine.SceneManagement;
+
 
 public class PlayerMovement : NetworkBehaviour
 {
@@ -248,22 +250,44 @@ public class PlayerMovement : NetworkBehaviour
         }
 
         isTouchingPlayer = false;
-        if (Mathf.Abs(rawInput) > 0.1f)
+
+        bool ignorePlayerDetection =
+            SceneManager.GetActiveScene().name == "Ex";
+
+        if (!ignorePlayerDetection && Mathf.Abs(rawInput) > 0.1f)
         {
             float moveDir = Mathf.Sign(rawInput);
+
             Vector2 boxCenter = controller.bodyCollider.bounds.center;
             Vector2 boxSize = controller.bodyCollider.bounds.size;
             boxSize.y -= 0.3f;
 
             float currentSpeedX = Mathf.Abs(controller.rb.linearVelocity.x);
-            float castDistance = Mathf.Max(0.05f, currentSpeedX * Time.fixedDeltaTime + 0.05f);
+            float castDistance =
+                Mathf.Max(0.05f, currentSpeedX * Time.fixedDeltaTime + 0.05f);
 
-            RaycastHit2D hit = Physics2D.BoxCast(boxCenter, boxSize, 0f, new Vector2(moveDir, 0f), castDistance, playerLayerMask);
-            if (debugLogOverlap && hit.collider != null && hit.collider.gameObject != gameObject)
+            RaycastHit2D hit = Physics2D.BoxCast(
+                boxCenter,
+                boxSize,
+                0f,
+                new Vector2(moveDir, 0f),
+                castDistance,
+                playerLayerMask
+            );
+
+            if (debugLogOverlap &&
+                hit.collider != null &&
+                hit.collider.gameObject != gameObject)
             {
-                LogDebug($"BoxCast 차단됨 - castDistance={castDistance:F3} 상대={hit.collider.gameObject.name}");
+                LogDebug(
+                    $"BoxCast 차단됨 - " +
+                    $"castDistance={castDistance:F3} " +
+                    $"상대={hit.collider.gameObject.name}"
+                );
             }
-            if (hit.collider != null && hit.collider.gameObject != gameObject)
+
+            if (hit.collider != null &&
+                hit.collider.gameObject != gameObject)
             {
                 rawInput = 0f;
             }
@@ -396,17 +420,32 @@ public class PlayerMovement : NetworkBehaviour
 
     void CheckTouchingPlayer()
     {
+        if (SceneManager.GetActiveScene().name == "Ex")
+        {
+            isTouchingPlayer = false;
+            return;
+        }
+
         Vector2 boxCenter = controller.bodyCollider.bounds.center;
         Vector2 boxSize = controller.bodyCollider.bounds.size;
+
         boxSize.x += 0.1f;
         boxSize.y -= 0.2f;
 
-        int hitCount = Physics2D.OverlapBox(boxCenter, boxSize, 0f, playerFilter, playerCheckResults);
+        int hitCount = Physics2D.OverlapBox(
+            boxCenter,
+            boxSize,
+            0f,
+            playerFilter,
+            playerCheckResults
+        );
+
         isTouchingPlayer = false;
 
         for (int i = 0; i < hitCount; i++)
         {
             Collider2D col = playerCheckResults[i];
+
             if (col.gameObject != gameObject && !col.isTrigger)
             {
                 isTouchingPlayer = true;
@@ -598,15 +637,31 @@ public class PlayerMovement : NetworkBehaviour
 
     private bool IsOverlappingAnyPlayer()
     {
-        Vector2 boxCenter = controller.bodyCollider.bounds.center;
-        Vector2 boxSize = (Vector2)controller.bodyCollider.bounds.size + new Vector2(0.02f, 0.02f);
+        if (SceneManager.GetActiveScene().name == "Ex")
+            return false;
 
-        int hitCount = Physics2D.OverlapBox(boxCenter, boxSize, 0f, playerFilter, playerCheckResults);
+        Vector2 boxCenter = controller.bodyCollider.bounds.center;
+
+        Vector2 boxSize =
+            (Vector2)controller.bodyCollider.bounds.size +
+            new Vector2(0.02f, 0.02f);
+
+        int hitCount = Physics2D.OverlapBox(
+            boxCenter,
+            boxSize,
+            0f,
+            playerFilter,
+            playerCheckResults
+        );
+
         for (int i = 0; i < hitCount; i++)
         {
             Collider2D col = playerCheckResults[i];
-            if (col.gameObject != gameObject && !col.isTrigger) return true;
+
+            if (col.gameObject != gameObject && !col.isTrigger)
+                return true;
         }
+
         return false;
     }
 

@@ -6,9 +6,13 @@ public class PlayerSceneSetting : MonoBehaviour
     [Header("적용할 씬")]
     [SerializeField] private string targetSceneName = "Ex";
 
-    [Header("다른 플레이어 알파")]
+    [Header("다른 플레이어 몸통 알파")]
     [Range(0f, 1f)]
-    [SerializeField] private float otherPlayerAlpha = 0.5f;
+    [SerializeField] private float otherPlayerBodyAlpha = 0.5f;
+
+    [Header("다른 플레이어 눈 알파")]
+    [Range(0f, 1f)]
+    [SerializeField] private float otherPlayerFaceAlpha = 0.5f;
 
     private SpriteRenderer playerSpriteRenderer;
     private SpriteRenderer faceSpriteRenderer;
@@ -75,13 +79,15 @@ public class PlayerSceneSetting : MonoBehaviour
         // 내 플레이어인지 확인
         bool isMine = identity.isLocalPlayer;
 
-        float alpha = isMine ? 1f : otherPlayerAlpha;
+        // 내 플레이어는 항상 완전 불투명
+        float bodyAlpha = isMine ? 1f : otherPlayerBodyAlpha;
+        float faceAlpha = isMine ? 1f : otherPlayerFaceAlpha;
 
         // 몸통
         if (playerSpriteRenderer != null)
         {
             Color color = playerSpriteRenderer.color;
-            color.a = alpha;
+            color.a = bodyAlpha;
             playerSpriteRenderer.color = color;
         }
 
@@ -89,7 +95,7 @@ public class PlayerSceneSetting : MonoBehaviour
         if (faceSpriteRenderer != null)
         {
             Color color = faceSpriteRenderer.color;
-            color.a = alpha;
+            color.a = faceAlpha;
             faceSpriteRenderer.color = color;
         }
     }
