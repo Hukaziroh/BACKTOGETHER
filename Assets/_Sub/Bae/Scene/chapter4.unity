@@ -296394,6 +296394,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5de76980f502d141a7b3144d7488dab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CoopGravityZone
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   resetGravityOnExit: 1
 --- !u!4 &1902580364
 Transform:
@@ -297225,7 +297228,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8525564341486170835, guid: 898aef37ccbfeb448837d185a0562c23, type: 3}
       propertyPath: currentStageNumber
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
