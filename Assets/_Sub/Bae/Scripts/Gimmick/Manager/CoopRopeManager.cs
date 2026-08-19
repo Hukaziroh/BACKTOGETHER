@@ -51,13 +51,15 @@ public class CoopRopeManager : NetworkBehaviour
         System.Array.Sort(players, (a, b) => a.playerIndex.CompareTo(b.playerIndex));
 
         isRopeActive = true;
-        GameObject[] playersToLink = new GameObject[requiredPlayers];
+
+        // ⭐ 수정됨: GameObject 대신 네트워크 고유 ID(netId) 배열을 생성하여 안전하게 전송합니다.
+        uint[] playerNetIds = new uint[requiredPlayers];
         for (int i = 0; i < requiredPlayers; i++)
         {
-            playersToLink[i] = players[i].gameObject;
+            playerNetIds[i] = players[i].netId;
         }
 
-        RpcLinkPlayers(playersToLink);
+        RpcLinkPlayers(playerNetIds);
     }
 
     [Server]
@@ -68,10 +70,42 @@ public class CoopRopeManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void RpcLinkPlayers(GameObject[] playersToLink)
+    // ⭐ 수정됨: 클라이언트는 GameObject 배열 대신 숫자(uint) 배열을 받습니다.
+    private void RpcLinkPlayers(uint[] playerNetIds)
     {
-        connectedPlayers = new List<GameObject>(playersToLink);
-        SetupLineRenderers(connectedPlayers.Count - 1);
+        connectedPlayers.Clear();
+
+        // ⭐ 회원님이 작성하신 철벽 방어 로직 적용 완료
+        foreach (uint netId in playerNetIds)
+        {
+            if (NetworkClient.spawned.TryGetValue(netId, out NetworkIdentity identity))
+            {
+                if (identity != null && identity.gameObject != null)
+                {
+                    connectedPlayers.Add(identity.gameObject);
+                }
+                else
+                {
+                    Debug.LogWarning($"[로프 기믹] netId {netId}의 NetworkIdentity가 null입니다.");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[로프 기믹] netId {netId}를 현재 클라이언트에서 찾을 수 없습니다.");
+            }
+        }
+
+        if (connectedPlayers.Count >= 2)
+        {
+            SetupLineRenderers(connectedPlayers.Count - 1);
+        }
+        else
+        {
+            Debug.LogWarning(
+                $"[로프 기믹] 플레이어를 충분히 찾지 못했습니다. " +
+                $"찾음: {connectedPlayers.Count}/{playerNetIds.Length}"
+            );
+        }
     }
 
     [ClientRpc]
@@ -145,12 +179,10 @@ public class CoopRopeManager : NetworkBehaviour
 
     void FixedUpdate()
     {
-        // 🌟 1. 이 물리 연산은 절대적으로 '서버'에서만 실행되어야 합니다! (클라이언트 개입 완전 차단)
         if (!isServer) return;
 
         if (!isRopeActive || connectedPlayers.Count < 2) return;
 
-        // 🌟 2. 매 프레임 로프 제한 상태를 일단 false로 풉니다.
         foreach (var player in connectedPlayers)
         {
             if (player != null)
@@ -160,7 +192,6 @@ public class CoopRopeManager : NetworkBehaviour
             }
         }
 
-        // 🌟 3. 호스트/클라이언트 차별 없이, 묶인 모든 쌍(0-1, 1-2, 2-3)을 대칭으로 당깁니다.
         for (int i = 0; i < connectedPlayers.Count - 1; i++)
         {
             GameObject p1 = connectedPlayers[i];
@@ -202,11 +233,9 @@ public class CoopRopeManager : NetworkBehaviour
             float totalMass = rb1.mass + rb2.mass;
             if (totalMass <= 0f) totalMass = 1f;
 
-            // 질량에 따른 보정 비율 (자신의 질량이 클수록 덜 끌려감)
             float ratio1 = rb2.mass / totalMass;
             float ratio2 = rb1.mass / totalMass;
 
-            // 🌟 1. 위치 보정 (서로가 중심을 향해 공평하게 당겨짐)
             Vector2 posCorrection1 = dirNorm * (stretch * ratio1);
             Vector2 posCorrection2 = -dirNorm * (stretch * ratio2);
 
@@ -216,7 +245,6 @@ public class CoopRopeManager : NetworkBehaviour
             rb1.position += posCorrection1;
             rb2.position += posCorrection2;
 
-            // 🌟 2. 속도 보정 (서로 멀어지려는 속도 차단)
             Vector2 relativeVelocity = rb1.linearVelocity - rb2.linearVelocity;
             float relVelAlongRope = Vector2.Dot(relativeVelocity, dirNorm);
 
@@ -233,14 +261,12 @@ public class CoopRopeManager : NetworkBehaviour
                 rb2.linearVelocity -= velCorr2;
             }
 
-            // 🌟 3. 속도 폭발 완전 차단 하드 캡
             float maxAllowedSpeed = 20f;
             if (rb1.linearVelocity.sqrMagnitude > maxAllowedSpeed * maxAllowedSpeed)
                 rb1.linearVelocity = rb1.linearVelocity.normalized * maxAllowedSpeed;
             if (rb2.linearVelocity.sqrMagnitude > maxAllowedSpeed * maxAllowedSpeed)
                 rb2.linearVelocity = rb2.linearVelocity.normalized * maxAllowedSpeed;
 
-            // 🌟 4. 빙판 미끄러짐 방지 (땅에 있을 때만 속도 감쇠)
             if (mov1.isGrounded)
                 rb1.linearVelocity = new Vector2(Mathf.Lerp(rb1.linearVelocity.x, 0f, Time.fixedDeltaTime * 10f), rb1.linearVelocity.y);
             if (mov2.isGrounded)
