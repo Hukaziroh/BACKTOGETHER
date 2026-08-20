@@ -131,6 +131,9 @@ public class PlayerInput : NetworkBehaviour
         if (jPressed && controller.animationModule != null && controller.animationModule.IsJumpableSynced)
         {
             controller.movement.PlayJumpSoundLocal();
+            // 서버가 coyoteTimeCounter를 즉시 0으로 소모하는 것과 동일하게,
+            // 클라이언트 쪽 예측용 타이머도 바로 소모시켜서 연타 시 중복 재생을 막는다.
+            controller.animationModule.ConsumeClientCoyoteTime();
         }
 
         // 서버 전송

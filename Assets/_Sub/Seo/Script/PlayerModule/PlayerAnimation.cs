@@ -18,6 +18,21 @@ public class PlayerAnimation : NetworkBehaviour
     private float clientCoyoteTimer = 0f;
     public bool IsJumpableSynced => syncGrounded || clientCoyoteTimer > 0f;
 
+    // 예측 재생으로 점프를 이미 소모했는데 syncGrounded가 서버에서 아직 false로
+    // 안 내려온 상태라면, 그동안은 UpdateClientCoyoteTimer가 매 프레임 타이머를
+    // 다시 꽉 채우는 걸 막는다. syncGrounded가 실제로 false로 갱신되면 해제된다.
+    private bool coyoteConsumedPendingSync = false;
+
+    // 예측 재생으로 점프 사운드를 이미 재생한 순간 호출해서, 서버가 coyoteTimeCounter를
+    // 0으로 소모 처리하는 것과 똑같이 클라이언트 쪽 타이머도 즉시 소모시킨다.
+    // 이걸 안 하면 syncGrounded가 아직 갱신되기 전이거나 코요테 타임이 남아있는 동안
+    // 연타할 때 IsJumpableSynced가 계속 true로 남아서 예측 사운드가 중복 재생된다.
+    public void ConsumeClientCoyoteTime()
+    {
+        clientCoyoteTimer = 0f;
+        coyoteConsumedPendingSync = true;
+    }
+
     [SyncVar]
     private bool syncStunned;
 
@@ -80,11 +95,20 @@ public class PlayerAnimation : NetworkBehaviour
     {
         if (syncGrounded)
         {
-            clientCoyoteTimer = controller.movement.coyoteTime;
+            if (!coyoteConsumedPendingSync)
+            {
+                clientCoyoteTimer = controller.movement.coyoteTime;
+            }
         }
-        else if (clientCoyoteTimer > 0f)
+        else
         {
-            clientCoyoteTimer -= Time.deltaTime;
+            // 서버 상태가 따라잡혀서 실제로 공중에 뜬 게 확인되면, 다음 착지부터는 다시 정상 갱신
+            coyoteConsumedPendingSync = false;
+
+            if (clientCoyoteTimer > 0f)
+            {
+                clientCoyoteTimer -= Time.deltaTime;
+            }
         }
     }
 
