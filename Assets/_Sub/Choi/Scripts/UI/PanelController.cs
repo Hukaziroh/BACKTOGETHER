@@ -85,10 +85,12 @@ public class PanelController : MonoBehaviour
         // 패널 전환 실행
         if (useRightKey && rightPressed && nextPanel != null)
         {
+            if (GlobalSceneInputManager.Instance != null) GlobalSceneInputManager.Instance.PlayConfirmSound();
             TransitionToPanel(nextPanel, -slideOffset, fromRight: true);
         }
         else if (useLeftKey && leftPressed && prevPanel != null)
         {
+            if (GlobalSceneInputManager.Instance != null) GlobalSceneInputManager.Instance.PlayConfirmSound();
             TransitionToPanel(prevPanel, slideOffset, fromRight: false);
         }
     }

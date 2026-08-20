@@ -17085,6 +17085,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -320
       objectReference: {fileID: 0}
+    - target: {fileID: 3129407513539713336, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: confirmSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 019b19878f52b1f4dbe684e9b839f623, type: 3}
+    - target: {fileID: 3129407513539713336, guid: d391139454a53e341889149a36646d1d, type: 3}
+      propertyPath: navigateSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 769cf860d7a69234684525d715a4bfaf, type: 3}
     - target: {fileID: 4097569387198692518, guid: d391139454a53e341889149a36646d1d, type: 3}
       propertyPath: m_text
       value: Spectating.

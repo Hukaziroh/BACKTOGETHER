@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Audio;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using System.Collections;
@@ -9,6 +10,14 @@ public class GlobalSceneInputManager : MonoBehaviour
 {
     private static GlobalSceneInputManager _instance;
     public static GlobalSceneInputManager Instance => _instance;
+
+    [Header("UI 사운드")]
+    public AudioClip navigateSound;
+    public AudioClip confirmSound;
+    [Range(0f, 1f)] public float uiSoundVolume = 0.6f;
+    [Tooltip("MainMixer의 SFX 그룹을 연결하면 효과음 볼륨/마스터 볼륨 설정이 이 소리에도 적용됨")]
+    public AudioMixerGroup outputGroup;
+    private AudioSource _uiAudioSource;
 
     private bool _isResettingFocus = false;
     private bool _isTransitioning = false;
@@ -34,7 +43,41 @@ public class GlobalSceneInputManager : MonoBehaviour
 
         SceneManager.sceneLoaded += OnSceneLoaded;
 
+        _uiAudioSource = GetComponent<AudioSource>();
+        if (_uiAudioSource == null) _uiAudioSource = gameObject.AddComponent<AudioSource>();
+        _uiAudioSource.playOnAwake = false;
+        _uiAudioSource.spatialBlend = 0f;
+        if (outputGroup != null) _uiAudioSource.outputAudioMixerGroup = outputGroup;
+
         LockAndHideCursor();
+    }
+
+    public void PlayNavigateSound()
+    {
+        if (navigateSound != null) _uiAudioSource.PlayOneShot(navigateSound, uiSoundVolume);
+    }
+
+    public void PlayConfirmSound()
+    {
+        if (confirmSound != null) _uiAudioSource.PlayOneShot(confirmSound, uiSoundVolume);
+    }
+
+    // 씬에 있는 모든 Button의 onClick에 확인 사운드를 걸어준다. 유니티 Button은
+    // 마우스 클릭과 키보드/게임패드 Submit 둘 다 결국 onClick을 호출하기 때문에,
+    // 개별 버튼마다 따로 연결할 필요 없이 이거 하나로 전부 커버된다.
+    // RemoveListener 후 AddListener라 여러 번 호출돼도 중복 등록되지 않는다.
+    private void WireButtonConfirmSounds(Selectable[] selectables)
+    {
+        if (selectables == null) return;
+
+        foreach (var sel in selectables)
+        {
+            if (sel is Button button)
+            {
+                button.onClick.RemoveListener(PlayConfirmSound);
+                button.onClick.AddListener(PlayConfirmSound);
+            }
+        }
     }
 
     private void OnDestroy()
@@ -89,6 +132,8 @@ public class GlobalSceneInputManager : MonoBehaviour
             {
                 Transform newHighlight = FindHighlightTransform(currentSelected);
                 if (newHighlight != null) newHighlight.gameObject.SetActive(true);
+
+                if (_lastSelectedObject != null) PlayNavigateSound();
             }
 
             _lastSelectedObject = currentSelected;
@@ -209,6 +254,7 @@ public class GlobalSceneInputManager : MonoBehaviour
         ClearAllHighlights();
 
         Selectable[] activeSelectables = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude);
+        WireButtonConfirmSounds(activeSelectables);
         if (activeSelectables == null || activeSelectables.Length == 0) return;
 
         List<Selectable> validList = new List<Selectable>();
