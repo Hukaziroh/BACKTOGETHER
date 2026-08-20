@@ -206,8 +206,16 @@ public class PrivateLobbyManager : MonoBehaviour
 
         if (isChapterSelected)
         {
-            if (leftPressed) OnClick_PrevChapter();
-            else if (rightPressed) OnClick_NextChapter();
+            if (leftPressed)
+            {
+                if (GlobalSceneInputManager.Instance != null) GlobalSceneInputManager.Instance.PlayConfirmSound();
+                OnClick_PrevChapter();
+            }
+            else if (rightPressed)
+            {
+                if (GlobalSceneInputManager.Instance != null) GlobalSceneInputManager.Instance.PlayConfirmSound();
+                OnClick_NextChapter();
+            }
             return;
         }
 
@@ -218,6 +226,10 @@ public class PrivateLobbyManager : MonoBehaviour
 
         if (isRoomTypeSelected)
         {
+            if (leftPressed || rightPressed)
+            {
+                if (GlobalSceneInputManager.Instance != null) GlobalSceneInputManager.Instance.PlayConfirmSound();
+            }
             if (leftPressed) OnClick_PrevRoomType();
             else if (rightPressed) OnClick_NextRoomType();
             return;

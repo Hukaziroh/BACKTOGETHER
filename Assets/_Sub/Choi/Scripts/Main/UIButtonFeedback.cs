@@ -32,6 +32,8 @@ public class UIButtonFeedback : MonoBehaviour, IPointerDownHandler, IPointerUpHa
         if (_image != null) _image.color = pressedColor;
         transform.localScale = _originalScale * 0.95f;
 
+        if (GlobalSceneInputManager.Instance != null) GlobalSceneInputManager.Instance.PlayConfirmSound();
+
         // ★ 추가: pressDuration 초 뒤에 ResetVisuals를 실행합니다.
         Invoke("ResetVisuals", pressDuration);
     }

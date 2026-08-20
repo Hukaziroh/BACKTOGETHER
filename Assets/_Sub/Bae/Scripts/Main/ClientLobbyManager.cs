@@ -293,6 +293,11 @@ public class ClientLobbyManager : MonoBehaviour
 
             if (isPaginationSelected)
             {
+                if (leftPressed || rightPressed)
+                {
+                    if (GlobalSceneInputManager.Instance != null) GlobalSceneInputManager.Instance.PlayConfirmSound();
+                }
+
                 if (leftPressed)
                 {
                     OnClick_PrevPage();
@@ -312,6 +317,11 @@ public class ClientLobbyManager : MonoBehaviour
 
             if (isFilterChapterSelected)
             {
+                if (leftPressed || rightPressed)
+                {
+                    if (GlobalSceneInputManager.Instance != null) GlobalSceneInputManager.Instance.PlayConfirmSound();
+                }
+
                 if (leftPressed)
                 {
                     OnClick_PrevFilterChapter();
@@ -999,6 +1009,9 @@ public class ClientLobbyManager : MonoBehaviour
 
         if (lobby == null)
             return;
+
+        // 방 목록 아이템은 검색할 때마다 새로 생성되는 프리팹이라 전역 버튼 사운드 연결 타이밍을 놓치기 쉬워 여기서 직접 재생
+        if (GlobalSceneInputManager.Instance != null) GlobalSceneInputManager.Instance.PlayConfirmSound();
 
         if (!EOSLobby.IsLobbyJoinable(
                 lobby,
