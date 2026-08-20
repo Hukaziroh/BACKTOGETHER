@@ -35,17 +35,17 @@ public class StageDoor : NetworkBehaviour
                 arrivedPlayers.Add(identity.netId);
                 int totalPlayers = CoopPlayerIdentity.players.Count;
 
-                int displayTargetCount = (currentStageNumber == 3) ? 1 : NetworkServer.connections.Count;
+                int displayTargetCount = (currentStageNumber == 4) ? 1 : NetworkServer.connections.Count;
                 RpcUpdateCount(arrivedPlayers.Count, displayTargetCount);
 
                 bool isClearConditionMet = false;
 
-                if (currentStageNumber == 3)
+                if (currentStageNumber == 4)
                 {
                     if (arrivedPlayers.Count >= 1)
                     {
                         isClearConditionMet = true;
-                        Debug.Log("[서버] 3스테이지 특수 조건 발동: 1명 도착으로 즉시 클리어!");
+                        Debug.Log("[서버] 4스테이지 특수 조건 발동: 1명 도착으로 즉시 클리어!");
                     }
                 }
                 else
