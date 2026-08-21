@@ -1,6 +1,7 @@
-using System.Collections.Generic;
 using Mirror;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum FaceState
 {
@@ -155,6 +156,8 @@ public class CoopPlayerIdentity : NetworkBehaviour
 
             UpdatePlayerVisual(playerIndex);
         }
+
+        UpdateExSortingOrder();
     }
 
 
@@ -201,6 +204,8 @@ public class CoopPlayerIdentity : NetworkBehaviour
 
     private void Update()
     {
+        UpdateExSortingOrder();
+
         if (faceSpriteRenderer == null)
             return;
 
@@ -426,7 +431,22 @@ public class CoopPlayerIdentity : NetworkBehaviour
                 playerColors[index];
         }
     }
+    private void UpdateExSortingOrder()
+    {
+        if (SceneManager.GetActiveScene().name != "Ex1" &&
+            SceneManager.GetActiveScene().name != "Ex2")
+            return;
 
+        if (playerSpriteRenderer != null)
+        {
+            playerSpriteRenderer.sortingOrder = isLocalPlayer ? 10 : 0;
+        }
+
+        if (faceSpriteRenderer != null)
+        {
+            faceSpriteRenderer.sortingOrder = isLocalPlayer ? 11 : 1;
+        }
+    }
 
     public void ForceUpdateVisual()
     {

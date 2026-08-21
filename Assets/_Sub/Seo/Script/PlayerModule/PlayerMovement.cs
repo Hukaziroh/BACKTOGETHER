@@ -247,9 +247,9 @@ public class PlayerMovement : NetworkBehaviour
         }
 
         isTouchingPlayer = false;
-
         bool ignorePlayerDetection =
-            SceneManager.GetActiveScene().name == "Ex";
+            SceneManager.GetActiveScene().name == "Ex1" ||
+            SceneManager.GetActiveScene().name == "Ex2";
 
         if (!ignorePlayerDetection && Mathf.Abs(rawInput) > 0.1f)
         {
@@ -417,7 +417,8 @@ public class PlayerMovement : NetworkBehaviour
 
     void CheckTouchingPlayer()
     {
-        if (SceneManager.GetActiveScene().name == "Ex")
+        if (SceneManager.GetActiveScene().name == "Ex1" ||
+            SceneManager.GetActiveScene().name == "Ex2")
         {
             isTouchingPlayer = false;
             return;
@@ -511,7 +512,8 @@ public class PlayerMovement : NetworkBehaviour
             }
         }
         if (!isGrounded &&
-            SceneManager.GetActiveScene().name != "Ex")
+            SceneManager.GetActiveScene().name != "Ex1" &&
+            SceneManager.GetActiveScene().name != "Ex2")
         {
             int playerHitCount = Physics2D.OverlapCircle(
                 groundCheck.position,
@@ -561,7 +563,8 @@ public class PlayerMovement : NetworkBehaviour
     }
     void CheckHeadForPlayer()
     {
-        if (SceneManager.GetActiveScene().name == "Ex")
+        if (SceneManager.GetActiveScene().name == "Ex1" ||
+            SceneManager.GetActiveScene().name == "Ex2")
         {
             hasPlayerOnHead = false;
             return;
@@ -683,7 +686,8 @@ public class PlayerMovement : NetworkBehaviour
 
     private bool IsOverlappingAnyPlayer()
     {
-        if (SceneManager.GetActiveScene().name == "Ex")
+        if (SceneManager.GetActiveScene().name == "Ex1" ||
+            SceneManager.GetActiveScene().name == "Ex2")
             return false;
 
         Vector2 boxCenter = controller.bodyCollider.bounds.center;
