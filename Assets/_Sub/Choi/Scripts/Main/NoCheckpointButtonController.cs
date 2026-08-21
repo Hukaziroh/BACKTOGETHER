@@ -1,6 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
-using Epic.OnlineServices.Lobby;
 using Mirror;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -27,13 +25,14 @@ public class NoCheckpointButtonController : MonoBehaviour
     [SerializeField] private string noCheckpointLobbySceneName = "NLobby";
 
     private bool isChecked = false;
-    private EOSLobby cachedLobby;
     private bool canUseNoCheckpoint = false;
     private Coroutine warningCoroutine;
 
+    public bool IsNoCheckpointSelected => isChecked;
+
     private void Start()
     {
-        isChecked = false;
+        ResetSelectionToDefault();
         if (warningTextObject != null) warningTextObject.SetActive(false);
 
         // 게임 시작 시점에 세이브 데이터가 이미 존재한다면 바로 클리어 여부 반영
@@ -44,7 +43,6 @@ public class NoCheckpointButtonController : MonoBehaviour
         }
 
         UpdateVisuals();
-        StartCoroutine(InitEOSLobbyRoutine());
     }
 
     private void Update()
@@ -79,8 +77,7 @@ public class NoCheckpointButtonController : MonoBehaviour
 
                 if (Gamepad.current != null)
                 {
-                    actionPressed |= Gamepad.current.buttonSouth.wasPressedThisFrame ||
-                                     Gamepad.current.buttonEast.wasPressedThisFrame;
+                    actionPressed |= Gamepad.current.buttonSouth.wasPressedThisFrame;
                 }
 
                 if (actionPressed)
@@ -91,23 +88,8 @@ public class NoCheckpointButtonController : MonoBehaviour
         }
     }
 
-    private IEnumerator InitEOSLobbyRoutine()
-    {
-        while (NetworkManager.singleton == null || NetworkManager.singleton.GetComponent<EOSLobby>() == null)
-        {
-            yield return null;
-        }
-
-        cachedLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
-        cachedLobby.CreateLobbySucceeded += OnCreateLobbySucceeded;
-    }
-
     private void OnDestroy()
     {
-        if (cachedLobby != null)
-        {
-            cachedLobby.CreateLobbySucceeded -= OnCreateLobbySucceeded;
-        }
         transform.DOKill();
         if (tmpText != null) tmpText.DOKill();
     }
@@ -199,15 +181,15 @@ public class NoCheckpointButtonController : MonoBehaviour
         }
     }
 
-    private void OnCreateLobbySucceeded(List<Epic.OnlineServices.Lobby.Attribute> attributes)
+    public void ApplySelectionToNetworkManager()
     {
-        if (cachedLobby != null)
-        {
-            AttributeData[] attrData = new AttributeData[]
-            {
-                new AttributeData { Key = "NO_CHECKPOINT", Value = isChecked ? "1" : "0" }
-            };
-            cachedLobby.UpdateLobbyAttributes(attrData);
-        }
+        ApplySceneChange();
+    }
+
+    public void ResetSelectionToDefault()
+    {
+        isChecked = false;
+        ApplySceneChange();
+        UpdateVisuals();
     }
 }

@@ -56,6 +56,10 @@ public class OptionsManager : MonoBehaviour
                                   IsAnyKeyGuideActive() ||
                                   (Time.unscaledTime < blockPauseUntilTime);
 
+    public bool ShouldBlockPauseOrOptions => IsAnyKeyGuideActive() ||
+                                             isOpenedFromZone ||
+                                             Time.unscaledTime < blockPauseUntilTime;
+
     private bool isCodeVisible = true;
     private Coroutine fetchCodeRoutine;
     private bool wasOptionsOpenBeforeKeyGuide = false;
@@ -191,6 +195,9 @@ public class OptionsManager : MonoBehaviour
 
     public void Open()
     {
+        // 키 가이드를 닫은 ESC/B 입력이 같은 프레임에 옵션까지 여는 것을 막는다.
+        if (ShouldBlockPauseOrOptions) return;
+
         if (optionsPanel != null) optionsPanel.SetActive(true);
         CloseAllKeyGuides();
         if (volumePanel != null) volumePanel.SetActive(false);

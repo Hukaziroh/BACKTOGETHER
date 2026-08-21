@@ -171,9 +171,11 @@ public partial class ClientLobbyManager
             // ★ 기존 챕터 필터링 로직
             if (selectedFilterChapter > 0)
             {
-                int target1Based = selectedFilterChapter;
-                int target0Based = selectedFilterChapter - 1;
-                string targetName = (chapterNames != null && target0Based >= 0 && target0Based < chapterNames.Length) ? chapterNames[target0Based] : null;
+                int targetChapter = selectedFilterChapter;
+                int targetArrayIndex = targetChapter - 1;
+                string targetName = (chapterNames != null && targetArrayIndex >= 0 && targetArrayIndex < chapterNames.Length)
+                    ? chapterNames[targetArrayIndex]
+                    : null;
 
                 bool isChapterMatch = false;
 
@@ -181,8 +183,9 @@ public partial class ClientLobbyManager
                 {
                     if (int.TryParse(chapterStr, out int chVal))
                     {
-                        if (chVal == target1Based || chVal == target0Based)
-                            isChapterMatch = true;
+                        // 방 생성 시 CHAPTER는 1부터 저장한다. 0-based 값까지 허용하면
+                        // Chapter 1 방이 Chapter 2 필터에도 포함되는 중복 검색이 발생한다.
+                        isChapterMatch = chVal == targetChapter;
                     }
 
                     if (!isChapterMatch && !string.IsNullOrEmpty(targetName))
@@ -191,7 +194,8 @@ public partial class ClientLobbyManager
                             isChapterMatch = true;
                     }
 
-                    if (!isChapterMatch && string.Equals(chapterStr.Trim(), $"Chapter{target1Based}", System.StringComparison.OrdinalIgnoreCase))
+                    string normalizedChapter = chapterStr.Replace(" ", "").Trim();
+                    if (!isChapterMatch && string.Equals(normalizedChapter, $"Chapter{targetChapter}", System.StringComparison.OrdinalIgnoreCase))
                     {
                         isChapterMatch = true;
                     }

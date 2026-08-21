@@ -80,6 +80,7 @@ public partial class PrivateLobbyManager : MonoBehaviour
     private bool attributeUpdateDone = false;
     private bool attributeUpdateFailed = false;
     private bool createLobbySuccess = false;
+    private bool createWithoutCheckpoints = false;
 
     private GameObject currentPanel;
 }

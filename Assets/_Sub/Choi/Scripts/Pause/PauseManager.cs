@@ -50,6 +50,11 @@ public class PauseManager : MonoBehaviour
 
     public void TogglePause()
     {
+        if (OptionsManager.instance != null && OptionsManager.instance.ShouldBlockPauseOrOptions)
+        {
+            return;
+        }
+
         if (isPaused)
         {
             ResumeGame();
@@ -62,6 +67,11 @@ public class PauseManager : MonoBehaviour
 
     public void PauseGame()
     {
+        if (OptionsManager.instance != null && OptionsManager.instance.ShouldBlockPauseOrOptions)
+        {
+            return;
+        }
+
         if (pausePanel != null) pausePanel.SetActive(true);
         isPaused = true;
 

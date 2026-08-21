@@ -149,7 +149,7 @@ public class PanelController : MonoBehaviour
                 {
                     gameObject.SetActive(false);
                     OptionsManager.instance.isOpenedFromZone = false;
-                    OptionsManager.instance.blockPauseUntilTime = Time.unscaledTime + 0.3f;
+                    OptionsManager.instance.blockPauseUntilTime = Time.unscaledTime + 0.25f;
 
                     if (GlobalSceneInputManager.Instance != null)
                     {
@@ -160,19 +160,6 @@ public class PanelController : MonoBehaviour
 
                 if (escapeTargetPanel != null)
                 {
-                    bool isTargetOption = escapeTargetPanel.name.Contains("Option");
-                    bool isLobbyScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Lobby";
-
-                    if (isLobbyScene && isTargetOption)
-                    {
-                        gameObject.SetActive(false);
-                        if (GlobalSceneInputManager.Instance != null)
-                        {
-                            GlobalSceneInputManager.Instance.ClearFocusScope();
-                        }
-                        return;
-                    }
-
                     escapeTargetPanel.SetActive(true);
 
                     if (escapeTargetPanel.name.Contains("Option"))

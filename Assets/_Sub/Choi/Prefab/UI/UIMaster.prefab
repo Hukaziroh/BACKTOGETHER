@@ -24276,7 +24276,11 @@ MonoBehaviour:
   independentRoomCodeText: {fileID: 7263751824393785231}
   toggleVisibilityButton: {fileID: 8208943898008691528}
   visibilityIconObject: {fileID: 8247858209543698917}
-  keyGuidePanel: {fileID: 4234965304924416080}
+  allKeyGuidePanels:
+  - {fileID: 4234965304924416080}
+  - {fileID: 5017039070204515589}
+  - {fileID: 3235899521012894031}
+  - {fileID: 3369305556748438429}
   keyGuideToggleButton: {fileID: 6743500295766413558}
 --- !u!114 &3894012771846626613
 MonoBehaviour:

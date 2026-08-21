@@ -71,6 +71,13 @@ public partial class PrivateLobbyManager
 
     public void OnClick_ReturnToMain()
     {
+        NoCheckpointButtonController noCheckpointController =
+            FindAnyObjectByType<NoCheckpointButtonController>(FindObjectsInactive.Include);
+        if (noCheckpointController != null)
+        {
+            noCheckpointController.ResetSelectionToDefault();
+        }
+
         var lobby = GetEOSLobby();
         if (lobby != null && lobby.ConnectedToLobby)
         {

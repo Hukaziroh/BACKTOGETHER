@@ -90,9 +90,17 @@ public class ZoneKeyGuideTrigger : MonoBehaviour
         {
             // 존 트리거로 열었음을 활성화
             OptionsManager.instance.isOpenedFromZone = true;
+            OptionsManager.instance.blockPauseUntilTime = 0f;
 
             if (OptionsManager.instance.volumePanel != null) OptionsManager.instance.volumePanel.SetActive(false);
             if (OptionsManager.instance.optionsPanel != null) OptionsManager.instance.optionsPanel.SetActive(false);
+
+            if (PauseManager.instance != null)
+            {
+                if (PauseManager.instance.pausePanel != null)
+                    PauseManager.instance.pausePanel.SetActive(false);
+                PauseManager.instance.isPaused = false;
+            }
 
             // 기본 키 가이드 패널(배열 첫 번째, 예: KeyboardPanel) 활성화
             OptionsManager.instance.allKeyGuidePanels[0].SetActive(true);
