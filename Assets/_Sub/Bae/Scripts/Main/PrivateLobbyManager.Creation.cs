@@ -21,6 +21,23 @@ public partial class PrivateLobbyManager
         var lobby = GetEOSLobby();
         if (lobby == null) { ShowErrorPopup("네트워크 시스템이 준비되지 않았습니다."); return; }
 
+        NoCheckpointButtonController noCheckpointController =
+            FindAnyObjectByType<NoCheckpointButtonController>(FindObjectsInactive.Include);
+
+        createWithoutCheckpoints = noCheckpointController != null &&
+                                   noCheckpointController.IsNoCheckpointSelected;
+
+        if (noCheckpointController != null)
+        {
+            noCheckpointController.ApplySelectionToNetworkManager();
+        }
+        else if (NetworkManager.singleton != null)
+        {
+            // 컨트롤러가 없거나 비활성인 씬에서도 일반 로비가 기본값이 되도록 보장한다.
+            NetworkManager.singleton.onlineScene = lobbySceneName;
+            createWithoutCheckpoints = false;
+        }
+
         string roomTitle = (roomNameInputField != null && !string.IsNullOrEmpty(roomNameInputField.text))
      ? roomNameInputField.text
      : GetRandomDefaultRoomName();
@@ -82,6 +99,7 @@ public partial class PrivateLobbyManager
         attrDataList.Add(new AttributeData { Key = "ROOM_NAME", Value = roomTitle });
         attrDataList.Add(new AttributeData { Key = "CHAPTER", Value = selectedChapterIndex.ToString() });
         attrDataList.Add(new AttributeData { Key = "IS_PUBLIC", Value = isPublicRoom ? "1" : "0" });
+        attrDataList.Add(new AttributeData { Key = "NO_CHECKPOINT", Value = createWithoutCheckpoints ? "1" : "0" });
 
         if (!isPublicRoom) attrDataList.Add(new AttributeData { Key = "SHORTCODE", Value = currentShortCode });
 

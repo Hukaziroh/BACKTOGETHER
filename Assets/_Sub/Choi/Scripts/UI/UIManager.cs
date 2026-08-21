@@ -97,28 +97,19 @@ public class UIManager : MonoBehaviour
         {
             if (cancelPressed || pausePressed)
             {
-                // 존 트리거로 열린 키 가이드인 경우, ESC를 누르면 옵션 창을 띄우지 않고 키 가이드만 끄고 끝냄
-                if (optionsManager.IsAnyKeyGuideActive() && optionsManager.isOpenedFromZone)
+                // 키 가이드의 ESC/B 전환은 PanelController 한 곳에서만 처리한다.
+                // 여기서도 닫으면 진행 중인 트윈의 완료 콜백이 옵션을 다시 여는 경쟁 상태가 생긴다.
+                if (optionsManager.IsAnyKeyGuideActive())
                 {
-                    optionsManager.CloseAllKeyGuides();
-                    optionsManager.isOpenedFromZone = false;
-
-                    if (GlobalSceneInputManager.Instance != null)
-                    {
-                        GlobalSceneInputManager.Instance.ClearFocusScope();
-                    }
+                    inputCooldown = 0.2f;
+                    return;
                 }
                 // 1. 볼륨 패널이 열려있으면 닫기
                 else if (optionsManager.volumePanel != null && optionsManager.volumePanel.activeSelf)
                 {
                     optionsManager.CloseVolumePanel();
                 }
-                // 2. 일반 키 가이드가 열려있으면 닫기
-                else if (optionsManager.IsAnyKeyGuideActive())
-                {
-                    optionsManager.ToggleKeyGuide();
-                }
-                // 3. 메인 옵션 패널이 열려있으면 닫기
+                // 2. 메인 옵션 패널이 열려있으면 닫기
                 else if (optionsManager.optionsPanel != null && optionsManager.optionsPanel.activeSelf)
                 {
                     optionsManager.Close();
@@ -187,6 +178,6 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void RequestPause() => pauseManager.PauseGame();
-    public void RequestOptions() => optionsManager.Open();
+    public void RequestPause() => pauseManager?.PauseGame();
+    public void RequestOptions() => optionsManager?.Open();
 }

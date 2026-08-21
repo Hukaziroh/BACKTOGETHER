@@ -42,6 +42,13 @@ public partial class PrivateLobbyManager
 
     public void OnClick_MainHost()
     {
+        NoCheckpointButtonController noCheckpointController =
+            FindAnyObjectByType<NoCheckpointButtonController>(FindObjectsInactive.Include);
+        if (noCheckpointController != null)
+        {
+            noCheckpointController.ResetSelectionToDefault();
+        }
+
         SubscribeEvents();
         if (mainPanel != null) mainPanel.SetActive(false);
         if (logo != null) logo.SetActive(false);
