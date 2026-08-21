@@ -1316,7 +1316,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e9530196be65ed4b8217bfc41069c05, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSceneSetting
-  targetSceneName: Ex
+  targetSceneNames:
+  - Ex1
+  - Ex2
   otherPlayerBodyAlpha: 0.4
   otherPlayerFaceAlpha: 0.5
 --- !u!61 &1312891903968155803
