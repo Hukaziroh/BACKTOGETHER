@@ -11,29 +11,44 @@ public class VirtualKeyboardManager : MonoBehaviour
     [SerializeField] private Button firstSelectedButton;    // 키보드 열릴 때 맨 처음 포커스될 버튼
 
     private TMP_InputField targetInputField;
+    private Coroutine focusCoroutine;
+    private int restoreFocusRequestId;
 
-    private void Start()
+    public bool IsOpen => keyboardPanel != null && keyboardPanel.activeSelf;
+
+    private void Awake()
     {
-        if (keyboardPanel != null) keyboardPanel.SetActive(false);
+        // Manager가 비활성 KeyboardPanel 자기 자신에 붙어 있는 경우,
+        // 첫 OpenKeyboard()로 활성화되며 Awake가 호출된다. 이때 다시 끄면 열리지 않는다.
+        if (keyboardPanel != null && keyboardPanel != gameObject)
+        {
+            keyboardPanel.SetActive(false);
+        }
     }
 
     public void OpenKeyboard(TMP_InputField inputField)
     {
+        if (inputField == null || keyboardPanel == null) return;
+
         targetInputField = inputField;
+        targetInputField.interactable = true;
+        restoreFocusRequestId++;
 
-        if (keyboardPanel != null)
+        keyboardPanel.SetActive(true);
+
+        // 중요: GlobalSceneInputManager에게 포커스 범위 제어권 요청
+        if (GlobalSceneInputManager.Instance != null)
         {
-            keyboardPanel.SetActive(true);
-
-            // 중요: GlobalSceneInputManager에게 포커스 범위 제어권 요청
-            if (GlobalSceneInputManager.Instance != null)
-            {
-                GlobalSceneInputManager.Instance.SetFocusScope(keyboardPanel);
-            }
-
-            // 포커스 강제 이동 (Manager가 갱신한 직후에 실행되도록 딜레이)
-            StartCoroutine(FocusCoroutine());
+            GlobalSceneInputManager.Instance.SetFocusScope(keyboardPanel);
         }
+
+        if (focusCoroutine != null)
+        {
+            StopCoroutine(focusCoroutine);
+        }
+
+        // 포커스 강제 이동 (Manager가 갱신한 직후에 실행되도록 딜레이)
+        focusCoroutine = StartCoroutine(FocusCoroutine());
     }
 
     private IEnumerator FocusCoroutine()
@@ -44,6 +59,34 @@ public class VirtualKeyboardManager : MonoBehaviour
         {
             EventSystem.current.SetSelectedGameObject(firstSelectedButton.gameObject);
         }
+
+        // 키보드 버튼으로 포커스가 이동하면서 InputField의 OnEndEdit가 호출되어도
+        // 가상 키보드 사용 중에는 Interactable 상태를 유지한다.
+        if (targetInputField != null)
+        {
+            targetInputField.interactable = true;
+        }
+
+        // 다른 지연 포커스 작업이 뒤늦게 선택을 지웠을 경우에만 한 번 복구한다.
+        yield return null;
+
+        if (keyboardPanel != null && keyboardPanel.activeInHierarchy && EventSystem.current != null)
+        {
+            GameObject selected = EventSystem.current.currentSelectedGameObject;
+            bool hasKeyboardSelection = selected != null && selected.transform.IsChildOf(keyboardPanel.transform);
+
+            if (!hasKeyboardSelection && firstSelectedButton != null)
+            {
+                EventSystem.current.SetSelectedGameObject(firstSelectedButton.gameObject);
+            }
+        }
+
+        if (targetInputField != null)
+        {
+            targetInputField.interactable = true;
+        }
+
+        focusCoroutine = null;
     }
 
     public void InputCharacter(string character)
@@ -65,20 +108,54 @@ public class VirtualKeyboardManager : MonoBehaviour
 
     public void OnClickConfirm()
     {
-        // 닫을 때 기존 매니저의 포커스 범위 해제
+        TMP_InputField returnTarget = targetInputField;
+        Selectable nextSelectable = returnTarget != null ? returnTarget.FindSelectableOnDown() : null;
+        targetInputField = null;
+
+        if (focusCoroutine != null)
+        {
+            StopCoroutine(focusCoroutine);
+            focusCoroutine = null;
+        }
+
+        // Scope 해제 과정에서 임시 비활성 UI가 다시 interactable=true로 복원된다.
+        // 따라서 InputField의 최종 비활성 처리는 Scope 해제 이후에 해야 한다.
         if (GlobalSceneInputManager.Instance != null)
         {
             GlobalSceneInputManager.Instance.ClearFocusScope();
         }
 
-        if (keyboardPanel != null) keyboardPanel.SetActive(false);
-
-        // 다시 인풋필드로 포커스 복귀
-        if (targetInputField != null && EventSystem.current != null)
+        if (returnTarget != null)
         {
-            EventSystem.current.SetSelectedGameObject(targetInputField.gameObject);
+            returnTarget.DeactivateInputField();
+            returnTarget.interactable = false;
         }
 
-        targetInputField = null;
+        int requestId = ++restoreFocusRequestId;
+
+        // KeyboardPanel이 꺼지면 이 Manager의 코루틴도 중단되므로,
+        // 계속 활성 상태인 InputField를 실행 주체로 사용한다.
+        if (returnTarget != null && returnTarget.isActiveAndEnabled)
+        {
+            returnTarget.StartCoroutine(RestoreNavigationFocusCoroutine(nextSelectable, requestId));
+        }
+
+        if (keyboardPanel != null) keyboardPanel.SetActive(false);
+    }
+
+    private IEnumerator RestoreNavigationFocusCoroutine(Selectable nextSelectable, int requestId)
+    {
+        yield return null;
+
+        if (requestId != restoreFocusRequestId || EventSystem.current == null) yield break;
+
+        if (nextSelectable != null && nextSelectable.isActiveAndEnabled && nextSelectable.interactable)
+        {
+            EventSystem.current.SetSelectedGameObject(nextSelectable.gameObject);
+        }
+        else if (GlobalSceneInputManager.Instance != null)
+        {
+            GlobalSceneInputManager.Instance.RefreshAllSelectables();
+        }
     }
 }

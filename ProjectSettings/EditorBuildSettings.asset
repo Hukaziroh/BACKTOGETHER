@@ -21,10 +21,10 @@ EditorBuildSettings:
     path: Assets/_Sub/Bae/Scene/chapter2.unity
     guid: 14fa4e7c044e77548a6a7e6c7c85bbaa
   - enabled: 1
-    path: Assets/_Sub/Bae/Scene/chapter4.unity
+    path: Assets/_Sub/Bae/Scene/chapter3.unity
     guid: 064504b666050754088c5831562872a3
   - enabled: 1
-    path: Assets/_Sub/Bae/Scene/chapter3.unity
+    path: Assets/_Sub/Bae/Scene/chapter4.unity
     guid: c73086132291c0145a50d0f87d24056d
   - enabled: 1
     path: Assets/_Sub/Bae/Scene/chapter5.unity
