@@ -14,11 +14,11 @@ public partial class PrivateLobbyManager
 {
     public void OnClick_PrevChapter()
     {
-        int maxCleared = (GameSaveManager.Instance != null) ? GameSaveManager.Instance.currentData.maxClearedChapter : 0;
+        bool exStageUnlocked = IsExStageUnlocked();
         selectedChapterIndex--;
 
         // 만약 이전으로 갔는데 그 챕터가 EX 챕터이고 6챕터를 깨지 않았다면 한 번 더 건너뜁니다.
-        if (IsExChapter(selectedChapterIndex) && maxCleared < 6)
+        if (IsExChapter(selectedChapterIndex) && !exStageUnlocked)
         {
             selectedChapterIndex--;
         }
@@ -26,7 +26,7 @@ public partial class PrivateLobbyManager
         if (selectedChapterIndex < 1) selectedChapterIndex = maxChapterCount;
 
         // 순회 중 도달한 곳이 여전히 잠겨있는 EX 챕터라면 1번 챕터로 돌립니다.
-        if (IsExChapter(selectedChapterIndex) && maxCleared < 6)
+        if (IsExChapter(selectedChapterIndex) && !exStageUnlocked)
         {
             selectedChapterIndex = 1;
         }
@@ -36,11 +36,11 @@ public partial class PrivateLobbyManager
 
     public void OnClick_NextChapter()
     {
-        int maxCleared = (GameSaveManager.Instance != null) ? GameSaveManager.Instance.currentData.maxClearedChapter : 0;
+        bool exStageUnlocked = IsExStageUnlocked();
         int nextIndex = selectedChapterIndex + 1;
 
         // 다음 챕터가 EX 스테이지이고 6챕터를 클리어하지 않았다면 목록에서 아예 숨기기 위해 다음으로 넘어가지 않고 1번(또는 처음)으로 순환시킵니다.
-        if (IsExChapter(nextIndex) && maxCleared < 6)
+        if (IsExChapter(nextIndex) && !exStageUnlocked)
         {
             nextIndex = 1; // 혹은 return을 통해 진입을 막을 수 있습니다. 여기서는 순환 구조상 1번으로 리셋
         }
@@ -49,7 +49,7 @@ public partial class PrivateLobbyManager
         if (selectedChapterIndex > maxChapterCount) selectedChapterIndex = 1;
 
         // 한 번 더블 체크
-        if (IsExChapter(selectedChapterIndex) && maxCleared < 6)
+        if (IsExChapter(selectedChapterIndex) && !exStageUnlocked)
         {
             selectedChapterIndex = 1;
         }
@@ -97,12 +97,9 @@ public partial class PrivateLobbyManager
         {
             int maxCleared = GameSaveManager.Instance.currentData.maxClearedChapter;
 
-            // 예시: EX 스테이지이거나 특정 챕터인 경우, 이전 6챕터 이상을 클리어해야만 열리도록 설정
             if (isExStage)
             {
-                // 예: EX 6챕 클리어 전까지 숨기거나 잠그기 (여기서는 maxCleared가 특정 값 미만이면 잠금)
-                // 프로젝트의 maxClearedChapter 체계에 맞춰서 비교 (예: 6챕 이상 클리어 필요)
-                if (maxCleared < 6) // 6챕 클리어 전 조건
+                if (!IsExStageUnlocked())
                 {
                     isUnlocked = false;
                 }

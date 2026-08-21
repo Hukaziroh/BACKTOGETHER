@@ -3719,6 +3719,7 @@ MonoBehaviour:
   criticalText: {fileID: 97406930}
   textDuration: 0.4
   yOffset: 1.2
+  clearParticlePrefab: {fileID: 7652437305947225558, guid: 979d42f4679f9c74595916f731099b86, type: 3}
 --- !u!58 &442051483
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -15039,6 +15040,7 @@ MonoBehaviour:
   criticalText: {fileID: 1231064053}
   textDuration: 0.4
   yOffset: 1.2
+  clearParticlePrefab: {fileID: 7652437305947225558, guid: 979d42f4679f9c74595916f731099b86, type: 3}
 --- !u!58 &1918939458
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -15526,6 +15528,7 @@ MonoBehaviour:
   criticalText: {fileID: 1940767929}
   textDuration: 0.4
   yOffset: 1.2
+  clearParticlePrefab: {fileID: 7652437305947225558, guid: 979d42f4679f9c74595916f731099b86, type: 3}
 --- !u!58 &1959270818
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -16245,6 +16248,7 @@ MonoBehaviour:
   criticalText: {fileID: 1465711769}
   textDuration: 0.4
   yOffset: 1.2
+  clearParticlePrefab: {fileID: 7652437305947225558, guid: 979d42f4679f9c74595916f731099b86, type: 3}
 --- !u!58 &2132180811
 CircleCollider2D:
   m_ObjectHideFlags: 0
