@@ -433,7 +433,8 @@ public class CoopPlayerIdentity : NetworkBehaviour
     }
     private void UpdateExSortingOrder()
     {
-        if (SceneManager.GetActiveScene().name != "Ex")
+        if (SceneManager.GetActiveScene().name != "Ex1" &&
+            SceneManager.GetActiveScene().name != "Ex2")
             return;
 
         if (playerSpriteRenderer != null)
