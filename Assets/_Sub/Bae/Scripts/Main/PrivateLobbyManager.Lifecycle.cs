@@ -90,6 +90,8 @@ public partial class PrivateLobbyManager
 
     private void Update()
     {
+        UpdateSecretCommandInput();
+
         bool leftPressed = false;
         bool rightPressed = false;
         bool enterOrActionPressed = false;

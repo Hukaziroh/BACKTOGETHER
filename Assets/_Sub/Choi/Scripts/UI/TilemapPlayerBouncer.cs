@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using TMPro;
 
@@ -17,11 +18,32 @@ public class TilemapPlayerBouncer : MonoBehaviour
     [SerializeField] private TextMeshProUGUI criticalText;    // UI 크리티컬 텍스트
     [SerializeField] private float textDuration = 0.4f;
     [SerializeField] private float yOffset = 1.2f;            // 캐릭터 머리 위 높이
+    [SerializeField] private GameObject clearParticlePrefab;
+    [SerializeField] private AudioClip secretCommandSuccessMusic;
+    [Range(0f, 1f)]
+    [SerializeField] private float secretCommandSuccessMusicVolume = 1f;
 
     private float _currentSpeed;
     private float _textTimer = 0f;
     private float _speedRestoreTimer = 0f;
     private Camera _mainCamera;
+    private Coroutine _secretCommandEffectCoroutine;
+    private bool _isSecretCommandEffectPlaying;
+
+    private const float SecretCommandHorizontalTargetX = 3.2f;
+    private const float SecretCommandVerticalTargetY = 1.4f;
+
+    private static readonly Vector2[] SecretCommandDirections =
+    {
+        Vector2.up,
+        Vector2.up,
+        Vector2.down,
+        Vector2.down,
+        Vector2.left,
+        Vector2.right,
+        Vector2.left,
+        Vector2.right
+    };
 
     private void Awake()
     {
@@ -72,6 +94,8 @@ public class TilemapPlayerBouncer : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (_isSecretCommandEffectPlaying) return;
+
         // 항상 의도한 현재 속도를 유지하도록 보정
         if (_rb.linearVelocity != Vector2.zero)
         {
@@ -85,6 +109,8 @@ public class TilemapPlayerBouncer : MonoBehaviour
     // 타일맵(가시)에 부딪히는 순간 물리 반사각 계산
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        if (_isSecretCommandEffectPlaying) return;
+
         if (collision.gameObject.name.Contains("Tilemap"))
         {
             // 1. 부딪힌 가시 벽면의 방향(법선 벡터)을 가져옴
@@ -119,5 +145,217 @@ public class TilemapPlayerBouncer : MonoBehaviour
             criticalText.gameObject.SetActive(true);
             _textTimer = textDuration;
         }
+    }
+
+    public static void PlaySecretCommandSuccessEffect()
+    {
+        TilemapPlayerBouncer[] bouncers =
+            FindObjectsByType<TilemapPlayerBouncer>(FindObjectsInactive.Exclude);
+
+        if (bouncers == null || bouncers.Length == 0) return;
+
+        bouncers[0].StartSecretCommandEffect(bouncers);
+    }
+
+    private void StartSecretCommandEffect(TilemapPlayerBouncer[] bouncers)
+    {
+        if (_secretCommandEffectCoroutine != null)
+        {
+            StopCoroutine(_secretCommandEffectCoroutine);
+        }
+
+        _secretCommandEffectCoroutine = StartCoroutine(SecretCommandSuccessRoutine(bouncers));
+    }
+
+    private IEnumerator SecretCommandSuccessRoutine(TilemapPlayerBouncer[] bouncers)
+    {
+        float spacing = 1.1f;
+        float startX = -spacing * (bouncers.Length - 1) * 0.5f;
+        Vector3[] alignStartPositions = new Vector3[bouncers.Length];
+        Vector3[] linePositions = new Vector3[bouncers.Length];
+
+        for (int i = 0; i < bouncers.Length; i++)
+        {
+            TilemapPlayerBouncer bouncer = bouncers[i];
+            if (bouncer == null || bouncer._rb == null) continue;
+
+            alignStartPositions[i] = bouncer.transform.position;
+            linePositions[i] = new Vector3(startX + spacing * i, 0f, 0f);
+            bouncer._isSecretCommandEffectPlaying = true;
+            bouncer._currentSpeed = bouncer.moveSpeed;
+            bouncer._rb.linearVelocity = Vector2.zero;
+            bouncer.ShowSecretCommandText();
+        }
+
+        yield return MoveBouncersToPositions(bouncers, alignStartPositions, linePositions, 0.8f);
+        yield return new WaitForSecondsRealtime(0.45f);
+        PlaySecretCommandSuccessMusic();
+
+        for (int i = 0; i < SecretCommandDirections.Length; i++)
+        {
+            Vector2 direction = SecretCommandDirections[i];
+            Vector3[] stepStartPositions = CaptureBouncerPositions(bouncers);
+            Vector3[] stepEndPositions = new Vector3[bouncers.Length];
+
+            for (int j = 0; j < bouncers.Length; j++)
+            {
+                TilemapPlayerBouncer bouncer = bouncers[j];
+                if (bouncer == null) continue;
+
+                if (direction == Vector2.left)
+                {
+                    stepEndPositions[j] = new Vector3(
+                        -SecretCommandHorizontalTargetX + bouncer.GetLineOffsetX(j, bouncers.Length),
+                        0f,
+                        0f);
+                }
+                else if (direction == Vector2.right)
+                {
+                    stepEndPositions[j] = new Vector3(
+                        SecretCommandHorizontalTargetX + bouncer.GetLineOffsetX(j, bouncers.Length),
+                        0f,
+                        0f);
+                }
+                else
+                {
+                    stepEndPositions[j] = new Vector3(
+                        bouncer.GetLineOffsetX(j, bouncers.Length),
+                        direction.y * SecretCommandVerticalTargetY,
+                        0f);
+                }
+            }
+
+            if (direction == Vector2.up || direction == Vector2.down)
+            {
+                yield return MoveBouncersToPositions(bouncers, linePositions, stepEndPositions, 0.22f);
+                yield return MoveBouncersToPositions(bouncers, stepEndPositions, linePositions, 0.22f);
+            }
+            else
+            {
+                yield return MoveBouncersToPositions(bouncers, stepStartPositions, stepEndPositions, 0.32f);
+            }
+
+            foreach (TilemapPlayerBouncer bouncer in bouncers)
+            {
+                if (bouncer == null || bouncer._rb == null) continue;
+
+                bouncer._rb.linearVelocity = Vector2.zero;
+            }
+
+            yield return new WaitForSecondsRealtime(0.06f);
+        }
+
+        Vector3[] returnStartPositions = CaptureBouncerPositions(bouncers);
+        yield return MoveBouncersToPositions(bouncers, returnStartPositions, linePositions, 0.35f);
+
+        foreach (TilemapPlayerBouncer bouncer in bouncers)
+        {
+            if (bouncer == null || bouncer._rb == null) continue;
+
+            bouncer.PlayClearParticle();
+            bouncer._rb.linearVelocity = Vector2.zero;
+        }
+
+        yield return new WaitForSecondsRealtime(1f);
+
+        foreach (TilemapPlayerBouncer bouncer in bouncers)
+        {
+            if (bouncer == null || bouncer._rb == null) continue;
+
+            bouncer._isSecretCommandEffectPlaying = false;
+            bouncer._currentSpeed = bouncer.critSpeed;
+            bouncer._speedRestoreTimer = 1.5f;
+            bouncer._rb.linearVelocity = bouncer.GetRandomLaunchDirection() * bouncer.critSpeed;
+        }
+
+        _secretCommandEffectCoroutine = null;
+    }
+
+    private void PlaySecretCommandSuccessMusic()
+    {
+        if (secretCommandSuccessMusic == null) return;
+
+        AudioSource audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        audioSource.playOnAwake = false;
+        audioSource.loop = false;
+        audioSource.volume = secretCommandSuccessMusicVolume;
+        audioSource.clip = secretCommandSuccessMusic;
+        audioSource.Play();
+    }
+
+    private float GetLineOffsetX(int index, int count)
+    {
+        float spacing = 1.1f;
+        return -spacing * (count - 1) * 0.5f + spacing * index;
+    }
+
+    private void PlayClearParticle()
+    {
+        if (clearParticlePrefab == null) return;
+
+        Vector3 spawnPosition = transform.position + new Vector3(0f, yOffset, 0f);
+        GameObject particleObject = Instantiate(clearParticlePrefab, spawnPosition, Quaternion.identity);
+        Destroy(particleObject, 1f);
+    }
+
+    private Vector2 GetRandomLaunchDirection()
+    {
+        float randomAngle = Random.Range(0f, 360f);
+        float rad = randomAngle * Mathf.Deg2Rad;
+
+        return new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)).normalized;
+    }
+
+    private IEnumerator MoveBouncersToPositions(
+        TilemapPlayerBouncer[] bouncers,
+        Vector3[] startPositions,
+        Vector3[] endPositions,
+        float duration)
+    {
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float easedT = Mathf.SmoothStep(0f, 1f, t);
+
+            for (int i = 0; i < bouncers.Length; i++)
+            {
+                TilemapPlayerBouncer bouncer = bouncers[i];
+                if (bouncer == null || bouncer._rb == null) continue;
+
+                bouncer._rb.linearVelocity = Vector2.zero;
+                bouncer.transform.position = Vector3.Lerp(startPositions[i], endPositions[i], easedT);
+            }
+
+            yield return null;
+        }
+    }
+
+    private Vector3[] CaptureBouncerPositions(TilemapPlayerBouncer[] bouncers)
+    {
+        Vector3[] positions = new Vector3[bouncers.Length];
+
+        for (int i = 0; i < bouncers.Length; i++)
+        {
+            positions[i] = bouncers[i] != null ? bouncers[i].transform.position : Vector3.zero;
+        }
+
+        return positions;
+    }
+
+    private void ShowSecretCommandText()
+    {
+        if (criticalText == null) return;
+
+        criticalText.text = "EX OPEN!";
+        criticalText.gameObject.SetActive(true);
+        _textTimer = 5f;
     }
 }
