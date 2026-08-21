@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 public class PlayerSceneSetting : MonoBehaviour
 {
     [Header("적용할 씬")]
-    [SerializeField] private string targetSceneName = "Ex";
+    [SerializeField] private string[] targetSceneNames;
 
     [Header("다른 플레이어 몸통 알파")]
     [Range(0f, 1f)]
@@ -42,7 +42,6 @@ public class PlayerSceneSetting : MonoBehaviour
             return;
 
         ApplyCollisionSetting();
-
         ApplyAlpha();
     }
 
@@ -76,10 +75,8 @@ public class PlayerSceneSetting : MonoBehaviour
         if (identity == null)
             return;
 
-        // 내 플레이어인지 확인
         bool isMine = identity.isLocalPlayer;
 
-        // 내 플레이어는 항상 완전 불투명
         float bodyAlpha = isMine ? 1f : otherPlayerBodyAlpha;
         float faceAlpha = isMine ? 1f : otherPlayerFaceAlpha;
 
@@ -102,7 +99,17 @@ public class PlayerSceneSetting : MonoBehaviour
 
     private bool IsTargetScene()
     {
-        return SceneManager.GetActiveScene().name == targetSceneName;
-    }
+        if (targetSceneNames == null || targetSceneNames.Length == 0)
+            return false;
 
+        string currentSceneName = SceneManager.GetActiveScene().name;
+
+        foreach (string sceneName in targetSceneNames)
+        {
+            if (currentSceneName == sceneName)
+                return true;
+        }
+
+        return false;
+    }
 }
