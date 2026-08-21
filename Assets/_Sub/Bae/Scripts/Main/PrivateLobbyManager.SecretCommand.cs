@@ -34,7 +34,7 @@ public partial class PrivateLobbyManager
     private int secretCommandIndex;
     private float secretCommandStartedAt = -1f;
 
-    private bool IsExStageUnlocked()
+    public static bool IsExStageUnlockedForCurrentPlayer()
     {
         if (exStageUnlockedBySecretCommand) return true;
 
@@ -42,9 +42,20 @@ public partial class PrivateLobbyManager
                GameSaveManager.Instance.currentData.maxClearedChapter >= 6;
     }
 
+    private bool IsExStageUnlocked()
+    {
+        return IsExStageUnlockedForCurrentPlayer();
+    }
+
     private void UpdateSecretCommandInput()
     {
         if (exStageUnlockedBySecretCommand) return;
+
+        if (!CanReceiveSecretCommandInput())
+        {
+            ResetSecretCommand();
+            return;
+        }
 
         bool hasDirectionalInput = TryGetSecretCommandDirectionalInput(out SecretCommandInput input);
         bool hasOtherInput = HasOtherSecretCommandInput();
@@ -84,6 +95,21 @@ public partial class PrivateLobbyManager
         UpdateChapterUI();
         TilemapPlayerBouncer.PlaySecretCommandSuccessEffect();
         Debug.Log("[PrivateLobbyManager] EX stage unlocked by secret command.");
+    }
+
+    private bool CanReceiveSecretCommandInput()
+    {
+        if (isCreatingLobby) return false;
+
+        bool isConnectPanelOpen = mainPanel != null && mainPanel.activeInHierarchy;
+        bool isHostPanelOpen = hostPanel != null && hostPanel.activeInHierarchy;
+        bool isLoadingPanelOpen = loadingPanel != null && loadingPanel.activeInHierarchy;
+        bool isErrorPopupOpen = errorPopupPanel != null && errorPopupPanel.activeInHierarchy;
+
+        return isConnectPanelOpen &&
+               !isHostPanelOpen &&
+               !isLoadingPanelOpen &&
+               !isErrorPopupOpen;
     }
 
     private void ResetSecretCommand()

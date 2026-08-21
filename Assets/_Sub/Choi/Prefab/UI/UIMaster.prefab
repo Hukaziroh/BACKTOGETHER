@@ -18177,6 +18177,10 @@ MonoBehaviour:
   - {fileID: -285841098, guid: dedaf8ddeedc7d149b2a38b51b3a4d94, type: 3}
   - {fileID: 903493436, guid: 747837b89761c2e43907a0d3bb4ee8f1, type: 3}
   - {fileID: 672111654, guid: 0cf10df17455e364b82739bcb30aa102, type: 3}
+  bossIconSprite: {fileID: -5130407723709680144, guid: 7513fb0b2918cdc4eabd74a1c71f9cf2, type: 3}
+  bossTag: Boss
+  bossIconSize: {x: 34, y: 18}
+  bossBackIconColor: {r: 0.45, g: 0, b: 0, a: 1}
   progressMultiplier: 1
   progressOffset: 0
 --- !u!1 &6705197650720038700

@@ -63,18 +63,18 @@ public partial class ClientLobbyManager
     public void OnClick_PrevFilterChapter()
     {
         int maxCh = GetMaxChapterCount();
-        int maxCleared = (GameSaveManager.Instance != null) ? GameSaveManager.Instance.currentData.maxClearedChapter : 0;
+        bool exStageUnlocked = PrivateLobbyManager.IsExStageUnlockedForCurrentPlayer();
 
         selectedFilterChapter--;
 
-        if (IsExChapter(selectedFilterChapter) && maxCleared < 6)
+        if (IsExChapter(selectedFilterChapter) && !exStageUnlocked)
         {
             selectedFilterChapter--;
         }
 
         if (selectedFilterChapter < 0) selectedFilterChapter = maxCh;
 
-        if (IsExChapter(selectedFilterChapter) && maxCleared < 6)
+        if (IsExChapter(selectedFilterChapter) && !exStageUnlocked)
         {
             selectedFilterChapter = 0;
         }
@@ -86,13 +86,13 @@ public partial class ClientLobbyManager
     public void OnClick_NextFilterChapter()
     {
         int maxCh = GetMaxChapterCount();
-        int maxCleared = (GameSaveManager.Instance != null) ? GameSaveManager.Instance.currentData.maxClearedChapter : 0;
+        bool exStageUnlocked = PrivateLobbyManager.IsExStageUnlockedForCurrentPlayer();
 
         selectedFilterChapter++;
 
         if (selectedFilterChapter > maxCh) selectedFilterChapter = 0;
 
-        if (IsExChapter(selectedFilterChapter) && maxCleared < 6)
+        if (IsExChapter(selectedFilterChapter) && !exStageUnlocked)
         {
             selectedFilterChapter++;
             if (selectedFilterChapter > maxCh) selectedFilterChapter = 0;
@@ -133,12 +133,7 @@ public partial class ClientLobbyManager
 
         string[] chapterNames = GetChapterNamesFromPrivateManager();
 
-        // 플레이어의 최대 클리어 챕터 정보 가져오기
-        int maxClearedChapter = 0;
-        if (GameSaveManager.Instance != null)
-        {
-            maxClearedChapter = GameSaveManager.Instance.currentData.maxClearedChapter;
-        }
+        bool exStageUnlocked = PrivateLobbyManager.IsExStageUnlockedForCurrentPlayer();
 
         foreach (var lobby in allFetchedLobbies)
         {
@@ -149,12 +144,13 @@ public partial class ClientLobbyManager
                 continue;
 
             string chapterStr = GetLobbyAttribute(lobby, "CHAPTER", "");
+            string chapterNameAttr = GetLobbyAttribute(lobby, "CHAPTER_NAME", "");
 
             int chapterNum = 0;
             int.TryParse(chapterStr, out chapterNum);
 
             // ★ [핵심 요구사항] EX 스테이지 / 6챕 클리어 전까지 검색 결과에서 숨기기 로직
-            bool isExStage = chapterStr.Contains("EX") || chapterNum >= 7;
+            bool isExStage = chapterStr.Contains("EX") || chapterNameAttr.Contains("EX") || chapterNum >= 7;
             if (!isExStage && chapterNames != null && chapterNum > 0 && chapterNum <= chapterNames.Length)
             {
                 if (chapterNames[chapterNum - 1].Contains("EX"))
@@ -163,7 +159,7 @@ public partial class ClientLobbyManager
                 }
             }
 
-            if (isExStage && maxClearedChapter < 6)
+            if (isExStage && !exStageUnlocked)
             {
                 continue;
             }
@@ -191,6 +187,9 @@ public partial class ClientLobbyManager
                     if (!isChapterMatch && !string.IsNullOrEmpty(targetName))
                     {
                         if (string.Equals(chapterStr.Trim(), targetName.Trim(), System.StringComparison.OrdinalIgnoreCase))
+                            isChapterMatch = true;
+
+                        if (!isChapterMatch && string.Equals(chapterNameAttr.Trim(), targetName.Trim(), System.StringComparison.OrdinalIgnoreCase))
                             isChapterMatch = true;
                     }
 

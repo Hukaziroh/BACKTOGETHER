@@ -3720,6 +3720,8 @@ MonoBehaviour:
   textDuration: 0.4
   yOffset: 1.2
   clearParticlePrefab: {fileID: 7652437305947225558, guid: 979d42f4679f9c74595916f731099b86, type: 3}
+  secretCommandSuccessMusic: {fileID: 0}
+  secretCommandSuccessMusicVolume: 1
 --- !u!58 &442051483
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -15041,6 +15043,8 @@ MonoBehaviour:
   textDuration: 0.4
   yOffset: 1.2
   clearParticlePrefab: {fileID: 7652437305947225558, guid: 979d42f4679f9c74595916f731099b86, type: 3}
+  secretCommandSuccessMusic: {fileID: 0}
+  secretCommandSuccessMusicVolume: 1
 --- !u!58 &1918939458
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -15529,6 +15533,8 @@ MonoBehaviour:
   textDuration: 0.4
   yOffset: 1.2
   clearParticlePrefab: {fileID: 7652437305947225558, guid: 979d42f4679f9c74595916f731099b86, type: 3}
+  secretCommandSuccessMusic: {fileID: 0}
+  secretCommandSuccessMusicVolume: 1
 --- !u!58 &1959270818
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -16249,6 +16255,8 @@ MonoBehaviour:
   textDuration: 0.4
   yOffset: 1.2
   clearParticlePrefab: {fileID: 7652437305947225558, guid: 979d42f4679f9c74595916f731099b86, type: 3}
+  secretCommandSuccessMusic: {fileID: 0}
+  secretCommandSuccessMusicVolume: 1
 --- !u!58 &2132180811
 CircleCollider2D:
   m_ObjectHideFlags: 0

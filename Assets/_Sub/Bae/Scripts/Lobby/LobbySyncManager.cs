@@ -27,6 +27,8 @@ public class LobbySyncManager : NetworkBehaviour
     {
         if (instance == null) instance = this;
         else Destroy(gameObject);
+
+        ForceRoomCodeTextEllipsis();
     }
 
     public override void OnStartServer()
@@ -98,6 +100,7 @@ public class LobbySyncManager : NetworkBehaviour
     {
         // 🌟 문자열 파싱을 하지 않고 값(Value) 오브젝트만 업데이트합니다.
         if (roomCodeValueText == null) return;
+        ForceRoomCodeTextEllipsis();
 
         bool isMainScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Main";
 
@@ -126,5 +129,20 @@ public class LobbySyncManager : NetworkBehaviour
         // 라벨(roomCodeLabelText)은 이미 유니티 내 번역 시스템이 처리한 대로 고정되어 있고,
         // 우리는 오직 코드 값(roomCodeValueText)만 갱신합니다.
         roomCodeValueText.text = formattedCode;
+    }
+
+    private void ForceRoomCodeTextEllipsis()
+    {
+        if (roomCodeValueText != null)
+        {
+            roomCodeValueText.textWrappingMode = TextWrappingModes.NoWrap;
+            roomCodeValueText.overflowMode = TextOverflowModes.Ellipsis;
+        }
+
+        if (roomCodeLabelText != null)
+        {
+            roomCodeLabelText.textWrappingMode = TextWrappingModes.NoWrap;
+            roomCodeLabelText.overflowMode = TextOverflowModes.Ellipsis;
+        }
     }
 }

@@ -39,6 +39,7 @@ public class PlayerEmojiController : NetworkBehaviour
     {
         EmojiRadialMenu.OnEmojiIndexSelected -= HandleLocalEmojiIndexSelected;
         EmojiRadialMenu.OnAnimatedEmojiIndexSelected -= HandleLocalAnimatedEmojiIndexSelected;
+        HideEmojiImmediately();
     }
 
     private void Awake()
@@ -77,9 +78,30 @@ public class PlayerEmojiController : NetworkBehaviour
 
     private void OnDestroy()
     {
+        HideEmojiImmediately();
+
         if (emojiSpriteRenderer != null)
         {
             Destroy(emojiSpriteRenderer.gameObject);
+        }
+    }
+
+    private void HideEmojiImmediately()
+    {
+        if (activeEmojiCoroutine != null)
+        {
+            StopCoroutine(activeEmojiCoroutine);
+            activeEmojiCoroutine = null;
+        }
+
+        if (emojiTransform != null)
+        {
+            emojiTransform.DOKill();
+        }
+
+        if (emojiSpriteRenderer != null)
+        {
+            emojiSpriteRenderer.gameObject.SetActive(false);
         }
     }
 
