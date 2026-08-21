@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using Mirror;
 
 public class PlayerIconEmojiSync : MonoBehaviour
 {
@@ -43,7 +44,18 @@ public class PlayerIconEmojiSync : MonoBehaviour
     private void Update()
     {
         GameObject targetPlayer = FindCorrespondingPlayer();
-        if (targetPlayer == null) return;
+        if (targetPlayer == null)
+        {
+            if (lastActiveState)
+            {
+                HideUIEmoji();
+            }
+
+            lastActiveState = false;
+            lastSprite = null;
+            lastPlayerScaleX = -1f;
+            return;
+        }
 
         SpriteRenderer playerSr = GetPlayerEmojiSpriteRenderer(targetPlayer);
         if (playerSr != null)
@@ -90,32 +102,34 @@ public class PlayerIconEmojiSync : MonoBehaviour
 
     private GameObject FindCorrespondingPlayer()
     {
-        // 🌟 수정된 부분: SiblingIndex를 플레이어 고유 인덱스로 사용하여 CoopPlayerIdentity 딕셔너리에서 직접 매칭
-        int myIndex = transform.GetSiblingIndex();
+        CoopPlayerIdentity localIdentity = GetLocalPlayerIdentity();
+        if (localIdentity == null) return null;
 
-        if (CoopPlayerIdentity.players != null && CoopPlayerIdentity.players.TryGetValue(myIndex, out CoopPlayerIdentity playerIdentity))
+        int myIconIndex = transform.GetSiblingIndex();
+        if (myIconIndex != localIdentity.playerIndex) return null;
+
+        return localIdentity.gameObject;
+    }
+
+    private CoopPlayerIdentity GetLocalPlayerIdentity()
+    {
+        if (NetworkClient.localPlayer != null &&
+            NetworkClient.localPlayer.TryGetComponent(out CoopPlayerIdentity localIdentity))
         {
-            if (playerIdentity != null)
+            return localIdentity;
+        }
+
+        if (CoopPlayerIdentity.players == null) return null;
+
+        foreach (CoopPlayerIdentity playerIdentity in CoopPlayerIdentity.players.Values)
+        {
+            if (playerIdentity != null && playerIdentity.isLocalPlayer)
             {
-                return playerIdentity.gameObject;
+                return playerIdentity;
             }
         }
 
         return null;
-    }
-
-    private int GetPlayerIndex(GameObject player)
-    {
-        var identity = player.GetComponent("CoopPlayerIdentity");
-        if (identity != null)
-        {
-            System.Type type = identity.GetType();
-            var field = type.GetField("playerIndex");
-            if (field != null) return (int)field.GetValue(identity);
-            var prop = type.GetProperty("playerIndex");
-            if (prop != null) return (int)prop.GetValue(identity, null);
-        }
-        return 0;
     }
 
     private SpriteRenderer GetPlayerEmojiSpriteRenderer(GameObject player)

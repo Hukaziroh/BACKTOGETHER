@@ -17,6 +17,12 @@ public class StageProgressTracker : MonoBehaviour
     [Tooltip("플레이어 순서(Index)에 따라 적용할 스프라이트 리스트입니다. (예: 0번 플레이어 표정, 1번 플레이어 표정...)")]
     [SerializeField] private List<Sprite> playerIconSprites = new List<Sprite>();
 
+    [Header("6챕터 보스 아이콘 설정")]
+    [SerializeField] private Sprite bossIconSprite;
+    [SerializeField] private string bossTag = "Boss";
+    [SerializeField] private Vector2 bossIconSize = new Vector2(34f, 18f);
+    [SerializeField] private Color bossBackIconColor = new Color(0.45f, 0f, 0f, 1f);
+
     [Header("프로그래스 바 보정")]
     [Tooltip("전체 길이 비율을 조절합니다 (밀림 폭이 점점 커지거나 작아질 때 조절)")]
     [SerializeField] private float progressMultiplier = 1f;
@@ -27,6 +33,8 @@ public class StageProgressTracker : MonoBehaviour
     private Vector3 endPos;
     private float mapLengthX;
     private Dictionary<GameObject, RectTransform> playerIcons = new Dictionary<GameObject, RectTransform>();
+    private RectTransform bossIcon;
+    private GameObject cachedBoss;
     private bool isInitialized = false;
 
     private SpectatorSystem spectatorSystem;
@@ -51,6 +59,8 @@ public class StageProgressTracker : MonoBehaviour
             if (child != null) Destroy(child.gameObject);
         }
         playerIcons.Clear();
+        bossIcon = null;
+        cachedBoss = null;
         activeCheckpointFlagObj = null;
         isInitialized = false;
         nextSearchTime = 0f; // 씬 로드 시 즉시 갱신
@@ -179,6 +189,99 @@ public class StageProgressTracker : MonoBehaviour
             float progress = Mathf.Clamp01(currentDistX / mapLengthX);
             float xPos = (progress * containerWidth * progressMultiplier) + progressOffset;
             iconRect.anchoredPosition = new Vector2(xPos, 0);
+        }
+
+        UpdateBossIcon(containerWidth);
+    }
+
+    private void UpdateBossIcon(float containerWidth)
+    {
+        GameObject boss = FindBoss();
+        if (boss == null)
+        {
+            if (bossIcon != null && bossIcon.gameObject.activeSelf)
+            {
+                bossIcon.gameObject.SetActive(false);
+            }
+
+            return;
+        }
+
+        if (bossIcon == null)
+        {
+            if (playerIconPrefab == null) return;
+
+            GameObject newIcon = Instantiate(playerIconPrefab, iconContainer);
+            newIcon.name = "BossProgressIcon";
+            bossIcon = newIcon.GetComponent<RectTransform>();
+            SetupBossIconVisual(newIcon);
+        }
+
+        if (!bossIcon.gameObject.activeSelf)
+        {
+            bossIcon.gameObject.SetActive(true);
+        }
+
+        float currentDistX = boss.transform.position.x - startPos.x;
+        float progress = Mathf.Clamp01(currentDistX / mapLengthX);
+        float xPos = (progress * containerWidth * progressMultiplier) + progressOffset;
+        bossIcon.anchoredPosition = new Vector2(xPos, 0);
+    }
+
+    private GameObject FindBoss()
+    {
+        if (cachedBoss != null && cachedBoss.activeInHierarchy)
+        {
+            return cachedBoss;
+        }
+
+        cachedBoss = !string.IsNullOrEmpty(bossTag) ? GameObject.FindGameObjectWithTag(bossTag) : null;
+        return cachedBoss;
+    }
+
+    private void SetupBossIconVisual(GameObject iconObject)
+    {
+        if (iconObject == null) return;
+
+        PlayerIconEmojiSync emojiSync = iconObject.GetComponent<PlayerIconEmojiSync>();
+        if (emojiSync != null)
+        {
+            Destroy(emojiSync);
+        }
+
+        Transform backIconChild = iconObject.transform.Find("BackIcon");
+        if (backIconChild != null)
+        {
+            Image backImage = backIconChild.GetComponent<Image>();
+            if (backImage != null)
+            {
+                backImage.color = bossBackIconColor;
+            }
+        }
+
+        Transform iconChild = iconObject.transform.Find("Icon");
+        if (iconChild != null)
+        {
+            Image iconImage = iconChild.GetComponent<Image>();
+            RectTransform iconRect = iconChild.GetComponent<RectTransform>();
+
+            if (iconImage != null)
+            {
+                iconImage.sprite = bossIconSprite;
+                iconImage.preserveAspect = true;
+                iconImage.color = Color.white;
+            }
+
+            if (iconRect != null)
+            {
+                iconRect.sizeDelta = bossIconSize;
+            }
+        }
+
+        Transform highlight = iconObject.transform.Find("HighlightBorder");
+        if (highlight != null)
+        {
+            highlight.gameObject.SetActive(false);
         }
     }
 

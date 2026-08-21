@@ -284876,7 +284876,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 534971709051548441, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_overflowMode
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1381074218888706539, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_Name

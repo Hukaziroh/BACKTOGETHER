@@ -95,9 +95,19 @@ public partial class PrivateLobbyManager
         }
 
         attributeUpdateDone = false; attributeUpdateFailed = false;
+        int chapterArrayIndex = selectedChapterIndex - 1;
+        string selectedChapterName =
+            chapterNames != null &&
+            chapterArrayIndex >= 0 &&
+            chapterArrayIndex < chapterNames.Length &&
+            !string.IsNullOrEmpty(chapterNames[chapterArrayIndex])
+                ? chapterNames[chapterArrayIndex]
+                : $"Chapter {selectedChapterIndex}";
+
         List<AttributeData> attrDataList = new List<AttributeData>();
         attrDataList.Add(new AttributeData { Key = "ROOM_NAME", Value = roomTitle });
         attrDataList.Add(new AttributeData { Key = "CHAPTER", Value = selectedChapterIndex.ToString() });
+        attrDataList.Add(new AttributeData { Key = "CHAPTER_NAME", Value = selectedChapterName });
         attrDataList.Add(new AttributeData { Key = "IS_PUBLIC", Value = isPublicRoom ? "1" : "0" });
         attrDataList.Add(new AttributeData { Key = "NO_CHECKPOINT", Value = createWithoutCheckpoints ? "1" : "0" });
 

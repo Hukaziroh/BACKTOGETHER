@@ -42,11 +42,20 @@ public class ClientRoomItemUI : MonoBehaviour
 
         // 2. 챕터 가져오기
         string chapterStr = "1";
+        string chapterDisplayName = "";
         if (lobby.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "CHAPTER" }, out attr) == Epic.OnlineServices.Result.Success)
         {
             if (attr.Data != null)
             {
                 chapterStr = attr.Data.Value.AsUtf8;
+            }
+        }
+
+        if (lobby.CopyAttributeByKey(new LobbyDetailsCopyAttributeByKeyOptions { AttrKey = "CHAPTER_NAME" }, out attr) == Epic.OnlineServices.Result.Success)
+        {
+            if (attr.Data != null)
+            {
+                chapterDisplayName = attr.Data.Value.AsUtf8;
             }
         }
 
@@ -62,7 +71,12 @@ public class ClientRoomItemUI : MonoBehaviour
 
         // UI 세팅
         if (roomNameText != null) roomNameText.text = roomName;
-        if (chapterText != null) chapterText.text = $"Ch.{chapterStr}";
+        if (chapterText != null)
+        {
+            chapterText.text = string.IsNullOrEmpty(chapterDisplayName)
+                ? $"Ch.{chapterStr}"
+                : chapterDisplayName;
+        }
         if (playerCountText != null) playerCountText.text = $"{currentMembers} / {maxMembers}";
 
         // 꽉 찼거나 0명인 유령방은 버튼 비활성화

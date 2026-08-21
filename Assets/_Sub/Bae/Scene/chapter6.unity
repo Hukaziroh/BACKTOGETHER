@@ -1780,7 +1780,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EchoManagerChapter6
   fixedTarget: {fileID: 143708184}
-  waveSpeed: 30
+  waveSpeed: 35
   maxRadius: 100
   fadeStartRadius: 100
   waveWidth: 5

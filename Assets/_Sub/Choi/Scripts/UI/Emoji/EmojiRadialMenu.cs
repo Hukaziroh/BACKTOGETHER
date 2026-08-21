@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using DG.Tweening;
 using PlayerControls; // 만들어둔 뉴 인풋 네임스페이스 추가
 
@@ -77,13 +78,27 @@ public class EmojiRadialMenu : MonoBehaviour
         _inputControls = new PlayerControls.PlayerControls();
 
         Build();
+        SceneManager.activeSceneChanged += OnActiveSceneChanged;
         gameObject.SetActive(false);
+    }
+
+    private void OnDisable()
+    {
+        CloseMenuWithoutSelection();
     }
 
     private void OnDestroy()
     {
+        SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+        CloseMenuWithoutSelection();
+
         // 🌟 메모리 누수 방지
         _inputControls?.Dispose();
+    }
+
+    private void OnActiveSceneChanged(Scene oldScene, Scene newScene)
+    {
+        CloseMenuWithoutSelection();
     }
 
     private void Build()
@@ -208,6 +223,23 @@ public class EmojiRadialMenu : MonoBehaviour
         }
 
         return result;
+    }
+
+    private void CloseMenuWithoutSelection()
+    {
+        if (!_isOpen && !gameObject.activeSelf) return;
+
+        _isOpen = false;
+        _inputControls?.GamePlay.Disable();
+
+        transform.DOKill();
+        transform.localScale = Vector3.one;
+        ResetVisuals();
+
+        if (gameObject.activeSelf)
+        {
+            gameObject.SetActive(false);
+        }
     }
 
     public void OnMenuUpdate()
