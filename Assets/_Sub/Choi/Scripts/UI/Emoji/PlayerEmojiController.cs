@@ -2,9 +2,13 @@ using UnityEngine;
 using System.Collections;
 using Mirror;
 using DG.Tweening;
+using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 
 public class PlayerEmojiController : NetworkBehaviour
 {
+    private static readonly List<PlayerEmojiController> activeControllers = new List<PlayerEmojiController>();
+
     [Header("컴포넌트 연결")]
     [Tooltip("플레이어 머리 위에 이모지를 보여줄 SpriteRenderer 오브젝트")]
     [SerializeField] private SpriteRenderer emojiSpriteRenderer;
@@ -31,12 +35,20 @@ public class PlayerEmojiController : NetworkBehaviour
 
     private void OnEnable()
     {
+        if (!activeControllers.Contains(this))
+        {
+            activeControllers.Add(this);
+        }
+
+        SceneManager.activeSceneChanged += OnActiveSceneChanged;
         EmojiRadialMenu.OnEmojiIndexSelected += HandleLocalEmojiIndexSelected;
         EmojiRadialMenu.OnAnimatedEmojiIndexSelected += HandleLocalAnimatedEmojiIndexSelected;
     }
 
     private void OnDisable()
     {
+        activeControllers.Remove(this);
+        SceneManager.activeSceneChanged -= OnActiveSceneChanged;
         EmojiRadialMenu.OnEmojiIndexSelected -= HandleLocalEmojiIndexSelected;
         EmojiRadialMenu.OnAnimatedEmojiIndexSelected -= HandleLocalAnimatedEmojiIndexSelected;
         HideEmojiImmediately();
@@ -105,9 +117,33 @@ public class PlayerEmojiController : NetworkBehaviour
         }
     }
 
+    private void OnActiveSceneChanged(Scene oldScene, Scene newScene)
+    {
+        if (!EmojiRadialMenu.IsEmojiAllowedInCurrentScene())
+        {
+            HideEmojiImmediately();
+        }
+    }
+
+    public static void ForceHideAll()
+    {
+        for (int i = activeControllers.Count - 1; i >= 0; i--)
+        {
+            PlayerEmojiController controller = activeControllers[i];
+            if (controller == null)
+            {
+                activeControllers.RemoveAt(i);
+                continue;
+            }
+
+            controller.HideEmojiImmediately();
+        }
+    }
+
     // --- 일반 이모지 처리 ---
     private void HandleLocalEmojiIndexSelected(int emojiIndex)
     {
+        if (!EmojiRadialMenu.IsEmojiAllowedInCurrentScene()) return;
         if (Time.timeScale == 0) return;
         if (!isLocalPlayer) return;
         CmdShowEmoji(emojiIndex);
@@ -128,6 +164,7 @@ public class PlayerEmojiController : NetworkBehaviour
     // --- 애니메이션 이모지 처리 ---
     private void HandleLocalAnimatedEmojiIndexSelected(int emojiIndex)
     {
+        if (!EmojiRadialMenu.IsEmojiAllowedInCurrentScene()) return;
         if (Time.timeScale == 0) return;
         if (!isLocalPlayer) return;
         CmdShowAnimatedEmoji(emojiIndex);
@@ -148,6 +185,12 @@ public class PlayerEmojiController : NetworkBehaviour
     // 실제 단일 이모지 띄우기
     private void ShowSingleEmoji(int emojiIndex)
     {
+        if (!EmojiRadialMenu.IsEmojiAllowedInCurrentScene())
+        {
+            HideEmojiImmediately();
+            return;
+        }
+
         if (emojiSpriteRenderer == null || emojiSprites == null || emojiIndex < 0 || emojiIndex >= emojiSprites.Length) return;
         if (emojiSprites[emojiIndex] == null) return;
 
@@ -164,6 +207,12 @@ public class PlayerEmojiController : NetworkBehaviour
     // 실제 애니메이션(다중 프레임) 이모지 띄우기
     private void ShowAnimatedEmoji(int emojiIndex)
     {
+        if (!EmojiRadialMenu.IsEmojiAllowedInCurrentScene())
+        {
+            HideEmojiImmediately();
+            return;
+        }
+
         if (emojiSpriteRenderer == null || animatedEmojis == null || emojiIndex < 0 || emojiIndex >= animatedEmojis.Length) return;
         var animData = animatedEmojis[emojiIndex];
         if (animData.frames == null || animData.frames.Length == 0) return;

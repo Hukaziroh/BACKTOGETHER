@@ -61,6 +61,14 @@ public class EmojiRadialMenu : MonoBehaviour
     public int SelectedIndex => _selectedIndex;
     public bool IsOpen() => _isOpen;
     public event Action<int> OnSelected;
+    public static bool IsEmojiAllowedInCurrentScene()
+    {
+        string sceneName = SceneManager.GetActiveScene().name;
+        return sceneName == "Lobby" ||
+               sceneName == "NLobby" ||
+               sceneName.StartsWith("chapter", StringComparison.OrdinalIgnoreCase) ||
+               sceneName.StartsWith("Nchapter", StringComparison.OrdinalIgnoreCase);
+    }
 
     private void Awake()
     {
@@ -98,7 +106,7 @@ public class EmojiRadialMenu : MonoBehaviour
 
     private void OnActiveSceneChanged(Scene oldScene, Scene newScene)
     {
-        CloseMenuWithoutSelection();
+        ForceClose();
     }
 
     private void Build()
@@ -163,6 +171,7 @@ public class EmojiRadialMenu : MonoBehaviour
 
     public void OpenMenu()
     {
+        if (!IsEmojiAllowedInCurrentScene()) return;
         if (Time.timeScale == 0) return; // 타임스케일이 0일 때 메뉴 오픈 차단
         if (_isOpen) return;
         _isOpen = true;
@@ -187,6 +196,12 @@ public class EmojiRadialMenu : MonoBehaviour
     public int CloseMenu()
     {
         if (!_isOpen) return -1;
+        if (!IsEmojiAllowedInCurrentScene())
+        {
+            ForceClose();
+            return -1;
+        }
+
         _isOpen = false;
 
         // 🌟 메뉴가 닫힐 때 인풋 감지 비활성화
@@ -225,6 +240,11 @@ public class EmojiRadialMenu : MonoBehaviour
         return result;
     }
 
+    public void ForceClose()
+    {
+        CloseMenuWithoutSelection();
+    }
+
     private void CloseMenuWithoutSelection()
     {
         if (!_isOpen && !gameObject.activeSelf) return;
@@ -244,6 +264,12 @@ public class EmojiRadialMenu : MonoBehaviour
 
     public void OnMenuUpdate()
     {
+        if (!IsEmojiAllowedInCurrentScene())
+        {
+            ForceClose();
+            return;
+        }
+
         if (Time.timeScale == 0) return;
         UpdateSelection();
 

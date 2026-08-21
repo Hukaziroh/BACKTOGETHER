@@ -101,6 +101,9 @@ public class HostDisconnectHandler : MonoBehaviour
         // ---------------------------------------------------------
         if (disconnectPanel != null && !disconnectPanel.activeSelf)
         {
+            EmojiRadialMenu.Instance?.ForceClose();
+            PlayerEmojiController.ForceHideAll();
+
             disconnectPanel.SetActive(true);
 
             if (disconnectButton == null)
@@ -175,6 +178,9 @@ public class HostDisconnectHandler : MonoBehaviour
     /// </summary>
     public void GoBackToLobby()
     {
+        EmojiRadialMenu.Instance?.ForceClose();
+        PlayerEmojiController.ForceHideAll();
+
         wasConnected = false;
         isConnecting = false;
         isIntentionalExit = false;
