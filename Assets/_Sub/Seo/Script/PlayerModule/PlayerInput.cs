@@ -64,7 +64,7 @@ public class PlayerInput : NetworkBehaviour
         if (inputControls.GamePlay.Emoji.WasPressedThisFrame())
         {
             bool isPaused = PauseManager.instance != null && PauseManager.instance.isPaused;
-            if (EmojiRadialMenu.Instance != null && !isPaused)
+            if (EmojiRadialMenu.Instance != null && !isPaused && EmojiRadialMenu.IsEmojiAllowedInCurrentScene())
             {
                 EmojiRadialMenu.Instance.OpenMenu();
             }
@@ -74,7 +74,14 @@ public class PlayerInput : NetworkBehaviour
         {
             if (EmojiRadialMenu.Instance != null)
             {
-                EmojiRadialMenu.Instance.CloseMenu();
+                if (EmojiRadialMenu.IsEmojiAllowedInCurrentScene())
+                {
+                    EmojiRadialMenu.Instance.CloseMenu();
+                }
+                else
+                {
+                    EmojiRadialMenu.Instance.ForceClose();
+                }
             }
         }
 

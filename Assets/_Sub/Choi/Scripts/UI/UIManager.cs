@@ -53,6 +53,12 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
+        if (!EmojiRadialMenu.IsEmojiAllowedInCurrentScene())
+        {
+            EmojiRadialMenu.Instance?.ForceClose();
+            PlayerEmojiController.ForceHideAll();
+        }
+
         if (inputCooldown > 0f) inputCooldown -= Time.unscaledDeltaTime;
 
         if (controls == null) return;
@@ -148,6 +154,12 @@ public class UIManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        if (!EmojiRadialMenu.IsEmojiAllowedInCurrentScene())
+        {
+            EmojiRadialMenu.Instance?.ForceClose();
+            PlayerEmojiController.ForceHideAll();
+        }
+
         if (optionsManager != null && optionsManager.optionsPanel != null && optionsManager.optionsPanel.activeSelf)
         {
             if (scene.name == mainSceneName)
