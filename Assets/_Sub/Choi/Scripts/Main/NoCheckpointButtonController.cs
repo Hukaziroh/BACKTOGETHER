@@ -39,7 +39,7 @@ public class NoCheckpointButtonController : MonoBehaviour
         if (GameSaveManager.Instance != null && GameSaveManager.Instance.currentData != null)
         {
             int maxCleared = GameSaveManager.Instance.currentData.maxClearedChapter;
-            canUseNoCheckpoint = (maxCleared >= 6);
+            canUseNoCheckpoint = (maxCleared >= 6) || PrivateLobbyManager.IsExStageUnlockedForCurrentPlayer();
         }
 
         UpdateVisuals();
@@ -51,7 +51,7 @@ public class NoCheckpointButtonController : MonoBehaviour
         if (GameSaveManager.Instance != null && GameSaveManager.Instance.currentData != null)
         {
             int maxCleared = GameSaveManager.Instance.currentData.maxClearedChapter;
-            canUseNoCheckpoint = (maxCleared >= 6);
+            canUseNoCheckpoint = (maxCleared >= 6) || PrivateLobbyManager.IsExStageUnlockedForCurrentPlayer();
 
             if (!canUseNoCheckpoint && isChecked)
             {
