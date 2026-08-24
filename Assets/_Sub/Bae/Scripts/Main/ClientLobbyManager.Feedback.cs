@@ -16,6 +16,8 @@ public partial class ClientLobbyManager
 {
     private void HideAllPanels()
     {
+        CancelPublicListRefreshFocusLock();
+
         if (mainPanel != null) mainPanel.SetActive(false);
         if (clientSelectionPanel != null) clientSelectionPanel.SetActive(false);
         if (clientPublicPanel != null) clientPublicPanel.SetActive(false);
@@ -45,6 +47,120 @@ public partial class ClientLobbyManager
         if (nextPageButton != null && (interactable || nextPageButton.gameObject != currentSelected)) nextPageButton.interactable = interactable;
         if (prevFilterChapterButton != null && (interactable || prevFilterChapterButton.gameObject != currentSelected)) prevFilterChapterButton.interactable = interactable;
         if (nextFilterChapterButton != null && (interactable || nextFilterChapterButton.gameObject != currentSelected)) nextFilterChapterButton.interactable = interactable;
+    }
+
+    private void BeginPublicListRefreshFocusLock()
+    {
+        if (clientPublicPanel == null || !clientPublicPanel.activeInHierarchy)
+            return;
+
+        publicListRefreshLockedFocus = lastSelectedBeforeSearch;
+        if (publicListRefreshLockedFocus == null || !publicListRefreshLockedFocus.activeInHierarchy)
+        {
+            publicListRefreshLockedFocus = researchButton != null ? researchButton.gameObject : null;
+        }
+
+        isPublicListRefreshFocusLocked = publicListRefreshLockedFocus != null;
+        publicListRefreshDisabledSelectables.Clear();
+
+        Selectable[] selectables = clientPublicPanel.GetComponentsInChildren<Selectable>(true);
+        foreach (var selectable in selectables)
+        {
+            if (selectable != null &&
+                selectable.interactable &&
+                selectable.gameObject != publicListRefreshLockedFocus)
+            {
+                selectable.interactable = false;
+                publicListRefreshDisabledSelectables.Add(selectable);
+            }
+        }
+
+        EnforcePublicListRefreshFocusLock();
+    }
+
+    private void EndPublicListRefreshFocusLock()
+    {
+        foreach (var selectable in publicListRefreshDisabledSelectables)
+        {
+            if (selectable != null)
+            {
+                selectable.interactable = true;
+            }
+        }
+        publicListRefreshDisabledSelectables.Clear();
+
+        isPublicListRefreshFocusLocked = false;
+        publicListRefreshLockedFocus = null;
+    }
+
+    private void CancelPublicListRefreshFocusLock()
+    {
+        isLocalSearchRequest = false;
+        isQuickJoining = false;
+        EndPublicListRefreshFocusLock();
+        SetInteractableAll(true);
+    }
+
+    private void EnforcePublicListRefreshFocusLock()
+    {
+        if (!isPublicListRefreshFocusLocked || EventSystem.current == null)
+            return;
+
+        if (clientPublicPanel == null || !clientPublicPanel.activeInHierarchy ||
+            publicListRefreshLockedFocus == null || !publicListRefreshLockedFocus.activeInHierarchy)
+        {
+            EndPublicListRefreshFocusLock();
+            return;
+        }
+
+        if (EventSystem.current.currentSelectedGameObject != publicListRefreshLockedFocus)
+        {
+            EventSystem.current.SetSelectedGameObject(null);
+            EventSystem.current.SetSelectedGameObject(publicListRefreshLockedFocus);
+        }
+    }
+
+    private void RestoreFocusAfterPublicListRefresh()
+    {
+        if (!isPublicListRefreshFocusLocked)
+            return;
+
+        if (clientPublicPanel == null || !clientPublicPanel.activeInHierarchy)
+            return;
+
+        StartCoroutine(RestoreFocusAfterPublicListRefreshRoutine());
+    }
+
+    private IEnumerator RestoreFocusAfterPublicListRefreshRoutine()
+    {
+        yield return null;
+
+        if (EventSystem.current == null || clientPublicPanel == null || !clientPublicPanel.activeInHierarchy)
+            yield break;
+
+        GameObject target = null;
+        if (lastSelectedBeforeSearch != null &&
+            lastSelectedBeforeSearch.activeInHierarchy &&
+            lastSelectedBeforeSearch.transform.IsChildOf(clientPublicPanel.transform))
+        {
+            target = lastSelectedBeforeSearch;
+        }
+        else if (researchButton != null && researchButton.gameObject.activeInHierarchy)
+        {
+            target = researchButton.gameObject;
+        }
+        else if (searchInputField != null && searchInputField.gameObject.activeInHierarchy)
+        {
+            target = searchInputField.gameObject;
+        }
+
+        if (target != null)
+        {
+            EventSystem.current.SetSelectedGameObject(null);
+            EventSystem.current.SetSelectedGameObject(target);
+        }
+
+        EndPublicListRefreshFocusLock();
     }
 
     private void SelectPrivateRoomUp()

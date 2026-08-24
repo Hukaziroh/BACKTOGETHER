@@ -16,6 +16,8 @@ public partial class ClientLobbyManager
 {
     public void OnClick_Research()
     {
+        if (isLocalSearchRequest) return;
+
         SubscribeEvents();
 
         var lobby = GetEOSLobby();
@@ -30,6 +32,7 @@ public partial class ClientLobbyManager
         {
             lastSelectedBeforeSearch = EventSystem.current.currentSelectedGameObject;
         }
+        BeginPublicListRefreshFocusLock();
 
         SetInteractableAll(false);
 
@@ -50,6 +53,13 @@ public partial class ClientLobbyManager
     {
         if (!isLocalSearchRequest) return;
         isLocalSearchRequest = false;
+
+        if (clientPublicPanel == null || !clientPublicPanel.activeInHierarchy)
+        {
+            isQuickJoining = false;
+            EndPublicListRefreshFocusLock();
+            return;
+        }
 
         SetInteractableAll(true);
 
@@ -101,6 +111,7 @@ public partial class ClientLobbyManager
             {
                 EventSystem.current?.SetSelectedGameObject(quickJoinSelectionButton.gameObject);
             }
+            EndPublicListRefreshFocusLock();
 
             return;
         }
@@ -121,6 +132,13 @@ public partial class ClientLobbyManager
         if (!isLocalSearchRequest) return;
         isLocalSearchRequest = false;
 
+        if (clientPublicPanel == null || !clientPublicPanel.activeInHierarchy)
+        {
+            isQuickJoining = false;
+            EndPublicListRefreshFocusLock();
+            return;
+        }
+
         isQuickJoining = false;
         SetInteractableAll(true);
 
@@ -133,6 +151,7 @@ public partial class ClientLobbyManager
         {
             EventSystem.current?.SetSelectedGameObject(researchButton.gameObject);
         }
+        EndPublicListRefreshFocusLock();
 
         ShowError("방 목록을 불러오지 못했습니다: " + error);
     }

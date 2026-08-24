@@ -88,4 +88,7 @@ public partial class ClientLobbyManager : MonoBehaviour
     private Coroutine connectionTimeoutCoroutine;
     private Coroutine hideQuickJoinNoRoomCoroutine;
     private GameObject lastSelectedBeforeSearch; // ★ 리로드 직전 포커스 저장용 변수 추가
+    private bool isPublicListRefreshFocusLocked = false;
+    private GameObject publicListRefreshLockedFocus;
+    private List<Selectable> publicListRefreshDisabledSelectables = new List<Selectable>();
 }

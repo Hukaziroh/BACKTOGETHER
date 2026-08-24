@@ -63,21 +63,7 @@ public partial class ClientLobbyManager
     public void OnClick_PrevFilterChapter()
     {
         int maxCh = GetMaxChapterCount();
-        bool exStageUnlocked = PrivateLobbyManager.IsExStageUnlockedForCurrentPlayer();
-
-        selectedFilterChapter--;
-
-        if (IsExChapter(selectedFilterChapter) && !exStageUnlocked)
-        {
-            selectedFilterChapter--;
-        }
-
-        if (selectedFilterChapter < 0) selectedFilterChapter = maxCh;
-
-        if (IsExChapter(selectedFilterChapter) && !exStageUnlocked)
-        {
-            selectedFilterChapter = 0;
-        }
+        selectedFilterChapter = GetNextFilterChapterIndex(selectedFilterChapter, -1, maxCh);
 
         UpdateFilterChapterUI();
         ApplyFiltersAndRefresh();
@@ -86,20 +72,34 @@ public partial class ClientLobbyManager
     public void OnClick_NextFilterChapter()
     {
         int maxCh = GetMaxChapterCount();
-        bool exStageUnlocked = PrivateLobbyManager.IsExStageUnlockedForCurrentPlayer();
-
-        selectedFilterChapter++;
-
-        if (selectedFilterChapter > maxCh) selectedFilterChapter = 0;
-
-        if (IsExChapter(selectedFilterChapter) && !exStageUnlocked)
-        {
-            selectedFilterChapter++;
-            if (selectedFilterChapter > maxCh) selectedFilterChapter = 0;
-        }
+        selectedFilterChapter = GetNextFilterChapterIndex(selectedFilterChapter, 1, maxCh);
 
         UpdateFilterChapterUI();
         ApplyFiltersAndRefresh();
+    }
+
+    private int GetNextFilterChapterIndex(int currentIndex, int direction, int maxCh)
+    {
+        if (maxCh <= 0) return 0;
+
+        bool exStageUnlocked = PrivateLobbyManager.IsExStageUnlockedForCurrentPlayer();
+        int candidate = currentIndex;
+        int guard = maxCh + 1;
+
+        do
+        {
+            candidate += direction;
+            if (candidate < 0) candidate = maxCh;
+            if (candidate > maxCh) candidate = 0;
+
+            if (candidate == 0 || exStageUnlocked || !IsExChapter(candidate))
+                return candidate;
+
+            guard--;
+        }
+        while (guard > 0);
+
+        return 0;
     }
 
     private void UpdateFilterChapterUI()
@@ -209,6 +209,7 @@ public partial class ClientLobbyManager
 
         currentPage = 0;
         RefreshUI();
+        RestoreFocusAfterPublicListRefresh();
     }
 
 }
