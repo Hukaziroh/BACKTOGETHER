@@ -54,7 +54,7 @@ public partial class ClientLobbyManager
         if (!isLocalSearchRequest) return;
         isLocalSearchRequest = false;
 
-        if (clientPublicPanel == null || !clientPublicPanel.activeInHierarchy)
+        if (!isQuickJoining && (clientPublicPanel == null || !clientPublicPanel.activeInHierarchy))
         {
             isQuickJoining = false;
             EndPublicListRefreshFocusLock();
@@ -132,7 +132,7 @@ public partial class ClientLobbyManager
         if (!isLocalSearchRequest) return;
         isLocalSearchRequest = false;
 
-        if (clientPublicPanel == null || !clientPublicPanel.activeInHierarchy)
+        if (!isQuickJoining && (clientPublicPanel == null || !clientPublicPanel.activeInHierarchy))
         {
             isQuickJoining = false;
             EndPublicListRefreshFocusLock();
