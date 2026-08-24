@@ -35,6 +35,7 @@ public class VirtualKeyboardManager : MonoBehaviour
         restoreFocusRequestId++;
 
         keyboardPanel.SetActive(true);
+        ResetKeyVisualStates();
 
         // 중요: GlobalSceneInputManager에게 포커스 범위 제어권 요청
         if (GlobalSceneInputManager.Instance != null)
@@ -51,42 +52,96 @@ public class VirtualKeyboardManager : MonoBehaviour
         focusCoroutine = StartCoroutine(FocusCoroutine());
     }
 
+    private void LateUpdate()
+    {
+        KeepTargetInputFieldInteractable();
+        KeepFocusInsideKeyboard();
+    }
+
     private IEnumerator FocusCoroutine()
     {
         yield return null; // 1프레임 대기하여 Manager의 갱신이 끝난 후 처리
 
-        if (firstSelectedButton != null && EventSystem.current != null)
-        {
-            EventSystem.current.SetSelectedGameObject(firstSelectedButton.gameObject);
-        }
+        SelectFirstButton();
 
         // 키보드 버튼으로 포커스가 이동하면서 InputField의 OnEndEdit가 호출되어도
         // 가상 키보드 사용 중에는 Interactable 상태를 유지한다.
-        if (targetInputField != null)
-        {
-            targetInputField.interactable = true;
-        }
+        KeepTargetInputFieldInteractable();
 
         // 다른 지연 포커스 작업이 뒤늦게 선택을 지웠을 경우에만 한 번 복구한다.
         yield return null;
 
         if (keyboardPanel != null && keyboardPanel.activeInHierarchy && EventSystem.current != null)
         {
-            GameObject selected = EventSystem.current.currentSelectedGameObject;
-            bool hasKeyboardSelection = selected != null && selected.transform.IsChildOf(keyboardPanel.transform);
+            KeepFocusInsideKeyboard();
+        }
 
-            if (!hasKeyboardSelection && firstSelectedButton != null)
+        KeepTargetInputFieldInteractable();
+
+        focusCoroutine = null;
+    }
+
+    private void KeepTargetInputFieldInteractable()
+    {
+        if (!IsOpen || targetInputField == null) return;
+
+        targetInputField.interactable = true;
+    }
+
+    private void KeepFocusInsideKeyboard()
+    {
+        if (!IsOpen || EventSystem.current == null) return;
+
+        GameObject selected = EventSystem.current.currentSelectedGameObject;
+        if (selected != null && selected.transform.IsChildOf(keyboardPanel.transform)) return;
+
+        SelectFirstButton();
+    }
+
+    private void SelectFirstButton()
+    {
+        if (firstSelectedButton != null && EventSystem.current != null &&
+            firstSelectedButton.isActiveAndEnabled && firstSelectedButton.interactable)
+        {
+            EventSystem.current.SetSelectedGameObject(firstSelectedButton.gameObject);
+            return;
+        }
+
+        Selectable fallback = FindFirstKeyboardSelectable();
+        if (fallback != null && EventSystem.current != null)
+        {
+            EventSystem.current.SetSelectedGameObject(fallback.gameObject);
+        }
+    }
+
+    private Selectable FindFirstKeyboardSelectable()
+    {
+        if (keyboardPanel == null) return null;
+
+        Selectable[] selectables = keyboardPanel.GetComponentsInChildren<Selectable>(false);
+        foreach (Selectable selectable in selectables)
+        {
+            if (selectable != null && selectable.isActiveAndEnabled && selectable.interactable)
             {
-                EventSystem.current.SetSelectedGameObject(firstSelectedButton.gameObject);
+                return selectable;
             }
         }
 
-        if (targetInputField != null)
-        {
-            targetInputField.interactable = true;
-        }
+        return null;
+    }
 
-        focusCoroutine = null;
+    private void ResetKeyVisualStates()
+    {
+        if (keyboardPanel == null) return;
+
+        KeyboardKeyButton[] keyButtons = keyboardPanel.GetComponentsInChildren<KeyboardKeyButton>(true);
+        foreach (KeyboardKeyButton keyButton in keyButtons)
+        {
+            if (keyButton != null)
+            {
+                keyButton.ResetVisualState();
+            }
+        }
     }
 
     public void InputCharacter(string character)
@@ -139,6 +194,8 @@ public class VirtualKeyboardManager : MonoBehaviour
         {
             returnTarget.StartCoroutine(RestoreNavigationFocusCoroutine(nextSelectable, requestId));
         }
+
+        ResetKeyVisualStates();
 
         if (keyboardPanel != null) keyboardPanel.SetActive(false);
     }

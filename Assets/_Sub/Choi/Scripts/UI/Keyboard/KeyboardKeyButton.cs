@@ -44,6 +44,16 @@ public class KeyboardKeyButton : MonoBehaviour, ISelectHandler, IDeselectHandler
     // 패드 포커스가 해제될 때
     public void OnDeselect(BaseEventData eventData)
     {
+        ResetVisualState();
+    }
+
+    private void OnDisable()
+    {
+        ResetVisualState();
+    }
+
+    public void ResetVisualState()
+    {
         if (_image != null)
         {
             _image.color = _originalColor;
