@@ -234,6 +234,12 @@ namespace Mirror
                 return;
             }
 
+            if (NetworkBehaviours == null)
+            {
+                Debug.LogWarning($"NetworkBehaviours is null for object {gameObject.name} [netId={netId}]. It might be in the process of being destroyed.");
+                return;
+            }
+
             // find the right component to invoke the function on
             if (componentIndex >= NetworkBehaviours.Length)
             {
