@@ -70,15 +70,11 @@ public class SteamManager : MonoBehaviour
 
     protected virtual void Awake()
     {
-        // =========================================================================
-        // 🚨 [추가된 방어 로직] STEAM_BUILD가 아니면 스팀 매니저를 즉시 파괴합니다!
-        // =========================================================================
 #if !STEAM_BUILD
 		Debug.LogWarning("⚠️ 현재 STEAM_BUILD가 아닙니다. 스팀 매니저를 비활성화합니다.");
 		Destroy(gameObject);
 		return;
 #endif
-        // =========================================================================
 
         // Only one instance of SteamManager at a time!
         if (s_instance != null)

@@ -164,9 +164,8 @@ public class PlayerRespawn : NetworkBehaviour
         PlayerRespawn bodyRespawn = bodyHandler.GetComponent<PlayerRespawn>();
         if (bodyRespawn == null) yield break;
 
-        // 🌟 합체된 본체와 연관된 모든 파츠/고스트 플레이어들을 정밀 탐색하여 리스트업
         List<PlayerRespawn> combinedPlayers = new List<PlayerRespawn>();
-        PlayerRespawn[] allPlayers = FindObjectsByType<PlayerRespawn>(FindObjectsInactive.Exclude);
+        List<PlayerRespawn> allPlayers = CoopPlayerManager.GetPlayerComponents<PlayerRespawn>();
 
         foreach (var p in allPlayers)
         {
@@ -189,7 +188,6 @@ public class PlayerRespawn : NetworkBehaviour
             combinedPlayers.Add(bodyRespawn);
         }
 
-        // 🌟 1. 연관된 모든 플레이어 화면 페이드 아웃 및 리스폰 상태 잠금
         foreach (var p in combinedPlayers)
         {
             if (p != null)
@@ -206,7 +204,6 @@ public class PlayerRespawn : NetworkBehaviour
 
         Vector3 respawnPosition = bodyRespawn != null ? bodyRespawn.currentSpawnPoint : Vector3.zero;
 
-        // 🌟 2. 연관된 모든 플레이어 넉백 리셋 및 물리 비활성화
         foreach (var p in combinedPlayers)
         {
             if (p != null)
@@ -232,7 +229,6 @@ public class PlayerRespawn : NetworkBehaviour
             Physics2D.SyncTransforms();
         }
 
-        // 🌟 4. 물리 활성화 및 속도 초기화
         foreach (var p in combinedPlayers)
         {
             if (p != null)
@@ -248,7 +244,6 @@ public class PlayerRespawn : NetworkBehaviour
 
         yield return new WaitForSeconds(0.1f);
 
-        // 🌟 5. 연관된 모든 플레이어의 화면을 밝게 함 (Fade In) 및 리스폰 상태 해제
         foreach (var p in combinedPlayers)
         {
             if (p != null)
@@ -289,7 +284,6 @@ public class PlayerRespawn : NetworkBehaviour
 
         if (this != null && gameObject != null)
         {
-            // 🌟 리스폰 및 물리 동기화 완료 후 화면을 밝게 함 (Fade In)
             TargetRpcPlayFadeIn();
             isRespawning = false;
         }
@@ -297,9 +291,8 @@ public class PlayerRespawn : NetworkBehaviour
 
     private IEnumerator RespawnAllPlayersRoutine()
     {
-        PlayerRespawn[] allPlayers = FindObjectsByType<PlayerRespawn>(FindObjectsInactive.Exclude);
+        List<PlayerRespawn> allPlayers = CoopPlayerManager.GetPlayerComponents<PlayerRespawn>();
 
-        // 🌟 팀원 전원의 화면을 확실하게 페이드 아웃 시켜 깜빡임 방지
         foreach (var p in allPlayers)
         {
             if (p != null && p.connectionToClient != null)
@@ -360,7 +353,6 @@ public class PlayerRespawn : NetworkBehaviour
 
         yield return new WaitForSeconds(0.1f);
 
-        // 🌟 팀원 전체 리스폰 및 위치 정렬 완료 후 화면을 밝게 함 (Fade In)
         foreach (var p in allPlayers)
         {
             if (p != null)
