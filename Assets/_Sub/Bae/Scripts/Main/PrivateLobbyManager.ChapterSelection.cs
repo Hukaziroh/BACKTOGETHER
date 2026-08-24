@@ -14,47 +14,38 @@ public partial class PrivateLobbyManager
 {
     public void OnClick_PrevChapter()
     {
-        bool exStageUnlocked = IsExStageUnlocked();
-        selectedChapterIndex--;
-
-        // 만약 이전으로 갔는데 그 챕터가 EX 챕터이고 6챕터를 깨지 않았다면 한 번 더 건너뜁니다.
-        if (IsExChapter(selectedChapterIndex) && !exStageUnlocked)
-        {
-            selectedChapterIndex--;
-        }
-
-        if (selectedChapterIndex < 1) selectedChapterIndex = maxChapterCount;
-
-        // 순회 중 도달한 곳이 여전히 잠겨있는 EX 챕터라면 1번 챕터로 돌립니다.
-        if (IsExChapter(selectedChapterIndex) && !exStageUnlocked)
-        {
-            selectedChapterIndex = 1;
-        }
-
+        selectedChapterIndex = GetNextSelectableChapterIndex(selectedChapterIndex, -1);
         UpdateChapterUI();
     }
 
     public void OnClick_NextChapter()
     {
-        bool exStageUnlocked = IsExStageUnlocked();
-        int nextIndex = selectedChapterIndex + 1;
-
-        // 다음 챕터가 EX 스테이지이고 6챕터를 클리어하지 않았다면 목록에서 아예 숨기기 위해 다음으로 넘어가지 않고 1번(또는 처음)으로 순환시킵니다.
-        if (IsExChapter(nextIndex) && !exStageUnlocked)
-        {
-            nextIndex = 1; // 혹은 return을 통해 진입을 막을 수 있습니다. 여기서는 순환 구조상 1번으로 리셋
-        }
-
-        selectedChapterIndex = nextIndex;
-        if (selectedChapterIndex > maxChapterCount) selectedChapterIndex = 1;
-
-        // 한 번 더블 체크
-        if (IsExChapter(selectedChapterIndex) && !exStageUnlocked)
-        {
-            selectedChapterIndex = 1;
-        }
-
+        selectedChapterIndex = GetNextSelectableChapterIndex(selectedChapterIndex, 1);
         UpdateChapterUI();
+    }
+
+    private int GetNextSelectableChapterIndex(int currentIndex, int direction)
+    {
+        if (maxChapterCount <= 0) return 1;
+
+        bool exStageUnlocked = IsExStageUnlocked();
+        int candidate = currentIndex;
+        int guard = maxChapterCount;
+
+        do
+        {
+            candidate += direction;
+            if (candidate < 1) candidate = maxChapterCount;
+            if (candidate > maxChapterCount) candidate = 1;
+
+            if (exStageUnlocked || !IsExChapter(candidate))
+                return candidate;
+
+            guard--;
+        }
+        while (guard > 0);
+
+        return 1;
     }
 
     private bool IsExChapter(int chapterIndex)

@@ -105,13 +105,13 @@ public partial class ClientLobbyManager
             {
                 GlobalSceneInputManager.Instance.SetFocusScope(clientPublicPanel);
             }
-            // ★ 퍼블릭 패널이 열릴 때 첫 번째 버튼으로 튀는 현상을 방지하고 원하는 버튼(예: searchInputField 또는 첫 상호작용 요소)으로 정확히 고정
+            // 퍼블릭 패널 진입 기본 포커스는 새로고침 버튼으로 고정한다.
             if (EventSystem.current != null)
             {
                 EventSystem.current.SetSelectedGameObject(null);
-                if (searchInputField != null)
+                if (researchButton != null)
                 {
-                    EventSystem.current.SetSelectedGameObject(searchInputField.gameObject);
+                    EventSystem.current.SetSelectedGameObject(researchButton.gameObject);
                 }
             }
         }
@@ -123,6 +123,7 @@ public partial class ClientLobbyManager
     public void OnClick_SelectPrivateMode()
     {
         SubscribeEvents();
+        CancelPublicListRefreshFocusLock();
 
         if (privateRoomInputField != null)
         {
@@ -153,6 +154,8 @@ public partial class ClientLobbyManager
 
     public void OnClick_ReturnToConnectPanel()
     {
+        CancelPublicListRefreshFocusLock();
+
         if (clientPublicPanel != null) clientPublicPanel.SetActive(false);
         if (clientPrivatePanel != null) clientPrivatePanel.SetActive(false);
         if (clientSelectionPanel != null) clientSelectionPanel.SetActive(false);
@@ -186,6 +189,8 @@ public partial class ClientLobbyManager
 
     public void OnClick_ClosePublicPanel()
     {
+        CancelPublicListRefreshFocusLock();
+
         if (clientPublicPanel != null) clientPublicPanel.SetActive(false);
         if (logo != null) logo.SetActive(true);
         if (clientSelectionPanel != null)
