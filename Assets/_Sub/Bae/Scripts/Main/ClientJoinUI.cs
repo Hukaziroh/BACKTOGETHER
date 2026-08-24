@@ -69,26 +69,21 @@ public class ClientJoinUI : MonoBehaviour
         }
 
         string code = sixDigitUI.GetCode();
-        Debug.Log($"[ClientJoinUI] 입력받은 6자리 코드: '{code}'");
 
-        if (string.IsNullOrEmpty(code) || code.Length < 6)
+        if (string.IsNullOrEmpty(code) || code.Length != 6)
         {
-            ShowErrorPopup("6자리 코드를 정확히 입력해 주세요.");
+            ShowErrorPopup("올바른 6자리 코드를 입력해주세요.");
             return;
         }
 
-        // ★ 검색 시작 상태로 전환
-        isSearchingCode = true;
-
-        GameObject? currentPanel = GetLoadingPanel();
-        if (currentPanel != null)
+        if (isSearchingCode)
         {
-            currentPanel.SetActive(true);
+            Debug.LogWarning("[ClientJoinUI] 이미 방 참가(코드 검색)를 진행 중입니다.");
+            return;
         }
 
-        // 기존 타임아웃 타이머 초기화 후 무한 로딩 감지 코루틴 시작
-        CancelTimeout();
-        timeoutCoroutine = StartCoroutine(JoinTimeoutRoutine());
+        isSearchingCode = true; // 검색 상태 진입
+        ShowLoadingPanel();     // UI 패널 표시
 
         StartCoroutine(SearchAndJoinRoutine(code));
     }
@@ -204,30 +199,24 @@ public class ClientJoinUI : MonoBehaviour
             yield break;
         }
 
-        // 방 발견 시 EOSLobby를 통해 공식 방 참가 실행
+        // 방 발견 시 공식 방 참가 프로세스를 수행
         if (foundLobbyDetails != null)
         {
-            Debug.Log($"[ClientJoinUI] 코드 [{code}] 방 발견! EOSLobby를 통해 참가를 진행합니다.");
+            Debug.Log($"[ClientJoinUI] 코드 [{code}] 방 발견! ClientLobbyManager를 통해 참가를 진행합니다.");
 
-            EOSLobby eosLobby = FindAnyObjectByType<EOSLobby>();
-            if (eosLobby == null && NetworkManager.singleton != null)
+            ClientLobbyManager lobbyManager = FindFirstObjectByType<ClientLobbyManager>();
+            if (lobbyManager != null)
             {
-                eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
-            }
-
-            if (eosLobby != null)
-            {
-                // 정상적으로 참가가 진행되면 씬이 넘어가며, 
-                // 타임아웃 발생 시 JoinTimeoutRoutine에서 isSearchingCode가 해제됩니다.
-                eosLobby.JoinLobby(foundLobbyDetails);
+                // ClientLobbyManager의 정상적인 JoinRoom(로비 입장 및 StartClient)을 위임
+                lobbyManager.JoinRoom(foundLobbyDetails);
             }
             else
             {
-                Debug.LogError("[ClientJoinUI] EOSLobby 인스턴스를 찾을 수 없습니다.");
-                isSearchingCode = false; // ★ 리셋
-                CancelTimeout();
-                HideLoadingPanel();
-                ShowErrorPopup("네트워크 매니저(EOSLobby)를 찾을 수 없습니다.");
+                EOSLobby eosLobby = FindAnyObjectByType<EOSLobby>();
+                if (eosLobby != null)
+                {
+                    eosLobby.JoinLobby(foundLobbyDetails);
+                }
             }
         }
         else
