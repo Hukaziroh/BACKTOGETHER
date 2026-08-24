@@ -36,17 +36,34 @@ public partial class ClientLobbyManager
 
         SetInteractableAll(false);
 
-        LobbySearchSetParameterOptions[] searchOptions = new LobbySearchSetParameterOptions[]
+        List<LobbySearchSetParameterOptions> searchOptionsList = new List<LobbySearchSetParameterOptions>();
+
+        bool isPrivateSearch = clientPrivatePanel != null && clientPrivatePanel.activeInHierarchy && privateRoomInputField != null && !string.IsNullOrEmpty(privateRoomInputField.text);
+
+        if (isPrivateSearch)
         {
-            new LobbySearchSetParameterOptions
+            searchOptionsList.Add(new LobbySearchSetParameterOptions
+            {
+                ComparisonOp = ComparisonOp.Equal,
+                Parameter = new AttributeData { Key = "IS_PUBLIC", Value = "0" }
+            });
+            searchOptionsList.Add(new LobbySearchSetParameterOptions
+            {
+                ComparisonOp = ComparisonOp.Equal,
+                Parameter = new AttributeData { Key = "SHORTCODE", Value = privateRoomInputField.text.Trim() }
+            });
+        }
+        else
+        {
+            searchOptionsList.Add(new LobbySearchSetParameterOptions
             {
                 ComparisonOp = ComparisonOp.Equal,
                 Parameter = new AttributeData { Key = "IS_PUBLIC", Value = "1" }
-            }
-        };
+            });
+        }
 
         isLocalSearchRequest = true;
-        lobby.FindLobbies(50, searchOptions);
+        lobby.FindLobbies(50, searchOptionsList.ToArray());
     }
 
     private void OnFindLobbiesSucceeded(List<LobbyDetails> lobbies)
@@ -54,7 +71,9 @@ public partial class ClientLobbyManager
         if (!isLocalSearchRequest) return;
         isLocalSearchRequest = false;
 
-        if (!isQuickJoining && (clientPublicPanel == null || !clientPublicPanel.activeInHierarchy))
+        bool isPrivateSearch = clientPrivatePanel != null && clientPrivatePanel.activeInHierarchy;
+
+        if (!isQuickJoining && !isPrivateSearch && (clientPublicPanel == null || !clientPublicPanel.activeInHierarchy))
         {
             isQuickJoining = false;
             EndPublicListRefreshFocusLock();
@@ -62,6 +81,21 @@ public partial class ClientLobbyManager
         }
 
         SetInteractableAll(true);
+
+        // 프라이빗 방 검색인 경우, 결과를 찾았으면 즉시 입장 시도
+        if (isPrivateSearch)
+        {
+            if (lobbies != null && lobbies.Count > 0)
+            {
+                Debug.Log($"[PrivateJoin] 프라이빗 방 발견! 코드: {privateRoomInputField.text}");
+                JoinRoom(lobbies[0]);
+            }
+            else
+            {
+                ShowError("존재하지 않거나 이미 꽉 찬 방입니다.");
+            }
+            return;
+        }
 
         // ★ 저장해 둔 포커스 복구 (리로드 버튼으로 다시 포커스 고정)
         if (EventSystem.current != null && lastSelectedBeforeSearch != null && lastSelectedBeforeSearch.activeInHierarchy)
@@ -132,7 +166,9 @@ public partial class ClientLobbyManager
         if (!isLocalSearchRequest) return;
         isLocalSearchRequest = false;
 
-        if (!isQuickJoining && (clientPublicPanel == null || !clientPublicPanel.activeInHierarchy))
+        bool isPrivateSearch = clientPrivatePanel != null && clientPrivatePanel.activeInHierarchy;
+
+        if (!isQuickJoining && !isPrivateSearch && (clientPublicPanel == null || !clientPublicPanel.activeInHierarchy))
         {
             isQuickJoining = false;
             EndPublicListRefreshFocusLock();
@@ -142,7 +178,13 @@ public partial class ClientLobbyManager
         isQuickJoining = false;
         SetInteractableAll(true);
 
-        // ★ 실패 시에도 포커스 복구
+        if (isPrivateSearch)
+        {
+            ShowError("존재하지 않거나 이미 꽉 찬 방입니다.");
+            return;
+        }
+
+        // 검색 실패 시에도 포커스 복구
         if (EventSystem.current != null && lastSelectedBeforeSearch != null && lastSelectedBeforeSearch.activeInHierarchy)
         {
             EventSystem.current.SetSelectedGameObject(lastSelectedBeforeSearch);
