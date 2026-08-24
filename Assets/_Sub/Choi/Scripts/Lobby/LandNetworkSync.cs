@@ -17,6 +17,12 @@ public class LandNetworkSync : NetworkBehaviour
     [Command(requiresAuthority = false)]
     public void CmdDisableLand()
     {
+        ServerDisableLand();
+    }
+
+    [Server]
+    public void ServerDisableLand()
+    {
         StartCoroutine(LandRespawnRoutine());
     }
 

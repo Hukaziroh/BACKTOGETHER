@@ -136,7 +136,7 @@ public class HoldButtonForLand : NetworkBehaviour
 
                 if (targetLand != null)
                 {
-                    targetLand.CmdDisableLand();
+                    targetLand.ServerDisableLand();
                 }
                 else
                 {
