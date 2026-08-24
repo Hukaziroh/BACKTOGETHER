@@ -78,7 +78,7 @@ public class PlayerCombineHandler : NetworkBehaviour
                 if (mainCam != null)
                 {
                     CameraFollow camFollow = mainCam.GetComponent<CameraFollow>();
-                    if (camFollow != null) camFollow.SetTarget(bodyTarget.transform);
+                    if (camFollow != null) camFollow.target = bodyTarget.transform;
                 }
             }
         }
