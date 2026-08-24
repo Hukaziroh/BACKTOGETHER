@@ -2,6 +2,7 @@ using EpicTransport;
 using Epic.OnlineServices.Lobby;
 using UnityEngine;
 using Epic.OnlineServices;
+using System.Collections;
 using System.Collections.Generic;
 #pragma warning disable 0067, 0414
 
@@ -82,6 +83,7 @@ public class EOSLobby : MonoBehaviour
     //lobby update events
     private ulong lobbyMemberStatusNotifyId = 0;
     private ulong lobbyAttributeUpdateNotifyId = 0;
+    private bool notificationsRegistered;
 
     public delegate void LobbyMemberStatusUpdate(LobbyMemberStatusReceivedCallbackInfo callback);
     /// <summary>When invoked, a message is sent to all subscribers with an update on member status.</summary>
@@ -93,16 +95,29 @@ public class EOSLobby : MonoBehaviour
 
     public virtual void Start()
     {
+        StartCoroutine(RegisterLobbyNotificationsWhenReady());
+    }
+
+    private IEnumerator RegisterLobbyNotificationsWhenReady()
+    {
         if (!EOSSDKComponent.IsEOSReady())
         {
-            Debug.LogWarning(
-                "[EOSLobby] Start 시점에 EOS가 아직 준비되지 않았습니다."
-            );
-
-            return;
+            Debug.LogWarning("[EOSLobby] EOS 준비를 기다린 뒤 Lobby Notify를 등록합니다.");
         }
 
-        var lobbyInterface = EOSSDKComponent.GetLobbyInterface();
+        while (!EOSSDKComponent.IsEOSReady())
+        {
+            yield return null;
+        }
+
+        RegisterLobbyNotifications();
+    }
+
+    private void RegisterLobbyNotifications()
+    {
+        if (notificationsRegistered) return;
+
+        LobbyInterface lobbyInterface = EOSSDKComponent.GetLobbyInterface();
 
         if (lobbyInterface == null)
         {
@@ -121,7 +136,8 @@ public class EOSLobby : MonoBehaviour
                 {
                     LobbyMemberStatusUpdated?.Invoke(callback);
 
-                    if (callback.CurrentStatus == LobbyMemberStatus.Closed)
+                    if (callback.CurrentStatus == LobbyMemberStatus.Closed &&
+                        callback.LobbyId == currentLobbyId)
                     {
                         LeaveLobby();
                     }
@@ -138,6 +154,9 @@ public class EOSLobby : MonoBehaviour
                 }
             );
 
+        notificationsRegistered = lobbyMemberStatusNotifyId != 0 ||
+                                  lobbyAttributeUpdateNotifyId != 0;
+
         Debug.Log(
             "[EOSLobby] EOS Lobby Notify 등록 완료"
         );
@@ -148,8 +167,26 @@ public class EOSLobby : MonoBehaviour
     /// </summary>
     public virtual void CreateLobby(uint maxConnections, LobbyPermissionLevel permissionLevel, bool presenceEnabled, AttributeData[] lobbyData = null)
     {
+        if (IsLeavingLobby)
+        {
+            CreateLobbyFailed?.Invoke("이전 Lobby 정리가 끝나는 중입니다. 잠시 후 다시 시도해주세요.");
+            return;
+        }
 
-        EOSSDKComponent.GetLobbyInterface().CreateLobby(new CreateLobbyOptions
+        if (!EOSSDKComponent.IsEOSReady())
+        {
+            CreateLobbyFailed?.Invoke("EOS 네트워크가 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.");
+            return;
+        }
+
+        LobbyInterface lobbyInterface = EOSSDKComponent.GetLobbyInterface();
+        if (lobbyInterface == null)
+        {
+            CreateLobbyFailed?.Invoke("EOS Lobby 인터페이스를 찾을 수 없습니다.");
+            return;
+        }
+
+        lobbyInterface.CreateLobby(new CreateLobbyOptions
         {
             //lobby options
             LocalUserId = EOSSDKComponent.LocalUserProductId,
@@ -173,7 +210,7 @@ public class EOSLobby : MonoBehaviour
             AttributeData hostAddressData = new AttributeData { Key = hostAddressKey, Value = EOSSDKComponent.LocalUserProductIdString };
 
             //set the mod handle
-            EOSSDKComponent.GetLobbyInterface().UpdateLobbyModification(new UpdateLobbyModificationOptions { LobbyId = callback.LobbyId, LocalUserId = EOSSDKComponent.LocalUserProductId }, out modHandle);
+            lobbyInterface.UpdateLobbyModification(new UpdateLobbyModificationOptions { LobbyId = callback.LobbyId, LocalUserId = EOSSDKComponent.LocalUserProductId }, out modHandle);
 
             //add attributes
             modHandle.AddAttribute(new LobbyModificationAddAttributeOptions { Attribute = defaultData, Visibility = LobbyAttributeVisibility.Public });
@@ -196,7 +233,7 @@ public class EOSLobby : MonoBehaviour
             }
 
             //update the lobby
-            EOSSDKComponent.GetLobbyInterface().UpdateLobby(new UpdateLobbyOptions { LobbyModificationHandle = modHandle }, null, (UpdateLobbyCallbackInfo updateCallback) => {
+            lobbyInterface.UpdateLobby(new UpdateLobbyOptions { LobbyModificationHandle = modHandle }, null, (UpdateLobbyCallbackInfo updateCallback) => {
 
                 //if there was an error while updating the lobby, invoke an error event and return
                 if (updateCallback.ResultCode != Result.Success)
@@ -206,7 +243,7 @@ public class EOSLobby : MonoBehaviour
                 }
 
                 LobbyDetails details;
-                EOSSDKComponent.GetLobbyInterface().CopyLobbyDetailsHandle(new CopyLobbyDetailsHandleOptions { LobbyId = callback.LobbyId, LocalUserId = EOSSDKComponent.LocalUserProductId }, out details);
+                lobbyInterface.CopyLobbyDetailsHandle(new CopyLobbyDetailsHandleOptions { LobbyId = callback.LobbyId, LocalUserId = EOSSDKComponent.LocalUserProductId }, out details);
 
                 // 이전에 들고 있던 ConnectedLobbyDetails 핸들이 있다면 해제 후 교체 (메모리 누수 방지)
                 ConnectedLobbyDetails?.Release();
@@ -226,11 +263,24 @@ public class EOSLobby : MonoBehaviour
     /// </summary>
     public virtual void FindLobbies(uint maxResults = 100, LobbySearchSetParameterOptions[] lobbySearchSetParameterOptions = null)
     {
+        if (!EOSSDKComponent.IsEOSReady())
+        {
+            FindLobbiesFailed?.Invoke("EOS 네트워크가 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.");
+            return;
+        }
+
+        LobbyInterface lobbyInterface = EOSSDKComponent.GetLobbyInterface();
+        if (lobbyInterface == null)
+        {
+            FindLobbiesFailed?.Invoke("EOS Lobby 인터페이스를 찾을 수 없습니다.");
+            return;
+        }
+
         //create search handle and list of lobby details
         LobbySearch search = new LobbySearch();
 
         //set the search handle
-        EOSSDKComponent.GetLobbyInterface().CreateLobbySearch(new CreateLobbySearchOptions { MaxResults = maxResults }, out search);
+        lobbyInterface.CreateLobbySearch(new CreateLobbySearchOptions { MaxResults = maxResults }, out search);
 
         //set search parameters
         if (lobbySearchSetParameterOptions != null)
@@ -329,8 +379,33 @@ public class EOSLobby : MonoBehaviour
     /// </summary>
     public virtual void JoinLobby(LobbyDetails lobbyToJoin, string[] attributeKeys = null, bool presenceEnabled = false)
     {
+        if (IsLeavingLobby)
+        {
+            JoinLobbyFailed?.Invoke("이전 Lobby 정리가 끝나는 중입니다. 잠시 후 다시 시도해주세요.");
+            return;
+        }
+
+        if (!EOSSDKComponent.IsEOSReady())
+        {
+            JoinLobbyFailed?.Invoke("EOS 네트워크가 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.");
+            return;
+        }
+
+        LobbyInterface lobbyInterface = EOSSDKComponent.GetLobbyInterface();
+        if (lobbyInterface == null)
+        {
+            JoinLobbyFailed?.Invoke("EOS Lobby 인터페이스를 찾을 수 없습니다.");
+            return;
+        }
+
+        if (lobbyToJoin == null)
+        {
+            JoinLobbyFailed?.Invoke("입장할 로비 정보가 없습니다.");
+            return;
+        }
+
         //join lobby
-        EOSSDKComponent.GetLobbyInterface().JoinLobby(new JoinLobbyOptions { LobbyDetailsHandle = lobbyToJoin, LocalUserId = EOSSDKComponent.LocalUserProductId, PresenceEnabled = presenceEnabled }, null, (JoinLobbyCallbackInfo callback) => {
+        lobbyInterface.JoinLobby(new JoinLobbyOptions { LobbyDetailsHandle = lobbyToJoin, LocalUserId = EOSSDKComponent.LocalUserProductId, PresenceEnabled = presenceEnabled }, null, (JoinLobbyCallbackInfo callback) => {
             //if the result was not a success, invoke an error event and return
             if (callback.ResultCode != Result.Success)
             {
@@ -355,7 +430,7 @@ public class EOSLobby : MonoBehaviour
             }
 
             LobbyDetails details;
-            EOSSDKComponent.GetLobbyInterface().CopyLobbyDetailsHandle(new CopyLobbyDetailsHandleOptions { LobbyId = callback.LobbyId, LocalUserId = EOSSDKComponent.LocalUserProductId }, out details);
+            lobbyInterface.CopyLobbyDetailsHandle(new CopyLobbyDetailsHandleOptions { LobbyId = callback.LobbyId, LocalUserId = EOSSDKComponent.LocalUserProductId }, out details);
 
             // 이전에 들고 있던 ConnectedLobbyDetails 핸들이 있다면 해제 후 교체 (메모리 누수 방지)
             ConnectedLobbyDetails?.Release();
@@ -371,8 +446,21 @@ public class EOSLobby : MonoBehaviour
 
     public virtual void JoinLobbyByID(string lobbyID)
     {
+        if (!EOSSDKComponent.IsEOSReady())
+        {
+            FindLobbiesFailed?.Invoke("EOS 네트워크가 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.");
+            return;
+        }
+
+        LobbyInterface lobbyInterface = EOSSDKComponent.GetLobbyInterface();
+        if (lobbyInterface == null)
+        {
+            FindLobbiesFailed?.Invoke("EOS Lobby 인터페이스를 찾을 수 없습니다.");
+            return;
+        }
+
         LobbySearch search = new LobbySearch();
-        EOSSDKComponent.GetLobbyInterface().CreateLobbySearch(new CreateLobbySearchOptions { MaxResults = 1 }, out search);
+        lobbyInterface.CreateLobbySearch(new CreateLobbySearchOptions { MaxResults = 1 }, out search);
         search.SetLobbyId(new LobbySearchSetLobbyIdOptions { LobbyId = lobbyID });
 
         search.Find(new LobbySearchFindOptions { LocalUserId = EOSSDKComponent.LocalUserProductId }, null, (LobbySearchFindCallbackInfo callback) => {
@@ -424,8 +512,6 @@ public class EOSLobby : MonoBehaviour
     /// </summary>
     public void LeaveLobby()
     {
-        if (!EOSSDKComponent.IsEOSReady()) return;
-
         if (IsLeavingLobby)
         {
             Debug.LogWarning("[EOSLobby] 이미 Lobby 퇴장 요청 중입니다.");
@@ -434,22 +520,39 @@ public class EOSLobby : MonoBehaviour
 
         if (!ConnectedToLobby || string.IsNullOrEmpty(currentLobbyId))
         {
-            ConnectedToLobby = false;
-            ConnectedLobbyDetails = null;
-            currentLobbyId = string.Empty;
-            isLobbyOwner = false;
+            ClearConnectedLobbyState();
             return;
         }
 
+        if (!EOSSDKComponent.IsEOSReady())
+        {
+            LeaveLobbyFailed?.Invoke("EOS 네트워크가 준비되지 않아 Lobby를 나갈 수 없습니다.");
+            return;
+        }
+
+        LobbyInterface lobbyInterface = EOSSDKComponent.IsPlatformValid()
+            ? EOSSDKComponent.GetLobbyInterface()
+            : null;
+        if (lobbyInterface == null)
+        {
+            LeaveLobbyFailed?.Invoke("EOS Lobby 인터페이스를 찾을 수 없습니다.");
+            return;
+        }
+
+        string lobbyId = currentLobbyId;
         IsLeavingLobby = true;
+        BeginLeaveLobby(lobbyInterface, lobbyId);
+    }
+
+    private void BeginLeaveLobby(LobbyInterface lobbyInterface, string lobbyId)
+    {
         LeaveLobbyOptions options = new LeaveLobbyOptions()
         {
-            LobbyId = currentLobbyId,
+            LobbyId = lobbyId,
             LocalUserId = EOSSDKComponent.LocalUserProductId
         };
 
-        // 🌟 콜백 함수로 OnLeaveLobbyCompleted를 직접 연결!
-        EOSSDKComponent.GetLobbyInterface().LeaveLobby(options, null, OnLeaveLobbyCompleted);
+        lobbyInterface.LeaveLobby(options, null, OnLeaveLobbyCompleted);
     }
 
 
@@ -460,14 +563,20 @@ public class EOSLobby : MonoBehaviour
             $"ResultCode = {data.ResultCode}"
         );
 
+        if (data.LobbyId != currentLobbyId)
+        {
+            Debug.LogWarning(
+                $"[EOSLobby] 과거 Lobby 퇴장 콜백 무시 | " +
+                $"CallbackLobby={data.LobbyId} | CurrentLobby={currentLobbyId}"
+            );
+            return;
+        }
+
         IsLeavingLobby = false;
 
-        if (data.ResultCode == Result.Success)
+        if (data.ResultCode == Result.Success || data.ResultCode == Result.NotFound)
         {
-            ConnectedToLobby = false;
-            ConnectedLobbyDetails = null;
-            currentLobbyId = string.Empty;
-            isLobbyOwner = false;
+            ClearConnectedLobbyState();
 
             Debug.Log(
                 "[EOSLobby] ④ Lobby 정상 퇴장 완료"
@@ -481,6 +590,8 @@ public class EOSLobby : MonoBehaviour
                 $"[EOSLobby] ④ Lobby 퇴장 실패 | " +
                 $"ResultCode = {data.ResultCode}"
             );
+
+            LeaveLobbyFailed?.Invoke("Lobby 퇴장 실패: " + data.ResultCode);
         }
     }
 
@@ -600,45 +711,91 @@ public class EOSLobby : MonoBehaviour
     /// </summary>
     public void DestroyLobby()
     {
-        if (string.IsNullOrEmpty(currentLobbyId)) return;
+        if (IsLeavingLobby)
+        {
+            Debug.LogWarning("[EOSLobby] 이미 Lobby 퇴장/파괴 요청 중입니다.");
+            return;
+        }
+
+        if (!ConnectedToLobby || string.IsNullOrEmpty(currentLobbyId))
+        {
+            ClearConnectedLobbyState();
+            return;
+        }
+
+        if (!EOSSDKComponent.IsEOSReady())
+        {
+            Debug.LogWarning("[EOSLobby] EOS 네트워크가 준비되지 않아 Lobby를 파괴할 수 없습니다.");
+            return;
+        }
 
         LobbyInterface lobbyInterface = EOSSDKComponent.GetLobbyInterface();
+        if (lobbyInterface == null)
+        {
+            Debug.LogWarning("[EOSLobby] EOS Lobby 인터페이스를 찾을 수 없습니다.");
+            return;
+        }
+
+        string lobbyId = currentLobbyId;
+        IsLeavingLobby = true;
+
         DestroyLobbyOptions destroyLobbyOptions = new DestroyLobbyOptions
         {
-            LobbyId = currentLobbyId,
+            LobbyId = lobbyId,
             LocalUserId = EOSSDKComponent.LocalUserProductId
         };
 
         lobbyInterface.DestroyLobby(destroyLobbyOptions, null, (DestroyLobbyCallbackInfo callback) => {
-            if (callback.ResultCode != Result.Success)
+            if (callback.ResultCode != Result.Success && callback.ResultCode != Result.NotFound)
             {
                 Debug.LogWarning("[EOSLobby] DestroyLobby failed: " + callback.ResultCode);
-                LeaveLobby(); // 파괴 실패 시 일반 퇴장이라도 수행하여 찌꺼기 방지
+
+                // busy 상태를 유지한 채 일반 퇴장까지 완료해야 호출자가 실제 종료를 기다릴 수 있다.
+                BeginLeaveLobby(lobbyInterface, lobbyId);
                 return;
             }
 
             Debug.Log("[EOSLobby] 에픽 서버에서 로비가 성공적으로 파괴되었습니다.");
-            currentLobbyId = string.Empty;
-            ConnectedToLobby = false;
-            ConnectedLobbyDetails = null;
-            isLobbyOwner = false;
+            ClearConnectedLobbyState();
+            IsLeavingLobby = false;
         });
+    }
+
+    private void ClearConnectedLobbyState()
+    {
+        ConnectedLobbyDetails?.Release();
+        ConnectedLobbyDetails = null;
+        currentLobbyId = string.Empty;
+        ConnectedToLobby = false;
+        isLobbyOwner = false;
     }
 
     private void OnDestroy()
     {
-        // 🌟 오브젝트가 파괴될 때 남아있는 로비 연결이 있다면 정해진 규격에 따라 자동 정제
-        if (ConnectedToLobby && !string.IsNullOrEmpty(currentLobbyId))
+        StopAllCoroutines();
+
+        LobbyInterface lobbyInterface = EOSSDKComponent.IsPlatformValid()
+            ? EOSSDKComponent.GetLobbyInterface()
+            : null;
+        if (lobbyInterface != null)
         {
-            if (isLobbyOwner)
+            if (lobbyMemberStatusNotifyId != 0)
             {
-                DestroyLobby();
+                lobbyInterface.RemoveNotifyLobbyMemberStatusReceived(lobbyMemberStatusNotifyId);
+                lobbyMemberStatusNotifyId = 0;
             }
-            else
+
+            if (lobbyAttributeUpdateNotifyId != 0)
             {
-                LeaveLobby();
+                lobbyInterface.RemoveNotifyLobbyUpdateReceived(lobbyAttributeUpdateNotifyId);
+                lobbyAttributeUpdateNotifyId = 0;
             }
         }
+
+        notificationsRegistered = false;
+        ReleaseFoundLobbies();
+        ClearConnectedLobbyState();
+        IsLeavingLobby = false;
     }
 
     ////private void OnApplicationQuit()

@@ -1,3 +1,4 @@
+using System.Collections;
 using Mirror;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -18,6 +19,7 @@ public class HostDisconnectHandler : MonoBehaviour
     private bool wasConnected = false;
     private bool isIntentionalExit = false;
     private bool isConnecting = false;
+    private bool isReturningToLobby = false;
 
     private void Start()
     {
@@ -178,6 +180,14 @@ public class HostDisconnectHandler : MonoBehaviour
     /// </summary>
     public void GoBackToLobby()
     {
+        if (isReturningToLobby) return;
+        StartCoroutine(GoBackToLobbyRoutine());
+    }
+
+    private IEnumerator GoBackToLobbyRoutine()
+    {
+        isReturningToLobby = true;
+
         EmojiRadialMenu.Instance?.ForceClose();
         PlayerEmojiController.ForceHideAll();
 
@@ -185,21 +195,44 @@ public class HostDisconnectHandler : MonoBehaviour
         isConnecting = false;
         isIntentionalExit = false;
 
-        if (NetworkManager.singleton != null)
-        {
-            NetworkManager.singleton.StopClient();
-        }
-
         EOSLobby eosLobby = FindAnyObjectByType<EOSLobby>(FindObjectsInactive.Include);
         if (eosLobby != null && eosLobby.ConnectedToLobby)
         {
             eosLobby.LeaveLobby();
+
+            float leaveTimeout = 5f;
+            while (eosLobby.IsLeavingLobby && leaveTimeout > 0f)
+            {
+                leaveTimeout -= Time.unscaledDeltaTime;
+                yield return null;
+            }
+        }
+
+        if (NetworkManager.singleton != null && NetworkClient.active)
+        {
+            NetworkManager.singleton.StopClient();
         }
 
         if (disconnectPanel != null)
             disconnectPanel.SetActive(false);
 
-        SceneManager.LoadScene(lobbySceneName);
+        yield return new WaitForSecondsRealtime(0.2f);
+
+        float sceneChangeTimeout = 5f;
+        while (SceneManager.GetActiveScene().name != lobbySceneName &&
+               NetworkManager.loadingSceneAsync != null &&
+               sceneChangeTimeout > 0f)
+        {
+            sceneChangeTimeout -= Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        if (SceneManager.GetActiveScene().name != lobbySceneName)
+        {
+            SceneManager.LoadScene(lobbySceneName);
+        }
+
+        isReturningToLobby = false;
     }
 
     /// <summary>

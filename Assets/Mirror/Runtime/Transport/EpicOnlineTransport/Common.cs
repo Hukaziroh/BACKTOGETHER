@@ -1,7 +1,6 @@
 ﻿using Epic.OnlineServices;
 using Epic.OnlineServices.P2P;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -24,12 +23,14 @@ namespace EpicTransport
         {
             public ProductUserId productUserId;
             public byte channel;
+            public string socketName;
         }
 
         private OnIncomingConnectionRequestCallback OnIncomingConnectionRequest;
         ulong incomingNotificationId = 0;
         private OnRemoteConnectionClosedCallback OnRemoteConnectionClosed;
         ulong outgoingNotificationId = 0;
+        private bool disposed;
 
         protected readonly EosTransport transport;
         protected List<string> deadSockets;
@@ -66,10 +67,29 @@ namespace EpicTransport
 
         protected void Dispose()
         {
-            EOSSDKComponent.GetP2PInterface().RemoveNotifyPeerConnectionRequest(incomingNotificationId);
-            EOSSDKComponent.GetP2PInterface().RemoveNotifyPeerConnectionClosed(outgoingNotificationId);
+            if (disposed) return;
+            disposed = true;
+
+            P2PInterface p2pInterface = EOSSDKComponent.GetP2PInterface();
+            if (p2pInterface != null)
+            {
+                if (incomingNotificationId != 0)
+                {
+                    p2pInterface.RemoveNotifyPeerConnectionRequest(incomingNotificationId);
+                    incomingNotificationId = 0;
+                }
+
+                if (outgoingNotificationId != 0)
+                {
+                    p2pInterface.RemoveNotifyPeerConnectionClosed(outgoingNotificationId);
+                    outgoingNotificationId = 0;
+                }
+            }
+
             transport.ResetIgnoreMessagesAtStartUpTimer();
         }
+
+        protected bool IsDisposed => disposed;
 
         protected abstract void OnNewConnection(OnIncomingConnectionRequestInfo result);
 
@@ -77,6 +97,7 @@ namespace EpicTransport
         protected virtual void OnConnectFail(OnRemoteConnectionClosedInfo result)
         {
             if (ignoreAllMessages) return;
+            if (IsDeadSocket(result.SocketId)) return;
 
             OnConnectionFailed(result.RemoteUserId);
 
@@ -111,7 +132,12 @@ namespace EpicTransport
 
         protected void SendInternal(ProductUserId target, SocketId socketId, InternalMessages type)
         {
-            EOSSDKComponent.GetP2PInterface().SendPacket(new SendPacketOptions()
+            if (target == null || socketId == null) return;
+
+            P2PInterface p2pInterface = EOSSDKComponent.GetP2PInterface();
+            if (p2pInterface == null) return;
+
+            Result result = p2pInterface.SendPacket(new SendPacketOptions()
             {
                 AllowDelayedDelivery = true,
                 Channel = (byte)internal_ch,
@@ -121,6 +147,11 @@ namespace EpicTransport
                 RemoteUserId = target,
                 SocketId = socketId
             });
+
+            if (result != Result.Success)
+            {
+                Debug.LogWarning($"[EpicTransport] {type} 전송 실패: {result}");
+            }
         }
 
         protected void Send(ProductUserId host, SocketId socketId, byte[] msgBuffer, byte channel)
@@ -152,15 +183,69 @@ namespace EpicTransport
 
         protected virtual void CloseP2PSessionWithUser(ProductUserId clientUserID, SocketId socketId)
         {
-            if (socketId == null) return;
-            if (deadSockets == null) return;
-            if (deadSockets.Contains(socketId.SocketName)) return; else deadSockets.Add(socketId.SocketName);
+            if (clientUserID == null || socketId == null || string.IsNullOrEmpty(socketId.SocketName)) return;
+            if (deadSockets == null || deadSockets.Contains(socketId.SocketName)) return;
+
+            P2PInterface p2pInterface = EOSSDKComponent.GetP2PInterface();
+            if (p2pInterface == null)
+            {
+                Debug.LogWarning("[EpicTransport] EOS P2P 인터페이스가 없어 연결을 닫지 못했습니다.");
+                return;
+            }
+
+            deadSockets.Add(socketId.SocketName);
+            DiscardIncomingPackets(clientUserID, socketId.SocketName);
+
+            Result result = p2pInterface.CloseConnection(new CloseConnectionOptions
+            {
+                LocalUserId = EOSSDKComponent.LocalUserProductId,
+                RemoteUserId = clientUserID,
+                SocketId = socketId
+            });
+
+            if (result != Result.Success && result != Result.NoConnection)
+            {
+                deadSockets.Remove(socketId.SocketName);
+                Debug.LogWarning($"[EpicTransport] P2P 연결 종료 실패 | Socket={socketId.SocketName} | Result={result}");
+                return;
+            }
+
+            Debug.Log($"[EpicTransport] P2P 연결 종료 완료 | Socket={socketId.SocketName}");
         }
 
-        protected void WaitForClose(ProductUserId clientUserID, SocketId socketId) => transport.StartCoroutine(DelayedClose(clientUserID, socketId));
-        private IEnumerator DelayedClose(ProductUserId clientUserID, SocketId socketId)
+        private void DiscardIncomingPackets(ProductUserId remoteUserId, string socketName)
         {
-            yield return null; CloseP2PSessionWithUser(clientUserID, socketId);
+            if (incomingPackets.Count == 0) return;
+
+            List<PacketKey> stalePacketKeys = new List<PacketKey>();
+            foreach (PacketKey packetKey in incomingPackets.Keys)
+            {
+                if (packetKey.productUserId == remoteUserId && packetKey.socketName == socketName)
+                {
+                    stalePacketKeys.Add(packetKey);
+                }
+            }
+
+            foreach (PacketKey packetKey in stalePacketKeys)
+            {
+                incomingPackets.Remove(packetKey);
+            }
+        }
+
+        protected bool IsDeadSocket(SocketId socketId)
+        {
+            return socketId != null &&
+                   !string.IsNullOrEmpty(socketId.SocketName) &&
+                   deadSockets != null &&
+                   deadSockets.Contains(socketId.SocketName);
+        }
+
+        protected static bool IsSameSocket(SocketId left, SocketId right)
+        {
+            return left != null &&
+                   right != null &&
+                   !string.IsNullOrEmpty(left.SocketName) &&
+                   left.SocketName == right.SocketName;
         }
 
         public void ReceiveData()
@@ -180,7 +265,17 @@ namespace EpicTransport
                 {
                     while (transport.enabled && Receive(out ProductUserId clientUserID, out socketId, out byte[] receiveBuffer, (byte)chNum))
                     {
-                        PacketKey incomingPacketKey = new PacketKey() { productUserId = clientUserID, channel = (byte)chNum };
+                        if (!IsExpectedDataSocket(clientUserID, socketId))
+                        {
+                            continue;
+                        }
+
+                        PacketKey incomingPacketKey = new PacketKey()
+                        {
+                            productUserId = clientUserID,
+                            channel = (byte)chNum,
+                            socketName = socketId.SocketName
+                        };
                         Packet packet = new Packet(); packet.FromBytes(receiveBuffer);
                         if (!incomingPackets.ContainsKey(incomingPacketKey)) incomingPackets.Add(incomingPacketKey, new List<List<Packet>>());
                         int packetListIndex = incomingPackets[incomingPacketKey].Count;
@@ -229,6 +324,7 @@ namespace EpicTransport
             catch (Exception e) { Debug.LogException(e); }
         }
         protected abstract void OnReceiveInternalData(InternalMessages type, ProductUserId clientUserID, SocketId socketId);
+        protected abstract bool IsExpectedDataSocket(ProductUserId remoteUserId, SocketId socketId);
         protected abstract void OnReceiveData(byte[] data, ProductUserId clientUserID, int channel);
         protected abstract void OnConnectionFailed(ProductUserId remoteId);
     }

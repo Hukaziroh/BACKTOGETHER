@@ -1156,7 +1156,35 @@ namespace EpicTransport
 
         private void OnDestroy()
         {
-            Debug.Log("[EOS SDK] OnDestroy");
+            // 중복 NetworkManager 쪽 컴포넌트가 파괴될 때 현재 EOS 핸들을 건드리면 안 된다.
+            if (!ReferenceEquals(instance, this))
+            {
+                Debug.Log("[EOS SDK] OnDestroy (중복 인스턴스, EOS 핸드 유지)");
+                return;
+            }
+
+            // Mirror는 online -> offline 씬 전환 시 기존 NetworkManager를 교체한다.
+            // 전역 SDK는 종료하지 않되 이 인스턴스의 Platform 핸들은 반드시 Release해야
+            // 과거 P2P 큐/콜백이 더 이상 Tick되지 않는 핸들에 남지 않는다.
+            if (EOS != null)
+            {
+                if (authExpirationHandle != 0)
+                {
+                    EOS.GetConnectInterface().RemoveNotifyAuthExpiration(authExpirationHandle);
+                    authExpirationHandle = 0;
+                }
+
+                EOS.Release();
+                EOS = null;
+            }
+
+            initialized = false;
+            isConnecting = false;
+            localUserProductId = null;
+            localUserProductIdString = string.Empty;
+            instance = null;
+
+            Debug.Log("[EOS SDK] OnDestroy | Platform 핸들 정리 완료");
         }
     
         // =========================================================
@@ -1239,5 +1267,3 @@ namespace EpicTransport
         }
     }
 }
-
-  

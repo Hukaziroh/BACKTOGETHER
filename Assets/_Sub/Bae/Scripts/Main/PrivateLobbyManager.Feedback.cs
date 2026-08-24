@@ -71,6 +71,14 @@ public partial class PrivateLobbyManager
 
     public void OnClick_ReturnToMain()
     {
+        if (isReturningToMain) return;
+        StartCoroutine(ReturnToMainRoutine());
+    }
+
+    private IEnumerator ReturnToMainRoutine()
+    {
+        isReturningToMain = true;
+
         NoCheckpointButtonController noCheckpointController =
             FindAnyObjectByType<NoCheckpointButtonController>(FindObjectsInactive.Include);
         if (noCheckpointController != null)
@@ -84,12 +92,25 @@ public partial class PrivateLobbyManager
             if (NetworkServer.active && NetworkClient.active) lobby.DestroyLobby();
             else if (NetworkClient.active) lobby.LeaveLobby();
             else lobby.DestroyLobby();
+
+            float leaveTimeout = 5f;
+            while (lobby.IsLeavingLobby && leaveTimeout > 0f)
+            {
+                leaveTimeout -= Time.unscaledDeltaTime;
+                yield return null;
+            }
         }
 
-        // ★ 수정된 핵심 부분: StopHost() 이후에 EosTransport를 강제로 Shutdown 시킵니다.
         if (NetworkManager.singleton != null)
         {
-            NetworkManager.singleton.StopHost();
+            if (NetworkServer.active)
+            {
+                NetworkManager.singleton.StopHost();
+            }
+            else if (NetworkClient.active)
+            {
+                NetworkManager.singleton.StopClient();
+            }
         }
 
         if (hostPanel != null) hostPanel.SetActive(false);
@@ -100,6 +121,8 @@ public partial class PrivateLobbyManager
             if (GlobalSceneInputManager.Instance != null) GlobalSceneInputManager.Instance.SetFocusScope(mainPanel);
         }
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
+
+        isReturningToMain = false;
     }
 
 }

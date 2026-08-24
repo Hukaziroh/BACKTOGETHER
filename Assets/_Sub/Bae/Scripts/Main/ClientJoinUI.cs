@@ -30,6 +30,7 @@ public class ClientJoinUI : MonoBehaviour
 
     // ★ 연타 방지 플래그
     private bool isSearchingCode = false;
+    private bool isClosingError = false;
 
     private void Start()
     {
@@ -113,22 +114,22 @@ public class ClientJoinUI : MonoBehaviour
 
             if (NetworkManager.singleton != null)
             {
-                if (NetworkManager.singleton.isNetworkActive)
+                if (NetworkClient.active)
                 {
                     NetworkManager.singleton.StopClient();
-                }
-
-                // ★ [추가] EosTransport P2P 세션 완전 초기화
-                EosTransport transport = NetworkManager.singleton.GetComponent<EosTransport>();
-                if (transport != null)
-                {
-                    transport.Shutdown();
                 }
 
                 EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
                 if (eosLobby != null && eosLobby.ConnectedToLobby)
                 {
                     eosLobby.LeaveLobby();
+
+                    float leaveTimeout = 5f;
+                    while (eosLobby.IsLeavingLobby && leaveTimeout > 0f)
+                    {
+                        leaveTimeout -= Time.unscaledDeltaTime;
+                        yield return null;
+                    }
                 }
             }
 
@@ -142,6 +143,21 @@ public class ClientJoinUI : MonoBehaviour
     {
         searchFinished = false;
         foundLobbyDetails = null;
+
+        float eosReadyTimeout = 10f;
+        while (!EOSSDKComponent.IsEOSReady() && eosReadyTimeout > 0f)
+        {
+            eosReadyTimeout -= Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        if (!EOSSDKComponent.IsEOSReady() || EOSSDKComponent.LocalUserProductId == null)
+        {
+            isSearchingCode = false;
+            HideLoadingPanel();
+            ShowErrorPopup("EOS 네트워크 초기화 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.");
+            yield break;
+        }
 
         LobbyInterface lobbyInterface = EOSSDKComponent.GetLobbyInterface();
         if (lobbyInterface == null)
@@ -213,6 +229,8 @@ public class ClientJoinUI : MonoBehaviour
             if (lobbyManager != null)
             {
                 // ClientLobbyManager의 정상적인 JoinRoom(로비 입장 및 StartClient)을 위임
+                // 이후 중복 입장 방지는 ClientLobbyManager.IsConnecting이 담당한다.
+                isSearchingCode = false;
                 lobbyManager.JoinRoom(foundLobbyDetails);
             }
             else
@@ -220,6 +238,7 @@ public class ClientJoinUI : MonoBehaviour
                 EOSLobby eosLobby = FindAnyObjectByType<EOSLobby>();
                 if (eosLobby != null)
                 {
+                    isSearchingCode = false;
                     eosLobby.JoinLobby(foundLobbyDetails);
                 }
             }
@@ -292,13 +311,21 @@ public class ClientJoinUI : MonoBehaviour
 
     public void OnClick_CloseErrorPopup()
     {
+        if (isClosingError) return;
         isSearchingCode = false; // 플래그 해제
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
 
-        // 1. Mirror 및 EOS 로비 정리
+        StartCoroutine(CloseErrorAndResetRoutine());
+    }
+
+    private IEnumerator CloseErrorAndResetRoutine()
+    {
+        isClosingError = true;
+
+        // 진행 중 P2P handshake를 취소한 뒤 EOS Lobby 퇴장을 완료한다.
         if (NetworkManager.singleton != null)
         {
-            if (NetworkManager.singleton.isNetworkActive)
+            if (NetworkClient.active)
             {
                 NetworkManager.singleton.StopClient();
             }
@@ -307,12 +334,18 @@ public class ClientJoinUI : MonoBehaviour
             if (eosLobby != null && eosLobby.ConnectedToLobby)
             {
                 eosLobby.LeaveLobby();
+
+                float leaveTimeout = 5f;
+                while (eosLobby.IsLeavingLobby && leaveTimeout > 0f)
+                {
+                    leaveTimeout -= Time.unscaledDeltaTime;
+                    yield return null;
+                }
             }
         }
 
-        // 2. 씬 재로드로 좀비 P2P 소켓 제거
-        UnityEngine.SceneManagement.SceneManager.LoadScene(
-            UnityEngine.SceneManagement.SceneManager.GetActiveScene().name
-        );
+        string currentSceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        UnityEngine.SceneManagement.SceneManager.LoadScene(currentSceneName);
+        isClosingError = false;
     }
 }
