@@ -20,6 +20,7 @@ public class StageProgressTracker : MonoBehaviour
     [Header("6챕터 보스 아이콘 설정")]
     [SerializeField] private Sprite bossIconSprite;
     [SerializeField] private string bossTag = "Boss";
+    [SerializeField] private List<string> bossSceneNames = new List<string> { "chapter6", "Nchapter6" };
     [SerializeField] private Vector2 bossIconSize = new Vector2(34f, 18f);
     [SerializeField] private Color bossBackIconColor = new Color(0.45f, 0f, 0f, 1f);
 
@@ -196,6 +197,17 @@ public class StageProgressTracker : MonoBehaviour
 
     private void UpdateBossIcon(float containerWidth)
     {
+        if (!ShouldTrackBossInCurrentScene())
+        {
+            cachedBoss = null;
+            if (bossIcon != null && bossIcon.gameObject.activeSelf)
+            {
+                bossIcon.gameObject.SetActive(false);
+            }
+
+            return;
+        }
+
         GameObject boss = FindBoss();
         if (boss == null)
         {
@@ -228,6 +240,26 @@ public class StageProgressTracker : MonoBehaviour
         bossIcon.anchoredPosition = new Vector2(xPos, 0);
     }
 
+    private bool ShouldTrackBossInCurrentScene()
+    {
+        string sceneName = SceneManager.GetActiveScene().name;
+        if (bossSceneNames == null || bossSceneNames.Count == 0)
+        {
+            return sceneName.Contains("chapter6");
+        }
+
+        foreach (string bossSceneName in bossSceneNames)
+        {
+            if (!string.IsNullOrEmpty(bossSceneName) &&
+                string.Equals(sceneName, bossSceneName, System.StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private GameObject FindBoss()
     {
         if (cachedBoss != null && cachedBoss.activeInHierarchy)
@@ -235,7 +267,21 @@ public class StageProgressTracker : MonoBehaviour
             return cachedBoss;
         }
 
-        cachedBoss = !string.IsNullOrEmpty(bossTag) ? GameObject.FindGameObjectWithTag(bossTag) : null;
+        if (string.IsNullOrEmpty(bossTag))
+        {
+            cachedBoss = null;
+            return cachedBoss;
+        }
+
+        try
+        {
+            cachedBoss = GameObject.FindGameObjectWithTag(bossTag);
+        }
+        catch (UnityException)
+        {
+            cachedBoss = null;
+        }
+
         return cachedBoss;
     }
 
