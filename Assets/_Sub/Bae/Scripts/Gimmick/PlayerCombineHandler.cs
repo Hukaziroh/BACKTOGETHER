@@ -484,6 +484,7 @@ public class PlayerCombineHandler : NetworkBehaviour
 
         isCombined = false;
         myRole = CombineRole.None;
+        extraRoles.Clear();
         bodyTarget = null;
         canUseAction = false;
         combineColorIndex = -1;
