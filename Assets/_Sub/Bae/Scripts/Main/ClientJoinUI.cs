@@ -83,7 +83,12 @@ public class ClientJoinUI : MonoBehaviour
         }
 
         isSearchingCode = true; // 검색 상태 진입
-        ShowLoadingPanel();     // UI 패널 표시
+
+        GameObject? currentPanel = GetLoadingPanel();
+        if (currentPanel != null)
+        {
+            currentPanel.SetActive(true);
+        }
 
         StartCoroutine(SearchAndJoinRoutine(code));
     }
