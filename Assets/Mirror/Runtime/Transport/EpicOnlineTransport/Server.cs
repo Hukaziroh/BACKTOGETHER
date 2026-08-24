@@ -36,7 +36,7 @@ namespace EpicTransport
             nextConnectionID = 1;
         }
 
-        // ¡Ú ÇÙ½É ¹æ¾î¸·: È£½ºÆ® Ãø¿¡¼­µµ °ú°Å ¼ÒÄÏÀÇ Âî²¨±â ÀÌº¥Æ®¸¦ Æ¨°Ü³À´Ï´Ù!
+        // â˜… í•µì‹¬ ë°©ì–´ë§‰: í˜¸ìŠ¤íŠ¸ ì¸¡ì—ì„œë„ ê³¼ê±° ì†Œì¼“ì˜ ì°Œêº¼ê¸° ì´ë²¤íŠ¸ë¥¼ íŠ•ê²¨ëƒ…ë‹ˆë‹¤!
         protected override void OnConnectFail(OnRemoteConnectionClosedInfo result)
         {
             if (ignoreAllMessages) return;
@@ -45,7 +45,7 @@ namespace EpicTransport
             {
                 if (result.SocketId != null && activeSocket.SocketName != result.SocketId.SocketName)
                 {
-                    Debug.LogWarning($"[EpicTransport Server] °ú°Å À¯·É ¼ÒÄÏ({result.SocketId.SocketName}) ²÷±è ÀÌº¥Æ®¸¦ ¹«½ÃÇÕ´Ï´Ù. (ÇöÀç: {activeSocket.SocketName})");
+                    Debug.LogWarning($"[EpicTransport Server] ê³¼ê±° ìœ ë ¹ ì†Œì¼“({result.SocketId.SocketName}) ëŠê¹€ ì´ë²¤íŠ¸ë¥¼ ë¬´ì‹œí•©ë‹ˆë‹¤. (í˜„ìž¬: {activeSocket.SocketName})");
                     return;
                 }
             }
@@ -67,9 +67,14 @@ namespace EpicTransport
             switch (type)
             {
                 case InternalMessages.CONNECT:
-                    if (epicToMirrorIds.Count >= maxConnections) { SendInternal(clientUserId, socketId, InternalMessages.DISCONNECT); return; }
+                    if (epicToMirrorIds.Count >= maxConnections && !epicToMirrorIds.ContainsKey(clientUserId)) { SendInternal(clientUserId, socketId, InternalMessages.DISCONNECT); return; }
                     SendInternal(clientUserId, socketId, InternalMessages.ACCEPT_CONNECT);
                     int connectionId = nextConnectionID++;
+                    if (epicToMirrorIds.ContainsKey(clientUserId))
+                    {
+                        epicToMirrorIds.Remove(clientUserId);
+                        epicToSocketIds.Remove(clientUserId);
+                    }
                     epicToMirrorIds.Add(clientUserId, connectionId);
                     epicToSocketIds.Add(clientUserId, socketId);
                     OnConnected.Invoke(connectionId);

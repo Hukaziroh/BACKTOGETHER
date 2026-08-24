@@ -190,6 +190,12 @@ public class HostDisconnectHandler : MonoBehaviour
             NetworkManager.singleton.StopClient();
         }
 
+        EOSLobby eosLobby = FindAnyObjectByType<EOSLobby>(FindObjectsInactive.Include);
+        if (eosLobby != null && eosLobby.ConnectedToLobby)
+        {
+            eosLobby.LeaveLobby();
+        }
+
         if (disconnectPanel != null)
             disconnectPanel.SetActive(false);
 
