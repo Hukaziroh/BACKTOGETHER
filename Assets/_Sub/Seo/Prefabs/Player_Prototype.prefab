@@ -1304,6 +1304,9 @@ MonoBehaviour:
   - Nchapter4
   - Nchapter5
   - Nchapter6
+  - Main
+  - nEx1
+  - Ex2
 --- !u!114 &1818505097064413287
 MonoBehaviour:
   m_ObjectHideFlags: 0
