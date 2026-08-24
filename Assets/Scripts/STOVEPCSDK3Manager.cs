@@ -25,13 +25,11 @@ public class StovePCSDK3Manager : Singleton<StovePCSDK3Manager>
 
     protected override void Awake()
     {
-        // 🚨 핵심 방어 로직: STOVE_BUILD 심볼이 없으면 스토브를 즉시 파괴하고 꺼버림
 #if !STOVE_BUILD
         Debug.LogWarning("⚠️ 현재 STOVE_BUILD가 아닙니다. 스토브 매니저를 비활성화합니다.");
         Destroy(gameObject);
         return;
 #endif
-        // ----------------------------------------------------
         base.Awake();
 
         transform.SetParent(null);
