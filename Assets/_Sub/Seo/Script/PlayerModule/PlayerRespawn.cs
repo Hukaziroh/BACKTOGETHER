@@ -204,7 +204,7 @@ public class PlayerRespawn : NetworkBehaviour
 
         yield return new WaitForSeconds(0.3f);
 
-        Vector3 respawnPosition = bodyRespawn.currentSpawnPoint;
+        Vector3 respawnPosition = bodyRespawn != null ? bodyRespawn.currentSpawnPoint : Vector3.zero;
 
         // 🌟 2. 연관된 모든 플레이어 넉백 리셋 및 물리 비활성화
         foreach (var p in combinedPlayers)
@@ -226,8 +226,11 @@ public class PlayerRespawn : NetworkBehaviour
         yield return new WaitForSeconds(0.2f);
 
         // 3. 위치 이동
-        bodyRespawn.transform.position = respawnPosition;
-        Physics2D.SyncTransforms();
+        if (bodyRespawn != null)
+        {
+            bodyRespawn.transform.position = respawnPosition;
+            Physics2D.SyncTransforms();
+        }
 
         // 🌟 4. 물리 활성화 및 속도 초기화
         foreach (var p in combinedPlayers)
@@ -271,20 +274,25 @@ public class PlayerRespawn : NetworkBehaviour
 
         yield return new WaitForSeconds(0.2f);
 
-        transform.position = currentSpawnPoint;
-        Physics2D.SyncTransforms();
-
-        if (controller != null && controller.rb != null)
+        if (this != null && gameObject != null)
         {
-            controller.rb.simulated = true;
+            transform.position = currentSpawnPoint;
+            Physics2D.SyncTransforms();
+
+            if (controller != null && controller.rb != null)
+            {
+                controller.rb.simulated = true;
+            }
         }
 
         yield return new WaitForSeconds(0.1f);
 
-        // 🌟 리스폰 및 물리 동기화 완료 후 화면을 밝게 함 (Fade In)
-        TargetRpcPlayFadeIn();
-
-        isRespawning = false;
+        if (this != null && gameObject != null)
+        {
+            // 🌟 리스폰 및 물리 동기화 완료 후 화면을 밝게 함 (Fade In)
+            TargetRpcPlayFadeIn();
+            isRespawning = false;
+        }
     }
 
     private IEnumerator RespawnAllPlayersRoutine()
@@ -322,7 +330,7 @@ public class PlayerRespawn : NetworkBehaviour
 
         yield return new WaitForSeconds(0.2f);
 
-        Vector3 centerSpawnPoint = currentSpawnPoint;
+        Vector3 centerSpawnPoint = this != null ? currentSpawnPoint : Vector3.zero;
 
         foreach (var p in allPlayers)
         {

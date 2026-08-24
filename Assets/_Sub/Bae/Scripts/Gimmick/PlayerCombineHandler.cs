@@ -100,6 +100,9 @@ public class PlayerCombineHandler : NetworkBehaviour
     [Server]
     void OnDestroy()
     {
+        if (!NetworkServer.active || gameObject == null || !gameObject.scene.isLoaded)
+            return;
+
         if (isCombined)
         {
             List<CombineRole> rolesToDistribute = new List<CombineRole>();
