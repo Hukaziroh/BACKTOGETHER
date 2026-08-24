@@ -45,15 +45,49 @@ public class PlayerCombineHandler : NetworkBehaviour
     private void OnCombineStateChanged(bool oldVal, bool newVal)
     {
         isCombined = newVal;
-        CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
-        if (identity != null) identity.ForceUpdateVisual();
+        EnforceCombineVisuals();
     }
 
     private void OnBodyTargetChanged(GameObject oldVal, GameObject newVal)
     {
         bodyTarget = newVal;
-        CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
-        if (identity != null) identity.ForceUpdateVisual();
+        EnforceCombineVisuals();
+    }
+
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        EnforceCombineVisuals();
+    }
+
+    private void EnforceCombineVisuals()
+    {
+        if (isCombined)
+        {
+            bool isBody = (bodyTarget != null && bodyTarget == gameObject);
+            if (spriteRenderer != null) spriteRenderer.enabled = isBody;
+            if (col != null) col.enabled = isBody;
+            if (rb != null) rb.simulated = isBody;
+
+            CoopPlayerIdentity identity = GetComponent<CoopPlayerIdentity>();
+            if (identity != null) identity.ForceUpdateVisual();
+
+            if (isLocalPlayer && bodyTarget != null)
+            {
+                Camera mainCam = Camera.main;
+                if (mainCam != null)
+                {
+                    CameraFollow camFollow = mainCam.GetComponent<CameraFollow>();
+                    if (camFollow != null) camFollow.SetTarget(bodyTarget.transform);
+                }
+            }
+        }
+        else
+        {
+            if (spriteRenderer != null) spriteRenderer.enabled = true;
+            if (col != null) col.enabled = true;
+            if (rb != null) rb.simulated = true;
+        }
     }
 
     private void OnCombineColorChanged(int oldVal, int newVal)
