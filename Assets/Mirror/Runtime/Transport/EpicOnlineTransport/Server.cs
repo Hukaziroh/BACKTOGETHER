@@ -67,10 +67,10 @@ namespace EpicTransport
             switch (type)
             {
                 case InternalMessages.CONNECT:
-                    if (epicToMirrorIds.Count >= maxConnections && !epicToMirrorIds.ContainsKey(clientUserId)) { SendInternal(clientUserId, socketId, InternalMessages.DISCONNECT); return; }
+                    if (epicToMirrorIds.Count >= maxConnections && !epicToMirrorIds.Contains(clientUserId)) { SendInternal(clientUserId, socketId, InternalMessages.DISCONNECT); return; }
                     SendInternal(clientUserId, socketId, InternalMessages.ACCEPT_CONNECT);
                     int connectionId = nextConnectionID++;
-                    if (epicToMirrorIds.ContainsKey(clientUserId))
+                    if (epicToMirrorIds.Contains(clientUserId))
                     {
                         epicToMirrorIds.Remove(clientUserId);
                         epicToSocketIds.Remove(clientUserId);
