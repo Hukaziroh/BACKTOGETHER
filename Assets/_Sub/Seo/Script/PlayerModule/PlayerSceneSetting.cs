@@ -38,10 +38,11 @@ public class PlayerSceneSetting : MonoBehaviour
 
     private void Start()
     {
+        ApplyCollisionSetting(IsTargetScene());
+
         if (!IsTargetScene())
             return;
 
-        ApplyCollisionSetting();
         ApplyAlpha();
     }
 
@@ -53,21 +54,21 @@ public class PlayerSceneSetting : MonoBehaviour
         ApplyAlpha();
     }
 
-    private void ApplyCollisionSetting()
+    private void ApplyCollisionSetting(bool isTarget)
     {
-        if (collisionIgnored)
-            return;
-
         if (playerLayer < 0)
             return;
 
-        Physics2D.IgnoreLayerCollision(
-            playerLayer,
-            playerLayer,
-            true
-        );
-
-        collisionIgnored = true;
+        if (isTarget && !collisionIgnored)
+        {
+            Physics2D.IgnoreLayerCollision(playerLayer, playerLayer, true);
+            collisionIgnored = true;
+        }
+        else if (!isTarget && collisionIgnored)
+        {
+            Physics2D.IgnoreLayerCollision(playerLayer, playerLayer, false);
+            collisionIgnored = false;
+        }
     }
 
     private void ApplyAlpha()
