@@ -66,6 +66,14 @@ public class CoopPlayerIdentity : NetworkBehaviour
         new Dictionary<int, int>();
 
 
+    private void OnDestroy()
+    {
+        if (players.ContainsKey(playerIndex) && players[playerIndex] == this)
+        {
+            players.Remove(playerIndex);
+        }
+    }
+
     private void Awake()
     {
         controller = GetComponent<PlayerController>();

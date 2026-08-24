@@ -62,6 +62,82 @@ public class PlayerCombineHandler : NetworkBehaviour
         if (identity != null) identity.ForceUpdateVisual();
     }
 
+    [Server]
+    void OnDestroy()
+    {
+        if (isCombined)
+        {
+            List<CombineRole> rolesToDistribute = new List<CombineRole>();
+            rolesToDistribute.Add(myRole);
+            rolesToDistribute.AddRange(extraRoles);
+
+            PlayerCombineHandler newBody = null;
+            if (bodyTarget == gameObject)
+            {
+                newBody = connectedGhosts.FirstOrDefault(g => g != null && g.gameObject != gameObject);
+                if (newBody != null)
+                {
+                    foreach (var ghost in connectedGhosts)
+                    {
+                        if (ghost != null && ghost != newBody)
+                        {
+                            newBody.connectedGhosts.Add(ghost);
+                            ghost.bodyTarget = newBody.gameObject;
+                        }
+                    }
+                    newBody.bodyTarget = newBody.gameObject;
+                    newBody.BecomeBody();
+                }
+            }
+            else if (bodyTarget != null)
+            {
+                PlayerCombineHandler bodyHandler = bodyTarget.GetComponent<PlayerCombineHandler>();
+                if (bodyHandler != null)
+                {
+                    bodyHandler.connectedGhosts.Remove(this);
+                }
+            }
+
+            // Distribute missing roles to remaining players
+            List<PlayerCombineHandler> remaining = new List<PlayerCombineHandler>();
+            if (bodyTarget != gameObject && bodyTarget != null)
+            {
+                PlayerCombineHandler bh = bodyTarget.GetComponent<PlayerCombineHandler>();
+                if (bh != null) remaining.Add(bh);
+            }
+            if (newBody != null && !remaining.Contains(newBody)) remaining.Add(newBody);
+
+            foreach (var g in (newBody != null ? newBody.connectedGhosts : (bodyTarget != null ? bodyTarget.GetComponent<PlayerCombineHandler>().connectedGhosts : new List<PlayerCombineHandler>())))
+            {
+                if (g != null && g.gameObject != gameObject && !remaining.Contains(g))
+                    remaining.Add(g);
+            }
+
+            if (remaining.Count > 0)
+            {
+                foreach (var r in rolesToDistribute)
+                {
+                    if (r != CombineRole.None)
+                    {
+                        var target = remaining.OrderBy(p => 1 + p.extraRoles.Count).First();
+                        target.extraRoles.Add(r);
+                    }
+                }
+            }
+        }
+    }
+
+    [Server]
+    public void BecomeBody()
+    {
+        bodyTarget = gameObject;
+        if (rb != null)
+        {
+            rb.simulated = true;
+        }
+        RpcApplyCombineVisual(netIdentity, combineColorIndex, combineFaceIndex);
+    }
+
     private void OnCombineFaceChanged(int oldVal, int newVal)
     {
         combineFaceIndex = newVal;
@@ -194,15 +270,21 @@ public class PlayerCombineHandler : NetworkBehaviour
         }
     }
 
+    public List<CombineRole> extraRoles = new List<CombineRole>();
+
+    private bool HasRole(CombineRole role)
+    {
+        return myRole == role || extraRoles.Contains(role);
+    }
+
     [Server]
     public float GetServerCombinedHorizontalInput()
     {
         float totalInput = 0f;
         PlayerInput myInput = GetComponent<PlayerInput>();
 
-        if (myRole == CombineRole.Move_Left && myInput.HorizontalInput < 0) totalInput += myInput.HorizontalInput;
-        else if (myRole == CombineRole.Move_Right && myInput.HorizontalInput > 0) totalInput += myInput.HorizontalInput;
-        else if (myRole == CombineRole.Move) totalInput += myInput.HorizontalInput;
+        if (HasRole(CombineRole.Move) || (HasRole(CombineRole.Move_Left) && myInput.HorizontalInput < 0) || (HasRole(CombineRole.Move_Right) && myInput.HorizontalInput > 0)) 
+            totalInput += myInput.HorizontalInput;
 
         foreach (var ghost in connectedGhosts)
         {
@@ -210,9 +292,8 @@ public class PlayerCombineHandler : NetworkBehaviour
             PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
             if (ghostInput != null)
             {
-                if (ghost.myRole == CombineRole.Move_Left && ghostInput.HorizontalInput < 0) totalInput += ghostInput.HorizontalInput;
-                else if (ghost.myRole == CombineRole.Move_Right && ghostInput.HorizontalInput > 0) totalInput += ghostInput.HorizontalInput;
-                else if (ghost.myRole == CombineRole.Move) totalInput += ghostInput.HorizontalInput;
+                if (ghost.HasRole(CombineRole.Move) || (ghost.HasRole(CombineRole.Move_Left) && ghostInput.HorizontalInput < 0) || (ghost.HasRole(CombineRole.Move_Right) && ghostInput.HorizontalInput > 0))
+                    totalInput += ghostInput.HorizontalInput;
             }
         }
         return Mathf.Clamp(totalInput, -1f, 1f);
@@ -222,15 +303,13 @@ public class PlayerCombineHandler : NetworkBehaviour
     public bool GetServerCombinedJumpPressed()
     {
         PlayerInput myInput = GetComponent<PlayerInput>();
-        if (myRole == CombineRole.Jump && myInput != null && myInput.JumpPressedThisFrame) return true;
+        if (HasRole(CombineRole.Jump) && myInput != null && myInput.JumpPressedThisFrame) return true;
 
         foreach (var ghost in connectedGhosts)
         {
-            if (ghost != null && ghost.myRole == CombineRole.Jump)
-            {
-                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
-                if (ghostInput != null && ghostInput.JumpPressedThisFrame) return true;
-            }
+            if (ghost == null) continue;
+            PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
+            if (ghost.HasRole(CombineRole.Jump) && ghostInput != null && ghostInput.JumpPressedThisFrame) return true;
         }
         return false;
     }
@@ -239,15 +318,13 @@ public class PlayerCombineHandler : NetworkBehaviour
     public bool GetServerCombinedJumpReleased()
     {
         PlayerInput myInput = GetComponent<PlayerInput>();
-        if (myRole == CombineRole.Jump && myInput != null && myInput.JumpReleasedThisFrame) return true;
+        if (HasRole(CombineRole.Jump) && myInput != null && myInput.JumpReleasedThisFrame) return true;
 
         foreach (var ghost in connectedGhosts)
         {
-            if (ghost != null && ghost.myRole == CombineRole.Jump)
-            {
-                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
-                if (ghostInput != null && ghostInput.JumpReleasedThisFrame) return true;
-            }
+            if (ghost == null) continue;
+            PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
+            if (ghost.HasRole(CombineRole.Jump) && ghostInput != null && ghostInput.JumpReleasedThisFrame) return true;
         }
         return false;
     }
@@ -256,15 +333,13 @@ public class PlayerCombineHandler : NetworkBehaviour
     public bool GetServerCombinedJumpHolding()
     {
         PlayerInput myInput = GetComponent<PlayerInput>();
-        if (myRole == CombineRole.Jump && myInput != null && myInput.JumpHolding) return true;
+        if (HasRole(CombineRole.Jump) && myInput != null && myInput.JumpHolding) return true;
 
         foreach (var ghost in connectedGhosts)
         {
-            if (ghost != null && ghost.myRole == CombineRole.Jump)
-            {
-                PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
-                if (ghostInput != null && ghostInput.JumpHolding) return true;
-            }
+            if (ghost == null) continue;
+            PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
+            if (ghost.HasRole(CombineRole.Jump) && ghostInput != null && ghostInput.JumpHolding) return true;
         }
         return false;
     }
@@ -272,33 +347,17 @@ public class PlayerCombineHandler : NetworkBehaviour
     [Server]
     public bool GetServerCombinedActionPressed()
     {
-        if (bodyTarget != gameObject)
-            return false;
+        if (bodyTarget != gameObject) return false;
         PlayerInput myInput = GetComponent<PlayerInput>();
 
-        if (myRole == CombineRole.Action &&
-            myInput != null &&
-            myInput.ActionPressedThisFrame)
-        {
-            return true;
-        }
+        if (HasRole(CombineRole.Action) && myInput != null && myInput.ActionPressedThisFrame) return true;
 
         foreach (var ghost in connectedGhosts)
         {
-            if (ghost != null &&
-                ghost.myRole == CombineRole.Action)
-            {
-                PlayerInput ghostInput =
-                    ghost.GetComponent<PlayerInput>();
-
-                if (ghostInput != null &&
-                    ghostInput.ActionPressedThisFrame)
-                {
-                    return true;
-                }
-            }
+            if (ghost == null) continue;
+            PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
+            if (ghost.HasRole(CombineRole.Action) && ghostInput != null && ghostInput.ActionPressedThisFrame) return true;
         }
-
         return false;
     }
 
@@ -315,6 +374,46 @@ public class PlayerCombineHandler : NetworkBehaviour
                 PlayerInput ghostInput = ghost.GetComponent<PlayerInput>();
                 if (ghostInput != null) ghostInput.ClearInputBuffers();
             }
+        }
+    }
+
+    [Server]
+    public void JoinExistingCombine(GameObject bodyObj)
+    {
+        if (bodyObj == null) return;
+        PlayerCombineHandler bodyHandler = bodyObj.GetComponent<PlayerCombineHandler>();
+        if (bodyHandler == null) return;
+
+        CombineRole assignedRole = CombineRole.None;
+
+        List<PlayerCombineHandler> allCombinedPlayers = new List<PlayerCombineHandler>();
+        allCombinedPlayers.Add(bodyHandler);
+        foreach (var g in bodyHandler.connectedGhosts)
+        {
+            if (g != null) allCombinedPlayers.Add(g);
+        }
+
+        var playerWithExtra = allCombinedPlayers.Where(p => p.extraRoles.Count > 0).OrderByDescending(p => p.extraRoles.Count).FirstOrDefault();
+        
+        if (playerWithExtra != null)
+        {
+            assignedRole = playerWithExtra.extraRoles[0];
+            playerWithExtra.extraRoles.RemoveAt(0);
+        }
+
+        if (assignedRole != CombineRole.None)
+        {
+            if (!bodyHandler.connectedGhosts.Contains(this))
+            {
+                bodyHandler.connectedGhosts.Add(this);
+            }
+            combineColorIndex = bodyHandler.combineColorIndex;
+            combineFaceIndex = bodyHandler.combineFaceIndex;
+            StartCombineMode(assignedRole, bodyObj);
+        }
+        else
+        {
+            Debug.LogWarning("합체에 참여하려 했으나, 여분의 역할이 없습니다.");
         }
     }
 

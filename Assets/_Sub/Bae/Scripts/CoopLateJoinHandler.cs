@@ -26,7 +26,24 @@ public class CoopLateJoinHandler : NetworkBehaviour
             if (player != null && player.gameObject != this.gameObject)
             {
                 Vector3 targetPosition = player.transform.position;
+                
+                PlayerController playerController = GetComponent<PlayerController>();
+                if (playerController != null)
+                {
+                    playerController.currentSpawnPoint = targetPosition;
+                }
+
                 TargetTeleportToPlayer(connectionToClient, targetPosition);
+
+                PlayerCombineHandler teamCombine = player.GetComponent<PlayerCombineHandler>();
+                if (teamCombine != null && teamCombine.isCombined)
+                {
+                    PlayerCombineHandler myCombine = GetComponent<PlayerCombineHandler>();
+                    if (myCombine != null)
+                    {
+                        myCombine.JoinExistingCombine(teamCombine.bodyTarget);
+                    }
+                }
 
                 Debug.Log($"[서버] 중도 참여자 감지! 팀원({player.name})의 위치로 텔레포트 명령을 전송합니다.");
                 break;
@@ -44,12 +61,7 @@ public class CoopLateJoinHandler : NetworkBehaviour
             rb.position = targetPos;
             rb.linearVelocity = Vector2.zero;
         }
-        PlayerController playerController = GetComponent<PlayerController>();
-        if (playerController != null)
-        {
-            playerController.currentSpawnPoint = targetPos;
-        }
-
+        
         Debug.Log($"[클라이언트] 팀원 위치({targetPos})로 스폰 위치가 안전하게 동기화되었습니다.");
     }
 }
