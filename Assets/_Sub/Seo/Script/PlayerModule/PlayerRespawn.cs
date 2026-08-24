@@ -28,7 +28,7 @@ public class PlayerRespawn : NetworkBehaviour
     public List<string> teamRespawnScenes = new List<string> { "chapter4" };
 
     [Header("리스폰 불가 씬 설정")]
-    public List<string> disabledRespawnScenes = new List<string> { "chapter5", "chapter6", "Nchapter1", "Nchapter2", "Nchapter3", "Nchapter4", "Nchapter5", "Nchapter6" };
+    public List<string> disabledRespawnScenes = new List<string> { "chapter5", "chapter6", "Nchapter1", "Nchapter2", "Nchapter3", "Nchapter4", "Nchapter5", "Nchapter6", "Main", "nEx1", "Ex2" };
 
     void Awake()
     {
