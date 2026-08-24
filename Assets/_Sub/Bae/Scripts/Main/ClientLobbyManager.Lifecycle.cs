@@ -96,6 +96,7 @@ public partial class ClientLobbyManager
 
     private void OnDisable()
     {
+        CancelPublicListRefreshFocusLock();
         UnsubscribeEvents();
 
         if (searchInputField != null)
@@ -154,6 +155,7 @@ public partial class ClientLobbyManager
                       Gamepad.current.leftStick.down.wasPressedThisFrame;
 
             submitPressed |= Gamepad.current.buttonSouth.wasPressedThisFrame; // 패드 A / Cross 버튼
+            escPressed |= Gamepad.current.buttonEast.wasPressedThisFrame; // 패드 B / Circle 버튼
         }
 
         // 확인 / 제출 입력 처리 (팝업이 열려 있는 경우 엔터나 패드 A버튼으로 닫기 수행)
@@ -306,7 +308,19 @@ public partial class ClientLobbyManager
     /// </summary>
     private void LateUpdate()
     {
+        if (isPublicListRefreshFocusLocked &&
+            (clientPublicPanel == null || !clientPublicPanel.activeInHierarchy))
+        {
+            CancelPublicListRefreshFocusLock();
+        }
+
         if (EventSystem.current == null) return;
+
+        if (isPublicListRefreshFocusLocked)
+        {
+            EnforcePublicListRefreshFocusLock();
+            return;
+        }
 
         // 1. 타임아웃 팝업 포커스 강제 고정
         if (timeoutPopupPanel != null && timeoutPopupPanel.activeSelf)
