@@ -48,12 +48,34 @@ public partial class PrivateLobbyManager
         else currentShortCode = GenerateShortCode();
 
         isCreatingLobby = true;
+        createLobbySuccess = false;
         SetAllButtonsInteractable(false);
         currentPanel = GetLoadingPanel();
         if (currentPanel != null) currentPanel.SetActive(true);
 
+        StartCoroutine(CreateLobbyWhenEOSReadyRoutine(lobby, roomTitle));
+    }
+
+    private IEnumerator CreateLobbyWhenEOSReadyRoutine(EOSLobby lobby, string roomTitle)
+    {
+        float eosReadyTimeout = 10f;
+        while (!EOSSDKComponent.IsEOSReady() && eosReadyTimeout > 0f)
+        {
+            eosReadyTimeout -= Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        if (!EOSSDKComponent.IsEOSReady() || EOSSDKComponent.LocalUserProductId == null)
+        {
+            isCreatingLobby = false;
+            SetAllButtonsInteractable(true);
+            if (currentPanel != null) currentPanel.SetActive(false);
+            ShowErrorPopup("EOS 네트워크 초기화 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.");
+            yield break;
+        }
+
         lobby.CreateLobby(4, LobbyPermissionLevel.Publicadvertised, false, null);
-        StartCoroutine(CreateLobbyAndSetAttributesRoutine(roomTitle));
+        yield return StartCoroutine(CreateLobbyAndSetAttributesRoutine(roomTitle));
     }
 
     private void OnCreateLobbySucceeded(List<Epic.OnlineServices.Lobby.Attribute> attributes)

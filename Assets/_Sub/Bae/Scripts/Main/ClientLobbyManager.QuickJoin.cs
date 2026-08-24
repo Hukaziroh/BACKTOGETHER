@@ -81,32 +81,41 @@ public partial class ClientLobbyManager
 
     private void HandleInitialConnectionTimeout()
     {
+        if (isCleaningUpFailedConnection) return;
+        StartCoroutine(CleanupInitialConnectionFailureRoutine());
+    }
+
+    private IEnumerator CleanupInitialConnectionFailureRoutine()
+    {
+        isCleaningUpFailedConnection = true;
         IsConnecting = false; // 접속 프로세스 종료
 
         Debug.LogWarning("[ClientLobbyManager] 초기 접속 실패, 네트워크 상태를 초기화합니다.");
 
-        if (NetworkManager.singleton != null)
+        // 재시도 중인 CONNECT를 먼저 취소해야 leave 대기 중 늦게 연결되는 race가 없다.
+        if (NetworkManager.singleton != null && NetworkClient.active)
         {
             NetworkManager.singleton.StopClient();
-
-            // P2P 소켓 찌꺼기 방지용
-            EpicTransport.EosTransport transport = NetworkManager.singleton.GetComponent<EpicTransport.EosTransport>();
-            if (NetworkManager.singleton != null && NetworkClient.active)
-            {
-                NetworkManager.singleton.StopClient();
-            }
-
-            var eos = GetEOSLobby();
-            if (eos != null && eos.ConnectedToLobby)
-            {
-                eos.LeaveLobby();
-            }
-
-            GameObject panel = GetLoadingPanel();
-            if (panel != null) panel.SetActive(false);
-
-            SetInteractableAll(true);
-            ShowTimeoutPopup();
         }
+
+        var eos = GetEOSLobby();
+        if (eos != null && eos.ConnectedToLobby)
+        {
+            eos.LeaveLobby();
+
+            float leaveTimeout = 5f;
+            while (eos.IsLeavingLobby && leaveTimeout > 0f)
+            {
+                leaveTimeout -= Time.unscaledDeltaTime;
+                yield return null;
+            }
+        }
+
+        GameObject panel = GetLoadingPanel();
+        if (panel != null) panel.SetActive(false);
+
+        SetInteractableAll(true);
+        ShowTimeoutPopup();
+        isCleaningUpFailedConnection = false;
     }
 }

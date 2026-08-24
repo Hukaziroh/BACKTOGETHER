@@ -5,10 +5,18 @@ using EpicTransport;
 
 public class NetworkSafeQuitHandler : MonoBehaviour
 {
+    private static NetworkSafeQuitHandler instance;
     private bool isQuittingHandled = false;
 
     private void Awake()
     {
+        if (instance != null && instance != this)
+        {
+            enabled = false;
+            return;
+        }
+
+        instance = this;
         DontDestroyOnLoad(gameObject);
 
         // 유저가 Alt+F4, [X] 버튼, Application.Quit() 등을 누를 때 감지
@@ -29,38 +37,46 @@ public class NetworkSafeQuitHandler : MonoBehaviour
     {
         Debug.Log("[NetworkSafeQuitHandler] Alt+F4 / [X] 버튼 종료 감지. 네트워크 안전 정리를 진행합니다.");
 
-        // 1. 내가 방장(Host)인 경우 로비 파괴 및 서버 정지
+        EOSLobby eosLobby = FindAnyObjectByType<EOSLobby>();
+
+        // 1. 전송 계층이 살아 있을 때 로비 파괴/퇴장부터 완료합니다.
         if (NetworkServer.active)
         {
-            EOSLobby eosLobby = FindAnyObjectByType<EOSLobby>();
             if (eosLobby != null && eosLobby.ConnectedToLobby)
             {
                 eosLobby.DestroyLobby();
             }
-
-            if (NetworkManager.singleton != null)
-            {
-                NetworkManager.singleton.StopHost();
-            }
         }
-        // 2. 내가 클라이언트인 경우 로비 퇴장 및 클라이언트 정지
         else if (NetworkClient.active)
         {
-            EOSLobby eosLobby = FindAnyObjectByType<EOSLobby>();
             if (eosLobby != null && eosLobby.ConnectedToLobby)
             {
                 eosLobby.LeaveLobby();
             }
+        }
 
-            if (NetworkManager.singleton != null)
+        if (eosLobby != null)
+        {
+            float leaveTimeout = 2f;
+            while (eosLobby.IsLeavingLobby && leaveTimeout > 0f)
             {
-                NetworkManager.singleton.StopClient();
+                leaveTimeout -= Time.unscaledDeltaTime;
+                yield return null;
             }
         }
 
-        // 3. 에픽 P2P 트랜스포트 세션 강제 종료
+        // 2. 로비 정리 뒤 Mirror/P2P를 종료합니다.
         if (NetworkManager.singleton != null)
         {
+            if (NetworkServer.active)
+            {
+                NetworkManager.singleton.StopHost();
+            }
+            else if (NetworkClient.active)
+            {
+                NetworkManager.singleton.StopClient();
+            }
+
             EosTransport transport = NetworkManager.singleton.GetComponent<EosTransport>();
             if (transport != null)
             {
@@ -78,6 +94,10 @@ public class NetworkSafeQuitHandler : MonoBehaviour
 
     private void OnDestroy()
     {
-        Application.wantsToQuit -= OnWantsToQuit;
+        if (instance == this)
+        {
+            Application.wantsToQuit -= OnWantsToQuit;
+            instance = null;
+        }
     }
 }

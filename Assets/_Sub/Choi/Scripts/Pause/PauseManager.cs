@@ -216,11 +216,26 @@ public class PauseManager : MonoBehaviour
         // =========================================================
         yield return new WaitForSecondsRealtime(0.5f);
 
+        // Mirror가 offlineScene(Main) 전환을 이미 시작하므로 같은 씬을 다시 LoadScene하면
+        // NetworkManager/EOSSDKComponent가 중복 생성된다. 진행 중인 전환을 먼저 기다린다.
+        if (!string.IsNullOrEmpty(mainMenuSceneName))
+        {
+            float sceneChangeTimeout = 5f;
+            while (SceneManager.GetActiveScene().name != mainMenuSceneName &&
+                   NetworkManager.loadingSceneAsync != null &&
+                   sceneChangeTimeout > 0f)
+            {
+                sceneChangeTimeout -= Time.unscaledDeltaTime;
+                yield return null;
+            }
+        }
+
         Debug.Log("[퍼즈 시스템] ⑥ 게임 종료 시퀀스 완료");
 
         isLeaving = false;
 
-        if (!string.IsNullOrEmpty(mainMenuSceneName))
+        if (!string.IsNullOrEmpty(mainMenuSceneName) &&
+            SceneManager.GetActiveScene().name != mainMenuSceneName)
         {
             SceneManager.LoadScene(mainMenuSceneName);
         }

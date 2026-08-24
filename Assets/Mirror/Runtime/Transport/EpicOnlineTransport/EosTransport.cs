@@ -22,6 +22,7 @@ namespace EpicTransport
         private Server server;
 
         private Common activeNode;
+        private bool isShuttingDown;
 
         [SerializeField]
         public PacketReliability[] Channels = new PacketReliability[2] { PacketReliability.ReliableOrdered, PacketReliability.UnreliableUnordered };
@@ -69,29 +70,23 @@ namespace EpicTransport
 
             if (activeNode != null)
             {
-                ignoreCachedMessagesTimer += Time.deltaTime;
+                // 과거 패킷은 소켓 ID로 걸러낸다. 시작 직후의 정상 CONNECT까지
+                // 일정 시간 소비/폐기하면 재전송 전에는 영구 타임아웃이 날 수 있다.
+                activeNode.ignoreAllMessages = false;
 
-                if (ignoreCachedMessagesTimer <= ignoreCachedMessagesAtStartUpInSeconds)
+                if (client != null && !client.isConnecting)
                 {
-                    activeNode.ignoreAllMessages = true;
-                }
-                else
-                {
-                    activeNode.ignoreAllMessages = false;
-
-                    if (client != null && !client.isConnecting)
+                    if (EOSSDKComponent.Initialized)
                     {
-                        if (EOSSDKComponent.Initialized)
-                        {
-                            client.Connect(client.hostAddress);
-                        }
-                        else
-                        {
-                            Debug.LogError("EOS not initialized");
-                            client.EosNotInitialized();
-                        }
-                        client.isConnecting = true;
+                        client.Connect(client.hostAddress);
                     }
+                    else
+                    {
+                        Debug.LogError("EOS not initialized");
+                        client.EosNotInitialized();
+                    }
+
+                    client.isConnecting = true;
                 }
             }
 
@@ -109,16 +104,7 @@ namespace EpicTransport
 
             if (activeNode != null)
             {
-                ignoreCachedMessagesTimer += Time.deltaTime;
-
-                if (ignoreCachedMessagesTimer <= ignoreCachedMessagesAtStartUpInSeconds)
-                {
-                    activeNode.ignoreAllMessages = true;
-                }
-                else
-                {
-                    activeNode.ignoreAllMessages = false;
-                }
+                activeNode.ignoreAllMessages = false;
             }
 
             if (enabled)
@@ -322,30 +308,55 @@ namespace EpicTransport
 
         public override void Shutdown()
         {
-            if (EOSSDKComponent.CollectPlayerMetrics)
+            if (isShuttingDown) return;
+
+            Client shuttingDownClient = client;
+            Server shuttingDownServer = server;
+
+            if (shuttingDownClient == null && shuttingDownServer == null)
             {
-                EndPlayerSessionOptions endSessionOptions = new EndPlayerSessionOptions();
-                endSessionOptions.AccountId = EOSSDKComponent.LocalUserAccountId;
-
-                Result result = EOSSDKComponent.GetMetricsInterface()
-                    .EndPlayerSession(endSessionOptions);
-
-                if (result == Result.Success)
-                {
-                    Debug.Log("Stopped Metric Session");
-                }
+                activeNode = null;
+                ignoreCachedMessagesTimer = 0f;
+                packetId = 0;
+                return;
             }
-            server?.Shutdown();
-            client?.Disconnect();
-            server = null;
+
+            isShuttingDown = true;
             client = null;
+            server = null;
             activeNode = null;
 
-            ignoreCachedMessagesTimer = 0f;
+            try
+            {
+                if (EOSSDKComponent.CollectPlayerMetrics)
+                {
+                    MetricsInterface metricsInterface = EOSSDKComponent.GetMetricsInterface();
+                    if (metricsInterface != null)
+                    {
+                        EndPlayerSessionOptions endSessionOptions = new EndPlayerSessionOptions
+                        {
+                            AccountId = EOSSDKComponent.LocalUserAccountId
+                        };
 
-            packetId = 0;
+                        Result result = metricsInterface.EndPlayerSession(endSessionOptions);
+                        if (result == Result.Success)
+                        {
+                            Debug.Log("Stopped Metric Session");
+                        }
+                    }
+                }
 
-            Debug.Log("[EosTransport] Transport 완전 종료 및 상태 초기화 완료");
+                shuttingDownServer?.Shutdown();
+                shuttingDownClient?.Disconnect();
+            }
+            finally
+            {
+                ignoreCachedMessagesTimer = 0f;
+                packetId = 0;
+                isShuttingDown = false;
+
+                Debug.Log("[EosTransport] Transport 완전 종료 및 상태 초기화 완료");
+            }
         }
 
         public int GetMaxSinglePacketSize(int channelId) => P2PInterface.MaxPacketSize - 10; // 1159 bytes, we need to remove 10 bytes for the packet header (id (4 bytes) + fragment (4 bytes) + more fragments (1 byte)) 

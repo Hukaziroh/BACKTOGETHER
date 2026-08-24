@@ -18,6 +18,12 @@ public partial class ClientLobbyManager
     {
         SubscribeEvents();
 
+        if (IsConnecting)
+        {
+            Debug.LogWarning("[ClientLobbyManager] 이미 방 입장을 진행 중입니다.");
+            return;
+        }
+
         if (lobby == null)
             return;
 
@@ -48,6 +54,7 @@ public partial class ClientLobbyManager
         }
 
         SetInteractableAll(false);
+        IsConnecting = true;
 
         Debug.Log(
             $"[ClientLobbyManager] 방 입장 시작 | " +
@@ -107,16 +114,22 @@ public partial class ClientLobbyManager
             }
         }
 
+        if (eos != null && eos.ConnectedToLobby)
+        {
+            eos.LeaveLobby();
+        }
+
+        IsConnecting = false;
         SetInteractableAll(true);
         ShowError("방장의 주소 정보를 가져오지 못했습니다.");
     }
 
     private void OnJoinLobbyFailed(string error)
     {
-        if (!isLocalSearchRequest) return;
         isLocalSearchRequest = false;
 
         isQuickJoining = false;
+        IsConnecting = false;
 
         GameObject panel = GetLoadingPanel();
         if (panel != null) panel.SetActive(false);

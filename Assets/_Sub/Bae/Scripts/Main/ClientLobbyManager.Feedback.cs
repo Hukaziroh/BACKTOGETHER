@@ -266,22 +266,11 @@ public partial class ClientLobbyManager
 
     public void OnClick_CloseErrorPopup()
     {
+        if (isReturningAfterConnectionFailure) return;
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
 
         RestoreInputScopeAfterPopup();
-
-        if (NetworkManager.singleton != null)
-        {
-            NetworkManager.singleton.StopClient();
-        }
-
-        var eos = GetEOSLobby();
-        if (eos != null && eos.ConnectedToLobby)
-        {
-            eos.LeaveLobby();
-        }
-
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        StartCoroutine(ReturnAfterConnectionFailureRoutine());
     }
 
     private void ShowTimeoutPopup()
@@ -312,20 +301,46 @@ public partial class ClientLobbyManager
 
     public void OnClick_CloseTimeoutPopup()
     {
+        if (isReturningAfterConnectionFailure) return;
         if (timeoutPopupPanel != null) timeoutPopupPanel.SetActive(false);
 
+        StartCoroutine(ReturnAfterConnectionFailureRoutine());
+    }
+
+    private IEnumerator ReturnAfterConnectionFailureRoutine()
+    {
+        isReturningAfterConnectionFailure = true;
+
         var eos = GetEOSLobby();
-        if (eos != null && eos.ConnectedToLobby)
+        if (eos != null)
         {
-            eos.LeaveLobby();
+            if (eos.ConnectedToLobby && !eos.IsLeavingLobby)
+            {
+                eos.LeaveLobby();
+            }
+
+            float leaveTimeout = 5f;
+            while (eos.IsLeavingLobby && leaveTimeout > 0f)
+            {
+                leaveTimeout -= Time.unscaledDeltaTime;
+                yield return null;
+            }
         }
 
-        if (NetworkManager.singleton != null)
+        if (NetworkManager.singleton != null && NetworkClient.active)
         {
             NetworkManager.singleton.StopClient();
         }
 
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        string currentSceneName = SceneManager.GetActiveScene().name;
+        yield return new WaitForSecondsRealtime(0.2f);
+
+        if (SceneManager.GetActiveScene().name == currentSceneName)
+        {
+            SceneManager.LoadScene(currentSceneName);
+        }
+
+        isReturningAfterConnectionFailure = false;
     }
 
     private void RestoreInputScopeAfterPopup()
