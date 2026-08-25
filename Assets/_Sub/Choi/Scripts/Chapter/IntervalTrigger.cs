@@ -9,6 +9,10 @@ public class IntervalTrigger : NetworkBehaviour
     [Header("설정")]
     public float toggleInterval = 5f;
 
+    [Min(0f)]
+    [Tooltip("구역을 벗어난 뒤 좌우반전이 다시 적용되기까지의 시간")]
+    public float reentryCooldown = 1f;
+
     [Header("UI 연결")]
     public TMP_Text timerText;
 
@@ -20,7 +24,8 @@ public class IntervalTrigger : NetworkBehaviour
 
     private bool isLocalPlayerInside = false;
 
-    private Dictionary<Collider2D, Coroutine> exitRoutines = new Dictionary<Collider2D, Coroutine>();
+    private Dictionary<Collider2D, float> reentryBlockedUntil = new Dictionary<Collider2D, float>();
+    private Dictionary<Collider2D, Coroutine> reentryRoutines = new Dictionary<Collider2D, Coroutine>();
 
     private void Start()
     {
@@ -35,63 +40,88 @@ public class IntervalTrigger : NetworkBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("Player"))
+        if (!collision.CompareTag("Player"))
+            return;
+
+        if (reentryRoutines.TryGetValue(collision, out Coroutine routine))
         {
-            if (exitRoutines.ContainsKey(collision))
-            {
-                StopCoroutine(exitRoutines[collision]);
-                exitRoutines.Remove(collision);
-                return; 
-            }
-
-            PlayerController player = collision.GetComponent<PlayerController>();
-            if (player != null)
-            {
-                player.SetCurrentReverseZone(this);
-            }
-
-            NetworkIdentity netIdentity = collision.GetComponent<NetworkIdentity>();
-            if (netIdentity != null && netIdentity.isLocalPlayer)
-            {
-                isLocalPlayerInside = true;
-                if (timerText != null) timerText.gameObject.SetActive(true);
-            }
+            StopCoroutine(routine);
+            reentryRoutines.Remove(collision);
         }
+
+        if (reentryBlockedUntil.TryGetValue(collision, out float blockedUntil))
+        {
+            float remainingCooldown = blockedUntil - Time.time;
+            if (remainingCooldown > 0f)
+            {
+                reentryRoutines[collision] = StartCoroutine(
+                    ActivateAfterCooldown(collision, remainingCooldown)
+                );
+                return;
+            }
+
+            reentryBlockedUntil.Remove(collision);
+        }
+
+        ActivatePlayer(collision);
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.CompareTag("Player"))
+        if (!collision.CompareTag("Player"))
+            return;
+
+        if (reentryRoutines.TryGetValue(collision, out Coroutine routine))
         {
-            if (!exitRoutines.ContainsKey(collision))
-            {
-                exitRoutines[collision] = StartCoroutine(ExitDelayRoutine(collision));
-            }
+            StopCoroutine(routine);
+            reentryRoutines.Remove(collision);
+        }
+
+        reentryBlockedUntil[collision] = Time.time + Mathf.Max(0f, reentryCooldown);
+        DeactivatePlayer(collision);
+    }
+
+    private IEnumerator ActivateAfterCooldown(Collider2D collision, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        reentryRoutines.Remove(collision);
+        reentryBlockedUntil.Remove(collision);
+
+        if (collision != null)
+            ActivatePlayer(collision);
+    }
+
+    private void ActivatePlayer(Collider2D collision)
+    {
+        PlayerController player = collision.GetComponent<PlayerController>();
+        if (player != null)
+        {
+            player.SetCurrentReverseZone(this);
+        }
+
+        NetworkIdentity netIdentity = collision.GetComponent<NetworkIdentity>();
+        if (netIdentity != null && netIdentity.isLocalPlayer)
+        {
+            isLocalPlayerInside = true;
+            if (timerText != null) timerText.gameObject.SetActive(true);
         }
     }
 
-    private IEnumerator ExitDelayRoutine(Collider2D collision)
+    private void DeactivatePlayer(Collider2D collision)
     {
-        // 0.15초 대기 (이 시간 동안은 계속 구역 안에 있는 것으로 판정)
-        yield return new WaitForSeconds(0.15f);
-
-        if (collision != null)
+        PlayerController player = collision.GetComponent<PlayerController>();
+        if (player != null)
         {
-            PlayerController player = collision.GetComponent<PlayerController>();
-            if (player != null)
-            {
-                player.ClearCurrentReverseZone();
-            }
-
-            NetworkIdentity netIdentity = collision.GetComponent<NetworkIdentity>();
-            if (netIdentity != null && netIdentity.isLocalPlayer)
-            {
-                isLocalPlayerInside = false;
-                if (timerText != null) timerText.gameObject.SetActive(false);
-            }
+            player.ClearCurrentReverseZone();
         }
 
-        exitRoutines.Remove(collision);
+        NetworkIdentity netIdentity = collision.GetComponent<NetworkIdentity>();
+        if (netIdentity != null && netIdentity.isLocalPlayer)
+        {
+            isLocalPlayerInside = false;
+            if (timerText != null) timerText.gameObject.SetActive(false);
+        }
     }
 
     private void Update()
