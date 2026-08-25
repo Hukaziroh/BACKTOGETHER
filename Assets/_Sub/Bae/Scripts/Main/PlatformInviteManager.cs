@@ -29,6 +29,7 @@ public class PlatformInviteManager : MonoBehaviour
     protected CallResult<LobbyCreated_t> m_LobbyCreated;
     protected CallResult<LobbyEnter_t> m_LobbyEnter;
 
+    private CSteamID currentSteamLobbyId = CSteamID.Nil;
     private string currentHostingCode = "";
 #endif
 
@@ -54,18 +55,28 @@ public class PlatformInviteManager : MonoBehaviour
         ParseCommandLineArguments();
 
 #if STEAM_BUILD
-        if (SteamManager.Initialized)
-        {
-            m_GameLobbyJoinRequested = Callback<GameLobbyJoinRequested_t>.Create(OnGameLobbyJoinRequested);
-            m_LobbyCreated = CallResult<LobbyCreated_t>.Create(OnLobbyCreated);
-            m_LobbyEnter = CallResult<LobbyEnter_t>.Create(OnLobbyEnter);
-        }
+        // SteamManager.Initialized 체크 없이 콜백 객체를 미리 생성해둡니다. (Start 호출 순서 문제 방지)
+        m_GameLobbyJoinRequested = Callback<GameLobbyJoinRequested_t>.Create(OnGameLobbyJoinRequested);
+        m_LobbyCreated = CallResult<LobbyCreated_t>.Create(OnLobbyCreated);
+        m_LobbyEnter = CallResult<LobbyEnter_t>.Create(OnLobbyEnter);
 #endif
     }
 
     private void OnDestroy()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
+
+#if STEAM_BUILD
+        if (m_GameLobbyJoinRequested != null) m_GameLobbyJoinRequested.Dispose();
+        if (m_LobbyCreated != null) m_LobbyCreated.Dispose();
+        if (m_LobbyEnter != null) m_LobbyEnter.Dispose();
+
+        if (currentSteamLobbyId.IsValid())
+        {
+            SteamMatchmaking.LeaveLobby(currentSteamLobbyId);
+            currentSteamLobbyId = CSteamID.Nil;
+        }
+#endif
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -82,8 +93,21 @@ public class PlatformInviteManager : MonoBehaviour
     /// </summary>
     public void SetLobbyDataForInvite(string shortCode)
     {
+        Debug.Log($"[PlatformInviteManager] 외부 플랫폼 로비 세팅 요청됨 (ShortCode: {shortCode})");
+
 #if STEAM_BUILD
-        if (!SteamManager.Initialized) return;
+        if (!SteamManager.Initialized)
+        {
+            Debug.LogError("[PlatformInviteManager] SteamManager가 초기화되지 않아서 스팀 로비를 만들 수 없습니다!");
+            return;
+        }
+
+        // 기존에 파둔 스팀 로비가 있다면 확실하게 퇴장해서 꼬임을 방지합니다.
+        if (currentSteamLobbyId.IsValid())
+        {
+            SteamMatchmaking.LeaveLobby(currentSteamLobbyId);
+            currentSteamLobbyId = CSteamID.Nil;
+        }
 
         currentHostingCode = shortCode;
 
@@ -91,7 +115,7 @@ public class PlatformInviteManager : MonoBehaviour
         SteamAPICall_t handle = SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypeFriendsOnly, 4);
         m_LobbyCreated.Set(handle);
 
-        Debug.Log($"[PlatformInviteManager] 스팀 로비 생성 요청 (ShortCode: {shortCode})");
+        Debug.Log($"[PlatformInviteManager] 스팀 로비 생성 진행 중... (ShortCode: {shortCode})");
 #endif
 
 #if STOVE_BUILD
@@ -111,10 +135,10 @@ public class PlatformInviteManager : MonoBehaviour
             return;
         }
 
-        CSteamID steamLobbyId = new CSteamID(pCallback.m_ulSteamIDLobby);
+        currentSteamLobbyId = new CSteamID(pCallback.m_ulSteamIDLobby);
         
         // 생성된 스팀 로비에 EOS 방 코드를 메타데이터로 기록
-        SteamMatchmaking.SetLobbyData(steamLobbyId, "EOS_SHORTCODE", currentHostingCode);
+        SteamMatchmaking.SetLobbyData(currentSteamLobbyId, "EOS_SHORTCODE", currentHostingCode);
         
         Debug.Log($"[PlatformInviteManager] 스팀 로비 생성 완료 및 EOS_SHORTCODE 등록 성공 ({currentHostingCode})");
     }

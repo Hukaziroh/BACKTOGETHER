@@ -44,11 +44,9 @@ public partial class PrivateLobbyManager
 
         lastCreatedRoomName = roomTitle;
 
-        if (isPublicRoom) currentShortCode = "";
-        else currentShortCode = GenerateShortCode();
-
         isCreatingLobby = true;
         createLobbySuccess = false;
+
         SetAllButtonsInteractable(false);
         currentPanel = GetLoadingPanel();
         if (currentPanel != null) currentPanel.SetActive(true);
@@ -126,14 +124,18 @@ public partial class PrivateLobbyManager
                 ? chapterNames[chapterArrayIndex]
                 : $"Chapter {selectedChapterIndex}";
 
+        // 퍼블릭/프라이빗 상관없이 스팀 친구 초대를 위해 항상 숏코드를 발급합니다.
+        currentShortCode = GenerateShortCode();
+
         List<AttributeData> attrDataList = new List<AttributeData>();
         attrDataList.Add(new AttributeData { Key = "ROOM_NAME", Value = roomTitle });
         attrDataList.Add(new AttributeData { Key = "CHAPTER", Value = selectedChapterIndex.ToString() });
         attrDataList.Add(new AttributeData { Key = "CHAPTER_NAME", Value = selectedChapterName });
         attrDataList.Add(new AttributeData { Key = "IS_PUBLIC", Value = isPublicRoom ? "1" : "0" });
         attrDataList.Add(new AttributeData { Key = "NO_CHECKPOINT", Value = createWithoutCheckpoints ? "1" : "0" });
-
-        if (!isPublicRoom) attrDataList.Add(new AttributeData { Key = "SHORTCODE", Value = currentShortCode });
+        
+        // 퍼블릭 방이어도 스팀 초대를 위해 숏코드 속성을 부여합니다.
+        attrDataList.Add(new AttributeData { Key = "SHORTCODE", Value = currentShortCode });
 
         var lobby = GetEOSLobby();
         if (lobby != null) lobby.UpdateLobbyAttributes(attrDataList.ToArray());
@@ -154,10 +156,16 @@ public partial class PrivateLobbyManager
         if (transport != null) transport.ResetIgnoreMessagesAtStartUpTimer();
         NetworkManager.singleton.StartHost();
 
-        // [Steam / Stove 초대 지원] 현재 생성된 프라이빗 룸의 숏코드를 외부 플랫폼 로비에도 등록한다.
-        if (PlatformInviteManager.Instance != null && !isPublicRoom && !string.IsNullOrEmpty(currentShortCode))
+        Debug.Log($"[PrivateLobbyManager] 방 생성 완료. 초대 매니저 연동 시도 중... (Instance: {PlatformInviteManager.Instance != null}, isPublic: {isPublicRoom}, shortCode: {currentShortCode})");
+
+        // [Steam / Stove 초대 지원] 퍼블릭/프라이빗 상관없이 항상 스팀 로비를 파서 우클릭 초대를 활성화합니다.
+        if (PlatformInviteManager.Instance != null && !string.IsNullOrEmpty(currentShortCode))
         {
             PlatformInviteManager.Instance.SetLobbyDataForInvite(currentShortCode);
+        }
+        else
+        {
+            Debug.LogWarning("[PrivateLobbyManager] 초대 매니저 연동이 스킵되었습니다. 조건을 확인해주세요.");
         }
 
         yield return new WaitForSecondsRealtime(0.2f);
