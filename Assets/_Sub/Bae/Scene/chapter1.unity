@@ -304,6 +304,10 @@ PrefabInstance:
       propertyPath: m_TagString
       value: MovingPlatform
       objectReference: {fileID: 0}
+    - target: {fileID: 5587176754736923251, guid: 8894e59eadf2c8b49914c510ceea3eba, type: 3}
+      propertyPath: useFixedUpdate
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6426469386026468056, guid: 8894e59eadf2c8b49914c510ceea3eba, type: 3}
       propertyPath: m_LocalPosition.x
       value: 51.56163
@@ -343,6 +347,10 @@ PrefabInstance:
     - target: {fileID: 6426469386026468056, guid: 8894e59eadf2c8b49914c510ceea3eba, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6905128145434088713, guid: 8894e59eadf2c8b49914c510ceea3eba, type: 3}
+      propertyPath: m_Interpolate
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7119678477064567979, guid: 8894e59eadf2c8b49914c510ceea3eba, type: 3}
       propertyPath: endPoint
