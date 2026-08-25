@@ -66,6 +66,7 @@ public class EmojiRadialMenu : MonoBehaviour
         string sceneName = SceneManager.GetActiveScene().name;
         return sceneName == "Lobby" ||
                sceneName == "NLobby" ||
+               sceneName.StartsWith("Ex", StringComparison.OrdinalIgnoreCase) ||
                sceneName.StartsWith("chapter", StringComparison.OrdinalIgnoreCase) ||
                sceneName.StartsWith("Nchapter", StringComparison.OrdinalIgnoreCase);
     }

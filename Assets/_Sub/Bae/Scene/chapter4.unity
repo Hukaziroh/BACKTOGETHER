@@ -77076,7 +77076,7 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
@@ -80129,7 +80129,7 @@ MonoBehaviour:
   showOverlay: 0
   overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
   onlySyncOnChangeCorrectionMultiplier: 2
-  useFixedUpdate: 0
+  useFixedUpdate: 1
   rotationSensitivity: 0.01
   positionPrecision: 0.01
   scalePrecision: 0.01
@@ -80173,7 +80173,7 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
@@ -80572,7 +80572,7 @@ MonoBehaviour:
   showOverlay: 0
   overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
   onlySyncOnChangeCorrectionMultiplier: 2
-  useFixedUpdate: 0
+  useFixedUpdate: 1
   rotationSensitivity: 0.01
   positionPrecision: 0.01
   scalePrecision: 0.01
@@ -83176,7 +83176,7 @@ MonoBehaviour:
   showOverlay: 0
   overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
   onlySyncOnChangeCorrectionMultiplier: 2
-  useFixedUpdate: 0
+  useFixedUpdate: 1
   rotationSensitivity: 0.01
   positionPrecision: 0.01
   scalePrecision: 0.01
@@ -83295,7 +83295,7 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
@@ -295432,7 +295432,7 @@ MonoBehaviour:
   showOverlay: 0
   overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
   onlySyncOnChangeCorrectionMultiplier: 2
-  useFixedUpdate: 0
+  useFixedUpdate: 1
   rotationSensitivity: 0.01
   positionPrecision: 0.01
   scalePrecision: 0.01
@@ -295476,7 +295476,7 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
@@ -297659,7 +297659,7 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
@@ -297715,7 +297715,7 @@ MonoBehaviour:
   showOverlay: 0
   overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
   onlySyncOnChangeCorrectionMultiplier: 2
-  useFixedUpdate: 0
+  useFixedUpdate: 1
   rotationSensitivity: 0.01
   positionPrecision: 0.01
   scalePrecision: 0.01
