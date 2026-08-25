@@ -144,8 +144,7 @@ public class PlayerAnimation : NetworkBehaviour
 
         float input = animationInput;
 
-        if (controller.currentReverseZone != null &&
-            !controller.currentReverseZone.isForward)
+        if (controller.movement.ShouldReverseHorizontalInput)
         {
             if (input != 0)
                 input *= -1f;
