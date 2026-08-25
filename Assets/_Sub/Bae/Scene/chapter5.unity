@@ -1071,7 +1071,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  requiredPlayers: 1
+  requiredPlayers: 4
   targetEyeGimmick: {fileID: 2391493486414019069}
 --- !u!1001 &128140066
 PrefabInstance:
@@ -3415,7 +3415,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  requiredPlayers: 1
+  requiredPlayers: 4
   targetEyeGimmick: {fileID: 506535039}
 --- !u!1001 &322618620
 PrefabInstance:
