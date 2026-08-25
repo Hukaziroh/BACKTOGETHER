@@ -19,14 +19,9 @@ public class ClientJoinUI : MonoBehaviour
     [SerializeField] private GameObject? errorPopupPanel;
     [SerializeField] private TextMeshProUGUI? errorMessageText;
 
-    [Header("타임아웃 설정")]
-    [Tooltip("방 접속 시도 후 무한 로딩 방지 제한 시간 (초)")]
-    [SerializeField] private float joinTimeout = 10f;
-
     private LobbySearch? currentSearchHandle;
     private LobbyDetails? foundLobbyDetails;
     private bool searchFinished = false;
-    private Coroutine? timeoutCoroutine;
 
     // ★ 연타 방지 플래그
     private bool isSearchingCode = false;
@@ -94,51 +89,6 @@ public class ClientJoinUI : MonoBehaviour
         StartCoroutine(SearchAndJoinRoutine(code));
     }
 
-    /// <summary>
-    /// 무한 로딩 감지 및 타임아웃 처리 코루틴
-    /// </summary>
-    private IEnumerator JoinTimeoutRoutine()
-    {
-        yield return new WaitForSeconds(joinTimeout);
-
-        GameObject? panel = GetLoadingPanel();
-        if (panel != null && panel.activeSelf)
-        {
-            Debug.LogWarning($"[ClientJoinUI] 방 진입 타임아웃 ({joinTimeout}초 초과) -> 접속 시도를 강제 중단합니다.");
-
-            if (currentSearchHandle != null)
-            {
-                currentSearchHandle.Release();
-                currentSearchHandle = null;
-            }
-
-            if (NetworkManager.singleton != null)
-            {
-                if (NetworkClient.active)
-                {
-                    NetworkManager.singleton.StopClient();
-                }
-
-                EOSLobby eosLobby = NetworkManager.singleton.GetComponent<EOSLobby>();
-                if (eosLobby != null && eosLobby.ConnectedToLobby)
-                {
-                    eosLobby.LeaveLobby();
-
-                    float leaveTimeout = 5f;
-                    while (eosLobby.IsLeavingLobby && leaveTimeout > 0f)
-                    {
-                        leaveTimeout -= Time.unscaledDeltaTime;
-                        yield return null;
-                    }
-                }
-            }
-
-            isSearchingCode = false;
-            HideLoadingPanel();
-            ShowErrorPopup("방 접속 시간이 초과되었습니다.\n(서버 응답이 없거나 네트워크가 불안정합니다.)");
-        }
-    }
-
     private IEnumerator SearchAndJoinRoutine(string code)
     {
         searchFinished = false;
@@ -163,7 +113,6 @@ public class ClientJoinUI : MonoBehaviour
         if (lobbyInterface == null)
         {
             isSearchingCode = false; // ★ 리셋
-            CancelTimeout();
             HideLoadingPanel();
             ShowErrorPopup("EOS 네트워크 시스템이 준비되지 않았습니다.");
             yield break;
@@ -214,7 +163,6 @@ public class ClientJoinUI : MonoBehaviour
             }
 
             isSearchingCode = false; // ★ 리셋
-            CancelTimeout();
             HideLoadingPanel();
             ShowErrorPopup("방 검색에 실패했습니다. 코드를 다시 확인해 주세요.");
             yield break;
@@ -247,7 +195,6 @@ public class ClientJoinUI : MonoBehaviour
         {
             Debug.LogWarning($"[ClientJoinUI] 코드 '{code}'에 해당하는 방을 찾을 수 없습니다.");
             isSearchingCode = false; // ★ 리셋
-            CancelTimeout();
             HideLoadingPanel();
             ShowErrorPopup($"코드 [{code}] 방을 찾을 수 없습니다.\n코드를 다시 확인해 주세요.");
         }
@@ -277,15 +224,6 @@ public class ClientJoinUI : MonoBehaviour
         {
             currentSearchHandle.Release();
             currentSearchHandle = null;
-        }
-    }
-
-    private void CancelTimeout()
-    {
-        if (timeoutCoroutine != null)
-        {
-            StopCoroutine(timeoutCoroutine);
-            timeoutCoroutine = null;
         }
     }
 
