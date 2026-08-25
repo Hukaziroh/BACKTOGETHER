@@ -52,19 +52,30 @@ public class ClientJoinUI : MonoBehaviour
     /// </summary>
     public void OnClick_ConnectByCode()
     {
-        // ★ 이미 검색 진행 중이면 중복 클릭 차단
+        // 중복 검색 진행 중이면 중복 클릭 차단
         if (isSearchingCode) return;
 
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
 
         if (sixDigitUI == null)
         {
-            Debug.LogError("[ClientJoinUI] 인스펙터에 sixDigitUI (SixDigitCodeInputUI)가 할당되지 않았습니다!");
-            ShowErrorPopup("코드 입력 UI(SixDigitUI) 연결이 누락되었습니다.\n인스펙터를 확인해 주세요.");
+            Debug.LogError("[ClientJoinUI] 인스펙터에 sixDigitUI (SixDigitCodeInputUI)가 할당되지 않았습니다.");
+            ShowErrorPopup("코드 입력 UI(SixDigitUI) 연결이 누락되었습니다.\n인스펙터를 확인해주세요.");
             return;
         }
 
         string code = sixDigitUI.GetCode();
+        AutoConnectByCode(code);
+    }
+
+    /// <summary>
+    /// 외부 플랫폼(Steam/Stove) 초대 수락 등으로 코드를 직접 주입하여 자동 접속할 때 사용
+    /// </summary>
+    public void AutoConnectByCode(string code)
+    {
+        if (isSearchingCode) return;
+
+        if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
 
         if (string.IsNullOrEmpty(code) || code.Length != 6)
         {
@@ -74,7 +85,7 @@ public class ClientJoinUI : MonoBehaviour
 
         if (isSearchingCode)
         {
-            Debug.LogWarning("[ClientJoinUI] 이미 방 참가(코드 검색)를 진행 중입니다.");
+            Debug.LogWarning("[ClientJoinUI] 이미 방 참가(코드 검색)가 진행 중입니다.");
             return;
         }
 

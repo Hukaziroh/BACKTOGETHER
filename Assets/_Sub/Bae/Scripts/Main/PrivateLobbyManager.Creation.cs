@@ -154,6 +154,12 @@ public partial class PrivateLobbyManager
         if (transport != null) transport.ResetIgnoreMessagesAtStartUpTimer();
         NetworkManager.singleton.StartHost();
 
+        // [Steam / Stove 초대 지원] 현재 생성된 프라이빗 룸의 숏코드를 외부 플랫폼 로비에도 등록한다.
+        if (PlatformInviteManager.Instance != null && !isPublicRoom && !string.IsNullOrEmpty(currentShortCode))
+        {
+            PlatformInviteManager.Instance.SetLobbyDataForInvite(currentShortCode);
+        }
+
         yield return new WaitForSecondsRealtime(0.2f);
         SetAllButtonsInteractable(true);
         if (currentPanel != null) currentPanel.SetActive(false);
