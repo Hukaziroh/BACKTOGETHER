@@ -95,10 +95,25 @@ public class PlayerController : NetworkBehaviour
     public void SetCurrentReverseZone(IntervalTrigger zone)
     {
         currentReverseZone = zone;
+        movement?.CancelReverseZoneExitTransition();
+
+        if (zone != null && !zone.isForward)
+            movement?.BeginReverseZoneEntryTransition();
+        else
+            movement?.CancelReverseZoneEntryTransition();
     }
 
     public void ClearCurrentReverseZone()
     {
+        bool preserveCurrentDirection =
+            movement != null && movement.ShouldReverseHorizontalInput;
+
         currentReverseZone = null;
+        movement?.CancelReverseZoneEntryTransition();
+
+        if (preserveCurrentDirection)
+            movement?.BeginReverseZoneExitTransition();
+        else
+            movement?.CancelReverseZoneExitTransition();
     }
 }

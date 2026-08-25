@@ -71,6 +71,19 @@ public class PlayerMovement : NetworkBehaviour
 
     private bool canCutJump = false;
 
+    // 역방향 존에 진입할 때 이미 누르고 있던 입력은 방향을 뒤집지 않는다.
+    // 해당 입력을 놓거나 다른 방향으로 바꾼 뒤부터 존의 반전 규칙을 적용한다.
+    private bool suppressReverseUntilInputChanges;
+    private float reverseEntryInputSign;
+    private bool preserveReverseAfterExitUntilInputChanges;
+    private float reverseExitInputSign;
+
+    public bool ShouldReverseHorizontalInput =>
+        (controller.currentReverseZone != null &&
+         !controller.currentReverseZone.isForward &&
+         !suppressReverseUntilInputChanges) ||
+        preserveReverseAfterExitUntilInputChanges;
+
     [Header("코너 충돌 보정")]
     public float cornerPushEpsilon = 0.02f;
     public float overlapPushTolerance = 0.01f;
@@ -228,6 +241,9 @@ public class PlayerMovement : NetworkBehaviour
             rawInput = controller.combineHandler.GetServerCombinedHorizontalInput();
         }
 
+        UpdateReverseEntryTransition(rawInput);
+        UpdateReverseExitTransition(rawInput);
+
         if (controller.knockback.isKnockedBack) return;
 
         if (controller.knockback.IsStunned)
@@ -237,13 +253,9 @@ public class PlayerMovement : NetworkBehaviour
             return;
         }
 
-        if (controller.currentReverseZone != null && !controller.currentReverseZone.isForward)
+        if (ShouldReverseHorizontalInput)
         {
-            float originalInput = rawInput;
-            if ((originalInput > 0 && rawInput > 0) || (originalInput < 0 && rawInput < 0))
-            {
-                rawInput *= -1f;
-            }
+            rawInput *= -1f;
         }
 
         isTouchingPlayer = false;
@@ -358,6 +370,86 @@ public class PlayerMovement : NetworkBehaviour
         }
 
         controller.rb.linearVelocity = new Vector2(newX, controller.rb.linearVelocity.y);
+    }
+
+    public void BeginReverseZoneEntryTransition()
+    {
+        float currentInput = controller.input.HorizontalInput;
+
+        if (controller.combineHandler != null &&
+            controller.combineHandler.isCombined &&
+            controller.combineHandler.bodyTarget == gameObject)
+        {
+            currentInput = controller.combineHandler.GetServerCombinedHorizontalInput();
+        }
+
+        if (Mathf.Abs(currentInput) <= 0.1f)
+        {
+            CancelReverseZoneEntryTransition();
+            return;
+        }
+
+        suppressReverseUntilInputChanges = true;
+        reverseEntryInputSign = Mathf.Sign(currentInput);
+    }
+
+    public void CancelReverseZoneEntryTransition()
+    {
+        suppressReverseUntilInputChanges = false;
+        reverseEntryInputSign = 0f;
+    }
+
+    private void UpdateReverseEntryTransition(float currentInput)
+    {
+        if (!suppressReverseUntilInputChanges)
+            return;
+
+        if (controller.currentReverseZone == null ||
+            controller.currentReverseZone.isForward ||
+            Mathf.Abs(currentInput) <= 0.1f ||
+            Mathf.Sign(currentInput) != reverseEntryInputSign)
+        {
+            CancelReverseZoneEntryTransition();
+        }
+    }
+
+    public void BeginReverseZoneExitTransition()
+    {
+        float currentInput = controller.input.HorizontalInput;
+
+        if (controller.combineHandler != null &&
+            controller.combineHandler.isCombined &&
+            controller.combineHandler.bodyTarget == gameObject)
+        {
+            currentInput = controller.combineHandler.GetServerCombinedHorizontalInput();
+        }
+
+        if (Mathf.Abs(currentInput) <= 0.1f)
+        {
+            CancelReverseZoneExitTransition();
+            return;
+        }
+
+        preserveReverseAfterExitUntilInputChanges = true;
+        reverseExitInputSign = Mathf.Sign(currentInput);
+    }
+
+    public void CancelReverseZoneExitTransition()
+    {
+        preserveReverseAfterExitUntilInputChanges = false;
+        reverseExitInputSign = 0f;
+    }
+
+    private void UpdateReverseExitTransition(float currentInput)
+    {
+        if (!preserveReverseAfterExitUntilInputChanges)
+            return;
+
+        if (Mathf.Abs(currentInput) <= 0.1f ||
+            Mathf.Sign(currentInput) != reverseExitInputSign)
+        {
+            CancelReverseZoneExitTransition();
+        }
     }
 
     public void Jump()
