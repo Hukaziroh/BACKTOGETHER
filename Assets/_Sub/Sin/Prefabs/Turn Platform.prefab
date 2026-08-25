@@ -345,7 +345,7 @@ MonoBehaviour:
   showOverlay: 0
   overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
   onlySyncOnChangeCorrectionMultiplier: 2
-  useFixedUpdate: 0
+  useFixedUpdate: 1
   rotationSensitivity: 0.01
   positionPrecision: 0.01
   scalePrecision: 0.01
