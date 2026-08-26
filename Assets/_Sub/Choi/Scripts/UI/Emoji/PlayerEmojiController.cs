@@ -33,6 +33,9 @@ public class PlayerEmojiController : NetworkBehaviour
     private Transform emojiTransform;
     private Coroutine activeEmojiCoroutine;
 
+    private WaitForSeconds cachedFrameWait;
+    private WaitForSeconds cachedDisplayWait;
+
     private void OnEnable()
     {
         if (!activeControllers.Contains(this))
@@ -57,6 +60,8 @@ public class PlayerEmojiController : NetworkBehaviour
     private void Awake()
     {
         parentTransform = transform;
+        cachedFrameWait = new WaitForSeconds(frameInterval);
+        cachedDisplayWait = new WaitForSeconds(displayDuration);
 
         if (emojiSpriteRenderer == null)
         {
@@ -234,10 +239,10 @@ public class PlayerEmojiController : NetworkBehaviour
                 // 🌟 애니메이션 프레임이 전환될 때마다 띠용띠용 튀는 효과 적용
                 PlayPopAnimation();
             }
-            yield return new WaitForSeconds(frameInterval);
+            yield return cachedFrameWait;
         }
 
-        yield return new WaitForSeconds(displayDuration);
+        yield return cachedDisplayWait;
 
         if (emojiSpriteRenderer != null)
         {
@@ -247,7 +252,14 @@ public class PlayerEmojiController : NetworkBehaviour
 
     private IEnumerator HideEmojiRoutine(float duration)
     {
-        yield return new WaitForSeconds(duration);
+        if (duration == displayDuration)
+        {
+            yield return cachedDisplayWait;
+        }
+        else
+        {
+            yield return new WaitForSeconds(duration);
+        }
 
         if (emojiSpriteRenderer != null)
         {

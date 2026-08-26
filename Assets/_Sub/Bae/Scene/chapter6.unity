@@ -36829,7 +36829,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2126958134138387385, guid: af18edf77f13ee242b17cf09eaeb6cb3, type: 3}
       propertyPath: m_Size.x
-      value: 15.267981
+      value: 12.2273
       objectReference: {fileID: 0}
     - target: {fileID: 2126958134138387385, guid: af18edf77f13ee242b17cf09eaeb6cb3, type: 3}
       propertyPath: m_Size.y
@@ -36837,11 +36837,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2126958134138387385, guid: af18edf77f13ee242b17cf09eaeb6cb3, type: 3}
       propertyPath: m_Offset.x
-      value: -1.8493481
+      value: -0.32900763
       objectReference: {fileID: 0}
     - target: {fileID: 2126958134138387385, guid: af18edf77f13ee242b17cf09eaeb6cb3, type: 3}
       propertyPath: m_Offset.y
-      value: 0.092499614
+      value: 0.09249973
       objectReference: {fileID: 0}
     - target: {fileID: 4303600409352984433, guid: af18edf77f13ee242b17cf09eaeb6cb3, type: 3}
       propertyPath: requiredPlayers

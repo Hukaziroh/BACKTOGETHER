@@ -30,6 +30,7 @@ public class BossProximityVignette : MonoBehaviour
     public float maxBlackMix = 0.2f;
 
     private Image vignetteImage;
+    private float findTimer = 0f;
 
     void Start()
     {
@@ -41,23 +42,31 @@ public class BossProximityVignette : MonoBehaviour
 
     void Update()
     {
-        if (boss == null)
+        if (boss == null || localPlayer == null)
         {
-            GameObject b = GameObject.FindGameObjectWithTag(bossTag);
-            if (b != null) boss = b.transform;
-        }
-        if (localPlayer == null)
-        {
-            foreach (GameObject p in GameObject.FindGameObjectsWithTag(playerTag))
+            findTimer += Time.deltaTime;
+            if (findTimer < 0.5f) return;
+            findTimer = 0f;
+
+            if (boss == null)
             {
-                NetworkIdentity identity = p.GetComponent<NetworkIdentity>();
-                if (identity != null && identity.isLocalPlayer)
+                GameObject b = GameObject.FindGameObjectWithTag(bossTag);
+                if (b != null) boss = b.transform;
+            }
+            if (localPlayer == null)
+            {
+                foreach (GameObject p in GameObject.FindGameObjectsWithTag(playerTag))
                 {
-                    localPlayer = p.transform;
-                    break;
+                    NetworkIdentity identity = p.GetComponent<NetworkIdentity>();
+                    if (identity != null && identity.isLocalPlayer)
+                    {
+                        localPlayer = p.transform;
+                        break;
+                    }
                 }
             }
         }
+
         if (boss == null || localPlayer == null) return;
 
         float dist = Vector2.Distance(localPlayer.position, boss.position);
