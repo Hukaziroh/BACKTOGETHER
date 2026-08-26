@@ -12583,6 +12583,9 @@ MonoBehaviour:
   englishOutlineThickness: 1
   defaultDilate: 1
   defaultOutlineThickness: 1
+  outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  outlineShaderScale: 0.1
+  preserveSourceMaterialStyle: 0
 --- !u!114 &1621682298
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17248,6 +17251,9 @@ MonoBehaviour:
   englishOutlineThickness: 1
   defaultDilate: 1
   defaultOutlineThickness: 1
+  outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  outlineShaderScale: 0.1
+  preserveSourceMaterialStyle: 0
 --- !u!1 &6870475135527063541 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3369305556748438429, guid: d391139454a53e341889149a36646d1d, type: 3}

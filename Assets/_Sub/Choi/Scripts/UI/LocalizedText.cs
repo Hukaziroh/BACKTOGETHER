@@ -27,8 +27,14 @@ public class LocalizedText : MonoBehaviour
     public float defaultDilate = 1f;
     public float defaultOutlineThickness = 1;
 
+    [Header("외곽선 표현 설정")]
+    [SerializeField] private Color outlineColor = Color.black;
+    [SerializeField, Range(0.05f, 0.2f)] private float outlineShaderScale = 0.1f;
+    [SerializeField] private bool preserveSourceMaterialStyle;
+
     private const string FaceDilateId = "_FaceDilate";
     private const string OutlineWidthId = "_OutlineWidth";
+    private const string OutlineColorId = "_OutlineColor";
     private const string OutlineSoftnessId = "_OutlineSoftness";
     private const string UnderlayColorId = "_UnderlayColor";
     private const string UnderlayOffsetXId = "_UnderlayOffsetX";
@@ -105,11 +111,11 @@ public class LocalizedText : MonoBehaviour
         Material mat = GetRuntimeMaterial();
         if (mat != null)
         {
-            if (lang == Language.English)
+            if (!preserveSourceMaterialStyle && lang == Language.English)
             {
                 ApplyReadableTextStyle(mat, englishOutlineThickness);
             }
-            else
+            else if (!preserveSourceMaterialStyle)
             {
                 ApplyReadableTextStyle(mat, defaultOutlineThickness);
             }
@@ -184,12 +190,19 @@ public class LocalizedText : MonoBehaviour
     private void ApplyTmpOutline(Material mat, float outlinePixels)
     {
         // Inspector의 1은 1px 외곽선 의미로 유지하고 TMP의 0~1 셰이더 값으로 변환한다.
-        float safeOutline = Mathf.Clamp(outlinePixels, 0f, 1f) * 0.1f;
+        float safeOutline = Mathf.Clamp(outlinePixels, 0f, 1f) * outlineShaderScale;
 
         if (mat.HasProperty(OutlineWidthId))
         {
             mat.SetFloat(OutlineWidthId, safeOutline);
         }
+
+        if (mat.HasProperty(OutlineColorId))
+        {
+            mat.SetColor(OutlineColorId, outlineColor);
+        }
+
+        ShaderUtilities.UpdateShaderRatios(mat);
     }
 
     private void SetMaterialFloatIfExists(Material mat, string propertyId, float value)
