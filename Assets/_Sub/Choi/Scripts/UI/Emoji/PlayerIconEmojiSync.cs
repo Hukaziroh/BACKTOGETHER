@@ -132,8 +132,17 @@ public class PlayerIconEmojiSync : MonoBehaviour
         return null;
     }
 
+    private GameObject lastTargetPlayer = null;
+    private SpriteRenderer cachedPlayerEmojiSr = null;
+
     private SpriteRenderer GetPlayerEmojiSpriteRenderer(GameObject player)
     {
+        if (lastTargetPlayer == player && cachedPlayerEmojiSr != null)
+            return cachedPlayerEmojiSr;
+
+        lastTargetPlayer = player;
+        cachedPlayerEmojiSr = null;
+
         Component emojiController = player.GetComponent("PlayerEmojiController");
         if (emojiController == null) return null;
 
@@ -141,7 +150,8 @@ public class PlayerIconEmojiSync : MonoBehaviour
         var field = type.GetField("emojiSpriteRenderer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         if (field != null)
         {
-            return field.GetValue(emojiController) as SpriteRenderer;
+            cachedPlayerEmojiSr = field.GetValue(emojiController) as SpriteRenderer;
+            return cachedPlayerEmojiSr;
         }
         return null;
     }

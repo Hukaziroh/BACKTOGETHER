@@ -23,25 +23,29 @@ public class CoopSeesawPlatform : NetworkBehaviour
     public Vector2 checkOffset = new Vector2(0f, 0.5f);
     public LayerMask playerLayer;
 
+    private Collider2D[] hitBuffer = new Collider2D[16];
+
     [ServerCallback]
     void FixedUpdate()
     {
         if (platformRb == null) return;
-        Collider2D[] hits = Physics2D.OverlapBoxAll(
+        int hitCount = Physics2D.OverlapBoxNonAlloc(
             (Vector2)transform.position + (Vector2)(transform.rotation * checkOffset),
             checkSize,
             platformRb.rotation,
+            hitBuffer,
             playerLayer
         );
 
         float targetAngle = 0f;
 
-        if (hits.Length > 0)
+        if (hitCount > 0)
         {
             float totalBalance = 0f;
 
-            foreach (var hit in hits)
+            for (int i = 0; i < hitCount; i++)
             {
+                var hit = hitBuffer[i];
                 if (hit.CompareTag("Player"))
                 {
                     Vector3 localPos = transform.InverseTransformPoint(hit.transform.position);
@@ -51,7 +55,7 @@ public class CoopSeesawPlatform : NetworkBehaviour
             targetAngle = -totalBalance * weightSensitivity;
             targetAngle = Mathf.Clamp(targetAngle, -maxAngle, maxAngle);
         }
-        float speed = (hits.Length > 0) ? rotationSpeed : returnSpeed;
+        float speed = (hitCount > 0) ? rotationSpeed : returnSpeed;
         float nextAngle = Mathf.LerpAngle(platformRb.rotation, targetAngle, Time.fixedDeltaTime * speed);
         platformRb.MoveRotation(nextAngle);
     }
