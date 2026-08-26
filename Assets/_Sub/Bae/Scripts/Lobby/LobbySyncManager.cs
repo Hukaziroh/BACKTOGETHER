@@ -23,6 +23,9 @@ public class LobbySyncManager : NetworkBehaviour
     [SyncVar(hook = nameof(OnRoomNameUpdated))]
     public string roomName = ""; // 방 이름 SyncVar
 
+    [SyncVar(hook = nameof(OnRoomVisibilityUpdated))]
+    public bool isPublicRoom = true;
+
     void Awake()
     {
         if (instance == null) instance = this;
@@ -36,6 +39,7 @@ public class LobbySyncManager : NetworkBehaviour
         base.OnStartServer();
         // 방 생성시 저장된 이름을 가져와 동기화
         roomName = PrivateLobbyManager.lastCreatedRoomName;
+        isPublicRoom = PrivateLobbyManager.lastCreatedRoomIsPublic;
     }
 
     void Update()
@@ -83,6 +87,11 @@ public class LobbySyncManager : NetworkBehaviour
         UpdateRoomCodeUI(roomCode);
     }
 
+    void OnRoomVisibilityUpdated(bool oldValue, bool newValue)
+    {
+        UpdateRoomCodeUI(roomCode);
+    }
+
     private void UpdatePlayerCountUI(int count)
     {
         if (playerCountText != null)
@@ -104,12 +113,16 @@ public class LobbySyncManager : NetworkBehaviour
 
         bool isMainScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Main";
 
-        // 공개방(code가 비어있음)일 때 방 이름 사용, 아니면 코드 사용
-        string formattedCode = (isMainScene) ? "Empty" : (string.IsNullOrEmpty(code) ? roomName : code);
+        string formattedText = isMainScene
+            ? "Empty"
+            : isPublicRoom
+                ? roomName
+                : code;
 
-        if (string.IsNullOrEmpty(formattedCode) && !isMainScene && !string.IsNullOrEmpty(PrivateLobbyManager.currentShortCode))
+        if (!isPublicRoom && string.IsNullOrEmpty(formattedText) && !isMainScene &&
+            !string.IsNullOrEmpty(PrivateLobbyManager.currentShortCode))
         {
-            formattedCode = PrivateLobbyManager.currentShortCode;
+            formattedText = PrivateLobbyManager.currentShortCode;
         }
 
         // 스트리머 모드(가리기) 적용 여부 확인
@@ -119,16 +132,16 @@ public class LobbySyncManager : NetworkBehaviour
             isCodeVisible = OptionsManager.instance.IsCodeVisible;
         }
 
-        // 비공개방/공개방 구분 없이 가리기 옵션이 켜져있지 않으면 마스킹 처리
-        if (!isMainScene && !isCodeVisible)
+        // 방 이름은 가리지 않고, 비공개방 코드에만 스트리머 모드를 적용한다.
+        if (!isMainScene && !isPublicRoom && !isCodeVisible)
         {
-            formattedCode = "******";
+            formattedText = "******";
         }
 
         // 🌟 더 이상 접두사(Prefix)를 찾거나 파싱하지 않습니다.
         // 라벨(roomCodeLabelText)은 이미 유니티 내 번역 시스템이 처리한 대로 고정되어 있고,
         // 우리는 오직 코드 값(roomCodeValueText)만 갱신합니다.
-        roomCodeValueText.text = formattedCode;
+        roomCodeValueText.text = formattedText;
     }
 
     private void ForceRoomCodeTextEllipsis()

@@ -71,6 +71,7 @@ public partial class PrivateLobbyManager : MonoBehaviour
 
     public static string currentShortCode = "";
     public static string lastCreatedRoomName = "";
+    public static bool lastCreatedRoomIsPublic = true;
     public static int selectedChapter = 1;
     private int selectedChapterIndex = 1;
     private int maxChapterCount => chapterNames != null && chapterNames.Length > 0 ? chapterNames.Length : 6;
