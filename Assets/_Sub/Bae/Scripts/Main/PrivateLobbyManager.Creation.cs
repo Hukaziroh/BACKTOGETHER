@@ -43,6 +43,7 @@ public partial class PrivateLobbyManager
      : GetRandomDefaultRoomName();
 
         lastCreatedRoomName = roomTitle;
+        lastCreatedRoomIsPublic = isPublicRoom;
 
         isCreatingLobby = true;
         createLobbySuccess = false;

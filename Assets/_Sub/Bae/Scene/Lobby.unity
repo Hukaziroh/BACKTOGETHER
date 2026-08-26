@@ -51579,6 +51579,7 @@ MonoBehaviour:
   roomCodeValueText: {fileID: 1415804501}
   roomCode: 
   roomName: 
+  isPublicRoom: 1
 --- !u!114 &479596971
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -212401,6 +212402,9 @@ MonoBehaviour:
   englishOutlineThickness: 1
   defaultDilate: 1
   defaultOutlineThickness: 1
+  outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  outlineShaderScale: 0.1
+  preserveSourceMaterialStyle: 0
 --- !u!1 &867657333
 GameObject:
   m_ObjectHideFlags: 0
@@ -284876,7 +284880,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 534971709051548441, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_overflowMode
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1381074218888706539, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_Name
@@ -285068,11 +285072,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8688766008373213758, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_MinWidth
-      value: 200
+      value: 280
       objectReference: {fileID: 0}
     - target: {fileID: 8688766008373213758, guid: 10747bbe7ddecf44da469e2fd9d9be64, type: 3}
       propertyPath: m_PreferredWidth
-      value: 200
+      value: 280
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
