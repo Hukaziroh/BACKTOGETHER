@@ -79754,6 +79754,30 @@ PrefabInstance:
       propertyPath: m_PresetInfoIsWorld
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 865000000000000002, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 41.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 865000000000000002, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 865000000000000004, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -8655167945723465343, guid: 64825c66afc154b4ba3e9a7515bc9867, type: 3}
+    - target: {fileID: 865000000000000005, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: gamepadSprite
+      value: 
+      objectReference: {fileID: 1333675154853838170, guid: 042591c103cd44941ad6c50e10dbc284, type: 3}
+    - target: {fileID: 865000000000000005, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: keyboardSprite
+      value: 
+      objectReference: {fileID: -8655167945723465343, guid: 64825c66afc154b4ba3e9a7515bc9867, type: 3}
+    - target: {fileID: 865000000000000005, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: keyboardByDefault
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2766319342283358008, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
       propertyPath: m_Name
       value: Canvas
@@ -79762,7 +79786,7 @@ PrefabInstance:
       propertyPath: m_text
       value: 'Press
 
-        Special Key'
+'
       objectReference: {fileID: 0}
     - target: {fileID: 3607097073002954664, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
       propertyPath: m_fontSize
