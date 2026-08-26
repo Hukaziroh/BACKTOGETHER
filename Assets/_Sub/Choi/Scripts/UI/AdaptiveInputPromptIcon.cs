@@ -14,6 +14,7 @@ public sealed class AdaptiveInputPromptIcon : MonoBehaviour
 
     private IDisposable buttonPressSubscription;
     private bool isShowingGamepad;
+    private Color keyboardIconColor;
 
     private void Awake()
     {
@@ -21,6 +22,8 @@ public sealed class AdaptiveInputPromptIcon : MonoBehaviour
         {
             targetImage = GetComponent<Image>();
         }
+
+        keyboardIconColor = targetImage.color;
     }
 
     private void OnEnable()
@@ -62,6 +65,7 @@ public sealed class AdaptiveInputPromptIcon : MonoBehaviour
 
         isShowingGamepad = useGamepad;
         targetImage.sprite = useGamepad ? gamepadSprite : keyboardSprite;
+        targetImage.color = useGamepad ? Color.white : keyboardIconColor;
         targetImage.enabled = targetImage.sprite != null;
         targetImage.preserveAspect = true;
     }
