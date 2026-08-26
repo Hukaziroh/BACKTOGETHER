@@ -30,9 +30,13 @@ public class StageProgressTracker : MonoBehaviour
     [Tooltip("시작 위치(오프셋)를 통째로 이동시킵니다")]
     [SerializeField] private float progressOffset = 0f;
 
+    [Header("세로 진행 판정 스테이지")]
+    [Tooltip("프로그래스 바는 가로로 유지하고, 월드 Y축으로 진행률을 계산할 Scene 이름입니다.")]
+    [SerializeField] private List<string> verticalSceneNames = new List<string> { "Ex2" };
+
     private Vector3 startPos;
     private Vector3 endPos;
-    private float mapLengthX;
+    private float mapLength;
     private Dictionary<GameObject, RectTransform> playerIcons = new Dictionary<GameObject, RectTransform>();
     private RectTransform bossIcon;
     private GameObject cachedBoss;
@@ -80,9 +84,11 @@ public class StageProgressTracker : MonoBehaviour
             startPos = startObj.transform.position;
             endPos = doorObj.transform.position;
 
-            mapLengthX = endPos.x - startPos.x;
+            mapLength = IsVerticalStage()
+                ? endPos.y - startPos.y
+                : endPos.x - startPos.x;
 
-            if (mapLengthX != 0) // 0으로 나누기 방지
+            if (!Mathf.Approximately(mapLength, 0f)) // 0으로 나누기 방지
             {
                 isInitialized = true;
             }
@@ -119,8 +125,6 @@ public class StageProgressTracker : MonoBehaviour
         // 🌟 내 플레이어(또는 관전 중인 대상)의 체크포인트 깃발 갱신
         UpdateActiveCheckpointFlag();
 
-        float containerWidth = iconContainer.rect.width;
-
         foreach (GameObject player in cachedPlayers)
         {
             if (player == null) continue;
@@ -128,7 +132,8 @@ public class StageProgressTracker : MonoBehaviour
             if (!playerIcons.ContainsKey(player))
             {
                 GameObject newIcon = Instantiate(playerIconPrefab, iconContainer);
-                playerIcons.Add(player, newIcon.GetComponent<RectTransform>());
+                RectTransform newIconRect = newIcon.GetComponent<RectTransform>();
+                playerIcons.Add(player, newIconRect);
             }
 
             RectTransform iconRect = playerIcons[player];
@@ -185,17 +190,14 @@ public class StageProgressTracker : MonoBehaviour
                 }
             }
 
-            // 🌟 시작점일 때 Pos X가 정확히 0이 되도록 순수 비율 계산만 적용
-            float currentDistX = player.transform.position.x - startPos.x;
-            float progress = Mathf.Clamp01(currentDistX / mapLengthX);
-            float xPos = (progress * containerWidth * progressMultiplier) + progressOffset;
-            iconRect.anchoredPosition = new Vector2(xPos, 0);
+            float progress = GetProgress(player.transform.position);
+            iconRect.anchoredPosition = GetIconPosition(progress);
         }
 
-        UpdateBossIcon(containerWidth);
+        UpdateBossIcon();
     }
 
-    private void UpdateBossIcon(float containerWidth)
+    private void UpdateBossIcon()
     {
         if (!ShouldTrackBossInCurrentScene())
         {
@@ -234,10 +236,42 @@ public class StageProgressTracker : MonoBehaviour
             bossIcon.gameObject.SetActive(true);
         }
 
-        float currentDistX = boss.transform.position.x - startPos.x;
-        float progress = Mathf.Clamp01(currentDistX / mapLengthX);
-        float xPos = (progress * containerWidth * progressMultiplier) + progressOffset;
-        bossIcon.anchoredPosition = new Vector2(xPos, 0);
+        float progress = GetProgress(boss.transform.position);
+        bossIcon.anchoredPosition = GetIconPosition(progress);
+    }
+
+    private bool IsVerticalStage()
+    {
+        string sceneName = SceneManager.GetActiveScene().name;
+        if (verticalSceneNames == null) return false;
+
+        foreach (string verticalSceneName in verticalSceneNames)
+        {
+            if (!string.IsNullOrEmpty(verticalSceneName) &&
+                string.Equals(sceneName, verticalSceneName, System.StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private float GetProgress(Vector3 worldPosition)
+    {
+        float currentDistance = IsVerticalStage()
+            ? worldPosition.y - startPos.y
+            : worldPosition.x - startPos.x;
+
+        return Mathf.Clamp01(currentDistance / mapLength);
+    }
+
+    private Vector2 GetIconPosition(float progress)
+    {
+        float xPosition =
+            progress * iconContainer.rect.width * progressMultiplier + progressOffset;
+
+        return new Vector2(xPosition, 0f);
     }
 
     private bool ShouldTrackBossInCurrentScene()
@@ -375,10 +409,8 @@ public class StageProgressTracker : MonoBehaviour
         // 3. 깃발 UI 생성 및 위치 갱신
         if (foundActive)
         {
-            float containerWidth = iconContainer.rect.width;
-            float currentDistX = activeCpPos.x - startPos.x;
-            float progress = Mathf.Clamp01(currentDistX / mapLengthX);
-            float xPos = (progress * containerWidth * progressMultiplier) + progressOffset;
+            float progress = GetProgress(activeCpPos);
+            Vector2 progressPosition = GetIconPosition(progress);
 
             // 깃발 오브젝트가 없으면 새로 생성 (프로그래스 바 상단에 걸쳐지도록 설정)
             if (activeCheckpointFlagObj == null)
@@ -387,8 +419,8 @@ public class StageProgressTracker : MonoBehaviour
                 activeCheckpointFlagObj.transform.SetParent(iconContainer, false);
 
                 RectTransform flagContainerRect = activeCheckpointFlagObj.GetComponent<RectTransform>();
-                flagContainerRect.anchorMin = new Vector2(0, 0.5f);
-                flagContainerRect.anchorMax = new Vector2(0, 0.5f);
+                flagContainerRect.anchorMin = new Vector2(0f, 0.5f);
+                flagContainerRect.anchorMax = new Vector2(0f, 0.5f);
                 flagContainerRect.pivot = new Vector2(0.5f, 0f); // 깃발의 하단이 바의 중앙 기준선에 오도록 설정
                 flagContainerRect.sizeDelta = new Vector2(16f, 24f);
 
@@ -448,7 +480,7 @@ public class StageProgressTracker : MonoBehaviour
             if (activeRect != null)
             {
                 float barHalfHeight = iconContainer.rect.height * 0.5f;
-                activeRect.anchoredPosition = new Vector2(xPos, barHalfHeight);
+                activeRect.anchoredPosition = new Vector2(progressPosition.x, barHalfHeight);
             }
 
             if (!activeCheckpointFlagObj.activeSelf)
