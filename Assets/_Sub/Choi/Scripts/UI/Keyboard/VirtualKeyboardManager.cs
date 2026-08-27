@@ -200,6 +200,35 @@ public class VirtualKeyboardManager : MonoBehaviour
         if (keyboardPanel != null) keyboardPanel.SetActive(false);
     }
 
+    public void CloseKeyboard()
+    {
+        if (!IsOpen) return;
+
+        TMP_InputField returnTarget = targetInputField;
+        targetInputField = null;
+        restoreFocusRequestId++;
+
+        if (focusCoroutine != null)
+        {
+            StopCoroutine(focusCoroutine);
+            focusCoroutine = null;
+        }
+
+        if (GlobalSceneInputManager.Instance != null)
+        {
+            GlobalSceneInputManager.Instance.ClearFocusScope();
+        }
+
+        if (returnTarget != null)
+        {
+            returnTarget.DeactivateInputField();
+            returnTarget.interactable = false;
+        }
+
+        ResetKeyVisualStates();
+        keyboardPanel.SetActive(false);
+    }
+
     private IEnumerator RestoreNavigationFocusCoroutine(Selectable nextSelectable, int requestId)
     {
         yield return null;

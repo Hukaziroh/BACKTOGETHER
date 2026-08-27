@@ -7,6 +7,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -102,7 +103,6 @@ public partial class PrivateLobbyManager
             leftPressed |= Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame;
             rightPressed |= Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame;
             enterOrActionPressed |= Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.numpadEnterKey.wasPressedThisFrame;
-            escPressed |= Keyboard.current.escapeKey.wasPressedThisFrame;
         }
 
         if (Gamepad.current != null)
@@ -110,6 +110,8 @@ public partial class PrivateLobbyManager
             leftPressed |= Gamepad.current.dpad.left.wasPressedThisFrame || Gamepad.current.leftStick.left.wasPressedThisFrame;
             rightPressed |= Gamepad.current.dpad.right.wasPressedThisFrame || Gamepad.current.leftStick.right.wasPressedThisFrame;
         }
+
+        escPressed = WasUICancelPressedThisFrame();
 
         // ESC 입력 처리 (에러 팝업 -> 호스트 패널 순서로 역방향 닫기)
         if (escPressed)
@@ -169,6 +171,22 @@ public partial class PrivateLobbyManager
                 }
             }
         }
+    }
+
+    private static bool WasUICancelPressedThisFrame()
+    {
+        if (EventSystem.current != null &&
+            EventSystem.current.currentInputModule is InputSystemUIInputModule inputModule)
+        {
+            InputActionReference cancelReference = inputModule.cancel;
+            if (cancelReference != null && cancelReference.action != null)
+            {
+                return cancelReference.action.WasPressedThisFrame();
+            }
+        }
+
+        // InputSystemUIInputModule이 없는 예외적인 상황에서도 키보드 뒤로가기는 유지한다.
+        return Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
     }
 
 }

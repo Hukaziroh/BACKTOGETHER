@@ -113,6 +113,7 @@ public partial class PrivateLobbyManager
             }
         }
 
+        CloseVirtualKeyboard();
         if (hostPanel != null) hostPanel.SetActive(false);
         if (logo != null) logo.SetActive(true);
         if (mainPanel != null)
@@ -123,6 +124,17 @@ public partial class PrivateLobbyManager
         if (errorPopupPanel != null) errorPopupPanel.SetActive(false);
 
         isReturningToMain = false;
+    }
+
+    private static void CloseVirtualKeyboard()
+    {
+        VirtualKeyboardManager keyboardManager =
+            FindAnyObjectByType<VirtualKeyboardManager>(FindObjectsInactive.Include);
+
+        if (keyboardManager != null && keyboardManager.IsOpen)
+        {
+            keyboardManager.CloseKeyboard();
+        }
     }
 
 }
