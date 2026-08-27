@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
-using Mirror;
 
 public class PlayerIconEmojiSync : MonoBehaviour
 {
@@ -14,6 +13,7 @@ public class PlayerIconEmojiSync : MonoBehaviour
     private bool lastActiveState = false;
     private Sprite lastSprite = null;
     private float lastPlayerScaleX = -1f;
+    private GameObject targetPlayer;
 
     private void Awake()
     {
@@ -43,7 +43,6 @@ public class PlayerIconEmojiSync : MonoBehaviour
 
     private void Update()
     {
-        GameObject targetPlayer = FindCorrespondingPlayer();
         if (targetPlayer == null)
         {
             if (lastActiveState)
@@ -100,36 +99,17 @@ public class PlayerIconEmojiSync : MonoBehaviour
         }
     }
 
-    private GameObject FindCorrespondingPlayer()
+    public void SetTargetPlayer(GameObject player)
     {
-        CoopPlayerIdentity localIdentity = GetLocalPlayerIdentity();
-        if (localIdentity == null) return null;
+        if (targetPlayer == player) return;
 
-        int myIconIndex = transform.GetSiblingIndex();
-        if (myIconIndex != localIdentity.playerIndex) return null;
-
-        return localIdentity.gameObject;
-    }
-
-    private CoopPlayerIdentity GetLocalPlayerIdentity()
-    {
-        if (NetworkClient.localPlayer != null &&
-            NetworkClient.localPlayer.TryGetComponent(out CoopPlayerIdentity localIdentity))
-        {
-            return localIdentity;
-        }
-
-        if (CoopPlayerIdentity.players == null) return null;
-
-        foreach (CoopPlayerIdentity playerIdentity in CoopPlayerIdentity.players.Values)
-        {
-            if (playerIdentity != null && playerIdentity.isLocalPlayer)
-            {
-                return playerIdentity;
-            }
-        }
-
-        return null;
+        targetPlayer = player;
+        lastTargetPlayer = null;
+        cachedPlayerEmojiSr = null;
+        lastActiveState = false;
+        lastSprite = null;
+        lastPlayerScaleX = -1f;
+        HideUIEmojiImmediately();
     }
 
     private GameObject lastTargetPlayer = null;
@@ -143,17 +123,11 @@ public class PlayerIconEmojiSync : MonoBehaviour
         lastTargetPlayer = player;
         cachedPlayerEmojiSr = null;
 
-        Component emojiController = player.GetComponent("PlayerEmojiController");
+        PlayerEmojiController emojiController = player.GetComponent<PlayerEmojiController>();
         if (emojiController == null) return null;
 
-        System.Type type = emojiController.GetType();
-        var field = type.GetField("emojiSpriteRenderer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        if (field != null)
-        {
-            cachedPlayerEmojiSr = field.GetValue(emojiController) as SpriteRenderer;
-            return cachedPlayerEmojiSr;
-        }
-        return null;
+        cachedPlayerEmojiSr = emojiController.EmojiSpriteRenderer;
+        return cachedPlayerEmojiSr;
     }
 
     private void ShowUIEmoji(Sprite sprite)
@@ -190,5 +164,14 @@ public class PlayerIconEmojiSync : MonoBehaviour
         {
             if (emojiImage != null) emojiImage.gameObject.SetActive(false);
         });
+    }
+
+    private void HideUIEmojiImmediately()
+    {
+        if (emojiImage == null) return;
+
+        emojiImage.transform.DOKill();
+        emojiImage.transform.localScale = Vector3.zero;
+        emojiImage.gameObject.SetActive(false);
     }
 }
