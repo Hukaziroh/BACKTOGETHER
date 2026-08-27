@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: a699be9cce4e92d4abf31c5a81a60773
+guid: 9529538a42c1b854ca0094175b69ffcb
 TextureImporter:
   internalIDToNameTable:
   - first:
@@ -103,21 +103,17 @@ TextureImporter:
       name: treeTrunk_0
       rect:
         serializedVersion: 2
-        x: 29
+        x: 18
         y: 0
-        width: 13
+        width: 34
         height: 70
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 1, y: 0, z: 12, w: 0}
+      border: {x: 12, y: 0, z: 12, w: 0}
       customData: 
       outline: []
-      physicsShape:
-      - - {x: -6.5, y: -35}
-        - {x: 6.5, y: -35}
-        - {x: 6.5, y: 35}
-        - {x: -6.5, y: 35}
-      tessellationDetail: 0
+      physicsShape: []
+      tessellationDetail: -1
       bones: []
       spriteID: 7caf74d9febd28330800000000000000
       internalID: 3711770865089116871
