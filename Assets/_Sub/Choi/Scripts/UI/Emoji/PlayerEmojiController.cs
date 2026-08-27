@@ -36,6 +36,8 @@ public class PlayerEmojiController : NetworkBehaviour
     private WaitForSeconds cachedFrameWait;
     private WaitForSeconds cachedDisplayWait;
 
+    public SpriteRenderer EmojiSpriteRenderer => emojiSpriteRenderer;
+
     private void OnEnable()
     {
         if (!activeControllers.Contains(this))

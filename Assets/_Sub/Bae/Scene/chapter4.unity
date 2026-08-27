@@ -292,7 +292,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -96.287, y: -4.08}
+  m_AnchoredPosition: {x: -98.68001, y: -4.08}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &26400578
@@ -654,7 +654,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -98.287, y: -4.08}
+  m_AnchoredPosition: {x: -100.68001, y: -4.08}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &117442309
@@ -3218,7 +3218,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -100.287, y: -4.08}
+  m_AnchoredPosition: {x: -102.68, y: -4.08}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &167408646
@@ -3355,7 +3355,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -101.287, y: -4.08}
+  m_AnchoredPosition: {x: -103.68001, y: -4.08}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &170384020
@@ -74648,7 +74648,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -91.287, y: -4.08}
+  m_AnchoredPosition: {x: -93.68001, y: -4.08}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &507877469
@@ -76048,7 +76048,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -97.287, y: -4.08}
+  m_AnchoredPosition: {x: -99.68001, y: -4.08}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &713176277
@@ -79777,7 +79777,7 @@ PrefabInstance:
     - target: {fileID: 865000000000000005, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
       propertyPath: gamepadSprite
       value: 
-      objectReference: {fileID: 1333675154853838170, guid: 042591c103cd44941ad6c50e10dbc284, type: 3}
+      objectReference: {fileID: 21300000, guid: 042591c103cd44941ad6c50e10dbc284, type: 3}
     - target: {fileID: 865000000000000005, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
       propertyPath: keyboardSprite
       value: 
@@ -295131,7 +295131,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -93.287, y: -3.08}
+  m_AnchoredPosition: {x: -95.68001, y: -3.08}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1590590510

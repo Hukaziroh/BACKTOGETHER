@@ -133,6 +133,11 @@ public class StageProgressTracker : MonoBehaviour
             {
                 GameObject newIcon = Instantiate(playerIconPrefab, iconContainer);
                 RectTransform newIconRect = newIcon.GetComponent<RectTransform>();
+                PlayerIconEmojiSync emojiSync = newIcon.GetComponent<PlayerIconEmojiSync>();
+                if (emojiSync != null)
+                {
+                    emojiSync.SetTargetPlayer(player);
+                }
                 playerIcons.Add(player, newIconRect);
             }
 

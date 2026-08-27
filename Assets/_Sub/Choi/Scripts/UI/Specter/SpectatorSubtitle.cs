@@ -10,6 +10,11 @@ public class SpectatorSubtitle : MonoBehaviour
 
     private SpectatorSystem spectatorSystem;
 
+    private void LateUpdate()
+    {
+        MatchPlayerInfoOutline();
+    }
+
     private void Update()
     {
         if (spectatorSystem == null)
@@ -54,5 +59,23 @@ public class SpectatorSubtitle : MonoBehaviour
     {
         CoopPlayerIdentity identity = target.GetComponent<CoopPlayerIdentity>();
         return identity != null && identity.isLocalPlayer;
+    }
+
+    private void MatchPlayerInfoOutline()
+    {
+        if (customText == null || playerInfoText == null) return;
+
+        if (playerInfoText.font != customText.font)
+        {
+            playerInfoText.font = customText.font;
+        }
+
+        Material sharedStyleMaterial = customText.fontSharedMaterial;
+        if (sharedStyleMaterial != null && playerInfoText.fontSharedMaterial != sharedStyleMaterial)
+        {
+            playerInfoText.fontSharedMaterial = sharedStyleMaterial;
+            playerInfoText.SetMaterialDirty();
+            playerInfoText.SetVerticesDirty();
+        }
     }
 }
