@@ -24,6 +24,11 @@ public class OptionsManager : MonoBehaviour
     public Toggle fullscreenToggle;
     public Toggle vSyncToggle;
 
+    [Header("옵션 글자 외곽선")]
+    [SerializeField] private Color optionTextOutlineColor = Color.black;
+    [SerializeField, Range(0f, 2f)] private float optionOutlineThickness = 1f;
+    [SerializeField] private Vector2 optionLegacyOutlineDistance = new Vector2(2f, -2f);
+
     [Header("Volume Panel UI")]
     public GameObject volumePanel;
     public Button volumePanelToggleButton;
@@ -86,6 +91,8 @@ public class OptionsManager : MonoBehaviour
 
     void Start()
     {
+        ApplyOptionTextOutlines();
+
         if (fullscreenToggle != null)
         {
             fullscreenToggle.isOn = Screen.fullScreen;
@@ -182,6 +189,85 @@ public class OptionsManager : MonoBehaviour
         UpdateVisibilityButtonGraphic();
     }
 
+    private void ApplyOptionTextOutlines()
+    {
+        if (optionsPanel == null) return;
+
+        // TMP의 재질 Outline Width는 0~1 비율이라 1을 그대로 넣으면 글자가 뭉친다.
+        // 인스펙터의 두께 1을 안전한 재질 값 0.1로 환산한다.
+        float safeTmpOutlineWidth = Mathf.Clamp(optionOutlineThickness, 0f, 2f) * 0.1f;
+
+        Text[] legacyTexts = optionsPanel.GetComponentsInChildren<Text>(true);
+        foreach (Text legacyText in legacyTexts)
+        {
+            if (legacyText == null) continue;
+
+            Outline outline = legacyText.GetComponent<Outline>();
+            if (outline == null)
+            {
+                outline = legacyText.gameObject.AddComponent<Outline>();
+            }
+
+            outline.effectColor = optionTextOutlineColor;
+            outline.effectDistance = optionLegacyOutlineDistance;
+            outline.useGraphicAlpha = true;
+        }
+
+        TextMeshProUGUI[] tmpTexts = optionsPanel.GetComponentsInChildren<TextMeshProUGUI>(true);
+        foreach (TextMeshProUGUI tmpText in tmpTexts)
+        {
+            if (tmpText == null) continue;
+
+            Material material = tmpText.fontMaterial;
+            if (material == null) continue;
+
+            SetMaterialFloatIfExists(material, "_FaceDilate", 0f);
+            SetMaterialColorIfExists(material, "_OutlineColor", optionTextOutlineColor);
+            SetMaterialFloatIfExists(material, "_OutlineWidth", safeTmpOutlineWidth);
+            SetMaterialFloatIfExists(material, "_OutlineSoftness", 0f);
+            SetMaterialColorIfExists(material, "_UnderlayColor", Color.clear);
+            SetMaterialFloatIfExists(material, "_UnderlayOffsetX", 0f);
+            SetMaterialFloatIfExists(material, "_UnderlayOffsetY", 0f);
+            SetMaterialFloatIfExists(material, "_UnderlayDilate", 0f);
+            SetMaterialFloatIfExists(material, "_UnderlaySoftness", 0f);
+            SetMaterialFloatIfExists(material, "_GlowPower", 0f);
+
+            material.DisableKeyword("UNDERLAY_ON");
+            material.DisableKeyword("UNDERLAY_INNER");
+            material.DisableKeyword("GLOW_ON");
+            ShaderUtilities.UpdateShaderRatios(material);
+
+            tmpText.fontMaterial = material;
+            tmpText.SetMaterialDirty();
+            tmpText.SetVerticesDirty();
+        }
+    }
+
+    private static void SetMaterialFloatIfExists(Material material, string propertyName, float value)
+    {
+        if (material.HasProperty(propertyName))
+        {
+            material.SetFloat(propertyName, value);
+        }
+    }
+
+    private static void SetMaterialColorIfExists(Material material, string propertyName, Color value)
+    {
+        if (material.HasProperty(propertyName))
+        {
+            material.SetColor(propertyName, value);
+        }
+    }
+
+    private void ShowOptionsPanel()
+    {
+        if (optionsPanel == null) return;
+
+        // LocalizedText.OnEnable에서 재질을 갱신한 다음 외곽선을 최종 적용한다.
+        optionsPanel.SetActive(true);
+        ApplyOptionTextOutlines();
+    }
+
     public bool IsAnyKeyGuideActive()
     {
         if (allKeyGuidePanels != null && allKeyGuidePanels.Length > 0)
@@ -210,7 +296,7 @@ public class OptionsManager : MonoBehaviour
         // 키 가이드를 닫은 ESC/B 입력이 같은 프레임에 옵션까지 여는 것을 막는다.
         if (ShouldBlockPauseOrOptions) return;
 
-        if (optionsPanel != null) optionsPanel.SetActive(true);
+        ShowOptionsPanel();
         CloseAllKeyGuides();
         if (volumePanel != null) volumePanel.SetActive(false);
 
@@ -295,7 +381,7 @@ public class OptionsManager : MonoBehaviour
             }
             else if (isActive && optionsPanel != null)
             {
-                optionsPanel.SetActive(true);
+                ShowOptionsPanel();
             }
 
             if (!isActive && GlobalSceneInputManager.Instance != null)
@@ -318,7 +404,7 @@ public class OptionsManager : MonoBehaviour
 
         if (optionsPanel != null)
         {
-            optionsPanel.SetActive(true);
+            ShowOptionsPanel();
             UpdateRoomCodeUI();
 
             if (GlobalSceneInputManager.Instance != null)
@@ -381,7 +467,7 @@ public class OptionsManager : MonoBehaviour
 
             if (wasOptionsOpenBeforeKeyGuide && optionsPanel != null)
             {
-                optionsPanel.SetActive(true);
+                ShowOptionsPanel();
                 UpdateRoomCodeUI();
 
                 if (GlobalSceneInputManager.Instance != null)

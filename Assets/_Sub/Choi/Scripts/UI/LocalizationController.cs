@@ -19,6 +19,8 @@ public class LocalizationController : MonoBehaviour
 {
     public static LocalizationController Instance;
 
+    private const string LanguagePrefKey = "Language";
+
     [Header("현재 설정된 언어")]
     public Language currentLanguage = Language.English;
 
@@ -29,6 +31,7 @@ public class LocalizationController : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            LoadSavedLanguage();
             DontDestroyOnLoad(gameObject);
         }
         else
@@ -44,8 +47,21 @@ public class LocalizationController : MonoBehaviour
 
     public void ChangeLanguage(Language newLang)
     {
+        if (!System.Enum.IsDefined(typeof(Language), newLang)) return;
+
         currentLanguage = newLang;
+        PlayerPrefs.SetInt(LanguagePrefKey, (int)currentLanguage);
+        PlayerPrefs.Save();
         RefreshAllTexts();
+    }
+
+    private void LoadSavedLanguage()
+    {
+        int savedLanguage = PlayerPrefs.GetInt(LanguagePrefKey, (int)currentLanguage);
+        if (System.Enum.IsDefined(typeof(Language), savedLanguage))
+        {
+            currentLanguage = (Language)savedLanguage;
+        }
     }
 
     public static void RegisterText(LocalizedText textComp)

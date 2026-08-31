@@ -56,7 +56,7 @@ public class ScreenFader : MonoBehaviour
             isFirstScene = false;
             SetAlpha(0f, false);
         }
-        else if (previousSceneName == mainSceneName && currentSceneName == lobbySceneName)
+        else if (previousSceneName == mainSceneName && IsLobbyScene(currentSceneName))
         {
             SetAlpha(0f, false);
         }
@@ -71,6 +71,11 @@ public class ScreenFader : MonoBehaviour
         }
 
         previousSceneName = currentSceneName;
+    }
+
+    private bool IsLobbyScene(string sceneName)
+    {
+        return sceneName == lobbySceneName || sceneName == "NLobby";
     }
 
     private void SetAlpha(float alpha, bool active)

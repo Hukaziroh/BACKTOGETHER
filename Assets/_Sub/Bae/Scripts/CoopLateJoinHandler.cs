@@ -11,7 +11,10 @@ public class CoopLateJoinHandler : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
-        if (SceneManager.GetActiveScene().name != lobbySceneName)
+        string currentSceneName = SceneManager.GetActiveScene().name;
+        bool isLobby = currentSceneName == lobbySceneName || currentSceneName == "NLobby";
+
+        if (!isLobby)
         {
             TeleportToTeam();
         }
