@@ -35,10 +35,10 @@ MonoBehaviour:
     m_path: Assets/_Sub/Bae/Scene/chapter2.unity
     m_guid: 14fa4e7c044e77548a6a7e6c7c85bbaa
   - m_enabled: 1
-    m_path: Assets/_Sub/Bae/Scene/chapter3.unity
+    m_path: Assets/_Sub/Bae/Scene/chapter4.unity
     m_guid: 064504b666050754088c5831562872a3
   - m_enabled: 1
-    m_path: Assets/_Sub/Bae/Scene/chapter4.unity
+    m_path: Assets/_Sub/Bae/Scene/chapter3.unity
     m_guid: c73086132291c0145a50d0f87d24056d
   - m_enabled: 1
     m_path: Assets/_Sub/Bae/Scene/chapter5.unity
@@ -48,10 +48,13 @@ MonoBehaviour:
     m_guid: 630d34a98dfb1274fa219014c97b3e2a
   - m_enabled: 1
     m_path: Assets/_Sub/Bae/Scene/NLobby.unity
-    m_guid: 0ba5bc17c76d8c94da8518f8779c1c6f
+    m_guid: 282e031fdbe32e4439eae847b9f53c57
   - m_enabled: 1
     m_path: Assets/_Sub/Bae/Scene/Nchapter1.unity
     m_guid: 59afa402b5ad11e4583b16f28c98cb76
+  - m_enabled: 1
+    m_path: Assets/_Sub/Bae/Scene/Nchapter2.unity
+    m_guid: bbb0e938d9e7d6441985fb2cd90808f9
   - m_enabled: 1
     m_path: Assets/_Sub/Bae/Scene/Nchapter3.unity
     m_guid: 599c829bb6118a84f887e6c38e6ebc8e
@@ -61,6 +64,9 @@ MonoBehaviour:
   - m_enabled: 1
     m_path: Assets/_Sub/Bae/Scene/Nchapter5.unity
     m_guid: 7cea9107566a15449b9bed439729247d
+  - m_enabled: 1
+    m_path: Assets/_Sub/Bae/Scene/Nchapter6.unity
+    m_guid: a5e0f8e699c8e864c9182ceed02d94fc
   - m_enabled: 1
     m_path: Assets/_Sub/Sin/Scene/Ex1.unity
     m_guid: 0b3b47fae6f587b4cb3e29d78e98baa6
