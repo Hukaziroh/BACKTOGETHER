@@ -163,6 +163,8 @@ public class PlayerKnockback : NetworkBehaviour
 
     private void ApplyKnockback(Vector2 knockDir)
     {
+        bool wasAlreadyKnockedBack = isKnockedBack;
+
         controller.rb.linearVelocity = Vector2.zero;
         activeKnockbackX = knockDir.x * knockPowerX;
 
@@ -172,7 +174,8 @@ public class PlayerKnockback : NetworkBehaviour
         isKnockedBack = true;
         stunTimer = 0f;
         knockbackGraceTimer = 0.2f;
-        knockbackTimeoutTimer = 3.0f;
+        if (!wasAlreadyKnockedBack)
+            knockbackTimeoutTimer = 3.0f;
 
         RpcPlayHitAnimation(false);
 
@@ -193,6 +196,8 @@ public class PlayerKnockback : NetworkBehaviour
     {
         RpcToggleCriticalUI(true);
 
+        bool wasAlreadyKnockedBack = isKnockedBack;
+
         activeKnockbackX = -30f;
         float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
         controller.rb.linearVelocity = new Vector2(activeKnockbackX, 40f * mult);
@@ -200,7 +205,8 @@ public class PlayerKnockback : NetworkBehaviour
         isKnockedBack = true;
         stunTimer = 0f;
         knockbackGraceTimer = 0.5f;
-        knockbackTimeoutTimer = 3.0f;
+        if (!wasAlreadyKnockedBack)
+            knockbackTimeoutTimer = 3.0f;
 
         RpcPlayHitAnimation(true);
 
