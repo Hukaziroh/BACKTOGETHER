@@ -16,24 +16,28 @@ public class WindParticleVisualizer : MonoBehaviour
     public DirectionalWindZone windZone;
 
     [Header("눈 쏠림")]
-    [Tooltip("바람 속도 → 파티클 가로 속도 배율. 클수록 눈이 더 많이 휩쓸립니다.")]
-    public float driftMultiplier = 1.5f;
+    [Tooltip("바람 속도 → 파티클 가로 속도 배율. 이 눈 프리팹은 낙하 속도가 빨라서 6~10 정도는 돼야 눈에 띕니다.")]
+    public float driftMultiplier = 8f;
 
     [Tooltip("바람이 없을 때 눈의 기본 가로 속도(0 이면 무풍일 때 완전히 수직 낙하).")]
     public float baseDriftX = 0f;
 
     [Tooltip("파티클 가로 속도가 목표까지 따라가는 데 걸리는 시간(초). 0 이면 즉시. " +
              "바람 자체 램프에 더해지는 추가 스무딩입니다.")]
-    public float smoothTime = 0.3f;
+    public float smoothTime = 0.15f;
 
     [Header("선택: 세기에 따라 방출량 조절")]
+    [Tooltip("켜면 무풍일 때 눈이 적게, 강풍일 때 많이 내립니다(프리팹 기본 방출량 기준 배율).")]
     public bool scaleEmission = false;
-    public float calmEmissionRate = 8f;
-    public float strongEmissionRate = 25f;
+    [Tooltip("무풍일 때 방출량 배율.")]
+    public float calmEmissionMultiplier = 0.4f;
+    [Tooltip("최대 세기일 때 방출량 배율.")]
+    public float strongEmissionMultiplier = 1f;
 
     private ParticleSystem ps;
     private ParticleSystem.VelocityOverLifetimeModule vel;
     private ParticleSystem.EmissionModule emission;
+    private float baseEmissionRate;
     private float driftX;
     private float driftVel;
 
@@ -42,6 +46,7 @@ public class WindParticleVisualizer : MonoBehaviour
         ps = GetComponent<ParticleSystem>();
         vel = ps.velocityOverLifetime;
         emission = ps.emission;
+        baseEmissionRate = emission.rateOverTime.constant;
 
         vel.enabled = true;
         vel.space = ParticleSystemSimulationSpace.World; // +x = 항상 월드 오른쪽
@@ -64,7 +69,8 @@ public class WindParticleVisualizer : MonoBehaviour
             float strength = windZone.windStrength > 0f
                 ? Mathf.Clamp01(Mathf.Abs(wind) / windZone.windStrength)
                 : 0f;
-            emission.rateOverTime = Mathf.Lerp(calmEmissionRate, strongEmissionRate, strength);
+            float mult = Mathf.Lerp(calmEmissionMultiplier, strongEmissionMultiplier, strength);
+            emission.rateOverTime = baseEmissionRate * mult;
         }
     }
 }
