@@ -244,10 +244,10 @@ public class CoopPlayerIdentity : NetworkBehaviour
 
         FaceState currentState = FaceState.Idle;
 
-        bool showHitVisual =
+        bool isStunned =
             controller != null &&
             controller.knockback != null &&
-            controller.knockback.ShowHitVisual;
+            controller.knockback.IsStunned;
 
         bool isGrounded = true;
         float speed = 0f;
@@ -263,7 +263,7 @@ public class CoopPlayerIdentity : NetworkBehaviour
         }
 
 
-        if (showHitVisual)
+        if (isStunned)
         {
             currentState = FaceState.Hit;
         }
