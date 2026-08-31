@@ -37,6 +37,9 @@ public class PlayerAnimation : NetworkBehaviour
     private bool syncStunned;
 
     [SyncVar]
+    private bool syncHitVisual;
+
+    [SyncVar]
     private float syncVelocityY; // 점프 및 낙하 애니메이션용 Y축 속도
 
     [SyncVar(hook = nameof(OnDirectionChanged))]
@@ -141,6 +144,7 @@ public class PlayerAnimation : NetworkBehaviour
 
         syncGrounded = controller.movement.isGrounded;
         syncStunned = controller.knockback.IsStunned;
+        syncHitVisual = controller.knockback.ShowHitVisual;
 
         float input = animationInput;
 
@@ -163,7 +167,7 @@ public class PlayerAnimation : NetworkBehaviour
         // Animator 파라미터 적용
         controller.anim.SetFloat("Speed", syncSpeed);
         controller.anim.SetBool("isGrounded", syncGrounded);
-        controller.anim.SetBool("isStunned", syncStunned);
+        controller.anim.SetBool("isStunned", syncHitVisual);
 
         // 스프라이트 방향 및 중력 반전 적용
         ApplyScale(syncDirectionX);
