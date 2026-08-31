@@ -23,6 +23,14 @@ public class PlayerKnockback : NetworkBehaviour
     [SyncVar] public bool isKnockedBack;
     private Coroutine rumbleCoroutine;
 
+    [Header("피격 표시")]
+    public float hitVisualDuration = 0.35f;
+    public float hitVisualCooldown = 0.1f;
+    [SyncVar] private bool showHitVisual;
+    private Coroutine hitVisualCoroutine;
+
+    public bool ShowHitVisual => showHitVisual;
+
     private float knockbackGraceTimer = 0f;
     private float knockbackTimeoutTimer = 0f;
     private float activeKnockbackX;
@@ -163,8 +171,6 @@ public class PlayerKnockback : NetworkBehaviour
 
     private void ApplyKnockback(Vector2 knockDir)
     {
-        bool wasAlreadyKnockedBack = isKnockedBack;
-
         controller.rb.linearVelocity = Vector2.zero;
         activeKnockbackX = knockDir.x * knockPowerX;
 
@@ -174,9 +180,9 @@ public class PlayerKnockback : NetworkBehaviour
         isKnockedBack = true;
         stunTimer = 0f;
         knockbackGraceTimer = 0.2f;
-        if (!wasAlreadyKnockedBack)
-            knockbackTimeoutTimer = 3.0f;
+        knockbackTimeoutTimer = 3.0f;
 
+        StartHitVisual();
         RpcPlayHitAnimation(false);
 
         CoopRopeManager ropeManager = FindAnyObjectByType<CoopRopeManager>();
@@ -196,8 +202,6 @@ public class PlayerKnockback : NetworkBehaviour
     {
         RpcToggleCriticalUI(true);
 
-        bool wasAlreadyKnockedBack = isKnockedBack;
-
         activeKnockbackX = -30f;
         float mult = controller.gravityModule != null ? controller.gravityModule.gravityMultiplier : 1f;
         controller.rb.linearVelocity = new Vector2(activeKnockbackX, 40f * mult);
@@ -205,9 +209,9 @@ public class PlayerKnockback : NetworkBehaviour
         isKnockedBack = true;
         stunTimer = 0f;
         knockbackGraceTimer = 0.5f;
-        if (!wasAlreadyKnockedBack)
-            knockbackTimeoutTimer = 3.0f;
+        knockbackTimeoutTimer = 3.0f;
 
+        StartHitVisual();
         RpcPlayHitAnimation(true);
 
         CoopRopeManager ropeManager = FindAnyObjectByType<CoopRopeManager>();
@@ -273,6 +277,25 @@ public class PlayerKnockback : NetworkBehaviour
         rumbleCoroutine = null;
     }
 
+    [Server]
+    private void StartHitVisual()
+    {
+        // 연속 피격이 들어와도 현재 표시 시간을 계속 연장하지 않습니다.
+        if (hitVisualCoroutine == null)
+            hitVisualCoroutine = StartCoroutine(HitVisualRoutine());
+    }
+
+    private System.Collections.IEnumerator HitVisualRoutine()
+    {
+        showHitVisual = true;
+        yield return new WaitForSeconds(hitVisualDuration);
+
+        showHitVisual = false;
+        yield return new WaitForSeconds(hitVisualCooldown);
+
+        hitVisualCoroutine = null;
+    }
+
     private void PlayHitSoundLocal()
     {
         if (Time.time - lastHitSoundTime < hitSoundCooldown) return;
@@ -288,6 +311,12 @@ public class PlayerKnockback : NetworkBehaviour
         isKnockedBack = false;
         stunTimer = 0f;
         knockbackTimeoutTimer = 0f;
+        if (hitVisualCoroutine != null)
+        {
+            StopCoroutine(hitVisualCoroutine);
+            hitVisualCoroutine = null;
+        }
+        showHitVisual = false;
         RpcToggleCriticalUI(false);
     }
 
