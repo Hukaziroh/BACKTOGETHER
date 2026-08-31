@@ -119,9 +119,13 @@ public class StageDoor : NetworkBehaviour
     private IEnumerator WaitAndLoadScene()
     {
         yield return new WaitForSeconds(2.0f);
-        if (isServer)
+        if (isServer && NetworkManager.singleton != null)
         {
-            NetworkManager.singleton.ServerChangeScene(lobbySceneName);
+            string targetLobbyScene = string.IsNullOrEmpty(NetworkManager.singleton.onlineScene)
+                ? lobbySceneName
+                : NetworkManager.singleton.onlineScene;
+
+            NetworkManager.singleton.ServerChangeScene(targetLobbyScene);
         }
     }
 }

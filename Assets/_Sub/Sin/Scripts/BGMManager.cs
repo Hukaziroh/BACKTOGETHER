@@ -94,10 +94,20 @@ public class BGMManager : MonoBehaviour
         if (sceneName == currentSceneName) return;
         currentSceneName = sceneName;
 
+        string trackSceneName = sceneName;
+        if (sceneName == "NLobby")
+        {
+            trackSceneName = "Lobby";
+        }
+        else if (sceneName.StartsWith("Nchapter", System.StringComparison.OrdinalIgnoreCase))
+        {
+            trackSceneName = sceneName.Substring(1);
+        }
+
         SceneTrack track = null;
         foreach (SceneTrack t in tracks)
         {
-            if (t.sceneName == sceneName)
+            if (t.sceneName == trackSceneName)
             {
                 track = t;
                 break;

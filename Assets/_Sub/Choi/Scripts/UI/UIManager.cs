@@ -177,7 +177,8 @@ public class UIManager : MonoBehaviour
             pauseManager.ResumeGame();
         }
 
-        bool isChapter = (scene.name != mainSceneName && scene.name != lobbySceneName);
+        bool isLobby = scene.name == lobbySceneName || scene.name == "NLobby";
+        bool isChapter = scene.name != mainSceneName && !isLobby;
         progressTrackerUI?.SetActive(isChapter);
 
         GameObject mainCam = GameObject.FindGameObjectWithTag("MainCamera");
