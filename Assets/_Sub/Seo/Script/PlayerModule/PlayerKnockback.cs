@@ -121,6 +121,18 @@ public class PlayerKnockback : NetworkBehaviour
         }
     }
 
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (!isServer) return;
+
+        Collider2D other = collision.collider;
+        if (!other.CompareTag("Spike")) return;
+        if (other.GetComponentInParent<EnemyMove>() != null)
+        {
+            CheckSpikeHit();
+        }
+    }
+
     private void CheckSpikeHit()
     {
         if (spikeDamageCooldown > 0f) return;
