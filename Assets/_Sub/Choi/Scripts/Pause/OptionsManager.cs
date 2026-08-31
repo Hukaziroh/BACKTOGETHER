@@ -22,6 +22,7 @@ public class OptionsManager : MonoBehaviour
     public Slider sfxVolumeSlider;
     public Slider bgmVolumeSlider;
     public Toggle fullscreenToggle;
+    public Toggle vSyncToggle;
 
     [Header("Volume Panel UI")]
     public GameObject volumePanel;
@@ -89,6 +90,17 @@ public class OptionsManager : MonoBehaviour
         {
             fullscreenToggle.isOn = Screen.fullScreen;
             fullscreenToggle.onValueChanged.AddListener(SetFullscreen);
+        }
+
+        if (vSyncToggle != null)
+        {
+            int savedVSync = PlayerPrefs.GetInt("VSync", 1);
+            QualitySettings.vSyncCount = savedVSync;
+            if (savedVSync == 0) Application.targetFrameRate = 144;
+            else Application.targetFrameRate = -1;
+
+            vSyncToggle.isOn = (savedVSync == 1);
+            vSyncToggle.onValueChanged.AddListener(SetVSync);
         }
 
         if (volumeSlider != null)
@@ -521,5 +533,22 @@ public class OptionsManager : MonoBehaviour
         {
             Screen.SetResolution(1280, 720, false);
         }
+    }
+
+    public void SetVSync(bool isVSync)
+    {
+        if (isVSync)
+        {
+            QualitySettings.vSyncCount = 1;
+            Application.targetFrameRate = -1;
+            PlayerPrefs.SetInt("VSync", 1);
+        }
+        else
+        {
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = 144;
+            PlayerPrefs.SetInt("VSync", 0);
+        }
+        PlayerPrefs.Save();
     }
 }
