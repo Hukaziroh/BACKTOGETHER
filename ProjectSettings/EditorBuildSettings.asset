@@ -15,6 +15,9 @@ EditorBuildSettings:
     path: Assets/_Sub/Bae/Scene/Lobby.unity
     guid: 2f8adfb2aea1cbf4fa183737ee40af59
   - enabled: 1
+    path: Assets/_Sub/Bae/Scene/NLobby.unity
+    guid: f85a0d95fd23bd24a8901f7e22ea40ee
+  - enabled: 1
     path: Assets/_Sub/Bae/Scene/chapter1.unity
     guid: e3d914786cb1e564bbf8ce84e0678b15
   - enabled: 1
@@ -33,14 +36,11 @@ EditorBuildSettings:
     path: Assets/_Sub/Bae/Scene/chapter6.unity
     guid: 630d34a98dfb1274fa219014c97b3e2a
   - enabled: 1
-    path: Assets/_Sub/Bae/Scene/NLobby.unity
-    guid: 0ba5bc17c76d8c94da8518f8779c1c6f
-  - enabled: 1
     path: Assets/_Sub/Bae/Scene/Nchapter1.unity
     guid: 59afa402b5ad11e4583b16f28c98cb76
   - enabled: 1
     path: Assets/_Sub/Bae/Scene/Nchapter2.unity
-    guid: 8bca6c12813ce3b4db05ab0be8303170
+    guid: bbb0e938d9e7d6441985fb2cd90808f9
   - enabled: 1
     path: Assets/_Sub/Bae/Scene/Nchapter3.unity
     guid: 599c829bb6118a84f887e6c38e6ebc8e
@@ -52,7 +52,7 @@ EditorBuildSettings:
     guid: 7cea9107566a15449b9bed439729247d
   - enabled: 1
     path: Assets/_Sub/Bae/Scene/Nchapter6.unity
-    guid: c450b7aba6eda184ca2bed13939221f6
+    guid: a5e0f8e699c8e864c9182ceed02d94fc
   - enabled: 1
     path: Assets/_Sub/Sin/Scene/Ex1.unity
     guid: 0b3b47fae6f587b4cb3e29d78e98baa6
