@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
 using System;
 using System.Linq;
 
@@ -221,16 +222,51 @@ public class PlatformInviteManager : MonoBehaviour
     private void HandleInviteCode(string code)
     {
         pendingInviteCode = code;
-        
-        // 현재 씬이 접속 가능한 Main 씬인지 확인
+        StartCoroutine(LeaveCurrentSessionAndJoinRoutine());
+    }
+
+    private IEnumerator LeaveCurrentSessionAndJoinRoutine()
+    {
+        // 1. 이미 접속 중인 게임이나 로비가 있다면 완전히 연결을 끊고 나갑니다.
+        if (NetworkManager.singleton != null && (NetworkServer.active || NetworkClient.active))
+        {
+            Debug.Log("[PlatformInviteManager] 기존 네트워크 세션 감지됨. 연결을 끊습니다.");
+
+            HostDisconnectHandler disconnectHandler = FindAnyObjectByType<HostDisconnectHandler>();
+            if (disconnectHandler != null)
+            {
+                disconnectHandler.SetIntentionalExit();
+            }
+
+            EOSLobby eosLobby = FindAnyObjectByType<EOSLobby>();
+            if (eosLobby != null && eosLobby.ConnectedToLobby)
+            {
+                if (NetworkServer.active) eosLobby.DestroyLobby();
+                else eosLobby.LeaveLobby();
+
+                float timeout = 3f;
+                while (eosLobby.IsLeavingLobby && timeout > 0f)
+                {
+                    timeout -= Time.unscaledDeltaTime;
+                    yield return null;
+                }
+            }
+
+            if (NetworkServer.active) NetworkManager.singleton.StopHost();
+            else if (NetworkClient.active) NetworkManager.singleton.StopClient();
+
+            // 연결이 완전히 끊기고 초기화될 때까지 대기
+            yield return new WaitForSecondsRealtime(0.5f);
+        }
+
+        // 2. 메인 씬이 아니면 메인 씬으로 이동 후 초대 처리
         if (SceneManager.GetActiveScene().name == targetSceneName)
         {
             CheckPendingInvite();
         }
         else
         {
-            Debug.Log($"[PlatformInviteManager] 현재 씬이 {targetSceneName}이 아닙니다. 씬 이동 후 자동으로 접속합니다.");
-            // 타이틀이나 다른 씬이라면 Main 씬으로 이동하도록 처리 (프로젝트 구조에 맞게 수정 가능)
+            Debug.Log($"[PlatformInviteManager] 현재 씬이 {targetSceneName}이 아닙니다. 메인으로 이동 후 접속합니다.");
             SceneManager.LoadScene(targetSceneName);
         }
     }
