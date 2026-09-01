@@ -138,8 +138,6 @@ public partial class ClientLobbyManager
             downPressed |= Keyboard.current.downArrowKey.wasPressedThisFrame ||
                       Keyboard.current.sKey.wasPressedThisFrame;
 
-            escPressed |= Keyboard.current.escapeKey.wasPressedThisFrame;
-
             submitPressed |= enterPressed || Keyboard.current.spaceKey.wasPressedThisFrame;
         }
 
@@ -155,8 +153,9 @@ public partial class ClientLobbyManager
                       Gamepad.current.leftStick.down.wasPressedThisFrame;
 
             submitPressed |= Gamepad.current.buttonSouth.wasPressedThisFrame; // 패드 A / Cross 버튼
-            escPressed |= Gamepad.current.buttonEast.wasPressedThisFrame; // 패드 B / Circle 버튼
         }
+
+        escPressed = VirtualKeyboardManager.WasUICancelPressedThisFrame();
 
         // 확인 / 제출 입력 처리 (팝업이 열려 있는 경우 엔터나 패드 A버튼으로 닫기 수행)
         if (submitPressed)
@@ -171,6 +170,11 @@ public partial class ClientLobbyManager
                 OnClick_CloseErrorPopup();
                 return;
             }
+        }
+
+        if (VirtualKeyboardManager.BlocksGlobalBackInput)
+        {
+            escPressed = false;
         }
 
         // ESC 입력 처리 (열려 있는 패널 계층에 따라 역순으로 닫기)

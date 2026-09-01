@@ -62,11 +62,10 @@ public class PanelController : MonoBehaviour
         if (isTransitioning) return;
 
         // 1. ESC 키 / 게임패드 B(O) 버튼 처리
-        bool escapePressed = false;
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) escapePressed = true;
-        if (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame) escapePressed = true;
+        bool escapePressed = VirtualKeyboardManager.WasUICancelPressedThisFrame();
 
-        if (useEscapeKey && escapePressed && (escapeTargetPanel != null || IsAnyKeyGuidePanel(gameObject.name)))
+        if (useEscapeKey && escapePressed && !VirtualKeyboardManager.BlocksGlobalBackInput &&
+            (escapeTargetPanel != null || IsAnyKeyGuidePanel(gameObject.name)))
         {
             TransitionToEscapePanel();
             return;

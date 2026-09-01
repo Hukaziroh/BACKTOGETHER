@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
 using TMPro;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,8 +19,12 @@ public class VirtualKeyboardManager : MonoBehaviour
     private int restoreFocusRequestId;
     private bool shiftActive;
     private bool capsLockActive;
+    private static VirtualKeyboardManager activeKeyboard;
+    private static int lastBackHandledFrame = -1;
 
     public bool IsOpen => keyboardPanel != null && keyboardPanel.activeSelf;
+    public static bool BlocksGlobalBackInput =>
+        (activeKeyboard != null && activeKeyboard.IsOpen) || lastBackHandledFrame == Time.frameCount;
 
     private void Awake()
     {
@@ -39,6 +45,7 @@ public class VirtualKeyboardManager : MonoBehaviour
         restoreFocusRequestId++;
 
         keyboardPanel.SetActive(true);
+        activeKeyboard = this;
         ConfigureModifierKeys();
         ConfigureKeyboardNavigation();
         ResetKeyVisualStates();
@@ -63,6 +70,29 @@ public class VirtualKeyboardManager : MonoBehaviour
     {
         KeepTargetInputFieldInteractable();
         KeepFocusInsideKeyboard();
+    }
+
+    private void Update()
+    {
+        if (!IsOpen || !WasUICancelPressedThisFrame()) return;
+
+        // InputSystemUIInputModule의 Cancel 액션은 Enter와 동일하게 현재 입력을 확정하고 닫는다.
+        // 같은 프레임에 뒤쪽 패널까지 닫히지 않도록 처리 프레임을 기록한다.
+        lastBackHandledFrame = Time.frameCount;
+        OnClickConfirm();
+    }
+
+    public static bool WasUICancelPressedThisFrame()
+    {
+        if (EventSystem.current == null ||
+            EventSystem.current.currentInputModule is not InputSystemUIInputModule inputModule)
+        {
+            return false;
+        }
+
+        InputActionReference cancelReference = inputModule.cancel;
+        return cancelReference != null && cancelReference.action != null &&
+               cancelReference.action.WasPressedThisFrame();
     }
 
     private IEnumerator FocusCoroutine()
@@ -403,6 +433,7 @@ public class VirtualKeyboardManager : MonoBehaviour
         TMP_InputField returnTarget = targetInputField;
         Selectable nextSelectable = returnTarget != null ? returnTarget.FindSelectableOnDown() : null;
         targetInputField = null;
+        if (activeKeyboard == this) activeKeyboard = null;
 
         if (focusCoroutine != null)
         {
@@ -443,6 +474,7 @@ public class VirtualKeyboardManager : MonoBehaviour
 
         TMP_InputField returnTarget = targetInputField;
         targetInputField = null;
+        if (activeKeyboard == this) activeKeyboard = null;
         restoreFocusRequestId++;
 
         if (focusCoroutine != null)
