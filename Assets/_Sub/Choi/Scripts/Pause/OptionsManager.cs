@@ -101,7 +101,7 @@ public class OptionsManager : MonoBehaviour
 
         if (vSyncToggle != null)
         {
-            int savedVSync = PlayerPrefs.GetInt("VSync", 1);
+            int savedVSync = PlayerPrefs.GetInt("VSync", 0);
             QualitySettings.vSyncCount = savedVSync;
             if (savedVSync == 0) Application.targetFrameRate = 144;
             else Application.targetFrameRate = -1;
