@@ -3,6 +3,8 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 using System;
 using System.Linq;
+using Mirror;
+using EpicTransport;
 
 #if STEAM_BUILD
 using Steamworks;
