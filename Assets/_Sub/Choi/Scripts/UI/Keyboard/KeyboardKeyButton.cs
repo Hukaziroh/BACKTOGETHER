@@ -7,13 +7,15 @@ public class KeyboardKeyButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 {
     [HideInInspector] public VirtualKeyboardManager manager;
 
-    public enum KeyType { Char, Space, Backspace, Confirm, None }
+    // 기존 씬에 저장된 enum 값이 바뀌지 않도록 새 타입은 마지막에 추가한다.
+    public enum KeyType { Char, Space, Backspace, Confirm, None, Shift, CapsLock }
     public KeyType keyType = KeyType.Char;
     public string characterValue = "";
 
     private Button _button;
     private Image _image;
     private Color _originalColor;
+    private bool _modifierActive;
 
     [Header("포커스 시 색상 설정")]
     [SerializeField] private Color selectColor = new Color(1f, 0.92f, 0.016f, 1f); // 눈에 잘 띄는 노란색
@@ -44,7 +46,7 @@ public class KeyboardKeyButton : MonoBehaviour, ISelectHandler, IDeselectHandler
     // 패드 포커스가 해제될 때
     public void OnDeselect(BaseEventData eventData)
     {
-        ResetVisualState();
+        ApplyVisualState();
     }
 
     private void OnDisable()
@@ -54,9 +56,21 @@ public class KeyboardKeyButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 
     public void ResetVisualState()
     {
+        _modifierActive = false;
+        ApplyVisualState();
+    }
+
+    public void SetModifierActive(bool isActive)
+    {
+        _modifierActive = isActive;
+        ApplyVisualState();
+    }
+
+    private void ApplyVisualState()
+    {
         if (_image != null)
         {
-            _image.color = _originalColor;
+            _image.color = _modifierActive ? selectColor : _originalColor;
         }
     }
 
@@ -79,6 +93,12 @@ public class KeyboardKeyButton : MonoBehaviour, ISelectHandler, IDeselectHandler
                 break;
             case KeyType.Space:
                 manager.InputCharacter(" ");
+                break;
+            case KeyType.Shift:
+                manager.OnClickShift();
+                break;
+            case KeyType.CapsLock:
+                manager.OnClickCapsLock();
                 break;
             case KeyType.Char:
                 if (!string.IsNullOrEmpty(characterValue))

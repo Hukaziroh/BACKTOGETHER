@@ -3,6 +3,8 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
 
 public class VirtualKeyboardManager : MonoBehaviour
 {
@@ -13,6 +15,8 @@ public class VirtualKeyboardManager : MonoBehaviour
     private TMP_InputField targetInputField;
     private Coroutine focusCoroutine;
     private int restoreFocusRequestId;
+    private bool shiftActive;
+    private bool capsLockActive;
 
     public bool IsOpen => keyboardPanel != null && keyboardPanel.activeSelf;
 
@@ -35,7 +39,10 @@ public class VirtualKeyboardManager : MonoBehaviour
         restoreFocusRequestId++;
 
         keyboardPanel.SetActive(true);
+        ConfigureModifierKeys();
+        ConfigureKeyboardNavigation();
         ResetKeyVisualStates();
+        ResetModifierStates();
 
         // 중요: GlobalSceneInputManager에게 포커스 범위 제어권 요청
         if (GlobalSceneInputManager.Instance != null)
@@ -148,9 +155,239 @@ public class VirtualKeyboardManager : MonoBehaviour
     {
         if (targetInputField != null)
         {
-            targetInputField.text += character;
+            targetInputField.text += ApplyLetterCase(character);
             targetInputField.caretPosition = targetInputField.text.Length;
+
+            // 가상 키보드의 Shift는 다음 문자 한 번에만 적용한다.
+            if (shiftActive)
+            {
+                shiftActive = false;
+                RefreshModifierVisuals();
+            }
         }
+    }
+
+    public void OnClickShift()
+    {
+        shiftActive = !shiftActive;
+        RefreshModifierVisuals();
+    }
+
+    public void OnClickCapsLock()
+    {
+        capsLockActive = !capsLockActive;
+        RefreshModifierVisuals();
+    }
+
+    private string ApplyLetterCase(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return value;
+
+        bool useUppercase = capsLockActive ^ shiftActive;
+        return useUppercase
+            ? value.ToUpper(CultureInfo.CurrentCulture)
+            : value.ToLower(CultureInfo.CurrentCulture);
+    }
+
+    private void ResetModifierStates()
+    {
+        shiftActive = false;
+        capsLockActive = false;
+        RefreshModifierVisuals();
+    }
+
+    private void RefreshModifierVisuals()
+    {
+        if (keyboardPanel == null) return;
+
+        KeyboardKeyButton[] keyButtons = keyboardPanel.GetComponentsInChildren<KeyboardKeyButton>(true);
+        foreach (KeyboardKeyButton keyButton in keyButtons)
+        {
+            if (keyButton == null) continue;
+
+            if (keyButton.keyType == KeyboardKeyButton.KeyType.Shift)
+            {
+                keyButton.SetModifierActive(shiftActive);
+            }
+            else if (keyButton.keyType == KeyboardKeyButton.KeyType.CapsLock)
+            {
+                keyButton.SetModifierActive(capsLockActive);
+            }
+        }
+    }
+
+    private void ConfigureModifierKeys()
+    {
+        if (keyboardPanel == null) return;
+
+        Transform[] children = keyboardPanel.GetComponentsInChildren<Transform>(true);
+        foreach (Transform child in children)
+        {
+            if (child == null || child == keyboardPanel.transform) continue;
+
+            string normalizedName = child.name.Replace("_", "").Replace("-", "").Replace(" ", "").ToUpperInvariant();
+            KeyboardKeyButton.KeyType keyType;
+
+            if (normalizedName == "SHIFT" || normalizedName == "LEFTSHIFT" || normalizedName == "RIGHTSHIFT")
+            {
+                keyType = KeyboardKeyButton.KeyType.Shift;
+            }
+            else if (normalizedName == "CAP" || normalizedName == "CAPS" || normalizedName == "CAPSLOCK")
+            {
+                keyType = KeyboardKeyButton.KeyType.CapsLock;
+            }
+            else
+            {
+                continue;
+            }
+
+            Button button = child.GetComponent<Button>();
+            if (button == null)
+            {
+                button = child.gameObject.AddComponent<Button>();
+            }
+
+            KeyboardKeyButton keyButton = child.GetComponent<KeyboardKeyButton>();
+            bool needsRuntimeListener = keyButton == null;
+            if (keyButton == null)
+            {
+                keyButton = child.gameObject.AddComponent<KeyboardKeyButton>();
+            }
+
+            keyButton.manager = this;
+            keyButton.keyType = keyType;
+            keyButton.characterValue = string.Empty;
+
+            if (needsRuntimeListener)
+            {
+                button.onClick.AddListener(keyButton.OnClickKey);
+            }
+        }
+    }
+
+    public void ConfigureKeyboardNavigation()
+    {
+        if (keyboardPanel == null) return;
+
+        KeyboardKeyButton[] keyButtons = keyboardPanel.GetComponentsInChildren<KeyboardKeyButton>(true);
+        List<KeyboardKeyButton> navigationKeys = new List<KeyboardKeyButton>();
+
+        foreach (KeyboardKeyButton keyButton in keyButtons)
+        {
+            if (keyButton == null) continue;
+
+            Button button = keyButton.GetComponent<Button>();
+            KeyboardKeyButton[] nestedKeys = keyButton.GetComponentsInChildren<KeyboardKeyButton>(true);
+
+            // 행 컨테이너가 문자 키로 잘못 자동 등록된 이전 씬 데이터를 탐색에서 제외한다.
+            if (nestedKeys.Length > 1)
+            {
+                if (button != null) button.interactable = false;
+                continue;
+            }
+
+            if (button != null && button.enabled && button.interactable && keyButton.gameObject.activeSelf &&
+                keyButton.keyType != KeyboardKeyButton.KeyType.None)
+            {
+                navigationKeys.Add(keyButton);
+            }
+        }
+
+        navigationKeys.Sort((a, b) =>
+        {
+            Vector2 positionA = GetKeyboardLocalPosition(a.transform);
+            Vector2 positionB = GetKeyboardLocalPosition(b.transform);
+            int verticalOrder = positionB.y.CompareTo(positionA.y);
+            return verticalOrder != 0 ? verticalOrder : positionA.x.CompareTo(positionB.x);
+        });
+
+        const float rowTolerance = 25f;
+        List<List<KeyboardKeyButton>> rows = new List<List<KeyboardKeyButton>>();
+
+        foreach (KeyboardKeyButton keyButton in navigationKeys)
+        {
+            float keyY = GetKeyboardLocalPosition(keyButton.transform).y;
+            List<KeyboardKeyButton> targetRow = null;
+
+            foreach (List<KeyboardKeyButton> row in rows)
+            {
+                float rowY = GetKeyboardLocalPosition(row[0].transform).y;
+                if (Mathf.Abs(rowY - keyY) <= rowTolerance)
+                {
+                    targetRow = row;
+                    break;
+                }
+            }
+
+            if (targetRow == null)
+            {
+                targetRow = new List<KeyboardKeyButton>();
+                rows.Add(targetRow);
+            }
+
+            targetRow.Add(keyButton);
+        }
+
+        rows.Sort((a, b) => GetKeyboardLocalPosition(b[0].transform).y
+            .CompareTo(GetKeyboardLocalPosition(a[0].transform).y));
+
+        foreach (List<KeyboardKeyButton> row in rows)
+        {
+            row.Sort((a, b) => GetKeyboardLocalPosition(a.transform).x
+                .CompareTo(GetKeyboardLocalPosition(b.transform).x));
+        }
+
+        for (int rowIndex = 0; rowIndex < rows.Count; rowIndex++)
+        {
+            List<KeyboardKeyButton> row = rows[rowIndex];
+
+            for (int keyIndex = 0; keyIndex < row.Count; keyIndex++)
+            {
+                KeyboardKeyButton keyButton = row[keyIndex];
+                Button button = keyButton.GetComponent<Button>();
+                float keyX = GetKeyboardLocalPosition(keyButton.transform).x;
+
+                Navigation navigation = button.navigation;
+                navigation.mode = Navigation.Mode.Explicit;
+                navigation.wrapAround = false;
+                navigation.selectOnLeft = row.Count > 1
+                    ? row[(keyIndex - 1 + row.Count) % row.Count].GetComponent<Button>()
+                    : null;
+                navigation.selectOnRight = row.Count > 1
+                    ? row[(keyIndex + 1) % row.Count].GetComponent<Button>()
+                    : null;
+                navigation.selectOnUp = rowIndex > 0
+                    ? FindClosestHorizontalButton(rows[rowIndex - 1], keyX)
+                    : null;
+                navigation.selectOnDown = rowIndex < rows.Count - 1
+                    ? FindClosestHorizontalButton(rows[rowIndex + 1], keyX)
+                    : null;
+                button.navigation = navigation;
+            }
+        }
+    }
+
+    private Vector2 GetKeyboardLocalPosition(Transform target)
+    {
+        return keyboardPanel.transform.InverseTransformPoint(target.position);
+    }
+
+    private Button FindClosestHorizontalButton(List<KeyboardKeyButton> row, float targetX)
+    {
+        KeyboardKeyButton closest = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (KeyboardKeyButton keyButton in row)
+        {
+            float distance = Mathf.Abs(GetKeyboardLocalPosition(keyButton.transform).x - targetX);
+            if (distance < closestDistance)
+            {
+                closest = keyButton;
+                closestDistance = distance;
+            }
+        }
+
+        return closest != null ? closest.GetComponent<Button>() : null;
     }
 
     public void OnClickBackspace()
