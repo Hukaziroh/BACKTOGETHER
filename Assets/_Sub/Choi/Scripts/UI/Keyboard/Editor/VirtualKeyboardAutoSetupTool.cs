@@ -48,6 +48,21 @@ public class VirtualKeyboardAutoSetupTool : EditorWindow
             GameObject obj = rect.gameObject;
             string objNameUpper = obj.name.ToUpper();
 
+            // 현재 키보드의 행 컨테이너 이름(1~6)을 숫자 키로 오인하지 않도록 제외한다.
+            if (rect.childCount > 0 && int.TryParse(obj.name.Trim(), out _))
+            {
+                KeyboardKeyButton staleKey = obj.GetComponent<KeyboardKeyButton>();
+                if (staleKey != null)
+                {
+                    Button staleButton = obj.GetComponent<Button>();
+                    Undo.DestroyObjectImmediate(staleKey);
+                    if (staleButton != null) Undo.DestroyObjectImmediate(staleButton);
+                    EditorUtility.SetDirty(obj);
+                }
+
+                continue;
+            }
+
             // 1. 단순 패널이나 배경 등 키가 아닌 컨테이너 오브젝트는 건너뜀
             if (objNameUpper.Contains("PANEL") || objNameUpper.Contains("BG") ||
                 objNameUpper.Contains("BACKGROUND") || objNameUpper.Contains("ROW") ||
@@ -89,7 +104,15 @@ public class VirtualKeyboardAutoSetupTool : EditorWindow
                 determinedType = KeyboardKeyButton.KeyType.Space;
                 determinedValue = " ";
             }
-            else if (objNameUpper.Contains("SHIFT") || objNameUpper.Contains("CTRL") || objNameUpper.Contains("ALT") ||
+            else if (objNameUpper.Contains("SHIFT") || upperKeyText == "SHIFT" || cleanName == "SHIFT")
+            {
+                determinedType = KeyboardKeyButton.KeyType.Shift;
+            }
+            else if (objNameUpper.Contains("CAPS") || cleanName == "CAP" || upperKeyText == "CAPS LOCK")
+            {
+                determinedType = KeyboardKeyButton.KeyType.CapsLock;
+            }
+            else if (objNameUpper.Contains("CTRL") || objNameUpper.Contains("ALT") ||
                      objNameUpper.Contains("TAB") || objNameUpper.Contains("ESC") || objNameUpper.Contains("CAPS") ||
                      objNameUpper.Contains("INS") || objNameUpper.Contains("HOME") || objNameUpper.Contains("PAGE") ||
                      objNameUpper.Contains("PRT") || objNameUpper.Contains("SCROLL") || objNameUpper.Contains("PAUSE") ||
@@ -153,6 +176,10 @@ public class VirtualKeyboardAutoSetupTool : EditorWindow
             EditorUtility.SetDirty(obj);
             count++;
         }
+
+        // 행별 좌우 순환과 위아래 최단 거리 이동을 명시적으로 연결한다.
+        keyboardManager.ConfigureKeyboardNavigation();
+        EditorUtility.SetDirty(keyboardManager);
 
         EditorUtility.DisplayDialog("완료", $"총 {count}개의 키에 버튼이 꽂히고 입력 기능이 세팅되었습니다!", "확인");
     }
