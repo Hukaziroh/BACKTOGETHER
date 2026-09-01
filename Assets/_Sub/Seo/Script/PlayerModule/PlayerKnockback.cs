@@ -175,12 +175,6 @@ public class PlayerKnockback : NetworkBehaviour
         knockbackTimeoutTimer = 3.0f;
 
         RpcPlayHitAnimation(false);
-
-        CoopRopeManager ropeManager = FindAnyObjectByType<CoopRopeManager>();
-        if (ropeManager != null && ropeManager.isRopeActive)
-        {
-            RpcShareKnockbackDrag();
-        }
     }
 
     [ClientRpc]
@@ -203,12 +197,6 @@ public class PlayerKnockback : NetworkBehaviour
         knockbackTimeoutTimer = 3.0f;
 
         RpcPlayHitAnimation(true);
-
-        CoopRopeManager ropeManager = FindAnyObjectByType<CoopRopeManager>();
-        if (ropeManager != null && ropeManager.isRopeActive)
-        {
-            RpcShareKnockbackDrag();
-        }
 
         yield return new WaitForSeconds(seconds);
         yield return new WaitForSeconds(2f);
@@ -289,14 +277,5 @@ public class PlayerKnockback : NetworkBehaviour
     {
         if (!isServer) return;
         ApplyKnockback(new Vector2(-1, 0.5f));
-    }
-
-    [ClientRpc]
-    private void RpcShareKnockbackDrag()
-    {
-        if (!isLocalPlayer) return;
-        if (isKnockedBack) return;
-
-        stunTimer = 0.5f;
     }
 }
