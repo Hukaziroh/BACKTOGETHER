@@ -175,18 +175,8 @@ public partial class PrivateLobbyManager
 
     private static bool WasUICancelPressedThisFrame()
     {
-        if (EventSystem.current != null &&
-            EventSystem.current.currentInputModule is InputSystemUIInputModule inputModule)
-        {
-            InputActionReference cancelReference = inputModule.cancel;
-            if (cancelReference != null && cancelReference.action != null)
-            {
-                return cancelReference.action.WasPressedThisFrame();
-            }
-        }
-
-        // InputSystemUIInputModule이 없는 예외적인 상황에서도 키보드 뒤로가기는 유지한다.
-        return Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
+        if (VirtualKeyboardManager.BlocksGlobalBackInput) return false;
+        return VirtualKeyboardManager.WasUICancelPressedThisFrame();
     }
 
 }

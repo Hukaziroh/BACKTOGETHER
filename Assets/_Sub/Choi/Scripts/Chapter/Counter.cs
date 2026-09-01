@@ -2,6 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using Mirror;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 [RequireComponent(typeof(Collider2D))]
 public class Counter : NetworkBehaviour
@@ -63,6 +66,22 @@ public class Counter : NetworkBehaviour
     {
         UpdateUI(newVal);
     }
+
+#if UNITY_EDITOR
+    protected override void OnValidate()
+    {
+        // 이 프리팹은 NetworkIdentity가 있는 상위 네트워크 오브젝트의 자식으로 사용된다.
+        // 프리팹 원본을 단독 검사할 때는 바깥 부모를 볼 수 없으므로 거짓 경고만 건너뛴다.
+        if (PrefabUtility.IsPartOfPrefabAsset(gameObject) &&
+            GetComponentInParent<NetworkIdentity>(true) == null)
+        {
+            return;
+        }
+
+        // 씬에 배치된 인스턴스에서는 실제 부모 NetworkIdentity가 있는지 계속 검증한다.
+        base.OnValidate();
+    }
+#endif
 
     private void UpdateUI(int count)
     {
