@@ -5,33 +5,33 @@ using UnityEngine.SceneManagement;
 
 public class StageProgressTracker : MonoBehaviour
 {
-    [Header("UI 연결")]
+    [Header("UI ?�결")]
     [SerializeField] private RectTransform iconContainer;
     [SerializeField] private GameObject playerIconPrefab;
 
-    [Header("체크포인트 깃발 설정")]
-    [Tooltip("커스텀 깃발 스프라이트가 있다면 여기에 넣으세요. 비워두면 빨간색 기본 깃발로 표시됩니다.")]
+    [Header("체크?�인??깃발 ?�정")]
+    [Tooltip("커스?� 깃발 ?�프?�이?��? ?�다�??�기???�으?�요. 비워?�면 빨간??기본 깃발�??�시?�니??")]
     [SerializeField] private Sprite checkpointFlagSprite;
 
-    [Header("플레이어 아이콘 스프라이트 설정")]
-    [Tooltip("플레이어 순서(Index)에 따라 적용할 스프라이트 리스트입니다. (예: 0번 플레이어 표정, 1번 플레이어 표정...)")]
+    [Header("?�레?�어 ?�이�??�프?�이???�정")]
+    [Tooltip("?�레?�어 ?�서(Index)???�라 ?�용???�프?�이??리스?�입?�다. (?? 0�??�레?�어 ?�정, 1�??�레?�어 ?�정...)")]
     [SerializeField] private List<Sprite> playerIconSprites = new List<Sprite>();
 
-    [Header("6챕터 보스 아이콘 설정")]
+    [Header("6챕터 보스 ?�이�??�정")]
     [SerializeField] private Sprite bossIconSprite;
     [SerializeField] private string bossTag = "Boss";
     [SerializeField] private List<string> bossSceneNames = new List<string> { "chapter6", "Nchapter6" };
     [SerializeField] private Vector2 bossIconSize = new Vector2(34f, 18f);
     [SerializeField] private Color bossBackIconColor = new Color(0.45f, 0f, 0f, 1f);
 
-    [Header("프로그래스 바 보정")]
-    [Tooltip("전체 길이 비율을 조절합니다 (밀림 폭이 점점 커지거나 작아질 때 조절)")]
+    [Header("?�로그래??�?보정")]
+    [Tooltip("?�체 길이 비율??조절?�니??(밀�???�� ?�점 커�?거나 ?�아�???조절)")]
     [SerializeField] private float progressMultiplier = 1f;
-    [Tooltip("시작 위치(오프셋)를 통째로 이동시킵니다")]
+    [Tooltip("?�작 ?�치(?�프??�??�째�??�동?�킵?�다")]
     [SerializeField] private float progressOffset = 0f;
 
-    [Header("세로 진행 판정 스테이지")]
-    [Tooltip("프로그래스 바는 가로로 유지하고, 월드 Y축으로 진행률을 계산할 Scene 이름입니다.")]
+    [Header("?�로 진행 ?�정 ?�테?��?")]
+    [Tooltip("?�로그래??바는 가로로 ?��??�고, ?�드 Y축으�?진행률을 계산??Scene ?�름?�니??")]
     [SerializeField] private List<string> verticalSceneNames = new List<string> { "Ex2" };
 
     private Vector3 startPos;
@@ -44,12 +44,13 @@ public class StageProgressTracker : MonoBehaviour
 
     private SpectatorSystem spectatorSystem;
 
-    // 🌟 프레임 드랍 방지용 캐싱 변수
-    private GameObject[] cachedPlayers = new GameObject[0];
+    // ?�� ?�레???�랍 방�???캐싱 변??    private GameObject[] cachedPlayers = new GameObject[0];
     private float nextSearchTime = 0f;
 
-    // 🌟 가장 최근에 찍은 체크포인트 깃발 객체 관리 변수
-    private GameObject activeCheckpointFlagObj;
+    // ?�� 가??최근??찍�? 체크?�인??깃발 객체 관�?변??    private GameObject activeCheckpointFlagObj;
+
+    // ?�� 최적?? 체크?�인??목록?????�환 ??1?�만 캐싱
+    private CoopCheckpoint[] cachedCheckpoints;
 
     private void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;
     private void OnDisable() => SceneManager.sceneLoaded -= OnSceneLoaded;
@@ -68,10 +69,11 @@ public class StageProgressTracker : MonoBehaviour
         cachedBoss = null;
         activeCheckpointFlagObj = null;
         isInitialized = false;
-        nextSearchTime = 0f; // 씬 로드 시 즉시 갱신
+        nextSearchTime = 0f; // ??로드 ??즉시 갱신
 
         InitializePoints();
         spectatorSystem = Object.FindAnyObjectByType<SpectatorSystem>();
+        cachedCheckpoints = Object.FindObjectsByType<CoopCheckpoint>(FindObjectsInactive.Exclude);
     }
 
     private void InitializePoints()
@@ -88,7 +90,7 @@ public class StageProgressTracker : MonoBehaviour
                 ? endPos.y - startPos.y
                 : endPos.x - startPos.x;
 
-            if (!Mathf.Approximately(mapLength, 0f)) // 0으로 나누기 방지
+            if (!Mathf.Approximately(mapLength, 0f)) // 0?�로 ?�누�?방�?
             {
                 isInitialized = true;
             }
@@ -103,14 +105,14 @@ public class StageProgressTracker : MonoBehaviour
             if (!isInitialized) return;
         }
 
-        // 🌟 0.5초마다 플레이어 목록 갱신
+        // ?�� 0.5초마???�레?�어 목록 갱신
         if (Time.unscaledTime >= nextSearchTime)
         {
             cachedPlayers = GameObject.FindGameObjectsWithTag("Player");
             nextSearchTime = Time.unscaledTime + 0.5f;
         }
 
-        // 🌟 완전히 나간 플레이어 아이콘 삭제
+        // ?�� ?�전???�간 ?�레?�어 ?�이�???��
         List<GameObject> toRemove = new List<GameObject>();
         foreach (var kvp in playerIcons)
         {
@@ -122,7 +124,7 @@ public class StageProgressTracker : MonoBehaviour
         }
         foreach (var k in toRemove) playerIcons.Remove(k);
 
-        // 🌟 내 플레이어(또는 관전 중인 대상)의 체크포인트 깃발 갱신
+        // ?�� ???�레?�어(?�는 관??중인 ?�????체크?�인??깃발 갱신
         UpdateActiveCheckpointFlag();
 
         foreach (GameObject player in cachedPlayers)
@@ -146,8 +148,7 @@ public class StageProgressTracker : MonoBehaviour
 
             CoopPlayerIdentity identity = player.GetComponent<CoopPlayerIdentity>();
 
-            // 🌟 1. BackIcon 색상 변경
-            Transform backIconChild = iconRect.Find("BackIcon");
+            // ?�� 1. BackIcon ?�상 변�?            Transform backIconChild = iconRect.Find("BackIcon");
             if (backIconChild != null)
             {
                 Image backImageIcon = backIconChild.GetComponent<Image>();
@@ -164,8 +165,7 @@ public class StageProgressTracker : MonoBehaviour
                 }
             }
 
-            // 🌟 2. Icon 스프라이트 변경
-            Transform iconChild = iconRect.Find("Icon");
+            // ?�� 2. Icon ?�프?�이??변�?            Transform iconChild = iconRect.Find("Icon");
             if (iconChild != null)
             {
                 Image iconImage = iconChild.GetComponent<Image>();
@@ -342,9 +342,7 @@ public class StageProgressTracker : MonoBehaviour
             {
                 backImage.color = bossBackIconColor;
             }
-        }
-
-        Transform iconChild = iconObject.transform.Find("Icon");
+            Transform iconChild = iconObject.transform.Find("Icon");
         if (iconChild != null)
         {
             Image iconImage = iconChild.GetComponent<Image>();
@@ -370,13 +368,13 @@ public class StageProgressTracker : MonoBehaviour
         }
     }
 
-    // 🌟 내 플레이어(또는 관전 중인 대상)가 마지막으로 찍은 체크포인트를 빨간색 깃발로 표시
+    // ?�� 최적?? 체크?�인??목록?????�환 ??1?�만 캐싱
     private void UpdateActiveCheckpointFlag()
     {
         Vector3 activeCpPos = Vector3.zero;
         bool foundActive = false;
 
-        // 1. 기준이 될 플레이어 찾기 (관전 중이면 관전 타겟, 아니면 내 플레이어)
+        // 1. 기�??????�레?�어 찾기 (관??중이�?관???��? ?�니�?로컬 ?�레?�어)
         GameObject targetPlayer = null;
 
         if (spectatorSystem != null && spectatorSystem.CurrentTarget != null)
@@ -388,17 +386,15 @@ public class StageProgressTracker : MonoBehaviour
             targetPlayer = GetLocalPlayer();
         }
 
-        // 2. 해당 플레이어의 체크포인트 인덱스 가져오기
-        if (targetPlayer != null)
+        // 2. ?�당 ?�레?�어??체크?�인???�덱?��? 가?�오�?        if (targetPlayer != null)
         {
             PlayerRespawn respawn = targetPlayer.GetComponent<PlayerRespawn>();
             if (respawn != null)
             {
-                int cpIndex = GetPlayerCheckpointIndex(respawn);
-                if (cpIndex >= 0)
+                int cpIndex = respawn.currentCheckpointIndex;
+                if (cpIndex >= 0 && cachedCheckpoints != null)
                 {
-                    CoopCheckpoint[] allCheckpoints = Object.FindObjectsByType<CoopCheckpoint>(FindObjectsInactive.Exclude);
-                    foreach (var cp in allCheckpoints)
+                    foreach (var cp in cachedCheckpoints)
                     {
                         if (cp != null && cp.checkpointIndex == cpIndex && cp.spawnLocation != null)
                         {
@@ -411,13 +407,13 @@ public class StageProgressTracker : MonoBehaviour
             }
         }
 
-        // 3. 깃발 UI 생성 및 위치 갱신
+        // 3. 깃발 UI ?�성 �??�치 갱신
         if (foundActive)
         {
             float progress = GetProgress(activeCpPos);
             Vector2 progressPosition = GetIconPosition(progress);
 
-            // 깃발 오브젝트가 없으면 새로 생성 (프로그래스 바 상단에 걸쳐지도록 설정)
+            // 깃발 ?�브?�트가 ?�으�??�로 ?�성 (?�로그래??�??�단??걸쳐지?�록 ?�정)
             if (activeCheckpointFlagObj == null)
             {
                 activeCheckpointFlagObj = new GameObject("ActiveCheckpointFlag", typeof(RectTransform));
@@ -426,10 +422,10 @@ public class StageProgressTracker : MonoBehaviour
                 RectTransform flagContainerRect = activeCheckpointFlagObj.GetComponent<RectTransform>();
                 flagContainerRect.anchorMin = new Vector2(0f, 0.5f);
                 flagContainerRect.anchorMax = new Vector2(0f, 0.5f);
-                flagContainerRect.pivot = new Vector2(0.5f, 0f); // 깃발의 하단이 바의 중앙 기준선에 오도록 설정
+                flagContainerRect.pivot = new Vector2(0.5f, 0f); // 깃발???�단??바의 중앙 기�??�에 ?�도�??�정
                 flagContainerRect.sizeDelta = new Vector2(16f, 24f);
 
-                // 1. 깃대 (세로 줄)
+                // 1. 깃�? (?�로 �?
                 GameObject poleObj = new GameObject("Pole", typeof(RectTransform), typeof(Image));
                 poleObj.transform.SetParent(flagContainerRect, false);
                 RectTransform poleRect = poleObj.GetComponent<RectTransform>();
@@ -439,13 +435,13 @@ public class StageProgressTracker : MonoBehaviour
                 poleRect.anchoredPosition = Vector2.zero;
                 poleObj.GetComponent<Image>().color = Color.white;
 
-                // 2. 깃발 천 (빨간색)
+                // 2. 깃발 �?(빨간??
                 GameObject bannerObj = new GameObject("Banner", typeof(RectTransform), typeof(Image));
                 bannerObj.transform.SetParent(flagContainerRect, false);
                 RectTransform bannerRect = bannerObj.GetComponent<RectTransform>();
                 bannerRect.anchorMin = new Vector2(0.5f, 1f);
                 bannerRect.anchorMax = new Vector2(0.5f, 1f);
-                bannerRect.pivot = new Vector2(0f, 1f); // 왼쪽 위 기준
+                bannerRect.pivot = new Vector2(0f, 1f); // ?�측 ??기�?
                 bannerRect.sizeDelta = new Vector2(14f, 10f);
                 bannerRect.anchoredPosition = new Vector2(0f, 0f);
 
@@ -502,56 +498,23 @@ public class StageProgressTracker : MonoBehaviour
         }
     }
 
-    // 🌟 로컬 플레이어(내 캐릭터)를 리플렉션으로 안전하게 찾아내는 보조 함수
+    // ?�� 최적?? Reflection ?�이 Mirror??localPlayer�?직접 반환
     private GameObject GetLocalPlayer()
     {
-        foreach (var player in cachedPlayers)
+        if (Mirror.NetworkClient.localPlayer != null)
         {
-            if (player == null) continue;
-            CoopPlayerIdentity identity = player.GetComponent<CoopPlayerIdentity>();
-            if (identity != null)
-            {
-                System.Type type = identity.GetType();
-                string[] localNames = { "isLocal", "isLocalPlayer", "isOwner", "isLocalClient" };
-                foreach (var name in localNames)
-                {
-                    var field = type.GetField(name, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    if (field != null && field.FieldType == typeof(bool))
-                    {
-                        if ((bool)field.GetValue(identity)) return player;
-                    }
-                    var prop = type.GetProperty(name, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    if (prop != null && prop.PropertyType == typeof(bool) && prop.CanRead)
-                    {
-                        if ((bool)prop.GetValue(identity, null)) return player;
-                    }
-                }
-            }
+            return Mirror.NetworkClient.localPlayer.gameObject;
         }
 
-        // 판별 필드를 찾지 못했거나 싱글플레이/테스트 환경인 경우 첫 번째 플레이어 반환
-        if (cachedPlayers.Length > 0) return cachedPlayers[0];
+        // ?�백: ?�별?��? �?찾았거나 ?�프?�인??경우 �?번째 ?�레?�어 반환
+        if (cachedPlayers != null && cachedPlayers.Length > 0) return cachedPlayers[0];
         return null;
     }
 
     private int GetPlayerCheckpointIndex(PlayerRespawn respawn)
     {
         if (respawn == null) return -1;
-        System.Type type = respawn.GetType();
-        string[] possibleNames = { "checkpointIndex", "currentCheckpointIndex", "respawnIndex", "lastCheckpointIndex", "spawnIndex" };
-        foreach (var name in possibleNames)
-        {
-            var field = type.GetField(name, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (field != null && field.FieldType == typeof(int))
-            {
-                return (int)field.GetValue(respawn);
-            }
-            var prop = type.GetProperty(name, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (prop != null && prop.PropertyType == typeof(int) && prop.CanRead)
-            {
-                return (int)prop.GetValue(respawn, null);
-            }
-        }
-        return -1;
+        return respawn.currentCheckpointIndex;
     }
 }
+
