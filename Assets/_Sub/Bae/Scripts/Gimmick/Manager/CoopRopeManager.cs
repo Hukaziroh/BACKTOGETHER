@@ -34,6 +34,8 @@ public class CoopRopeManager : NetworkBehaviour
 
     // PlayerKnockback에서 읽을 수 있게 public으로 변경
     public List<GameObject> connectedPlayers = new List<GameObject>();
+    private Dictionary<GameObject, Rigidbody2D> cachedRigidbodies = new Dictionary<GameObject, Rigidbody2D>();
+    private Dictionary<GameObject, PlayerMovement> cachedMovements = new Dictionary<GameObject, PlayerMovement>();
     private List<LineRenderer> lineRenderers = new List<LineRenderer>();
 
     [Server]
@@ -83,6 +85,8 @@ public class CoopRopeManager : NetworkBehaviour
                 if (identity != null && identity.gameObject != null)
                 {
                     connectedPlayers.Add(identity.gameObject);
+                    cachedRigidbodies[identity.gameObject] = identity.GetComponent<Rigidbody2D>();
+                    cachedMovements[identity.gameObject] = identity.GetComponent<PlayerMovement>();
                 }
                 else
                 {
@@ -99,13 +103,6 @@ public class CoopRopeManager : NetworkBehaviour
         {
             SetupLineRenderers(connectedPlayers.Count - 1);
         }
-        else
-        {
-            Debug.LogWarning(
-                $"[로프 기믹] 플레이어를 충분히 찾지 못했습니다. " +
-                $"찾음: {connectedPlayers.Count}/{playerNetIds.Length}"
-            );
-        }
     }
 
     [ClientRpc]
@@ -115,11 +112,8 @@ public class CoopRopeManager : NetworkBehaviour
         {
             if (player != null)
             {
-                Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
-                if (rb != null) rb.mass = 1f;
-
-                PlayerMovement mov = player.GetComponent<PlayerMovement>();
-                if (mov != null) mov.isRestrictedByRope = false;
+                if (cachedRigidbodies.TryGetValue(player, out Rigidbody2D rb) && rb != null) rb.mass = 1f;
+                if (cachedMovements.TryGetValue(player, out PlayerMovement mov) && mov != null) mov.isRestrictedByRope = false;
             }
         }
 
@@ -130,6 +124,8 @@ public class CoopRopeManager : NetworkBehaviour
 
         lineRenderers.Clear();
         connectedPlayers.Clear();
+        cachedRigidbodies.Clear();
+        cachedMovements.Clear();
     }
 
     private void SetupLineRenderers(int lineCount)
@@ -185,10 +181,9 @@ public class CoopRopeManager : NetworkBehaviour
 
         foreach (var player in connectedPlayers)
         {
-            if (player != null)
+            if (player != null && cachedMovements.TryGetValue(player, out PlayerMovement movement) && movement != null)
             {
-                PlayerMovement movement = player.GetComponent<PlayerMovement>();
-                if (movement != null) movement.isRestrictedByRope = false;
+                movement.isRestrictedByRope = false;
             }
         }
 
@@ -199,10 +194,10 @@ public class CoopRopeManager : NetworkBehaviour
 
             if (p1 != null && p2 != null)
             {
-                Rigidbody2D rb1 = p1.GetComponent<Rigidbody2D>();
-                Rigidbody2D rb2 = p2.GetComponent<Rigidbody2D>();
-                PlayerMovement mov1 = p1.GetComponent<PlayerMovement>();
-                PlayerMovement mov2 = p2.GetComponent<PlayerMovement>();
+                cachedRigidbodies.TryGetValue(p1, out Rigidbody2D rb1);
+                cachedRigidbodies.TryGetValue(p2, out Rigidbody2D rb2);
+                cachedMovements.TryGetValue(p1, out PlayerMovement mov1);
+                cachedMovements.TryGetValue(p2, out PlayerMovement mov2);
 
                 if (rb1 != null && rb2 != null && mov1 != null && mov2 != null)
                 {
