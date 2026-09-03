@@ -422,6 +422,7 @@ public class StageProgressTracker : MonoBehaviour
             {
                 activeCheckpointFlagObj = new GameObject("ActiveCheckpointFlag", typeof(RectTransform));
                 activeCheckpointFlagObj.transform.SetParent(iconContainer, false);
+                activeCheckpointFlagObj.transform.SetAsFirstSibling(); // 깃발을 플레이어/보스 아이콘 뒤에 표시
 
                 RectTransform flagContainerRect = activeCheckpointFlagObj.GetComponent<RectTransform>();
                 flagContainerRect.anchorMin = new Vector2(0f, 0.5f);
