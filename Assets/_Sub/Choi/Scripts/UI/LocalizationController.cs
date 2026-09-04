@@ -33,6 +33,8 @@ public class LocalizationController : MonoBehaviour
             Instance = this;
             LoadSavedLanguage();
             DontDestroyOnLoad(gameObject);
+            // Apply the saved language to texts that enabled before this controller.
+            RefreshAllTexts();
         }
         else
         {

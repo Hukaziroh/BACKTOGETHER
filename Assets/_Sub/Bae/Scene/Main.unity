@@ -17192,7 +17192,7 @@ PrefabInstance:
     - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
       propertyPath: 'chapterSprites.Array.data[6]'
       value: 
-      objectReference: {fileID: 21300000, guid: 16176f10d9dce7b46874f6e71e12731e, type: 3}
+      objectReference: {fileID: 21300000, guid: 058a3310ba1889a4cbaee52d5b3b1806, type: 3}
     - target: {fileID: 8422485441135400866, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
       propertyPath: m_Name
       value: MainManager
