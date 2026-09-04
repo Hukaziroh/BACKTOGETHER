@@ -79763,25 +79763,33 @@ PrefabInstance:
       value: -3.52
       objectReference: {fileID: 0}
     - target: {fileID: 865000000000000002, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 35
+      objectReference: {fileID: 0}
+    - target: {fileID: 865000000000000002, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 35
+      objectReference: {fileID: 0}
+    - target: {fileID: 865000000000000002, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -5.1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 865000000000000002, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.6
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 865000000000000004, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -8655167945723465343, guid: 64825c66afc154b4ba3e9a7515bc9867, type: 3}
+      objectReference: {fileID: 21300000, guid: d1f79b08b02becd449dd41eda689efcd, type: 3}
     - target: {fileID: 865000000000000005, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
       propertyPath: gamepadSprite
       value: 
-      objectReference: {fileID: 21300000, guid: 042591c103cd44941ad6c50e10dbc284, type: 3}
+      objectReference: {fileID: 21300000, guid: 529586045edc50d4091933c8bf2d5311, type: 3}
     - target: {fileID: 865000000000000005, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
       propertyPath: keyboardSprite
       value: 
-      objectReference: {fileID: -8655167945723465343, guid: 64825c66afc154b4ba3e9a7515bc9867, type: 3}
+      objectReference: {fileID: 21300000, guid: d1f79b08b02becd449dd41eda689efcd, type: 3}
     - target: {fileID: 865000000000000005, guid: 2c1bb38409aa5064cb04ddf5bb1358ac, type: 3}
       propertyPath: keyboardByDefault
       value: 1

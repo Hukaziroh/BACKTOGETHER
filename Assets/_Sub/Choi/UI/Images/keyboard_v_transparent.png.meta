@@ -1,19 +1,13 @@
 fileFormatVersion: 2
-guid: 529586045edc50d4091933c8bf2d5311
+guid: 5853330617b4c844d8d6b4f9c38766b3
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 7225162580027209871
-    second: switch_buttons_left_outline_0
+      213: -7372005517997465043
+    second: keyboard_v_transparent_0
   - first:
-      213: 3063987176484548517
-    second: switch_buttons_left_outline_1
-  - first:
-      213: 4890058997935954379
-    second: switch_buttons_left_outline_2
-  - first:
-      213: 7230322310459013222
-    second: switch_buttons_left_outline_3
+      213: 747893610627370580
+    second: keyboard_v_transparent_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -49,9 +43,9 @@ TextureImporter:
     filterMode: 1
     aniso: 1
     mipBias: 0
-    wrapU: 1
-    wrapV: 1
-    wrapW: 1
+    wrapU: 0
+    wrapV: 0
+    wrapW: 0
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -122,13 +116,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: switch_buttons_left_outline_0
+      name: keyboard_v_transparent_0
       rect:
         serializedVersion: 2
-        x: 15
-        y: 47
-        width: 34
-        height: 34
+        x: 25
+        y: 160
+        width: 1176
+        height: 960
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -137,20 +131,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f8877f2061fe44460800000000000000
-      internalID: 7225162580027209871
+      spriteID: d22aa893a0061b990800000000000000
+      internalID: -7372005517997465043
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: switch_buttons_left_outline_1
+      name: keyboard_v_transparent_1
       rect:
         serializedVersion: 2
-        x: 47
-        y: 79
-        width: 34
-        height: 34
+        x: 268
+        y: 155
+        width: 717
+        height: 7
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -159,52 +153,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5afa6b27a18758a20800000000000000
-      internalID: 3063987176484548517
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: switch_buttons_left_outline_2
-      rect:
-        serializedVersion: 2
-        x: 79
-        y: 47
-        width: 34
-        height: 34
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: bc9dcaeffbafcd340800000000000000
-      internalID: 4890058997935954379
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: switch_buttons_left_outline_3
-      rect:
-        serializedVersion: 2
-        x: 47
-        y: 15
-        width: 34
-        height: 34
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 668bd7e55d3475460800000000000000
-      internalID: 7230322310459013222
+      spriteID: 45e8a3fb64d016a00800000000000000
+      internalID: 747893610627370580
       vertices: []
       indices: 
       edges: []
@@ -223,10 +173,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      switch_buttons_left_outline_0: 7225162580027209871
-      switch_buttons_left_outline_1: 3063987176484548517
-      switch_buttons_left_outline_2: 4890058997935954379
-      switch_buttons_left_outline_3: 7230322310459013222
+      keyboard_v_transparent_0: -7372005517997465043
+      keyboard_v_transparent_1: 747893610627370580
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
