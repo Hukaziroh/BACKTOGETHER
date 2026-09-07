@@ -1392,6 +1392,10 @@ PrefabInstance:
       propertyPath: tracks.Array.data[7].volume
       value: 0.3
       objectReference: {fileID: 0}
+    - target: {fileID: 7070018043978612738, guid: a07509864346611469d86c860eb518a6, type: 3}
+      propertyPath: tracks.Array.data[8].sceneName
+      value: Ex1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
