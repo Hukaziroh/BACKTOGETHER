@@ -28,12 +28,12 @@ public partial class PrivateLobbyManager : MonoBehaviour
     [SerializeField]
     private string[] defaultRoomNames = new string[]
     {
-        "Better Together!",
-        "Don't Step on My Head",
-        "Teamwork Makes the Dream Work",
-        "Back Together: Assemble!",
-        "Chaos Incoming...",
-        "One Mind, Four Bodies"
+        "Let's Go!",
+        "Coop Time",
+        "Together!",
+        "SOS!!!",
+        "Cozy Time",
+        "Just Play"
     };
 
     [Header("챕터 선택 UI (< Chapter 1 >)")]
