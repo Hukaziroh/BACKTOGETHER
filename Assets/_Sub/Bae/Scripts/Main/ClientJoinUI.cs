@@ -182,7 +182,7 @@ public class ClientJoinUI : MonoBehaviour
         // 방 발견 시 공식 방 참가 프로세스를 수행
         if (foundLobbyDetails != null)
         {
-            // Debug.Log($"[ClientJoinUI] 코드 [{code}] 방 발견! ClientLobbyManager를 통해 참가를 진행합니다.");
+            Debug.Log($"[ClientJoinUI] 코드 [{code}] 방 발견! ClientLobbyManager를 통해 참가를 진행합니다.");
 
             ClientLobbyManager lobbyManager = FindFirstObjectByType<ClientLobbyManager>();
             if (lobbyManager != null)

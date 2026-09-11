@@ -34,12 +34,12 @@ public class ChapterBlocker : NetworkBehaviour
         if ((isExBlocker && isExRoom && targetChapterNumber <= roomSelectedChapter) ||
             (!isExBlocker && maxCleared >= targetChapterNumber - 1 && targetChapterNumber <= roomSelectedChapter))
         {
-            // Debug.Log($"[ChapterBlocker] {targetChapterNumber} 챕터 개방! (클리어 기록: {maxCleared}, 선택한 챕터: {roomSelectedChapter})");
+            Debug.Log($"[ChapterBlocker] {targetChapterNumber} 챕터 개방! (클리어 기록: {maxCleared}, 선택한 챕터: {roomSelectedChapter})");
             isOpen = true;
         }
         else
         {
-            // Debug.Log($"[ChapterBlocker] {targetChapterNumber} 챕터 잠금! (클리어 기록: {maxCleared}, 선택한 챕터: {roomSelectedChapter})");
+            Debug.Log($"[ChapterBlocker] {targetChapterNumber} 챕터 잠금! (클리어 기록: {maxCleared}, 선택한 챕터: {roomSelectedChapter})");
             isOpen = false;
         }
     }

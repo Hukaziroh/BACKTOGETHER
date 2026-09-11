@@ -83,7 +83,7 @@ public class CoopSeparateZone : NetworkBehaviour
 
             // 해제 완료 후 대기열 초기화
             playersInZone.Clear();
-            // Debug.Log($"합체 해제 구역 ({requiredTeams}팀 진입 완료) -> 모든 파티원 강제 분리 및 색상 복구 완료!");
+            Debug.Log($"합체 해제 구역 ({requiredTeams}팀 진입 완료) -> 모든 파티원 강제 분리 및 색상 복구 완료!");
         }
     }
 }

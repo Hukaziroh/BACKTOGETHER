@@ -125,7 +125,7 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
             handler.canUseAction =
                 assignedRole == CombineRole.Action;
 
-            // Debug.Log(
+            Debug.Log(
                 $"[4인 합체 역할 확정] " +
                 $"{player.name} -> {assignedRole}"
             );
@@ -187,7 +187,7 @@ public class CoopQuadCombineTrigger : NetworkBehaviour
         {
             playersInZone.Remove(player);
         }
-        // Debug.Log(
+        Debug.Log(
             $"[4인 합체 완료] " +
             $"Body={bodyPlayer.name} / " +
             $"{validPlayers[0].name}={validPlayers[0].GetComponent<PlayerCombineHandler>().myRole}, " +

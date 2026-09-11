@@ -45,7 +45,7 @@ public class CoopWallManager : NetworkBehaviour
             if (wallVisuals != null) wallVisuals.SetActive(false);
             if (wallCollider != null) wallCollider.enabled = false;
 
-            // Debug.Log("모든 버튼이 눌려 벽이 영구적으로 사라졌습니다!");
+            Debug.Log("모든 버튼이 눌려 벽이 영구적으로 사라졌습니다!");
         }
     }
 }

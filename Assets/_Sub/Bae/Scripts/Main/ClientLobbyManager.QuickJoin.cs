@@ -75,7 +75,7 @@ public partial class ClientLobbyManager
             // ★ 중요: 실제 Mirror 연결까지 성공했다면 Connecting 상태 해제
             // 이제부터 끊기는 건 HostDisconnectHandler가 담당함
             IsConnecting = false;
-            // Debug.Log("[ClientLobbyManager] Mirror 연결 성공, HostDisconnectHandler로 감시 이관");
+            Debug.Log("[ClientLobbyManager] Mirror 연결 성공, HostDisconnectHandler로 감시 이관");
         }
     }
 

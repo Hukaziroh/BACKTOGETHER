@@ -35,7 +35,7 @@ public class NetworkSafeQuitHandler : MonoBehaviour
 
     private IEnumerator SafeQuitRoutine()
     {
-        // Debug.Log("[NetworkSafeQuitHandler] Alt+F4 / [X] 버튼 종료 감지. 네트워크 안전 정리를 진행합니다.");
+        Debug.Log("[NetworkSafeQuitHandler] Alt+F4 / [X] 버튼 종료 감지. 네트워크 안전 정리를 진행합니다.");
 
         EOSLobby eosLobby = FindAnyObjectByType<EOSLobby>();
 

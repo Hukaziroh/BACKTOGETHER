@@ -19,7 +19,7 @@ public class SteamTest : MonoBehaviour
         if (SteamManager.Initialized)
         {
             string myName = SteamFriends.GetPersonaName();
-            // Debug.Log($"✅ 스팀 연동 성공! 환영합니다, {myName}님!");
+            Debug.Log($"✅ 스팀 연동 성공! 환영합니다, {myName}님!");
         }
         else
         {

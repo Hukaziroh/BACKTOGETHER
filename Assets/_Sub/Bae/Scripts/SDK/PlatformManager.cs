@@ -37,16 +37,16 @@ public class PlatformManager : Singleton<PlatformManager>
     private void InitializePlatform()
     {
 #if STOVE_BUILD
-        // Debug.Log("🔥 [PlatformManager] STOVE 환경으로 빌드되었습니다. StovePCSDK3Manager가 백그라운드에서 작동합니다.");
+        Debug.Log("🔥 [PlatformManager] STOVE 환경으로 빌드되었습니다. StovePCSDK3Manager가 백그라운드에서 작동합니다.");
         
 #elif STEAM_BUILD
-        // Debug.Log("💨 [PlatformManager] STEAM 환경으로 빌드되었습니다. SteamManager가 백그라운드에서 작동합니다.");
+        Debug.Log("💨 [PlatformManager] STEAM 환경으로 빌드되었습니다. SteamManager가 백그라운드에서 작동합니다.");
         if (SteamManager.Initialized)
         {
-            // Debug.Log("스팀 API 초기화 성공!");
+            Debug.Log("스팀 API 초기화 성공!");
         }
 #else
-        // Debug.Log("💻 [PlatformManager] 에디터 또는 플랫폼 독립 테스트 환경입니다.");
+        Debug.Log("💻 [PlatformManager] 에디터 또는 플랫폼 독립 테스트 환경입니다.");
 #endif
     }
 
@@ -93,7 +93,7 @@ public class PlatformManager : Singleton<PlatformManager>
     {
         // 👈 방금 만든 스토브 전용 함수 호출!
         StovePCSDK3Manager.Instance.UnlockAchievement(achievementId);
-        // Debug.Log($"[STOVE] 업적/스탯 달성 요청 전송: {achievementId}");
+        Debug.Log($"[STOVE] 업적/스탯 달성 요청 전송: {achievementId}");
     }
 
 #elif STEAM_BUILD
@@ -101,7 +101,7 @@ public class PlatformManager : Singleton<PlatformManager>
     {
         Steamworks.SteamUserStats.SetAchievement(achievementId);
         Steamworks.SteamUserStats.StoreStats();
-        // Debug.Log($"[STEAM] 업적 달성: {achievementId}");
+        Debug.Log($"[STEAM] 업적 달성: {achievementId}");
     }
 #endif
     }

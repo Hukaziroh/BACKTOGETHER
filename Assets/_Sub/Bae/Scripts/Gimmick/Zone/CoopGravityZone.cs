@@ -21,7 +21,7 @@ public class CoopGravityZone : NetworkBehaviour
 
         gravityModule.canInvertGravity = true;
 
-        // Debug.Log(
+        Debug.Log(
             $"[{other.name}] 중력 반전 가능 구역 진입."
         );
     }
@@ -40,7 +40,7 @@ public class CoopGravityZone : NetworkBehaviour
 
         gravityModule.canInvertGravity = false;
 
-        // Debug.Log(
+        Debug.Log(
             $"[{other.name}] 중력 반전 가능 구역 이탈."
         );
 

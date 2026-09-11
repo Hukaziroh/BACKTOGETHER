@@ -113,7 +113,7 @@ public class CoopCheckpoint : NetworkBehaviour
             if (!isActivatedForAll)
                 isActivatedForAll = true;
 
-            // Debug.Log(
+            Debug.Log(
                 $"[체크포인트] '{other.name}' 진입! " +
                 $"체크포인트 Index = {checkpointIndex} | 팀 전체 체크포인트 갱신 시도"
             );
@@ -136,7 +136,7 @@ public class CoopCheckpoint : NetworkBehaviour
         // =====================================================
         else
         {
-            // Debug.Log(
+            Debug.Log(
                 $"[체크포인트] '{other.name}' 진입! " +
                 $"체크포인트 Index = {checkpointIndex} | 개인 체크포인트 갱신 시도"
             );

@@ -20,13 +20,13 @@ public class SpectatorSystem : MonoBehaviour
         {
             if (playerIdentity.isLocalPlayer)
             {
-                // Debug.Log("[관전] 본인은 관전할 수 없습니다.");
+                Debug.Log("[관전] 본인은 관전할 수 없습니다.");
                 return;
             }
 
             CurrentTarget = playerIdentity.transform;
             currentSpectateIndex = index;
-            // Debug.Log($"[관전] {index + 1}P를 관전합니다.");
+            Debug.Log($"[관전] {index + 1}P를 관전합니다.");
         }
     }
 
@@ -35,7 +35,7 @@ public class SpectatorSystem : MonoBehaviour
     {
         if (CoopPlayerIdentity.players == null || CoopPlayerIdentity.players.Count == 0)
         {
-            // Debug.Log("[관전] 관전할 수 있는 플레이어가 없습니다.");
+            Debug.Log("[관전] 관전할 수 있는 플레이어가 없습니다.");
             return;
         }
 
@@ -51,7 +51,7 @@ public class SpectatorSystem : MonoBehaviour
 
         if (validIndices.Count == 0)
         {
-            // Debug.Log("[관전] 관전 가능한 다른 플레이어가 없습니다.");
+            Debug.Log("[관전] 관전 가능한 다른 플레이어가 없습니다.");
             StopSpectating();
             return;
         }
@@ -67,6 +67,6 @@ public class SpectatorSystem : MonoBehaviour
     {
         CurrentTarget = null;
         currentSpectateIndex = -1;
-        // Debug.Log("관전 모드 종료");
+        Debug.Log("관전 모드 종료");
     }
 }

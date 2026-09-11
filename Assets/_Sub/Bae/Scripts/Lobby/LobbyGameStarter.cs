@@ -11,7 +11,7 @@ public class LobbyGameStarter : MonoBehaviour
 
         if (NetworkServer.active)
         {
-            // Debug.Log($"모든 플레이어를 데리고 {gameSceneName} 씬으로 이동합니다!");
+            Debug.Log($"모든 플레이어를 데리고 {gameSceneName} 씬으로 이동합니다!");
             NetworkManager.singleton.ServerChangeScene(gameSceneName);
         }
         else
