@@ -92,7 +92,7 @@ public class CoopDuoCombineTrigger : NetworkBehaviour
             p2 = temp;
         }
 
-        Debug.Log($"2인 진입 완료 -> 듀오 기믹 발동! 본체:{p1.name} / 탑승:{p2.name}");
+        // Debug.Log($"2인 진입 완료 -> 듀오 기믹 발동! 본체:{p1.name} / 탑승:{p2.name}");
         AssignRole(p1, p2, CombineRole.Move, CombineRole.Jump);
     }
 

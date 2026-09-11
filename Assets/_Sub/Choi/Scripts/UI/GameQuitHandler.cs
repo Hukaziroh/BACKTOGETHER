@@ -22,7 +22,7 @@ public class GameQuitHandler : MonoBehaviour
 
     private IEnumerator GracefulQuitRoutine()
     {
-        Debug.Log("[GameQuitHandler] 게임 안전 종료 프로세스 시작...");
+        // Debug.Log("[GameQuitHandler] 게임 안전 종료 프로세스 시작...");
 
         // =========================================================
         // 1. 네트워크 관리자 종료 및 명시적 파괴 (크래시 방지 핵심)
@@ -57,7 +57,7 @@ public class GameQuitHandler : MonoBehaviour
         // =========================================================
         yield return new WaitForSecondsRealtime(0.5f);
 
-        Debug.Log("[GameQuitHandler] 네트워크 및 EOS 정리 완료, 안전하게 종료합니다.");
+        // Debug.Log("[GameQuitHandler] 네트워크 및 EOS 정리 완료, 안전하게 종료합니다.");
 
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;

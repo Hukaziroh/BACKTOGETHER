@@ -73,7 +73,7 @@ public class HostDisconnectHandler : MonoBehaviour
                 isConnecting = false;
                 wasConnected = true;
 
-                Debug.Log("[HostDisconnectHandler] 새 방 연결 성공 → Disconnect 감시 시작");
+                // Debug.Log("[HostDisconnectHandler] 새 방 연결 성공 → Disconnect 감시 시작");
             }
 
             return;
@@ -96,7 +96,7 @@ public class HostDisconnectHandler : MonoBehaviour
 
         wasConnected = false;
 
-        Debug.Log("[HostDisconnectHandler] 실제 연결 이후 Disconnect 감지");
+        // Debug.Log("[HostDisconnectHandler] 실제 연결 이후 Disconnect 감지");
 
         // ---------------------------------------------------------
         // 호스트 Disconnect 패널 활성화
@@ -257,6 +257,6 @@ public class HostDisconnectHandler : MonoBehaviour
         if (disconnectPanel != null)
             disconnectPanel.SetActive(false);
 
-        Debug.Log("[HostDisconnectHandler] 새 방 접속 시작 → Disconnect 감시 초기화");
+        // Debug.Log("[HostDisconnectHandler] 새 방 접속 시작 → Disconnect 감시 초기화");
     }
 }

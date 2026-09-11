@@ -129,7 +129,7 @@ public class PauseManager : MonoBehaviour
         UnityEditor.Selection.activeGameObject = null;
 #endif
 
-        Debug.Log("[퍼즈 시스템] ① 에픽 로비 비동기 퇴장 시퀀스 시작...");
+        // Debug.Log("[퍼즈 시스템] ① 에픽 로비 비동기 퇴장 시퀀스 시작...");
 
         Time.timeScale = 1f;
 
@@ -149,18 +149,18 @@ public class PauseManager : MonoBehaviour
         // =========================================================
         if (eosLobby != null)
         {
-            Debug.Log($"[퍼즈 시스템] ② EOSLobby 발견 | ConnectedToLobby = {eosLobby.ConnectedToLobby} | IsLeavingLobby = {eosLobby.IsLeavingLobby}");
+            // Debug.Log($"[퍼즈 시스템] ② EOSLobby 발견 | ConnectedToLobby = {eosLobby.ConnectedToLobby} | IsLeavingLobby = {eosLobby.IsLeavingLobby}");
 
             if (eosLobby.ConnectedToLobby)
             {
                 if (NetworkServer.active)
                 {
-                    Debug.Log("[퍼즈 시스템] ③ 호스트이므로 EOS Lobby Destroy(방 파괴) 요청");
+                    // Debug.Log("[퍼즈 시스템] ③ 호스트이므로 EOS Lobby Destroy(방 파괴) 요청");
                     eosLobby.DestroyLobby();
                 }
                 else
                 {
-                    Debug.Log("[퍼즈 시스템] ③ 클라이언트이므로 EOS Lobby Leave(퇴장) 요청");
+                    // Debug.Log("[퍼즈 시스템] ③ 클라이언트이므로 EOS Lobby Leave(퇴장) 요청");
                     eosLobby.LeaveLobby();
                 }
 
@@ -182,12 +182,12 @@ public class PauseManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("[퍼즈 시스템] ④ EOS Lobby 정상 퇴장/파괴 완료");
+                    // Debug.Log("[퍼즈 시스템] ④ EOS Lobby 정상 퇴장/파괴 완료");
                 }
             }
             else
             {
-                Debug.Log("[퍼즈 시스템] ③ 현재 EOS Lobby에 연결되어 있지 않습니다.");
+                // Debug.Log("[퍼즈 시스템] ③ 현재 EOS Lobby에 연결되어 있지 않습니다.");
             }
         }
         else
@@ -202,12 +202,12 @@ public class PauseManager : MonoBehaviour
         // =========================================================
         if (NetworkServer.active)
         {
-            Debug.Log("[퍼즈 시스템] ⑤ 호스트 종료");
+            // Debug.Log("[퍼즈 시스템] ⑤ 호스트 종료");
             NetworkManager.singleton.StopHost();
         }
         else
         {
-            Debug.Log("[퍼즈 시스템] ⑤ 클라이언트 종료");
+            // Debug.Log("[퍼즈 시스템] ⑤ 클라이언트 종료");
             NetworkManager.singleton.StopClient();
         }
 
@@ -230,7 +230,7 @@ public class PauseManager : MonoBehaviour
             }
         }
 
-        Debug.Log("[퍼즈 시스템] ⑥ 게임 종료 시퀀스 완료");
+        // Debug.Log("[퍼즈 시스템] ⑥ 게임 종료 시퀀스 완료");
 
         isLeaving = false;
 

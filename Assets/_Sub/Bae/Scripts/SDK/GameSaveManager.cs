@@ -55,7 +55,7 @@ public class GameSaveManager : MonoBehaviour
 
             if (result.IsSuccessful() && !string.IsNullOrEmpty(cloudPath))
             {
-                Debug.Log("[Stove] 스토브 클라우드 세이브 경로 획득 성공: " + cloudPath);
+                // Debug.Log("[Stove] 스토브 클라우드 세이브 경로 획득 성공: " + cloudPath);
                 return Path.Combine(cloudPath, saveFileName);
             }
             else
@@ -100,7 +100,7 @@ public class GameSaveManager : MonoBehaviour
 
         string json = JsonUtility.ToJson(currentData, true);
         File.WriteAllText(saveFilePath, json);
-        Debug.Log($"[Save] 세이브 저장 완료! 경로: {saveFilePath}");
+        // Debug.Log($"[Save] 세이브 저장 완료! 경로: {saveFilePath}");
     }
 
     public void LoadGame()
@@ -109,11 +109,11 @@ public class GameSaveManager : MonoBehaviour
         {
             string json = File.ReadAllText(saveFilePath);
             currentData = JsonUtility.FromJson<SaveData>(json);
-            Debug.Log($"[Load] 세이브 로드 성공! 최고 챕터: {currentData.maxClearedChapter}");
+            // Debug.Log($"[Load] 세이브 로드 성공! 최고 챕터: {currentData.maxClearedChapter}");
         }
         else
         {
-            Debug.Log("[Load] 세이브 파일이 없어 새로 생성합니다.");
+            // Debug.Log("[Load] 세이브 파일이 없어 새로 생성합니다.");
             SaveGame();
         }
     }

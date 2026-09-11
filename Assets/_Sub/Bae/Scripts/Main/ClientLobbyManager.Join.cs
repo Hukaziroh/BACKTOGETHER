@@ -56,7 +56,7 @@ public partial class ClientLobbyManager
         SetInteractableAll(false);
         IsConnecting = true;
 
-        Debug.Log(
+        // Debug.Log(
             $"[ClientLobbyManager] 방 입장 시작 | " +
             $"Members={currentMembers}/{maxMembers}"
         );

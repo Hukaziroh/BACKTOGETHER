@@ -96,7 +96,7 @@ public class PlatformInviteManager : MonoBehaviour
     /// </summary>
     public void SetLobbyDataForInvite(string shortCode)
     {
-        Debug.Log($"[PlatformInviteManager] 외부 플랫폼 로비 세팅 요청됨 (ShortCode: {shortCode})");
+        // Debug.Log($"[PlatformInviteManager] 외부 플랫폼 로비 세팅 요청됨 (ShortCode: {shortCode})");
 
 #if STEAM_BUILD
         if (!SteamManager.Initialized)
@@ -118,14 +118,14 @@ public class PlatformInviteManager : MonoBehaviour
         SteamAPICall_t handle = SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypeFriendsOnly, 4);
         m_LobbyCreated.Set(handle);
 
-        Debug.Log($"[PlatformInviteManager] 스팀 로비 생성 진행 중... (ShortCode: {shortCode})");
+        // Debug.Log($"[PlatformInviteManager] 스팀 로비 생성 진행 중... (ShortCode: {shortCode})");
 #endif
 
 #if STOVE_BUILD
         // STOVE_BUILD: 스토브는 런처의 RichPresence 또는 멀티플레이어 세션 API를 통해 세션 ID를 공유합니다.
         // Stove.PCSDK v3 명세에 따라 세션 ID를 설정합니다. (아래는 일반적인 형태이며, SDK 버전에 맞춰 수정)
         // GameSupport_SetMultiplayerSessionId(shortCode, (result) => { ... });
-        Debug.Log($"[PlatformInviteManager] 스토브 세션 ID 등록 요청 (ShortCode: {shortCode})");
+        // Debug.Log($"[PlatformInviteManager] 스토브 세션 ID 등록 요청 (ShortCode: {shortCode})");
 #endif
     }
 
@@ -143,12 +143,12 @@ public class PlatformInviteManager : MonoBehaviour
         // 생성된 스팀 로비에 EOS 방 코드를 메타데이터로 기록
         SteamMatchmaking.SetLobbyData(currentSteamLobbyId, "EOS_SHORTCODE", currentHostingCode);
         
-        Debug.Log($"[PlatformInviteManager] 스팀 로비 생성 완료 및 EOS_SHORTCODE 등록 성공 ({currentHostingCode})");
+        // Debug.Log($"[PlatformInviteManager] 스팀 로비 생성 완료 및 EOS_SHORTCODE 등록 성공 ({currentHostingCode})");
     }
 
     private void OnGameLobbyJoinRequested(GameLobbyJoinRequested_t pCallback)
     {
-        Debug.Log("[PlatformInviteManager] 친구 초대를 수락했습니다. 스팀 로비에 접속을 시도합니다.");
+        // Debug.Log("[PlatformInviteManager] 친구 초대를 수락했습니다. 스팀 로비에 접속을 시도합니다.");
 
         // 스팀 로비 접속 시도
         SteamAPICall_t handle = SteamMatchmaking.JoinLobby(pCallback.m_steamIDLobby);
@@ -170,7 +170,7 @@ public class PlatformInviteManager : MonoBehaviour
 
         if (!string.IsNullOrEmpty(shortCode))
         {
-            Debug.Log($"[PlatformInviteManager] 스팀 로비에서 EOS_SHORTCODE ({shortCode})를 성공적으로 가져왔습니다!");
+            // Debug.Log($"[PlatformInviteManager] 스팀 로비에서 EOS_SHORTCODE ({shortCode})를 성공적으로 가져왔습니다!");
             
             // 즉시 스팀 로비에서는 퇴장 (메신저 역할 끝)
             SteamMatchmaking.LeaveLobby(steamLobbyId);
@@ -203,7 +203,7 @@ public class PlatformInviteManager : MonoBehaviour
             {
                 if (i + 1 < args.Length)
                 {
-                    Debug.Log($"[PlatformInviteManager] 커맨드라인에서 방 코드 발견: {args[i + 1]}");
+                    // Debug.Log($"[PlatformInviteManager] 커맨드라인에서 방 코드 발견: {args[i + 1]}");
                     HandleInviteCode(args[i + 1]);
                     return;
                 }
@@ -213,7 +213,7 @@ public class PlatformInviteManager : MonoBehaviour
                 string[] parts = args[i].Split('=');
                 if (parts.Length > 1)
                 {
-                    Debug.Log($"[PlatformInviteManager] 스토브 런처 커맨드라인에서 방 코드 발견: {parts[1]}");
+                    // Debug.Log($"[PlatformInviteManager] 스토브 런처 커맨드라인에서 방 코드 발견: {parts[1]}");
                     HandleInviteCode(parts[1]);
                     return;
                 }
@@ -232,7 +232,7 @@ public class PlatformInviteManager : MonoBehaviour
         // 1. 이미 접속 중인 게임이나 로비가 있다면 완전히 연결을 끊고 나갑니다.
         if (NetworkManager.singleton != null && (NetworkServer.active || NetworkClient.active))
         {
-            Debug.Log("[PlatformInviteManager] 기존 네트워크 세션 감지됨. 연결을 끊습니다.");
+            // Debug.Log("[PlatformInviteManager] 기존 네트워크 세션 감지됨. 연결을 끊습니다.");
 
             HostDisconnectHandler disconnectHandler = FindAnyObjectByType<HostDisconnectHandler>();
             if (disconnectHandler != null)
@@ -268,7 +268,7 @@ public class PlatformInviteManager : MonoBehaviour
         }
         else
         {
-            Debug.Log($"[PlatformInviteManager] 현재 씬이 {targetSceneName}이 아닙니다. 메인으로 이동 후 접속합니다.");
+            // Debug.Log($"[PlatformInviteManager] 현재 씬이 {targetSceneName}이 아닙니다. 메인으로 이동 후 접속합니다.");
             SceneManager.LoadScene(targetSceneName);
         }
     }
@@ -283,7 +283,7 @@ public class PlatformInviteManager : MonoBehaviour
         ClientJoinUI joinUI = FindFirstObjectByType<ClientJoinUI>();
         if (joinUI != null)
         {
-            Debug.Log($"[PlatformInviteManager] {codeToJoin} 코드로 자동 접속을 시작합니다.");
+            // Debug.Log($"[PlatformInviteManager] {codeToJoin} 코드로 자동 접속을 시작합니다.");
             joinUI.AutoConnectByCode(codeToJoin);
         }
         else

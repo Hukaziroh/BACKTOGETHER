@@ -72,7 +72,7 @@ public class CoopRoundTripPlatform : CoopPlatformBase
                     {
                         currentState = State.Idle;
                         syncVelocity = Vector2.zero;
-                        Debug.Log($"[{gameObject.name}] 1회 왕복 완료! 대기 상태로 돌아갑니다.");
+                        // Debug.Log($"[{gameObject.name}] 1회 왕복 완료! 대기 상태로 돌아갑니다.");
                     }
                     break;
             }
