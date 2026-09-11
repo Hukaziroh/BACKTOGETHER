@@ -75940,7 +75940,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8131018449133024124, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
       propertyPath: checkpointIndex
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -76360,7 +76360,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8131018449133024124, guid: c7e15aaee6ea71441b5b773e34bf1e02, type: 3}
       propertyPath: checkpointIndex
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -296665,8 +296665,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1027108815}
-  - {fileID: 800459603}
   - {fileID: 698784288}
+  - {fileID: 800459603}
   - {fileID: 2044783258}
   - {fileID: 624727474}
   - {fileID: 1397425080}
