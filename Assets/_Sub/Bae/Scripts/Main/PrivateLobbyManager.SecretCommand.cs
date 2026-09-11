@@ -94,7 +94,7 @@ public partial class PrivateLobbyManager
         ResetSecretCommand();
         UpdateChapterUI();
         TilemapPlayerBouncer.PlaySecretCommandSuccessEffect();
-        Debug.Log("[PrivateLobbyManager] EX stage unlocked by secret command.");
+        // Debug.Log("[PrivateLobbyManager] EX stage unlocked by secret command.");
     }
 
     private bool CanReceiveSecretCommandInput()

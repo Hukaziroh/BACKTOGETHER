@@ -48,7 +48,7 @@ public class CoopLateJoinHandler : NetworkBehaviour
                     }
                 }
 
-                Debug.Log($"[서버] 중도 참여자 감지! 팀원({player.name})의 위치로 텔레포트 명령을 전송합니다.");
+                // Debug.Log($"[서버] 중도 참여자 감지! 팀원({player.name})의 위치로 텔레포트 명령을 전송합니다.");
                 break;
             }
         }
@@ -65,6 +65,6 @@ public class CoopLateJoinHandler : NetworkBehaviour
             rb.linearVelocity = Vector2.zero;
         }
         
-        Debug.Log($"[클라이언트] 팀원 위치({targetPos})로 스폰 위치가 안전하게 동기화되었습니다.");
+        // Debug.Log($"[클라이언트] 팀원 위치({targetPos})로 스폰 위치가 안전하게 동기화되었습니다.");
     }
 }

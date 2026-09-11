@@ -40,7 +40,7 @@ public class CoopShurikenTrap : NetworkBehaviour
         if (knockbackScript != null)
         {
             knockbackScript.ApplyKnockbackFromEye(transform.position);
-            Debug.Log($"[Shuriken Trap] 플레이어 '{other.name}' 피격! 왼쪽으로 넉백시킵니다.");
+            // Debug.Log($"[Shuriken Trap] 플레이어 '{other.name}' 피격! 왼쪽으로 넉백시킵니다.");
         }
     }
 }

@@ -63,7 +63,7 @@ public class CoopMirrorPlatforms : NetworkBehaviour
                 if (playersOnLeft.Count >= requiredPlayers)
                 {
                     currentState = PlatformState.Meeting;
-                    Debug.Log("[거울 발판] 왼쪽 발판 4명 탑승! 가운데로 모입니다.");
+                    // Debug.Log("[거울 발판] 왼쪽 발판 4명 탑승! 가운데로 모입니다.");
                 }
                 break;
 
@@ -90,7 +90,7 @@ public class CoopMirrorPlatforms : NetworkBehaviour
                     Vector2.Distance(rightPlatform.position, rightStartPoint.position) < 0.05f)
                 {
                     currentState = PlatformState.Idle;
-                    Debug.Log("[거울 발판] 원위치 복귀 완료. 대기 상태.");
+                    // Debug.Log("[거울 발판] 원위치 복귀 완료. 대기 상태.");
                 }
                 break;
         }
@@ -113,13 +113,13 @@ public class CoopMirrorPlatforms : NetworkBehaviour
     private System.Collections.IEnumerator WaitAndReturn()
     {
         isWaitingToReturn = true;
-        Debug.Log("[거울 발판] 1초 뒤 돌아갑니다...");
+        // Debug.Log("[거울 발판] 1초 뒤 돌아갑니다...");
 
         yield return new WaitForSeconds(1.0f);
 
         currentState = PlatformState.Returning;
         isWaitingToReturn = false;
-        Debug.Log("[거울 발판] 원래 위치로 돌아갑니다.");
+        // Debug.Log("[거울 발판] 원래 위치로 돌아갑니다.");
     }
 
     [Server]

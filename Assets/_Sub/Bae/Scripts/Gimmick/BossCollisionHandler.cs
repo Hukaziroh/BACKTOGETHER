@@ -41,7 +41,7 @@ public class BossCollisionHandler : NetworkBehaviour
     private void TriggerGameOver(Vector3 deathPosition)
     {
         isRestarting = true;
-        Debug.Log("💀 보스가 플레이어를 잡았습니다! 2초 뒤 스테이지를 재시작합니다.");
+        // Debug.Log("💀 보스가 플레이어를 잡았습니다! 2초 뒤 스테이지를 재시작합니다.");
 
         RpcPlayDeathSound(deathPosition);
 

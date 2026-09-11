@@ -45,7 +45,7 @@ public class StageDoor : NetworkBehaviour
                     if (arrivedPlayers.Count >= 1)
                     {
                         isClearConditionMet = true;
-                        Debug.Log("[서버] 4스테이지 특수 조건 발동: 1명 도착으로 즉시 클리어!");
+                        // Debug.Log("[서버] 4스테이지 특수 조건 발동: 1명 도착으로 즉시 클리어!");
                     }
                 }
                 else

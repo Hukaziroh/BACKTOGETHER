@@ -194,12 +194,12 @@ public class CoopPlayerIdentity : NetworkBehaviour
                 if (serverConnectionIndexMap.ContainsKey(connId))
                 {
                     serverConnectionIndexMap.Remove(connId);
-                    Debug.Log($"[플레이어 퇴장] 접속 ID({connId})가 완전히 퇴장했습니다. 색상을 회수합니다.");
+                    // Debug.Log($"[플레이어 퇴장] 접속 ID({connId})가 완전히 퇴장했습니다. 색상을 회수합니다.");
                 }
             }
             else
             {
-                Debug.Log($"[씬 전환] 접속 ID({connId})는 방에 남아있습니다. 색상 인덱스를 안전하게 보존합니다.");
+                // Debug.Log($"[씬 전환] 접속 ID({connId})는 방에 남아있습니다. 색상 인덱스를 안전하게 보존합니다.");
             }
         }
 
@@ -356,7 +356,7 @@ public class CoopPlayerIdentity : NetworkBehaviour
             }
 
 
-            Debug.Log(
+            // Debug.Log(
                 $"[플레이어 유지] 접속 ID({connId}) - " +
                 $"기존 {playerIndex + 1}P 번호 및 색상을 유지합니다."
             );
@@ -399,7 +399,7 @@ public class CoopPlayerIdentity : NetworkBehaviour
                 }
 
 
-                Debug.Log(
+                // Debug.Log(
                     $"[플레이어 최초 생성] 접속 ID({connId}) - " +
                     $"{i + 1}P 번호가 새로 부여되었습니다."
                 );

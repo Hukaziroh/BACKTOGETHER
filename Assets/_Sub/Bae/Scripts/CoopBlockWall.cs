@@ -63,7 +63,7 @@ public class CoopBlockWall : NetworkBehaviour
         if (newVal && wallObject != null)
         {
             wallObject.SetActive(true);
-            Debug.Log("모든 플레이어가 진입하여 퇴로가 차단되었습니다!");
+            // Debug.Log("모든 플레이어가 진입하여 퇴로가 차단되었습니다!");
         }
     }
 }
