@@ -95,7 +95,7 @@ public class ClientRoomItemUI : MonoBehaviour
             return;
         }
 
-        // Debug.Log("[UI] 방 입장 버튼 클릭됨!");
+        Debug.Log("[UI] 방 입장 버튼 클릭됨!");
 
         if (targetLobby != null)
         {

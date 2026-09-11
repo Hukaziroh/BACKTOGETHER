@@ -157,7 +157,7 @@ public partial class PrivateLobbyManager
         if (transport != null) transport.ResetIgnoreMessagesAtStartUpTimer();
         NetworkManager.singleton.StartHost();
 
-        // Debug.Log($"[PrivateLobbyManager] 방 생성 완료. 초대 매니저 연동 시도 중... (Instance: {PlatformInviteManager.Instance != null}, isPublic: {isPublicRoom}, shortCode: {currentShortCode})");
+        Debug.Log($"[PrivateLobbyManager] 방 생성 완료. 초대 매니저 연동 시도 중... (Instance: {PlatformInviteManager.Instance != null}, isPublic: {isPublicRoom}, shortCode: {currentShortCode})");
 
         // [Steam / Stove 초대 지원] 퍼블릭/프라이빗 상관없이 항상 스팀 로비를 파서 우클릭 초대를 활성화합니다.
         if (PlatformInviteManager.Instance != null && !string.IsNullOrEmpty(currentShortCode))

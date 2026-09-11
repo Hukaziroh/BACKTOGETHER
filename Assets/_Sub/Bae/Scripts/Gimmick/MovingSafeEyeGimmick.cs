@@ -114,7 +114,7 @@ public class MovingSafeEyeGimmick : NetworkBehaviour
 
                 if (knockback != null)
                 {
-                    // Debug.Log($"[{other.name}] 안전 박스 영역 밖으로 이탈! 가시 넉백을 발사합니다.");
+                    Debug.Log($"[{other.name}] 안전 박스 영역 밖으로 이탈! 가시 넉백을 발사합니다.");
                     knockback.ApplyKnockbackFromEye(transform.position);
                 }
             }

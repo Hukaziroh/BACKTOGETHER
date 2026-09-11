@@ -87,7 +87,7 @@ public partial class ClientLobbyManager
         {
             if (lobbies != null && lobbies.Count > 0)
             {
-                // Debug.Log($"[PrivateJoin] 프라이빗 방 발견! 코드: {privateRoomInputField.text}");
+                Debug.Log($"[PrivateJoin] 프라이빗 방 발견! 코드: {privateRoomInputField.text}");
                 JoinRoom(lobbies[0]);
             }
             else
@@ -120,7 +120,7 @@ public partial class ClientLobbyManager
                     // ★ 유령방(0명)에는 퀵 조인으로 들어가지 않도록 방어
                     if (currentMembers > 0)
                     {
-                        // Debug.Log($"[QuickJoin] 빈 방 발견! ({currentMembers}/{maxMembers}) 즉시 입장합니다.");
+                        Debug.Log($"[QuickJoin] 빈 방 발견! ({currentMembers}/{maxMembers}) 즉시 입장합니다.");
                         JoinRoom(lobby);
                         return;
                     }

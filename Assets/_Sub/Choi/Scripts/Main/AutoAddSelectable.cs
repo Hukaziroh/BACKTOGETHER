@@ -25,6 +25,6 @@ public class AutoAddSelectable : MonoBehaviour
                 }
             }
         }
-        // Debug.Log("모든 슬롯에 버튼이 영구적으로 추가되었습니다!");
+        Debug.Log("모든 슬롯에 버튼이 영구적으로 추가되었습니다!");
     }
 }

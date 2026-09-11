@@ -75,7 +75,7 @@ public class EyeRoomTrigger : NetworkBehaviour
         if (newVal && blockingWall != null)
         {
             blockingWall.SetActive(true);
-            // Debug.Log("방 문이 닫혔습니다!");
+            Debug.Log("방 문이 닫혔습니다!");
         }
     }
 }
