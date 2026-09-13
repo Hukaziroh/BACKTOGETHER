@@ -1361,6 +1361,14 @@ PrefabInstance:
       value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 7070018043978612738, guid: a07509864346611469d86c860eb518a6, type: 3}
+      propertyPath: tracks.Array.size
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7070018043978612738, guid: a07509864346611469d86c860eb518a6, type: 3}
+      propertyPath: tracks.Array.data[9].clip
+      value: 
+      objectReference: {fileID: 8300000, guid: 50d0ff7d00c380545a597f4729161623, type: 3}
+    - target: {fileID: 7070018043978612738, guid: a07509864346611469d86c860eb518a6, type: 3}
       propertyPath: tracks.Array.data[0].volume
       value: 0.5
       objectReference: {fileID: 0}
@@ -1390,11 +1398,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7070018043978612738, guid: a07509864346611469d86c860eb518a6, type: 3}
       propertyPath: tracks.Array.data[7].volume
-      value: 0.3
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7070018043978612738, guid: a07509864346611469d86c860eb518a6, type: 3}
+      propertyPath: tracks.Array.data[8].volume
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7070018043978612738, guid: a07509864346611469d86c860eb518a6, type: 3}
+      propertyPath: tracks.Array.data[9].volume
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 7070018043978612738, guid: a07509864346611469d86c860eb518a6, type: 3}
       propertyPath: tracks.Array.data[8].sceneName
       value: Ex1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7070018043978612738, guid: a07509864346611469d86c860eb518a6, type: 3}
+      propertyPath: tracks.Array.data[9].sceneName
+      value: Ex2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
