@@ -20,16 +20,16 @@ public class LocalizedText : MonoBehaviour
     [TextArea] public string portugueseText;
 
     [Header("가독성 보정 설정 (영어 메인폰트 전용)")]
-    public float englishDilate = 1f;
+    [HideInInspector] public float englishDilate = 0f;
     public float englishOutlineThickness = 1;
 
     [Header("기본 가독성 설정 (다국어/폴백폰트용)")]
-    public float defaultDilate = 1f;
+    [HideInInspector] public float defaultDilate = 0f;
     public float defaultOutlineThickness = 1;
 
     [Header("외곽선 표현 설정")]
     [SerializeField] private Color outlineColor = Color.black;
-    [SerializeField, Range(0.05f, 0.2f)] private float outlineShaderScale = 0.1f;
+    [SerializeField, Range(0.05f, 0.2f)] private float outlineShaderScale = 0.2f;
     [SerializeField] private bool preserveSourceMaterialStyle;
 
     private const string FaceDilateId = "_FaceDilate";
@@ -121,6 +121,8 @@ public class LocalizedText : MonoBehaviour
             }
 
             tmpText.fontMaterial = mat;
+            tmpText.extraPadding = true;
+            tmpText.UpdateMeshPadding();
             tmpText.SetMaterialDirty();
             tmpText.SetVerticesDirty();
         }
@@ -151,10 +153,10 @@ public class LocalizedText : MonoBehaviour
         tmpText.fontMaterial = runtimeFontMaterial;
     }
 
-    private void ApplyReadableTextStyle(Material mat, float outlinePixels)
+    private void ApplyReadableTextStyle(Material mat, float outlineStrength)
     {
         DisableTmpBoxArtifacts(mat);
-        ApplyTmpOutline(mat, outlinePixels);
+        ApplyTmpOutline(mat, outlineStrength);
     }
 
     private void DisableTmpBoxArtifacts(Material mat)
@@ -187,10 +189,10 @@ public class LocalizedText : MonoBehaviour
         mat.DisableKeyword("GLOW_ON");
     }
 
-    private void ApplyTmpOutline(Material mat, float outlinePixels)
+    private void ApplyTmpOutline(Material mat, float outlineStrength)
     {
-        // Inspector의 1은 1px 외곽선 의미로 유지하고 TMP의 0~1 셰이더 값으로 변환한다.
-        float safeOutline = Mathf.Clamp(outlinePixels, 0f, 1f) * outlineShaderScale;
+        // Relative outline strength, not screen pixels. Existing presets retain their scale.
+        float safeOutline = Mathf.Clamp01(outlineStrength) * Mathf.Clamp(outlineShaderScale, 0.05f, 0.2f);
 
         if (mat.HasProperty(OutlineWidthId))
         {

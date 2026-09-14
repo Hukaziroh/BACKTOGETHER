@@ -238,6 +238,8 @@ public class OptionsManager : MonoBehaviour
             ShaderUtilities.UpdateShaderRatios(material);
 
             tmpText.fontMaterial = material;
+            tmpText.extraPadding = true;
+            tmpText.UpdateMeshPadding();
             tmpText.SetMaterialDirty();
             tmpText.SetVerticesDirty();
         }
