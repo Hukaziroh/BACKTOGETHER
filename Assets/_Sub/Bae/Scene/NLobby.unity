@@ -212787,7 +212787,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8507237944534361463, guid: 7c48d57a662366c47b08ed15a054229c, type: 3}
       propertyPath: chapterSceneName
-      value: Ex1
+      value: NEx1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -247886,7 +247886,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8507237944534361463, guid: 7c48d57a662366c47b08ed15a054229c, type: 3}
       propertyPath: chapterSceneName
-      value: Ex2
+      value: NEx2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
