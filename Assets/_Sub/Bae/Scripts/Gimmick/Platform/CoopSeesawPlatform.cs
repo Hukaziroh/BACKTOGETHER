@@ -29,12 +29,16 @@ public class CoopSeesawPlatform : NetworkBehaviour
     void FixedUpdate()
     {
         if (platformRb == null) return;
+                ContactFilter2D filter = new ContactFilter2D();
+        filter.SetLayerMask(playerLayer);
+        filter.useLayerMask = true;
+        
         int hitCount = Physics2D.OverlapBox(
             (Vector2)transform.position + (Vector2)(transform.rotation * checkOffset),
             checkSize,
             platformRb.rotation,
-            hitBuffer,
-            playerLayer
+            filter,
+            hitBuffer
         );
 
         float targetAngle = 0f;

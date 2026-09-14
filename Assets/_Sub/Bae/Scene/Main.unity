@@ -17216,7 +17216,7 @@ PrefabInstance:
     - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
       propertyPath: 'chapterSprites.Array.data[6]'
       value: 
-      objectReference: {fileID: 21300000, guid: 058a3310ba1889a4cbaee52d5b3b1806, type: 3}
+      objectReference: {fileID: 21300000, guid: dfb86471048e3b54aa4234c122519451, type: 3}
     - target: {fileID: 5221681139165562559, guid: f74d7dd3abc116a4db13d858cb2cd146, type: 3}
       propertyPath: 'defaultRoomNames.Array.data[0]'
       value: Let's Go!
