@@ -18448,6 +18448,7 @@ MonoBehaviour:
   progressOffset: 0
   verticalSceneNames:
   - Ex2
+  - NEx2
 --- !u!1 &6705197650720038700
 GameObject:
   m_ObjectHideFlags: 0
