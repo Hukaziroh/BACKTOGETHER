@@ -32,7 +32,7 @@ public class StageProgressTracker : MonoBehaviour
 
     [Header("세로 진행 판정 스테이지")]
     [Tooltip("프로그래스 바는 가로로 유지하고, 월드 Y축으로 진행률을 계산할 Scene 이름입니다.")]
-    [SerializeField] private List<string> verticalSceneNames = new List<string> { "Ex2" };
+    [SerializeField] private List<string> verticalSceneNames = new List<string> { "Ex2", "NEx2" };
 
     private Vector3 startPos;
     private Vector3 endPos;
