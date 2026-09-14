@@ -280,7 +280,7 @@ public class PlatformInviteManager : MonoBehaviour
         string codeToJoin = pendingInviteCode;
         pendingInviteCode = ""; // 소비
 
-        ClientJoinUI joinUI = FindFirstObjectByType<ClientJoinUI>();
+        ClientJoinUI joinUI = FindAnyObjectByType<ClientJoinUI>();
         if (joinUI != null)
         {
             Debug.Log($"[PlatformInviteManager] {codeToJoin} 코드로 자동 접속을 시작합니다.");

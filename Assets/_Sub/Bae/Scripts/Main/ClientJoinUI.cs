@@ -184,7 +184,7 @@ public class ClientJoinUI : MonoBehaviour
         {
             Debug.Log($"[ClientJoinUI] 코드 [{code}] 방 발견! ClientLobbyManager를 통해 참가를 진행합니다.");
 
-            ClientLobbyManager lobbyManager = FindFirstObjectByType<ClientLobbyManager>();
+            ClientLobbyManager lobbyManager = FindAnyObjectByType<ClientLobbyManager>();
             if (lobbyManager != null)
             {
                 // ClientLobbyManager의 정상적인 JoinRoom(로비 입장 및 StartClient)을 위임
