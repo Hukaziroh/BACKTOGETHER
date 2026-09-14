@@ -46,7 +46,7 @@ public partial class ClientLobbyManager
         }
 
         HostDisconnectHandler disconnectHandler =
-            FindFirstObjectByType<HostDisconnectHandler>();
+            FindAnyObjectByType<HostDisconnectHandler>();
 
         if (disconnectHandler != null)
         {

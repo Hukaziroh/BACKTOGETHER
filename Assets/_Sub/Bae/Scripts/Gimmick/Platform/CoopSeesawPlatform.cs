@@ -29,7 +29,7 @@ public class CoopSeesawPlatform : NetworkBehaviour
     void FixedUpdate()
     {
         if (platformRb == null) return;
-        int hitCount = Physics2D.OverlapBoxNonAlloc(
+        int hitCount = Physics2D.OverlapBox(
             (Vector2)transform.position + (Vector2)(transform.rotation * checkOffset),
             checkSize,
             platformRb.rotation,
